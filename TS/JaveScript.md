@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-23 01:47:10
+ * @LastEditTime: 2022-01-24 01:12:58
  * @Description: file content
 -->
 # JavaScipt语法
@@ -458,7 +458,7 @@ function hyCompose(...fns){
 }
 ```
 
-## JS其他知识
+### JS其他函数知识
 
 ```js
 var message = "VO : GO";
@@ -491,3 +491,254 @@ eval(jsString;)
 >> 不能被js引擎优化，因为是`eval`去执行的不经过引擎
 
 ## JS的面向对象
+
+面向对象是现实的抽象方式  
+
+对象是JavaScript中一个非常重要的概念，因为对象可以**将多个相关联的数据封装**到一起，更好的**描述一个事物**  
+
+- JavaScript支持多种编程范式，包括**函数式编程**和**面向对象编程**
+  - JS对象被设计成一组**属性的无序集合**，像是一个**哈希表**，有**K/V组成**
+  - **key是一个标识符名称**，**value可以是任意类型**，也可以是**其他对象或函数类型**
+  - 如果值是一个函数，我们称之为对象的方法
+
+-------
+
+### 创建对象
+
+```js
+// 创建对象 方式1 使用Object类和new关键字来创建对象
+var obj2 = new Object();
+obj.name = "y";
+obj.age = 15;
+obj.height = 180;
+
+// 创建对象 方式2 通过 字面量 的方式
+var obj = {
+    name : "y",
+    age : 15,
+    height : 180,
+    eat : function() {
+        console.log("在吃饭");
+    }
+};
+```
+
+> `{}`是字面量，可以立即求值，而`new Object()`本质上是方法（只不过这个方法是内置的）调用，既然是方法调用，就涉及到在proto链中遍历该方法，当找到该方法后，又会生产方法调用必须的堆栈信息，方法调用结束后，还要释放该堆栈
+
+### 操作对象属性
+
+```js
+var obj = {
+    name : "y",
+    age : 16
+};
+
+console.log(obj.name);      // 获取属性
+obj.name = "j";             // 修改属性
+delete obj.name;            // 删除属性
+
+for (var key in obj){       // 遍历属性
+    console.log(key);
+}
+```
+
+上述对象的属性都是**直接定义在对象内部**，或者**直接添加到对象内部**的，这样做**不能对这个属性进行一些限制**：比如是否可以delete/被遍历等  
+
+为了对属性进行比较精准的操作控制，我们可以使用**属性描述符**，通过属性描述符**可以精准的添加或修改对象的属性**，属性描述符需要使用`Object.defineProperty`来对属性进行添加或修改  
+
+```js
+// obj ： 对象、prop ： 属性、descriptor ： 属性描述符
+Object.defineProperty(obj, prop, descriptor);
+```
+
+`Object.defineProperty()`会直接在一个对象上定义一个新属性，或者修改一个对象的现有属性，并**返回此对象**  
+
+> 该方法会返回被修改的对象，原本的对象也会被修改，所以可以不用接收函数返回值，并且可以发现该函数并非**纯函数**
+
+- 属性描述符
+  - 数据属性描述符
+  - 存取属性描述符
+
+|            | configurable | enumerable | value  | writable | get    | set    |
+| ---------- | ------------ | ---------- | ------ | -------- | ------ | ------ |
+| 数据描述符 | 可以         | 可以       | 可以   | 可以     | 不可以 | 不可以 |
+| 存取描述符 | 可以         | 可以       | 不可以 | 不可以   | 可以   | 可以   |
+
+- `configurable` 属性是否可以通过delete删除属性，是否可以修改其特性或者修改为存取描述符
+  - 直接在一个对象上定义某个属性时，默认为true
+  - 通过属性描述符定义也给属性时，默认为false
+
+- `enumerable` 属性是否可以通过for-in或者Object.keys()返回该属性
+  - 直接在一个对象上定义某个属性时，`enumerable`为true
+  - 通过属性描述符定义属性时，`enumerable`为false
+
+- `writable` 是否可以修改属性的值
+  - 直接在一个对象上定义某个属性时，`writable`为true
+  - 通过属性描述符定义一个属性时，`writable`为false
+- `value` 的具体值，读取属性时返回该值，修改属性时修改该值
+  - 默认情况下`value`是`undefined`的
+- get/get，为获得和设置使用的函数
+
+
+- 存取属性描述符：只能设置`configurable`,`enumerable`,`get`,`set`
+- 数据属性描述符，只能设置`configurable`,`enumerable`,`writable`,`value`
+
+> 个人理解：  
+> 对于不需要进行额外处理的数据可以使用**数据属性描述符**，比如`PI = 3.1415926`  
+> 对于需要额外处理的数据，比如年龄只能是10~20就需要使用**存取属性描述符**  
+
+```js
+var obj = {
+    name : "y",
+    age : 16
+};
+
+// obj对象不存在height属性，则先添加height属性，再设置其属性描述
+Object.defineProperty(obj, 'height', {
+    value : 180
+});  
+
+console.log(obj);
+
+```
+
+> 这里obj并不会输出height属性，因为`height`是通过属性描述符添加的所以`enumerable`默认为false
+
+```js
+// configurable展示
+// obj就是前面的obj
+Object.defineProperty(obj, 'height', {
+    value : 180,
+    configurable : false,
+});  
+delete obj.name
+console.log(obj.name);    // undefined
+
+delete obj.height
+console.log(obj.height);    // 180 没有被删除
+
+Object.defineProperty(obj, 'height', {
+    value : 200,
+    configurable : true,
+});  
+console.log(obj.height);    // 180 没有被修改成200，因为configurable最开始是false
+```
+
+```js
+// enumerable展示
+Object.defineProperty(obj, 'height', {
+    value : 180,
+    configurable : false,
+    enumerable : true
+});  
+console.log(obj);       // 此时可以正常打印出height属性
+
+```
+
+```js
+var obj = {
+    name : "y",
+    age : 16 ,
+    _address : "private"    // 个人习惯：前面有个下划线表示私有变量
+};
+
+Object.defineProperty(obj, 'address', {
+    configurable : true,
+    enumerable : true,
+    get : function () {
+        return this._address;  
+    },
+    set : function(value){
+        this._address = value;
+    }
+});  
+```
+
+> 这里使用`address`属性作为`_address`属性的代理  
+> 因为`_address`作为私有变量不希望外界随意读取，所以使用`address`代理的方法
+
+- 定义多个属性描述符
+
+```js
+var obj = {
+    _age : 0,
+}
+Object.defineProperties(obj, {
+    name : {
+        configurable : true,
+        enumerable : true,
+        writable : true,
+        value : "y"
+    },
+    age : {
+        configurable : true,
+        enumerable : true,
+        get : function (){
+            return this._age;
+        },
+        set : function (value) {
+            this._age = value;
+        }
+    }
+});
+console.log(obj);
+```
+
+- 另一种使用get/set的方法
+
+```js
+var obj = {
+    _age : 10,
+    set age(value){
+        this._age = value;
+    },
+    get age() {
+        return this._age;
+    }
+}
+obj.age = 20;
+console.log(obj);
+```
+
+- 获得对应属性的属性描述符
+
+```js
+var obj = {
+    _age: 0,
+}
+console.log(Object.getOwnPropertyDescriptor(obj, "_age"));
+```
+
+- 获得对象的所有属性描述符
+
+```js
+var obj = {
+    name: "y",
+    age: 16,
+    _address: "private"
+};
+console.log(Object.getOwnPropertyDescriptors(obj));
+```
+
+### 对对象的限制
+
+- 禁止对象继续添加新的属性
+
+```js
+Object.preventExtensions(obj);
+```
+
+- 禁止对象配置/删除属性
+
+```js
+Object.seal(obj);
+```
+
+- 让对象属性变成不可修改(writable : false)
+
+```js
+Object.freeze(obj);
+```
+
+### 创建多个对象的方案
+
