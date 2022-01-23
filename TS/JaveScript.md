@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-01-24 01:12:58
+ * @LastEditTime: 2022-01-24 01:18:44
  * @Description: file content
 -->
 # JavaScipt语法
@@ -742,3 +742,21 @@ Object.freeze(obj);
 
 ### 创建多个对象的方案
 
+如果所有对象都使用前面所说的字面量方式来创建，那么会出现特别多的重复代码  
+
+1. 工厂方法创建对象
+
+```js
+function createPerson(name, age){
+    var person{};
+    person.name = name;
+    person.age = age;
+
+    return person;
+}
+var p1 = createPerson("name1", 10);
+var p2 = createPerson("name2", 11);
+var p3 = createPerson("name3", 12);
+```
+
+2. 
