@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-01-21 18:24:05
+ * @LastEditTime: 2022-01-24 09:25:01
  * @Description: file content
 -->
 # JavaScipt语法
@@ -315,3 +315,500 @@ fn();
 
 ![代码的内存解析](./Image/7.png)
 
+## JS函数式编程（编程范式、规范方式）
+
+函数第一公民 可以作为形式参数和返回值
+
+
+
+## apply、call、bind
+
+
+
+### JS纯函数(pure funtion)
+
+- 纯函数的定义
+  - 此函数在**同样的输入值时**，需**产生相同的输出**
+  - 函数的**输出和输入值与以外的其他隐藏信息或状态无关**，有和**由IO设备产生的外部输出**无关
+  - 该函数不**能有语义上可观察的函数副作用**，诸如**触发事件**，**使输出设备输出**，或**更改输出值以外文件的内容**等
+
+> **副作用**：在**执行一个函数**时，除了**返回函数值**以外，对**调函数产生了附加的影响**，比如修**改了全局变量**、**修改参数或者改变外部的存储**  
+> 副作用往往是**产生BUG的温床**
+
+```js
+var names = ["avc", "cba", "eax", "fas"];
+// 纯函数，确定输入确定输出，没有副作用（没有修改外部变量等，原来的数组name没有被修改）
+var name2 = names.slice(0, 3);   
+// 非纯函数，调用之后原来的数组name被改变了    
+
+
+function foo1(num1, num2){  // 纯函数
+    return num1 + num2;
+}
+
+var name = "log";
+function foo2(num1, num2) { // 非纯函数 修改了外界的值
+    name = "log1";
+    return num1 + num2;
+}
+```
+
+- 纯函数的优势
+1. 安心的编写和安心的使用
+2. 写的时候保证了函数的纯度，只是**单纯实现自己的业务逻辑**即可，不需要关系传入的内容是如何获得的或者**依赖其他的外部变量**是否已经发生了修改
+3. 在用的时候，你确定的输入内容不会被任意篡改，并且自己**确定的输入**，一定会有**确定的输出**
+
+
+### 柯里化
+
+- 维基百科的解释
+  - 卡瑞化或加里化
+  - 把接受**多个参数的函数**，变成**接受一个单一参数**（最初函数的第一个参数）的函数，并且**返回接受余下的参数**，而且**返回结果的新函数**的技术
+  - 柯里化生成**如果你固定某些参数，你将得到接受余下参数的一个函数**
+  - 只**传递给函数一部分参数来调用它，让它返回一个函数去处理剩余的参数**
+
+```js
+function foo(m, n, x, y){
+    return m + n * 2 + x * 3 + y * y;
+}
+foo(1, 2, 3, 4);
+
+function bar(m){
+    
+    return function(n){
+        n = n * 2;
+        return function(x){
+            x = x * 3;
+            return function(y){
+                y = y * y;
+                return m + n + x + y;
+            }
+        }
+    }
+}
+
+bar(1)(2)(3)(4);
+
+// 简易柯里化写法
+var bar2 = m => n => x => y => m + n * 2 + x * 3 + y * y;
+var bar2 = m => n => x => y => {
+    return m + n * 2 + x * 3 + y * y;
+}
+```
+
+> 从 `function foo()` 变 `function bar()`的过程 称为柯里化  
+
+- 柯里化的作用
+  - 让函数职责单一
+    - 在函数式编程中，我们往往希望**一个函数处理的问题尽可能的单一**，而不是将一大堆的处理过程交给一个函数来处理
+    - 我们是否就可以将每次传入的参数在单一的函数中进行处理，处理完后在下一个函数中再使用处理后的结果
+  - 让代码可以复用
+
+
+```js
+// 柯里化的代码复用
+
+function MakeAddr(num){
+    return function Addr(count){
+        return count + num;
+    }
+}
+
+var addr = MakeAddr(5);
+addr(1);    // 5 + 1
+addr(2);    // 5 + 2
+addr(3);    // 5 + 3
+
+// 普通写法
+
+function Add(m , n){
+    return m + n;
+}
+Add(5, 1);  // 5 + 1
+Add(5, 2);  // 5 + 2
+Add(5, 3);  // 5 + 3
+```
+
+> 如果需要频繁对一个数进行加减处理，使用柯里化的代码比普通写法的字母数更少（不用每次都写"5,"）
+
+```js
+// 函数的形参个数
+function adddd(x, y, z){
+
+}
+console.log(adddd.length);  // 输出3，即表示该函数有三个形参
+
+// 自动柯里化函数
+function hyCurring(fn){
+    function curried(...args){
+        if(args.length >= fn.length){
+            return fn.apply(this, args);
+            // return fn.call(this, ...args);
+            // return fn(...args);
+        }
+        else {
+            function curried2(...args){
+                return curried.apply(this, args.concat(args2));
+            }
+        }
+    }
+    return curried;
+}
+
+```
+
+### 组合函数
+
+- **组合函数**是在JS开发过程中一种对**函数的使用技巧**、**模式**
+  - 比如需要对一个数据进行函数的调用，**执行两个函数fn1和fn2**,这两个函数是依次执行的，那么每次都需要进行两个函数的调用，**操作上就会显得重复**
+  - 那么可以将两个函数组合起来，**自动依次调用**
+  - 这个**对函数的组合过程**称之为**组合函数**
+
+```js
+function double(num){
+    return num * 2;
+}
+
+function square(num){
+    return num ** 2;
+}
+
+var count = 10;
+var result = square(double(count));
+var count1 = 10;
+var result1 = square(double(count));
+var count2 = 10;
+var result2 = square(double(count));
+
+function composeFn(m, n){
+    return function(count){
+        n(m(count));
+    }
+}
+
+var newFn = composeFn(double, square);
+count3 = 10;
+result3 = newFn(count3);    // 组合了 double和square的函数
+
+
+function hyCompose(...fns){
+    val length = fns.length;
+    for(let i = 0; i < length; i++){
+        if(typeof fn[i] !== 'function'){
+            throw new TypeError("");
+        }
+    }
+
+    function compose(...args){
+        var index = 0;
+        var result = length ? fn[index].apply(this, args) : args;
+        while(index < length){
+            result = fns[index].call(this, result);
+        }
+    }
+    return compose;
+}
+```
+
+### JS其他函数知识
+
+```js
+var message = "VO : GO";
+var obj = {name : "Y", message = "Obj message"};
+
+function foo() {
+    function bar() {
+        with(obj){
+            console.log(message);
+        }
+    }
+    bar(); 
+}
+
+foo();  // 输出 Obj message
+```
+
+> `with() {}`语句用于定义对象查找作用域  
+> 不建议使用with语句，存在兼容性问题
+
+```js
+var jsString = 'var message = "hello world"; console.log(message);'
+eval(jsString;)
+```
+
+> 通过`eval`来将字符串翻译成js语句并执行  
+> Google Chrome报错，不推荐在开发中使用`eval`  
+>> 可读性差    
+>> 运行中可能被篡改  
+>> 不能被js引擎优化，因为是`eval`去执行的不经过引擎
+
+## JS的面向对象
+
+面向对象是现实的抽象方式  
+
+对象是JavaScript中一个非常重要的概念，因为对象可以**将多个相关联的数据封装**到一起，更好的**描述一个事物**  
+
+- JavaScript支持多种编程范式，包括**函数式编程**和**面向对象编程**
+  - JS对象被设计成一组**属性的无序集合**，像是一个**哈希表**，有**K/V组成**
+  - **key是一个标识符名称**，**value可以是任意类型**，也可以是**其他对象或函数类型**
+  - 如果值是一个函数，我们称之为对象的方法
+
+-------
+
+### 创建对象
+
+```js
+// 创建对象 方式1 使用Object类和new关键字来创建对象
+var obj2 = new Object();
+obj.name = "y";
+obj.age = 15;
+obj.height = 180;
+
+// 创建对象 方式2 通过 字面量 的方式
+var obj = {
+    name : "y",
+    age : 15,
+    height : 180,
+    eat : function() {
+        console.log("在吃饭");
+    }
+};
+```
+
+> `{}`是字面量，可以立即求值，而`new Object()`本质上是方法（只不过这个方法是内置的）调用，既然是方法调用，就涉及到在proto链中遍历该方法，当找到该方法后，又会生产方法调用必须的堆栈信息，方法调用结束后，还要释放该堆栈
+
+### 操作对象属性
+
+```js
+var obj = {
+    name : "y",
+    age : 16
+};
+
+console.log(obj.name);      // 获取属性
+obj.name = "j";             // 修改属性
+delete obj.name;            // 删除属性
+
+for (var key in obj){       // 遍历属性
+    console.log(key);
+}
+```
+
+上述对象的属性都是**直接定义在对象内部**，或者**直接添加到对象内部**的，这样做**不能对这个属性进行一些限制**：比如是否可以delete/被遍历等  
+
+为了对属性进行比较精准的操作控制，我们可以使用**属性描述符**，通过属性描述符**可以精准的添加或修改对象的属性**，属性描述符需要使用`Object.defineProperty`来对属性进行添加或修改  
+
+```js
+// obj ： 对象、prop ： 属性、descriptor ： 属性描述符
+Object.defineProperty(obj, prop, descriptor);
+```
+
+`Object.defineProperty()`会直接在一个对象上定义一个新属性，或者修改一个对象的现有属性，并**返回此对象**  
+
+> 该方法会返回被修改的对象，原本的对象也会被修改，所以可以不用接收函数返回值，并且可以发现该函数并非**纯函数**
+
+- 属性描述符
+  - 数据属性描述符
+  - 存取属性描述符
+
+|            | configurable | enumerable | value  | writable | get    | set    |
+| ---------- | ------------ | ---------- | ------ | -------- | ------ | ------ |
+| 数据描述符 | 可以         | 可以       | 可以   | 可以     | 不可以 | 不可以 |
+| 存取描述符 | 可以         | 可以       | 不可以 | 不可以   | 可以   | 可以   |
+
+- `configurable` 属性是否可以通过delete删除属性，是否可以修改其特性或者修改为存取描述符
+  - 直接在一个对象上定义某个属性时，默认为true
+  - 通过属性描述符定义也给属性时，默认为false
+
+- `enumerable` 属性是否可以通过for-in或者Object.keys()返回该属性
+  - 直接在一个对象上定义某个属性时，`enumerable`为true
+  - 通过属性描述符定义属性时，`enumerable`为false
+
+- `writable` 是否可以修改属性的值
+  - 直接在一个对象上定义某个属性时，`writable`为true
+  - 通过属性描述符定义一个属性时，`writable`为false
+- `value` 的具体值，读取属性时返回该值，修改属性时修改该值
+  - 默认情况下`value`是`undefined`的
+- get/get，为获得和设置使用的函数
+
+
+- 存取属性描述符：只能设置`configurable`,`enumerable`,`get`,`set`
+- 数据属性描述符，只能设置`configurable`,`enumerable`,`writable`,`value`
+
+> 个人理解：  
+> 对于不需要进行额外处理的数据可以使用**数据属性描述符**，比如`PI = 3.1415926`  
+> 对于需要额外处理的数据，比如年龄只能是10~20就需要使用**存取属性描述符**  
+
+```js
+var obj = {
+    name : "y",
+    age : 16
+};
+
+// obj对象不存在height属性，则先添加height属性，再设置其属性描述
+Object.defineProperty(obj, 'height', {
+    value : 180
+});  
+
+console.log(obj);
+
+```
+
+> 这里obj并不会输出height属性，因为`height`是通过属性描述符添加的所以`enumerable`默认为false
+
+```js
+// configurable展示
+// obj就是前面的obj
+Object.defineProperty(obj, 'height', {
+    value : 180,
+    configurable : false,
+});  
+delete obj.name
+console.log(obj.name);    // undefined
+
+delete obj.height
+console.log(obj.height);    // 180 没有被删除
+
+Object.defineProperty(obj, 'height', {
+    value : 200,
+    configurable : true,
+});  
+console.log(obj.height);    // 180 没有被修改成200，因为configurable最开始是false
+```
+
+```js
+// enumerable展示
+Object.defineProperty(obj, 'height', {
+    value : 180,
+    configurable : false,
+    enumerable : true
+});  
+console.log(obj);       // 此时可以正常打印出height属性
+
+```
+
+```js
+var obj = {
+    name : "y",
+    age : 16 ,
+    _address : "private"    // 个人习惯：前面有个下划线表示私有变量
+};
+
+Object.defineProperty(obj, 'address', {
+    configurable : true,
+    enumerable : true,
+    get : function () {
+        return this._address;  
+    },
+    set : function(value){
+        this._address = value;
+    }
+});  
+```
+
+> 这里使用`address`属性作为`_address`属性的代理  
+> 因为`_address`作为私有变量不希望外界随意读取，所以使用`address`代理的方法
+
+- 定义多个属性描述符
+
+```js
+var obj = {
+    _age : 0,
+}
+Object.defineProperties(obj, {
+    name : {
+        configurable : true,
+        enumerable : true,
+        writable : true,
+        value : "y"
+    },
+    age : {
+        configurable : true,
+        enumerable : true,
+        get : function (){
+            return this._age;
+        },
+        set : function (value) {
+            this._age = value;
+        }
+    }
+});
+console.log(obj);
+```
+
+- 另一种使用get/set的方法
+
+```js
+var obj = {
+    _age : 10,
+    set age(value){
+        this._age = value;
+    },
+    get age() {
+        return this._age;
+    }
+}
+obj.age = 20;
+console.log(obj);
+```
+
+- 获得对应属性的属性描述符
+
+```js
+var obj = {
+    _age: 0,
+}
+console.log(Object.getOwnPropertyDescriptor(obj, "_age"));
+```
+
+- 获得对象的所有属性描述符
+
+```js
+var obj = {
+    name: "y",
+    age: 16,
+    _address: "private"
+};
+console.log(Object.getOwnPropertyDescriptors(obj));
+```
+
+### 对对象的限制
+
+- 禁止对象继续添加新的属性
+
+```js
+Object.preventExtensions(obj);
+```
+
+- 禁止对象配置/删除属性
+
+```js
+Object.seal(obj);
+```
+
+- 让对象属性变成不可修改(writable : false)
+
+```js
+Object.freeze(obj);
+```
+
+### 创建多个对象的方案
+
+如果所有对象都使用前面所说的字面量方式来创建，那么会出现特别多的重复代码  
+
+1. 工厂方法创建对象
+
+```js
+function createPerson(name, age){
+    var person{};
+    person.name = name;
+    person.age = age;
+
+    return person;
+}
+var p1 = createPerson("name1", 10);
+var p2 = createPerson("name2", 11);
+var p3 = createPerson("name3", 12);
+```
+
+2. 
