@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-01-24 09:25:01
+ * @LastEditTime: 2022-01-24 18:34:56
  * @Description: file content
 -->
 # JavaScipt语法
@@ -811,4 +811,256 @@ var p2 = createPerson("name2", 11);
 var p3 = createPerson("name3", 12);
 ```
 
-2. 
+2. 构造函数：创建对象时会调用的函数
+
+```js
+function foo(){
+    console.log("hello world");    
+}
+
+var f = new foo();
+var f2 = new foo;   // 如果不需要传递参数，可以不要小括号
+console.log(f2);    // 返回了一个foo类型的对象
+```
+
+> 当使用`new`关键字之后，`foo`就从普通函数变成了**构造函数**
+
+- 如果一个函数被`new`操作符调用，那么会执行如下操作
+  1. 内存中创建一个新的对象(空对象)
+  2. 对象内部的`[[prototpe]]`属性会被赋值为该构造函数的`prototype`属性
+  3. 构造函数内部的this，会指向创建出来的新对象
+  4. 执行函数的内部代码(函数体代码)
+  5. 如果构造函数没有返回非空对象，则返回创建出来的新对象
+
+```js
+function Person(name, age, height){
+    this.name = name;
+    this.age = age;
+    this.height = height;
+
+    this.eating = function (){
+        console.log(this.name + "正在吃饭");
+    }
+}
+
+var p1 = new Person("张三", 18, 180);
+var p2 = new Person("李四", 10, 180);
+
+console.log(p1.eating === p2.eating);   // false
+```
+
+> 对比方法1的工厂方法，该方法可以明确知道p1这个变量是什么类型  
+> p1和p2的函数并不是相同，可见每个函数都开辟了一个内存空间，存在浪费的问题  
+
+### 原型
+
+JavaScript当中每个对象都有一个特殊的内置属性`[[prototype]]`，这个特殊的对象可以指向另一个对象，一般把`[[prototype]]`称为隐式原型（一般看不到、不会改、用不到）  
+
+> prototype是原型的意思，在浏览器中可以使用`obj.__proto__`来查看`[[prototype]]`（部分浏览器支持）
+
+![隐式原型](./Image/8.png)
+
+------
+
+- 原型的作用 
+
+```js
+var obj = {};
+obj.__proto__.age = 10;
+console.log(obj.age);
+```
+
+1. 调用`[[get]]`操作
+2. 在当前对象中去查找对应的属性，如果找到就直接使用
+3. 如果没有找到，那么会沿着原型链去查找`[[prototype]]`(可以用来实现继承等操作)
+
+------ 
+
+- 函数的原型
+
+函数是一个**对象**，所以也有隐式原型`[[prototype]]`  
+函数存在一个显示原型`prototype`  
+
+> `[[prototype]]`和`prototype`不是一个东西，前者是理论名称，后者是实际属性  
+> `fun.__proto__`中的`__proto__`并不是标准支持的，而是部分浏览器为了方便程序员debug而增加的  
+
+```js
+function Person() {
+
+}
+
+// 函数也是一个对象，所以也有隐式原型[[prototype]]
+console.log(Person.__proto__);                     // {}
+console.log(Person.prototype);                     // {}
+console.log(Object.getOwnPropertyDescriptors(Person.prototype));                     // 输出一个constructor属性，指向构造函数本身
+
+var p1 = new Person();
+var p2 = new Person();
+console.log(p1.__proto__ === Person.prototype);    // true
+
+Person.prototype.name = "y";
+console.log(p1.name， " ", p2.name);
+```
+
+> 上面有对`new`的调用操作进行解释，其中第二点**对象内部的`[[prototpe]]`属性会被赋值为该构造函数的`prototype`属性**的意思就是将返回对象的`__proto__`赋值等于函数的`prototype`，所以`console.log(p1.__proto__ === foo.prototype)`返回值为true
+
+![原型](./Image/9.png)
+
+```js
+foo.prototype = {
+    name : "y",
+    age : 19,
+}
+Object.defineProperty(foo.prototype, "constructor", {
+    enumerable : false,
+    configurable : true,
+    writable : true,
+    value : foo
+});
+```
+
+> 直接修改`prototype`对象，但是`prototype`中必须存在一个`constructor`属性指向本身  
+
+------
+
+- 原型与构造函数结合
+
+```js
+function Person(name, age){
+    this.name = name;
+    this.age = age;
+}
+
+Person.prototype.eating = function() {
+    console.log(this.name + "吃东西");
+}
+
+var p1 = new Person("x", 10);
+var p2 = new Person("y", 10);
+p1.eating();
+p2.eating();
+```
+
+### 原型链和继承
+
+```js
+function Person(name, age){
+    this.name = name;
+    this.age = age;
+}
+
+var p1 = new Person("x", 10);
+var p2 = new Person("y", 10);
+```
+
+上述的Person应该称之为**构造函数**，但是对其他语言来说更像是一个**类**  
+
+- 继承：可以将重复的代码和逻辑抽离到父类中，子类只需要直接继承过来使用即可
+- JS通过原型链实现继承
+
+#### 原型链
+
+```js
+var obj = {
+    name : "y"
+}
+
+console.log(obj.address);
+```
+
+`obj`对象并没有`address`属性，所以回去`obj.__proto__`原型上查找，如果也没有就会在`obj.__proto__.__proto__`上去查找直到找到或者顶层原型为止，这种**类似链表**的查找方式就是**原型链**
+
+![借用构造函数继承](./Image/14.png)
+
+> 顶层`__proto__`就是`Object.__proto__`
+
+```js
+var obj = {};
+console.log(obj.__proto__ === Object.prototype);    // true
+```
+
+![继承原型](./Image/10.png)
+
+```js
+function Person(name, age){
+    this.name = name;
+    this.age = age;
+}
+Person.prototype.running = function() {
+    console.log(this.name + " is running");
+}
+
+function Student(sno){
+    this.sno = sno;
+    this.friends = [];
+}
+var p = new Person("1", "2");
+Student.prototype = p;
+Student.prototype.studying = function(){
+    console.log(this.name + " is studying");
+}
+
+function Teacher(title){
+    this.title = title;
+}
+
+Teacher.prototype.teaching = function() {
+    console.log(this.name + " is teaching");
+}
+
+var s1 = new Student(1);
+var s2 = new Student(2);
+s1.running();
+s1.studying();
+```
+
+![继承原型](./Image/11.png)
+
+> 上述代码的内存解释  
+> 代码中能明显发现问题：s1、s2是两个对象公用同一个Person对象的引用会互相影响
+
+#### 借用构造函数继承
+
+为了解决原型链继承中存在的问题，开发人员提供了一种新的技术：`constructor stealing`(借用构造函数、经典继承、伪造对象)  
+
+- 借用继承的做法非常简单：在子类构造函数的内部调用父类型构造函数
+  - 因为函数可以在任意的时刻被调用
+  - 因此通过`apply()`或`call()`方法也可以在新创建的对象上执行构造函数
+
+
+```js
+function Person(name, age, friends){
+    this.name = name;
+    this.age = age;
+    this.friends = friends;
+}
+
+Person.prototype.eating = function() {
+    console.log(this.name + " eating");
+}
+
+var p = new Person();
+function Student(name, age, friends, sno) {
+    Person.call(this, name, age, friends);
+    this.sno = sno;
+}
+Student.prototype = p;
+
+var s1 = new Student("y", 10, ["1", "2"], 1);
+```
+
+> 本质上是`Student`借用执行`Person`的构造函数的执行过程，本质其实是给`Student`赋值
+
+![借用构造函数继承](./Image/12.png)
+
+![借用构造函数继承的内存模型](./Image/13.png)
+ 
+- 借用构造函数的**弊端**
+  - 至少会调用两次基类的构造函数(`Person`函数执行了两次)
+  - 子类的原型对象上多出了一些属性(从内存图可见Student和Teacher存在部分相同的属性)
+
+
+#### 原型式继承函数
+
+一种继承方法，不是通过构造函数实现的方法
+
