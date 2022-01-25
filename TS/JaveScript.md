@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-01-25 16:36:53
+ * @LastEditTime: 2022-01-25 16:39:51
  * @Description: file content
 -->
 # JavaScipt语法
@@ -1255,7 +1255,7 @@ console.log(obj.__proto__);
 当创建一个函数后，JS引擎会自动给函数对象添加属性`Foo.prototype = { constructor : Foo }`  
 定义`Foo()`函数时，相当于`new Funtion()`创建函数对象，这时编译器执行`Foo.__proto__ = Function.prototype`，而`Function.prototype = { constructor : Function } `  
 
-![Javascript Object Layout](./image/17.png)
+![Javascript Object Layout](./Image/17.png)
 
 > `Function`是极为特殊的对象，它的`prototype`和`__proto__`相等  
 
@@ -1272,9 +1272,9 @@ console.log(Foo.__proto__.constructor);         // Function : Function
 console.log(Function.prototype === Function.__proto__); // true
 ```
 
-![Javascript Object Layout](./image/16.png)
+![Javascript Object Layout](./Image/16.png)
 
-![Javascript Object Layout](./image/15.jpg)
+![Javascript Object Layout](./Image/15.jpg)
 
 
 ## ES6~ES12
@@ -1367,7 +1367,7 @@ class Student extends Person {
 
 [在线babel网站](https://babeljs.io/)
 
-![babel转换代码](./image/18.png)
+![babel转换代码](./Image/18.png)
 
 ### 继承内置类
 
