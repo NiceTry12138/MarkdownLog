@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-01-25 16:39:51
+ * @LastEditTime: 2022-01-25 18:33:12
  * @Description: file content
 -->
 # JavaScipt语法
@@ -1430,3 +1430,110 @@ ns.running();
 
 > 通过`mixinRunner`扩展类的功能
 
+### 多态
+
+
+### 字面量增强写法
+
+1. 属性的简写（Property Shorthand）：当外界存在变量，并且字面量的key跟外界变量名相同，可以直接变量名存入KV（下面的name和age的例子）
+2. 方法的简写（Method Shorthand）：字面量绑定**函数**和**箭头函数**的this作用域不同，**箭头函数**的this是父级作用域
+3. 计算属性名（Computed Property Names）：可以使用`[name+123]`来设置key的名称（下面的\[name+123\]例子）
+
+```javascript
+var name = "w";
+var age = 10;
+var obj = {
+    name,
+    age,
+    foo : function() {
+        console.log(this);
+    },
+    bar() {
+        console.log(this);
+    },
+    baz : () => {
+        console.log(this);
+    },
+    [name + 123] : "hgggg"
+}
+
+console.log(obj);
+obj.foo();
+obj.bar();
+obj.baz();
+```
+
+### 数组的解构
+
+```javascript
+var names = ["1", "2", "3"];
+
+// 解构数组
+var [item1, item2, item3] = names;
+console.log(item1, item2, item3);   // 1 2 3
+
+// 解构后面的元素
+var [, itema, itemb] = names;
+console.log(itema, itemb);          // 2 3
+
+// 解构一个元素，后面的放到新数组
+var [itemc, ...newNames] = names;
+console.log(itemc);                 // 1
+console.log(newNames);              // 2 3
+
+// 结构默认值 如果没有解构出来的值
+var [item11, item22, item33, item44 = "aaa"] = names;
+console.log(item44);
+```
+
+### 对象的解构
+
+```javascript
+var obj = {
+    name : "w",
+    age : 15,
+    height : 190
+};
+
+var {name, age, height} = obj;
+console.log(name, age, height);
+
+var {height, age, name} = obj;      // 读取顺序无关
+console.log(name, age, height);
+
+var {name : NewName} = obj;         // 给换个新的变量名
+console.log(NewName);               // w
+
+var {address : newAddress = "BJ"} = obj;    // 设置默认值
+console.log(newAddress);
+```
+
+### let、const、var
+
+- let 定义变量
+  - **变量会被创建在包含他们的词法环境被实例化时，但是是不可以访问他们的，知道词法绑定被求值**
+  - 
+
+```javascript
+console.log(foo);   // undefined 不报错
+var foo = "foo";
+
+console.log(bar);   // Error 
+let bar = "bar";
+```
+
+> bar实际上是被创建了出来，但是不能访问
+
+------
+
+- const ：constant 常量/衡量
+  - 本质上是传递的值不可以修改
+  - 如果传递的是引用类型，内存地址不可更改，但是可以修改内存里面的值
+
+```javascript
+const name = "a";
+name = "B";             // error
+
+const obj = {};
+obj.name = "B";         // success
+```
