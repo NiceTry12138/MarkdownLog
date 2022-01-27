@@ -3,10 +3,13 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-01-25 18:33:12
+ * @LastEditTime: 2022-01-26 18:28:07
  * @Description: file content
 -->
 # JavaScipt语法
+
+[JS教程](https://wangdoc.com/javascript/index.html)
+[JS参考](http://javascript.ruanyifeng.com/)
 
 迷惑的知识点：
 1. 作用域
@@ -1511,8 +1514,9 @@ console.log(newAddress);
 ### let、const、var
 
 - let 定义变量
-  - **变量会被创建在包含他们的词法环境被实例化时，但是是不可以访问他们的，知道词法绑定被求值**
-  - 
+  - **变量会被创建在包含他们的词法环境被实例化时，但是是不可以访问他们的，直到词法绑定被求值**
+
+一般而言，我们声明的变量和环境记录是被添加到环境变量中的，但是ECMA标准并没有规定这个对象是`window`对象还是其他对象，不同的引擎会有不同的实现。V8引擎是通过`VariableMap`一个HashMap来实现存储的。而`window`对象早期是GO对象，在新的实现中其实是浏览器添加的全局对象，并且一直保持了`Windows`和`var`之间值的相等性
 
 ```javascript
 console.log(foo);   // undefined 不报错
@@ -1537,3 +1541,172 @@ name = "B";             // error
 const obj = {};
 obj.name = "B";         // success
 ```
+
+### 块级作用域
+
+ES5之前只有两个东西会形成作用域：
+1. 全局作用域
+2. 函数作用域
+
+作用域可访问外部对象，外部对象不可访问作用域内部数据
+
+ES6开始出现**块级作用域**，对var声明的对象无效，对let、const、class、function声明的类型有效
+
+```javascript
+{
+    let x = "x";
+    var y = "y";
+
+    function demo(){
+        console.log(x);
+    }
+}
+
+console.log(y);     // y
+console.log(x);     // Error
+demo();
+```
+
+> `demo()`方法可能可以执行，部分浏览器为了兼容旧版本让function不管块级作用域，如果是**只支持**ES6的浏览器会访问不到`demo()`  
+
+```javascript
+if(true){
+    // 块级作用域
+}
+
+switch(color){
+    case "red":
+        // 块级作用域
+        break;
+}
+
+for(let i=0; i<10; i++){
+    // 块级作用域
+}
+console.log(i); // Error
+```
+
+**暂时性死区**：在ES6中使用let、const声明的变量，在声明和初始化之前，变量都是不可以访问的(temporal dead zon)  
+
+```javascript
+var foo = 'foo';
+
+if(true){
+    console.log(foo);   // ERROR
+
+    let foo = 'abc';
+}
+```
+
+> 理论上块级作用于外存在`foo`对象，但是`console.log(foo)`报错  
+> 因为该块级作用域定义了`let foo = 'abc'`，搜易`console.log(foo)`是要访问等于`abc`的`foo`，但是代码还没跑到`foo = 'abc'`这一行，所以`foo`不可访问（暂时性死区）
+
+**强烈建议不要使用var定义变量**  
+
+`let`和`const`更适合开发中使用
+1. 优先推荐使用const，保证数据不会被随意修改，安全性
+2. 明确知道一个变量后续会需要被重新赋值，再改用let
+
+### 模板字符串
+
+```javascript
+const name = "x";
+const age = 15;
+const height = 190;
+console.log("my name is " + name + ", age is " + age + ", height is " + height);
+
+const message = `my name is ${name}, age is ${age}, height is ${height}`;
+console.log(message);
+
+const message1 = `my name is ${name}, age is ${age * 2}, height is ${height / 100.0}`;
+console.log(message1);
+
+```
+
+### 标签模板字符串
+
+- 标签模板字符串调用函数时
+  - 第一个参数时模板字符串中整个字符串，被切成多块
+  - 第二个参数是模板字符串中，第一个`${}`
+
+```javascript
+function foo(m, n){
+    console.log(m, n);
+}
+
+// 正常调用
+foo(10, 20);
+
+// 标签模板字符串调用
+foo``
+foo`hello`
+
+const name = "xyz";
+const age = 19;
+foo`hello${name}wo${age}rld`    // ['hello','wo','rld'] xyz
+```
+
+> 部分框架使用了这个技术，比如react的stypled-components的三方库
+
+### 函数的默认参数
+
+有默认值的形参最好放到最后（在C++中，有默认值的形参必须放在最后一个）
+
+```javascript
+function ES5Foo(m, n){
+    m = m || "aaa"; // 如果是undefined 就设置默认值
+    n = n || "bbb"; // 如果传入是0，也会被赋值，是BUG
+}
+
+function foo(m = "aaa", n = "bbb"){
+    console.log(m, n);
+}
+
+foo();
+foo(1);
+foo(1, 2);
+```
+
+```javascript
+var obj = {
+    name : "xtz",
+    age : 10,
+    height : 180
+};
+var obj2 = {
+    name : "qwer",
+    height : 190
+}
+function printInfo({name, age} = {name:"", age:19}){
+    console.log(name, age);
+}
+function printInfo1({name = "", age = 0} = {}){
+    console.log(name, age);
+}
+printInfo();            // "" 10
+printInfo(obj);         // xtz 10
+printInfo(obj2);        // qwer undefined
+printInfo1();            // "" 10
+printInfo1(obj);         // xtz 10
+printInfo1(obj2);        // qwer undefined
+```
+
+```javascript
+function baz(x, y, z){
+
+}
+function baz1(x, y, z = 1){
+
+}
+function baz2(x = 2, y = 3, z = 1){
+
+}
+console.log(baz.length);    // 3
+console.log(baz1.length);   // 2
+console.log(baz2.length);   // 0
+```
+
+> 存在默认值的参数，不计算如length中
+
+### 函数的剩余参数
+
