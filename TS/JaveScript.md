@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-01-26 18:28:07
+ * @LastEditTime: 2022-01-27 12:28:31
  * @Description: file content
 -->
 # JavaScipt语法
@@ -885,7 +885,7 @@ console.log(obj.age);
 函数存在一个显示原型`prototype`  
 
 > `[[prototype]]`和`prototype`不是一个东西，前者是理论名称，后者是实际属性  
-> `fun.__proto__`中的`__proto__`并不是标准支持的，而是部分浏览器为了方便程序员debug而增加的  
+> `fun.__proto__`中的`__proto__`并不是标准支持的，而是部分浏览器为了方便程序员debug而增加的，`__proto__`的作用是为了显式的显示对象的`[[prototype]]`这种理论上的隐式原型对象  
 
 ```javascript
 function Person() {
@@ -1708,5 +1708,136 @@ console.log(baz2.length);   // 0
 
 > 存在默认值的参数，不计算如length中
 
-### 函数的剩余参数
+### 函数的剩余参数(rest parameter)
+
+如果函数的最后一个参数是`...`为前缀的，那么它会将剩余的参数放到该参数的中，并作为一个数组  
+**剩余参数必须放在函数形参的最后**  
+
+```javascript
+function foo(m, n, ...args){
+    console.log(m, n);
+    console.log(args);
+    console.log(arguments);
+}
+
+foo(20, 30, 40, 50, 60);    
+// 20 30
+// [40, 50, 60]
+// [20, 30, 40, 50, 60]
+```
+
+- **剩余参数**与`arguments`的区别
+  - **剩余参数**只包含那些**没有对应形参的实参**，`arguments`对象包含**传给函数的所有实参**
+  - `arguments`对象不是一个真正的数组（不包含一些数组的操作），而**剩余参数**是一个真正的数组可以进行数组的所有操作
+  - `arguments`对象是早期JS为了方便所有参数提供的一个数据解构，而**剩余参数**是为了替代`arguments`而设置的
+
+### 箭头函数
+
+箭头函数没有显式原型，所以不能作为构造函数，使用new来创建对象  
+
+```javascript
+var bar = () => {
+    console.log(this);
+    console.log(arguments);
+}
+const b = new bar();    // Error
+```
+
+> 箭头函数的`this`和`arguments`是查找使用父级作用域的
+
+### 展开语法(spread syntax)
+
+- 可以在函数调用/数组构造时，将数组表达式或string在语法层面展开
+- 可以在构造字面量对象时，将对象表达式按k-v的方式展开
+
+```javascript
+const names = ["x", "y", "z"];
+const name = "123";
+function foo(x, y, z){
+    console.log(x, y, z);
+}
+
+foo(...names);  // x y z
+foo(...name);   // 1 2 3
+
+const newNames = [...names, ...name];   // x y z 1 2 3
+
+const info = {
+    name : "x",
+    age : 20
+};
+const obj = {...info, address : "BJ", ...names};
+console.log(obj);
+
+```
+
+`...`**展开运算符实际上进行的是一个浅拷贝**  
+
+### 数值表示
+
+```javascript
+const num1 = 100;   // 十进制 100
+const num2 = 0b100; // 二进制 4
+const num3 = 0o100; // 八进制 64
+const num4 = 0x100; // 十六进制 256
+
+// 大数值
+const num5 = 10_000_000_000_000_000;    // 使用_做分隔符，方便理解大数字的位数
+```
+
+### Symbol基本使用
+
+ES6中新增的基本数据类型，翻译为**符号**  
+
+- 为什么需要**Symbol**
+  - ES6之前对象的属性名都是字符串形式，很容易造成**属性名的冲突**
+  - 存在一个对象，想往该对象中**添加一个新的属性和值**，但是不确定原本内部是否存在相同的属性名，**很容易造成冲突，从而覆盖它内部的某个属性**
+  - 又或者前面提到的**混入**`mixin`，如果出现同名属性，必然有一个会被覆盖掉
+
+- 为了解决冲突问题，Symbol可以用来**生成一个独一无二的值**
+  - Symbol函数可以传入一个描述
+  - Symbol值是通过Symbol函数来生成的，生成后**可以作为属性名**
+  - 对象的属性名可以是**字符串**，也可以是**Symbol值**
+
+```javascript
+const s1 = Symbol()
+const s2 = Symbol()
+
+console.log(s1 === s2); // false
+
+// ES10 之后，可以添加Symbol描述
+const s3 = Symbol("aa");
+console.log(s3.description);
+
+const obj = {
+    [s1] : "abv",
+    [s2] : "qwer 
+};
+
+obj[s3] = "asd";
+const s4 = Symbol();
+Object.defineProperty(obj, s4, {
+    // ...
+});
+
+console.log(obj[s1], obj[s2]);
+// 不可通过 . 来获取属性
+
+console.log(obj);   // 空
+
+// 需要通过下面两个函数的方式来获取所有Symbol的key
+console.log(Object.getOwnPropertyNames(obj));
+console.log(Object.getOwnPropertySymbols(obj));
+
+// 创建相同的Symbol
+const s11 = Symbol.for("aa");
+const s22 = Symbol.for("aa");
+console.log(s11 === s22);
+console.log(Symbol.keyFor("aa"));
+```
+
+> 不可通过 **.** 来获取Symbol，因为 **.** 是把key变成字符串再查找  
+> obj.s1 变成 obj\["s1"\]  
+
+使用Symbol作为key的属性名，在遍历/Object.key等方法是遍历不到这些Symbol值的  
 
