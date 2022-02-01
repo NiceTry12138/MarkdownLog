@@ -2,8 +2,8 @@
  * @Version: 
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
- * @LastEditors: LC
- * @LastEditTime: 2022-01-27 12:28:31
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-02-02 02:54:01
  * @Description: file content
 -->
 # JavaScipt语法
@@ -1811,7 +1811,7 @@ console.log(s3.description);
 
 const obj = {
     [s1] : "abv",
-    [s2] : "qwer 
+    [s2] : "qwer"
 };
 
 obj[s3] = "asd";
@@ -1841,3 +1841,518 @@ console.log(Symbol.keyFor("aa"));
 
 使用Symbol作为key的属性名，在遍历/Object.key等方法是遍历不到这些Symbol值的  
 
+### Set与WeakMap(ES6)
+
+**Set**新增数据结构，可以用来保存数据，类似数组，但是**元素不能重复**  
+
+```javascript
+const s = new Set();
+
+// 添加
+s.add(10);
+s.add(10);
+s.add(20);
+s.add(30);
+
+s.add({});  // 字面量A
+s.add({});  // 字面量B A、B地址不同 并不是同一个东西
+
+console.log(s);
+
+// 去重
+const arr = [10, 10, 20, 30, 40];
+const arrSet = new Set(arr);
+const newArr = [...arrSet];     // 支持展开运算符
+console.log(newArr);    
+
+// 常用方法 属性
+console.log(arrSet.size);   // Set内元素个数
+arrSet.delete(10);          // 删除Set内的元素
+arrSet.has(10);             // 判断Set内是否存在某个元素
+arrSet.clear();             // 清除Set内所有元素
+
+// 遍历Set
+arrSet.forEach(item => {
+    console.log(item);
+})
+
+for(const item of arrSet){
+    console.log(item);
+}
+
+```
+
+**WeakSet**类似*Set*，也是内部元素不能重复的数据结构  
+
+- 与Set的区别
+  - **WeakSet**只能存放对象类型，不能存放基本数据类型
+  - **WeakSet**对元素的引用是**弱引用**，如果没有其他引用对某个对象进行运行，那么GC可以对该对象进行回收
+
+```javascript
+const weakSet = new WeakSet();
+
+// 不能存放基本数据类型
+weakSet.add(10);        // TypeError
+
+weakSet.add(value);     // 返回weakSet本身
+weakSet.delete(value);  // 返回boolean类型
+weakSet.has(value);     // 返回boolean类型
+```
+
+WeakSet不能遍历，因为WeakSet只是对对象的弱引用，如果遍历获取其中的元素，有可能造成对象的不正常销毁  
+
+> WeakSet在开发中很少用到
+
+**WeakSet的应用**
+
+```javascript
+const personSet = new WeakSet();
+class Person(){
+    constructor() {
+        personSet.add(this);
+    }
+    running() {
+        if(!personSet.has(this)){
+            throw new Error("不能通过非构造方法创建出来的对象调用running方法");
+        }
+        console.log("running ", this);
+    }
+}
+
+const p = new Person();
+p.running();
+p.running.call({name, "why"});
+```
+
+> 使用WeakSet是因为当Person对象需要被销毁时，不会因为Set的强引用而不会被GC
+
+### Map与WeakMap(ES6)
+
+**Map**新增数据结构，可以用来保存映射关系  
+
+对象映射关系只能用**字符串**和**Symbol**作为属性名，如果使用对象，会自动将对象转换成字符串来作为key  
+
+```javascript
+// 对象字面量只能用字符串和Symbol作为key的测试用例
+const obj1 = {};
+const obj2 = {};
+const info = {
+    [obj1] : "a",
+    [obj2] : "b";
+};
+console.log(info);      // { [Object object] : "b" }
+
+const map = new Map();
+map.set(obj1, "a");     // object作为key，插入到map中
+map.set(obj2, "b");
+console.log(map);
+
+// 常用方法
+const map2 = new Map([[obj1, "a"], [obj2, "b"]]);   // 用数组作为构造参数
+
+map2.set("key", "value");
+console.log(map2.get("key"));
+console.log(map2.has("key"));
+console.log(map2.delete("key"));
+map2.clear();
+
+// 遍历map
+map2.forEach((value, key) => {
+    console.log(value, " ", key);
+});
+
+for(const item of map2) {
+    // 这里item是一个数组 index 0 是key index 1 是value
+    console.log(item[0], item[1]);
+}
+
+// 直接对数组进行解构
+for(const [key, value] of map2) {
+    console.log(key, " ", value);
+}
+```
+
+**WeakMap**也是键值对容器，与**Map**的区别  
+1. WeakMap的key只能使用对象，不接受其他的类型作为key
+2. WeakMap的key对对象的引用是**弱引用**，如果没有其他对象引用该对象，那么可以GC回收对象
+
+```javascript
+const obj1 = {};
+const obj2 = {};
+
+const weakMap = new WeakMap();
+weakMap.set(1, "b");  // TypeError
+weakMap.set(obj1, "a");
+
+console.log(weakMap.get(obj1));
+console.log(weakMap.has(obj1));
+console.log(weakMap.delete(obj1));
+```
+
+> 不支持forEach，也不能用其他方式遍历
+
+**WeakMap的应用**
+
+> vue3响应式原理
+
+```javascript
+const obj1 = {
+    name : "x",
+    age : 10
+};
+
+const obj2 = {
+    name : "z",
+    height : 190,
+    address : "BJ"
+}
+
+function obj1NameFn1(){
+    console.log("Obj1 Name Fn1 被执行");
+}
+function obj1NameFn2(){
+    console.log("Obj1 Name Fn2 被执行");
+}
+function obj2HeightFn1(){
+    console.log("Obj2 height Fn1 被执行");
+}
+function obj2HeightFn2(){
+    console.log("Obj2 height Fn2 被执行");
+}
+
+const weakMap = new WeakMap();
+const obj1Map = new Map();
+const obj2Map = new Map();
+
+obj1Map.set("name", [obj1NameFn1, obj1NameFn2]);
+weakMap.set(obj1, obj1Map);
+
+obj2Map.set("height", [obj2HeightFn1, obj2HeightFn2]);
+weakMap.set(obj2, obj2Map);
+
+// Proxy / Object.defineProperty 监听obj1或obj2的属性发生改变
+obj1.name = "qwer";
+
+// 监听到数据变化后
+const targetMap = weakMap.get(obj1);
+const fns = targetMap.get("name");
+fns.forEach(item => item());
+
+```
+
+> 使用WeakMap是因为当obj对象需要被销毁时，不会因为Map的强引用而不会被GC
+
+### Array Includes(ES7)
+
+- `includes`与`indexOf`的区别:对`NaN`的判断
+
+
+```javascript
+const names = ['a', 'b', 'c', NaN];
+if(names.indexOf('a') !== -1){
+    // 就版本判断是否包含指定值
+}
+
+// Array.includes(searchElement : string, formIndex ?: number): boolean
+if(names.includes('a')){
+    console.log("包含 a")
+}
+console.log(names.includes('a', 0));    // true
+console.log(names.includes('a', 1));    // false
+console.log(names.includes('a', 2));    // false
+
+console.log(names.includes(NaN));       // true
+console.log(names.indexOf(NaN));        // -1
+```
+
+> fromIndex参数表示从第几个开始查找  
+> `indexOf`无法找到NaN
+
+### 指数运算符（ES7）
+
+```javascript
+const result = Math.pow(3, 3);
+const result2 = 3 ** 3;
+console.log(result, result2);
+```
+
+### Object Values(ES8)
+
+之前通过`Object.keys`获取一个对象所有的key，ES8提供`Object.values`来获取所有的value值  
+
+```javascript
+const obj = {
+    name : "x",
+    age : 10
+}
+console.log(Object.keys(obj));                  // ['name', 'age']
+console.log(Object.values(obj));                // ['x', 10]
+
+// 用的少
+console.log(Object.values(["q", "w", "r"]));    // ['q', 'w', 'r']
+console.log(Object.values("qwer"));             // ['q', 'w', 'e', 'r']
+
+```
+
+### Obejct Entries(ES8)
+
+通过`Object.entries`可以获取一个数组，数组中会存放可枚举属性的键值对数组
+
+
+```javascript
+const obj = {
+    name : "x",
+    age : 10
+}
+
+console.log(Object.entries(obj));   // [ [ 'name', 'x' ], [ 'age', 10 ] ]
+
+console.log(Object.entries(["a", "b", "c"]));   // [ [ '0', 'a' ], [ '1', 'b' ], [ '2', 'c' ] ]
+console.log(Object.entries("qwer"));    // [ [ '0', 'q' ], [ '1', 'w' ], [ '2', 'e' ], [ '3', 'r' ] ]
+```
+
+> 本质就是一个二维数组，第一个维度是item，第二个维度是键值对
+
+### String Padding(ES8)
+
+> 字符串填充
+
+某些字符串我们需要对其进行前后的填充，去实现某种格式化的效果，ES8中增加了`padStart`和`padEnd`方法，分别是队字符串和首位进行填充的
+
+```javascript
+const message = "Hello World";
+// string.padStart(maxLength : number, fillString ?: string) : string
+const newMessage1 = message.padStart(15);
+console.log(newMessage1);           //     Hello World
+const newMessage2 = message.padStart(15, "*");
+console.log(newMessage2);           // ****Hello World
+const newMessage3 = message.padStart(15, "*").padEnd(20, "-");
+console.log(newMessage3);           // ****Hello World-----
+```
+
+**案例**
+
+```javascript
+// 身份证号、银行卡号只显示最后四位
+const cardNumber = "4532132468321312135433";
+const lastFourCardNumber = cardNumber.slice(-4);
+const finalCard = lastFourCardNumber.padStart(cardNumber.length, "*");
+console.log(finaleCard);    // ******************5433
+```
+
+### Trailing-Commas(ES8)
+
+支持函数调用额函数声明中参数列表最后多个逗号  
+
+> 为了有些人习惯、有些语言而添加
+
+```javascript
+function foo(m, n,){    // ES8之前报错
+
+}
+foo(1, 2,);
+```
+
+### Object Descriptors(ES8)
+
+`Object.getOwnPropertyDescriptors`获取对象的所有属性描述符
+
+> 前面有写
+
+### Flat FlatMap(ES10)
+
+`flat()`方法会按照一个可指定的深度递归遍历数组，并将所有元素与遍历到的子数组中的元素合并为一个新数组返回  
+
+```javascript
+// Array.flat(depth? : 1) : (number | number[]) []
+const nums = [1, 2, [3, [4, 5], 6], 7, 8, [9, 10]];
+const newNums = nums.flat();    // 默认做一次降维
+console.log(newNums);
+
+const newNums2 = nums.flat(2);  
+console.log(newNums2);
+```
+
+`flatMap()`方法首先使用映射函数映射每个元素，然后将结果压缩成一个新数组
+1. `flatMap()`是先进行`map`操作，在做`flat`操作
+2. `flatMap()`中的`flat`深度为1
+
+```javascript
+// Array.flatMap(callback : (this : undefined, value : number | number[] | number[][], index : number, array : (number | number[] | number[][])[]) => any, thisArg ?: undefined) : any[]
+
+const nums = [1, 2, 3];
+const newNum = nums.flatMap(item => {
+    return item * 2;
+});
+console.log(newNum);    // [2, 4, 6]
+
+const messages = ["Hello World", "Hello Java", "Hello Cpp"];
+const words = messages.flatMap(item => {
+    return item.split(" ");
+});
+console.log(wrods); // [ "Hello", "World","Hello","Java","Hello","Cpp"]
+```
+
+1. 这里的messages先通过`map()`转换为\[\["Hello", "World"\],\["Hello", "Java"\],\["Hello", "Cpp"\]\]
+2. 再通过`flat()`将二维数组转换成一维数组
+
+### Object fromEntries(ES10)
+
+通过`entries`创建对象
+
+```javascript
+const obj = {
+    name : "x",
+    age : 10
+};
+const entries = Object.entries(obj);
+console.log(entries);
+
+const newObj = {};
+for(const entry of entries){
+    newObj[entry[0]] = entry[1];
+}
+console.log(newObj);
+
+const newObj2 = Object.fromEntries(entries);
+console.log(newObj2);
+
+const queryString = "name=w&age=10&height=190";
+const queryParams = new URLSearchParams(queryString);
+const paramObj = Object.fromEntries(queryParams);
+console.log(paramObj);  // {"name": "w","age": "10","height": "190"}
+```
+
+### trimStart trimEnd(ES10)
+
+去除前、后的空白字符
+
+```javascript
+const message = "    hello wworld    ";
+console.log(message.trim());        // 
+console.log(message.trimStart());   // 
+console.log(message.trimEnd());     // 
+```
+
+### BigInt(ES11)
+
+早期JS**不能正确**的表示过大的数字，大于`Number.MAX_SAFE_INTEGER`的数值的表示**可能是**不正确的  
+
+```javascript
+console.log(Number.MAX_SAFE_INTEGER);   // 9007199254740991
+```
+
+ES11引入BigInt来表示大数字，就是在数字后加上`n`  
+
+```javascript
+const bigint = 90071992547409910n;
+console.log(bigint);
+bigint + 10;            // TypeError: Cannot mix BigInt and other type
+bigint + BigInt(10);    // 90071992547409920n
+const num = Number(bigint); // 不一定正确 不安全
+```
+
+### Nullish Coalescing Operator(ES11)
+
+> 空值合并操作、空值合并运算
+
+```javascript
+// 空值合并运算 ??
+
+let foo;
+let foo1 = 0;
+let bar1 = foo1 || "default value";
+let bar = foo ?? "default value";
+
+console.log(bar);   // default value
+console.log(bar1);  // default value
+```
+
+> 针对**bar1**的值，我们目标肯定是0，但是由于`||`运算符将0、false和空字符串认为是false，所以这里使用`??`是最好的选择
+
+### Optional Chaining(ES11)
+
+> 可选链
+
+可选链是ES11新增的一个特性，主要作用是在代码中进行`null`和`undefined`判断时更加清晰和简介  
+
+```javascript
+const info = {
+    name : "x",
+    friend : {
+        name : "a",
+        friend : {
+            name : "q"
+        }
+    }
+};
+
+console.log(info.friend.friend.name);
+
+// 为了代码健壮性 需要判断info中是否存在friend，info.friend中是否存在friend
+if(info && info.friend && info.friend.friend){
+    console.log(info.friend.friend.name);
+}
+
+// 可选链的使用
+console.log(info?.friend?.friend?.name);
+```
+
+> 注意代码的健壮性
+
+### Global This(ES11)
+
+> 获取全局对象的GlobalThis
+
+```javascript
+// 获取某个环境下的全局对象
+
+// 浏览器下正确，但是node环境下错误
+console.log(window);
+
+// node下
+console.log(global);
+
+let myGlobalObj = undefined;
+if(window !== undefined){
+    myGlobalObj = window;
+}
+else{
+    myGlobalObj = global;
+}
+
+// ES11后
+console.log(globalThis);    // 浏览器中等于window，node中等于global
+```
+
+> 不用写复杂的`if...else`去给`myGlobalObj`赋值，可以直接用`globalThis`替代
+
+### 其他ES11
+
+1. Dynamic Import：动态导入
+2. Promise.allSettled
+3. import meta
+4. ...
+
+### FinalizationRegistry(ES12)
+
+- `FinalizationRegistry`对象可以让你在对象被垃圾回收时请求一个回调
+  - `FinalizationRegistry`提供：当一个在注册表中注册的对象被回收时，请求在某个时间点上调用一个清理回调（清理回调有时被称为finalizer）
+  - 可以通过调用`register`方法，注册任何你想要清理回调的对象，传入该对象和所含的值
+
+```javascript
+// FinalizationRegistry
+const finalRegistry = new FinalizationRegistry((value) => {
+    console.log("注册对象被销毁", value);
+});
+
+let obj = { name: "w" };
+let info = {};
+finalRegistry.register(obj, "obj_1");
+finalRegistry.register(info, "info_1");
+
+obj = null;
+```
+
+> 这个用浏览器测试比较方便，而且JS垃圾回收不是实时的可能得等一会  
+> 最后应该是输出obj_1和info_1
