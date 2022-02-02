@@ -3,13 +3,14 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-02 02:54:01
+ * @LastEditTime: 2022-02-02 21:16:20
  * @Description: file content
 -->
 # JavaScipt语法
 
 [JS教程](https://wangdoc.com/javascript/index.html)
 [JS参考](http://javascript.ruanyifeng.com/)
+[MDN文档](https://developer.mozilla.org/zh-CN/)
 
 迷惑的知识点：
 1. 作用域
@@ -2334,7 +2335,7 @@ console.log(globalThis);    // 浏览器中等于window，node中等于global
 3. import meta
 4. ...
 
-### FinalizationRegistry(ES12)
+### FinalizationRegistry、WeakRef(ES12)
 
 - `FinalizationRegistry`对象可以让你在对象被垃圾回收时请求一个回调
   - `FinalizationRegistry`提供：当一个在注册表中注册的对象被回收时，请求在某个时间点上调用一个清理回调（清理回调有时被称为finalizer）
@@ -2348,11 +2349,308 @@ const finalRegistry = new FinalizationRegistry((value) => {
 
 let obj = { name: "w" };
 let info = {};
+let obj2 = new WeakRef(obj);        // 弱引用
 finalRegistry.register(obj, "obj_1");
 finalRegistry.register(info, "info_1");
 
+console.log(obj2);                  // WeakRef对象
+console.log(obj2.deref());          // 获得弱引用对象
 obj = null;
 ```
 
 > 这个用浏览器测试比较方便，而且JS垃圾回收不是实时的可能得等一会  
 > 最后应该是输出obj_1和info_1
+
+`WeakRef`就是弱引用，`let obj3 = obj;`是强引用，即使`obj = null`内存也不会被GC，因为`obj3`还在指向内存块，`let obj2 = new WeakRef(obj);`是弱引用，`obj = null`后内存块就会被GC  
+
+`WeakRef.prototype.deref()`函数，如果原指向对象没有被销毁，则返回原指向对象；如果原指向对象被销毁，则返回`undefined`(搭配前面的可选链进行操作即可)  
+
+### logical assignment operators(ES12)
+
+> 逻辑赋值运算
+
+```javascript
+// 1. ||= 逻辑或赋值运算
+let message = undefined;
+message = message || "default value";
+message ||= "default value";
+
+// 2. &&= 逻辑与赋值运算
+let obj = {
+    name : "x",
+    foo : function() {
+        console.log("run");
+        return {};
+    }
+};
+obj = obj && obj.foo(); // 判断obj是否存在，存在就覆盖obj的值为obj.foo()
+obj &&= obj.foo();
+
+// 3. ??= 逻辑空赋值运算
+let msg = "";
+msg ??= "default vlaue";
+msg = msg ?? "default value";
+```
+
+> 理解为 `x = x + 1` 等价于 `x += 1`即可
+
+## Proxy-Reflect
+
+### 监听操作
+
+监听对象的属性被赋值或获取的操作，去根据这个值进行一些其他的操作(数据驱动框架中常用)  
+
+```javascript
+const obj = {
+    name: "x",
+    age: 10,
+    height: 190
+};
+Object.keys(obj).forEach(key => {
+    let value = obj[key];
+    Object.defineProperty(obj, key, {
+        get: function() {
+            console.log(`${key} get`);
+            return value;
+        },
+        set: function(newValue) {
+            value = newValue;
+            console.log(`${key} set`);
+        }
+    });
+});
+console.log(obj.name);
+obj.age = 120;
+console.log(obj.age);
+```
+
+> 可以使用属性描述符来监听属性的赋值和获取操作  
+
+- 使用`Object.defineProperty`的缺点
+  - `Object.defineProperty`的初衷不是监听一个对象属性
+  - 对对象更丰富的操作，比如新增属性、删除属性的监听是做不到
+
+使用`Proxy`可以监听到对对象的13种操作  
+
+### Proxy基本属性
+
+ES6新增**Proxy类**，如果我们希望**监听一个对象的相关操作**，我们需要**先创建一个Proxy对象**，之后**该对象的所有操作**，都**通过Proxy对象来完成**，代理对象可以**监听我们想要对原对象进行哪些操作**  
+
+1. 需要`new Proxy()`对象，并且传入待处理对象和捕获器对象，可以称之为handler`let p = new Proxy(target, handler)`
+2. 捕获器提供13种操作，对对应操作重写方法即可自定义监听
+3. 之后对对象的所有操作都改为操作`Proxy`对象，因为我们需要在`handler`进行监听  
+
+| 序号 | 捕获器对象                                   | 作用                                                | 对应操作                                        |
+| ---- | -------------------------------------------- | --------------------------------------------------- | ----------------------------------------------- |
+| 1    | getPrototypeOf(target)                       | 当读取被代理对象target的原型prototype时会触发该操作 | `Object.getPrototypeOf()`方法的捕捉器           |
+| 2    | setPrototypeOf(target, prototype)            | 给target设置prototype时触发                         | `Object.setPrototypeOf()`方法的捕捉器           |
+| 3    | isExtensible(target)                         | 判断target是否可扩展时触发                          | `Object.isExtensible()`方法的捕捉器             |
+| 4    | preventExtensions(target)                    | 设置target不可扩展时触发                            | `Object.preventExtensions()`方法的捕捉器        |
+| 5    | getOwnPropertyDescriptor(target, prop)       | 获取target\[prop\]的属性描述时触发                  | `Object.getOwnPropertyDescriptor()`方法的捕捉器 |
+| 6    | defineProperty(target, property, descriptor) | 定义target的某个属性prop的属性描述descriptor时触发  | `Object.defineProperty()`方法的捕捉器           |
+| 7    | has(target, prop)                            | 当判断target是否拥有属性prop时，触发                | `in`操作符的捕捉器                              |
+| 8    | get(target, property, receiver)              | 读取target的属性property时触发                      | 属性获取操作的捕捉器                            |
+| 9    | set(target, property, value, receiver)       | 设置target的属性property为值value时触发             | 属性设置操作的捕捉器                            |
+| 10   | deleteProperty(target, property)             | 删除target的属性property时触发                      | `delete`操作符的捕捉器                          |
+| 11   | ownKeys(target)                              | 获取targeet的所有属性key s时触发                    | `Object.ownKeys()`方法的捕捉器                  |
+| 12   | apply(target, thisArg, argumentsList)        | 当目标target为函数，且被调用时触发                  | 函数调用操作的捕捉器                            |
+| 13   | construct(target, argumentsList, newTarget)  | 给target为构造函数的代理对象构造实例时触发          | `new`操作符的捕捉器                             |
+
+> get中的receiver为Proxy或继承Proxy的对象  
+> set中的receiver是最初被调用的对象(通常是Proxy本身)  
+
+```javascript
+const obj = {
+    name : 'x',
+    age : 10
+};
+let objProxy = new Proxy(obj, {
+    get : function(target, key, receiver){
+        // target 是 obj，key 是 取值的键名， receiver 是 代理对象 objProxy
+        console.log(`${key} get`);
+        return target[key];
+    },
+    set : function(target, key, newValue, receiver){
+        console.log(`${key} set ${newValue}`);
+        target[key] = newValue;
+    },
+    has : function(target, key) {
+        console.log(`${key} in Obj?`);
+        return key in target;
+    },
+    deleteProperty : function(target, key){
+        console.log(`delete ${key} in target`);
+        delete target[key];
+    }
+});
+
+objProxy.name = "y";
+objProxy.age = 15;
+
+console.log(objProxy.name);
+console.log(objProxy.age);
+console.log("name" in objProxy);
+
+delete objProxy.age;
+
+function foo(){
+
+}
+
+// foo()                // 直接调用
+// foo.apply({}, [])    // 通过apply调用
+// new foo();           // new出来调用
+
+const fooProxy = new Proxy(foo, {
+    apply : function(target, thisArg, argumentsList) {
+        // target就是函数对象 thisArg是调用函数的对象
+        console.log(target, thisArg, argumentsList);
+        target.apply(thisArg, argumentsList);
+    },
+    construct : function(target, argList, newTarget){
+        // 通过new调用的监听
+        console.log(target, " new function");
+        return new target(...argList);
+    }
+});
+
+fooProxy.apply({}, ["qw", "er"]);   // [Function: foo] {} [ 'qw', 'er' ]
+new fooProxy();
+```
+
+### Reflect的作用
+
+`Reflect`是ES6新增的API，他是一个**对象**(不用new，直接使用)，字面意思是**反射**
+
+`Reflect`提供很多**操作JS对象的方法**，有点像**Object中操作对象的方法**
+
+> `Reflect.getPrototypeOf(target)`类似`Object.getPrototypeOf()`  
+> `Reflect.defineProperty(target, propertyKey, attributes`类似`Object.defineProperty()`  
+
+- 为什么新增`Reflect`
+  - 早期ECMA规范**没有考虑到**对对象本身的操作设计会更加规范，所以将这些API放到Object上
+  - **Object作为一个构造函数**，这些操作实际上放在Object中并不合适
+  - 另外还包含一些类似in、delete操作符，让JS看起来很奇怪
+  - 所以新增`Reflect`，将这些操作放到`Reflect`中
+
+> 一句话概括就是`Object`功能太多，新增`Reflect`分担对象操作功能
+
+[比较Reflect和Object——MDN文档](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/Comparing_Reflect_and_Object_methods)
+
+| 序号 | 常见方法                                                | 对应功能                                                                                         |
+| ---- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 1    | Reflect.getPrototypeOf(target)                          | 类似Object.getPrototype()                                                                        |
+| 2    | Reflect.serPrototypeOf(target, prototype)               | 设置对象原型的函数，返回boolean表示是否更新成功                                                  |
+| 3    | Reflect.isExtensible(target)                            | 类似Object.isExtensible()                                                                        |
+| 4    | Reflect.preventExtensions(target)                       | 类似Object.preventExtensions()，返回boolean                                                      |
+| 5    | Reflect.getOwnPropertyDescriptor(target, propertyKey)   | 类似Object.getOwnPropertyDescriptor()，如果对象存在，返回对应属性描述符，不存在返回undefined     |
+| 6    | Reflect.definePeoperty(target, propertyKey, attributes) | 类似Object.definePeoperty(),如果设置成功返回true                                                 |
+| 7    | Reflect.ownKeys(target)                                 | 类似Object.ownKeys()，不受`enumerable`影响                                                       |
+| 8    | Reflect.has(target, propertyKey)                        | 判断一个对象是否存在某个属性，和in运算符的功能完全相同                                           |
+| 9    | Reflect.get(target, propertyKey\[, receiver\])          | 获取对象上某个属性的值，类似target\[name\]                                                       |
+| 10   | Reflect.set(target, propertyKey, value\[, receiver\])   | 将值分配给属性的函数，返回一个Boolean表示是否设置成功                                            |
+| 11   | Reflect.deleteProperty(target, propertyKey)             | 作为函数的`delete`操作符，相当于执行`delete target[name]`                                        |
+| 12   | Reflect.apply(target, thisArgument, argumentsList)      | 对一个函数进行调用操作，同时可以传入一个数组作为调用参数，和`Function.prototype.apply()`功能类似 |
+| 13   | Reflect.construct(target,argumentsList\[, newTarget\])  | 对构造函数进行new操作，相当于执行`new target(...args)`                                           |
+
+```javascript
+const obj = {
+    name: 'x',
+    age: 10
+};
+let objProxy = new Proxy(obj, {
+    get: function(target, key, receiver) {
+        // target 是 obj，key 是 取值的键名， receiver 是 代理对象 objProxy
+        console.log(`${key} get`);
+        return Reflect.get(target, key, receiver);
+    },
+    set: function(target, key, newValue, receiver) {
+        console.log(`${key} set ${newValue}`);
+        Reflect.set(target, key, newValue, receiver);
+    },
+    has: function(target, key) {
+        console.log(`${key} in Obj?`);
+        return Reflect.has(target, key);
+    },
+    deleteProperty: function(target, key) {
+        console.log(`delete ${key} in target`);
+        Reflect.deleteProperty(target, key);
+    }
+});
+objProxy.name = "y";
+objProxy.age = 15;
+
+console.log(objProxy.name);
+console.log(objProxy.age);
+console.log("name" in objProxy);
+
+delete objProxy.age;
+```
+
+> 不直接对目标对象进行操作，而是通过`Reflect`对象对目标对象进行操作  
+> 相对于对对象的直接操作，使用`Reflect`的好处就是`Reflect`绝大多数函数都会返回Boolean提醒是否操作成功  
+> tip: `Object.freeze(target)`冻结对象后不可设置值，这时`Reflect`的功能就体现出来了  
+
+### Receiver的作用
+
+```javascript
+const obj = {
+    _name : "x",
+    get name(){
+        return this._name;
+    },
+    set name(value){
+        this._name = value;
+    }
+}
+
+const objProxy = new Proxy(obj, {
+    get : function(target, key) {
+        console.log("get");
+        return Reflect.get(target, key);
+    },
+    set : function(target, key, value){
+        console.log("set");
+        Reflect.set(target, key, value);
+    }
+});
+
+objProxy.name = "y";
+console.log(objProxy.name);
+```
+
+> 运行结果：一次set、一次get，`this._name = value`没有走代理而是直接设置了obj  
+> 如果希望对obj的所有操作都经过objProxy，这个结果就是错误的
+
+`receiver`就是创建出来的代理对象  
+
+> `receiver === objProxy`
+
+```javascript
+const obj = {
+    _name : "x",
+    get name(){
+        return this._name;
+    },
+    set name(value){
+        this._name = value;
+    }
+}
+
+const objProxy = new Proxy(obj, {
+    get : function(target, key, receiver) {
+        console.log("get");
+        return Reflect.get(target, key, receiver);
+    },
+    set : function(target, key, value, receiver){
+        console.log("set");
+        Reflect.set(target, key, value, receiver);
+    }
+});
+
+objProxy.name = "y";
+console.log(objProxy.name);
+```
+
+> `Reflect.get(target, key, receiver)`会让`this._name`里的`this`变成`receiver`对象，而不再是`obj`对象
+
