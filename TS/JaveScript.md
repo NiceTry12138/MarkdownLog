@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-02 21:16:20
+ * @LastEditTime: 2022-02-02 23:54:27
  * @Description: file content
 -->
 # JavaScipt语法
@@ -2653,4 +2653,73 @@ console.log(objProxy.name);
 ```
 
 > `Reflect.get(target, key, receiver)`会让`this._name`里的`this`变成`receiver`对象，而不再是`obj`对象
+
+### Promise(ES6)
+
+```javascript
+// 使用setTimeout模拟网络请求
+function requestData(url, succeessCallback, errorCallback){
+    setTimeout(() => {
+        // 获得请求结果
+        if(url === "qwer"){
+            // 请求成功
+            let name = "result";
+            succeessCallback(name);
+        }else{
+            // 请求失败
+            let error = "404";
+            errorCallback(error);
+        }
+    }, 3000);
+}
+requestData("qwer", (success) => {
+    console.log(success);
+}, (error) => {
+    console.log(error);
+});
+```
+
+> 如果是自己封装的`requestData`必须提前设计好回调函数，并且使用好  
+> 如果是别人封装的`requestData`必须查看源码才知道如何使用回调函数  
+
+更好的方案`Promise`承诺（规范好了所有代码的编写逻辑）  
+
+- 什么是`Promise`
+  - `Promise`是**一个类**，当我们需要给调用者一个承诺：待会会给你回调数据时，可以创建一个`Promise`的对象
+  - 在通过`new`创建`Promise`对象时，我们需要传入一个回调函数，称之为`executor`
+    - 这个回调函数会**被立即执行**，并且给传入另外两个回调函数`resolve`,`reject`
+    - 成功时 调用`resolve`回调函数时，会执行`Promise`对象的`then`方法传入的回调函数
+    - 失败时 调用`reject`回调函数时，会执行`Promise`对象的`catch`方法传入的回调函数
+
+```javascript
+function requestData(url) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            // 获得请求结果
+            if (url === "qwer") {
+                // 请求成功
+                let name = "result";
+                resolve(name);
+            } else {
+                // 请求失败
+                let error = "404";
+                reject(error);
+            }
+        }, 1000);
+    });
+}
+let promise = requestData("qwer");
+promise.then((res) => {
+    console.log(`request success ${res}`);
+}).catch((err) => {
+    console.log(`request failed ${err}`);
+});
+
+// promise.then(() => {}, () => {});
+```
+
+> 因为`Promise`构造时的传入的回调函数会立即执行，所以异步逻辑直接写入到回调函数中即可  
+> `Promise.then`支持传入两个回调函数，第一个表示`resolve`，第二个表示`reject`，可以省略编写`catch`  
+
+**综上可以发现，Promise其实就是JS官方提供的一套回调函数的标准，看到Promise就知道函数应该使用**
 
