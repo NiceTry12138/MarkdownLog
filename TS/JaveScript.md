@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-03 01:17:02
+ * @LastEditTime: 2022-02-04 16:38:06
  * @Description: file content
 -->
 # JavaScipt语法
@@ -2456,7 +2456,12 @@ promise.then((res) => {
     console.log(`request failed ${err}`);
 });
 
-// promise.then(() => {}, () => {});
+// 等价操作
+// promise.then((res) => {
+//     console.log(`request success ${res}`);
+// }, (err) => {
+//     console.log(`request failed ${err}`);
+// });
 ```
 
 > 因为`Promise`构造时的传入的回调函数会立即执行，所以异步逻辑直接写入到回调函数中即可  
@@ -2464,7 +2469,63 @@ promise.then((res) => {
 
 **综上可以发现，Promise其实就是JS官方提供的一套回调函数的标准，看到Promise就知道函数应该使用**
 
+- 根据`Promise`使用的过程，可以分为三个状态
+  1. Pedning(待定)：初始状态，既没有`reslove`也没有`reject`
+  2. 已敲定(fulfilled)：意味着操作完成，就是执行了`reslove()`
+  3. 已拒绝(rejected)：意味着操作失败，就是执行了`reject()`
 
+```javascript
+new Promise((resolve, reject) => {
+    console.log("----");
+    resolve("1111");
+    console.log("++++");
+    reject("2222");
+}).then((res) => {
+    console.log(res);
+}, (err) => {
+    console.log(err);
+});
+```
+
+> **强烈建议运行代码查看结果**  
+> 可以发现 先执行了`exector`部分的代码，再执行了`resolve()`代码，又因为整个`Promise`的状态已经被确定为`fulfiled`，所以不会执行`reject()`的方法  
+
+- `resolve()`函数的参数
+  1. 普通的值和对象（就当普通的函数传递一样使用，会从`Pedning`转到`fulfilled`状态）
+  2. 传入一个`Promise`对象(当前`Promise`的状态会由传入的`Promise`的状态来决定，看下面代码 **例子1**)
+  3. 转入一个对象，并且对象有`then`方法，那么会执行该`then`方法，并且由`then`方法决定后续状态(下面代码 **例子2**)
+
+```javascript
+// 例子 1
+const promise1 = new Promise((resolve, reject) => {});
+new Promise((reslove, reject) => {
+    reslove(promise1);
+}).then((res) => {
+    console.log("reslove");
+    console.log(res);
+}, (err) => {
+    console.log("reject");
+    console.log(err);
+})
+
+// 例子 2
+new Promise((resolve, reject) => {
+    const obj = {
+        then : function(resolve, reject){
+            reject("123");
+        }
+    }
+    resolve(obj);
+}).then((res) => {
+    console.log("resolve", res);
+}, (err) => {
+    console.log("reject", err);
+})
+```
+
+> **强烈建议运行代码查看结果**    
+> 对于**例子1**，因为`promise1`对象处于`Pedning`状态，所以影响了新`new`的`Promise`不执行`reslove`  
+> 对于**例子2**，因为`executor`部分的`obj`存在`then`方法，而`then`方法执行了`reject()`，从而导致`new`的`Promise`变成了`rejected`状态，而不会执行后续的`resolve()`方法  
 
 ## Proxy-Reflect
 
