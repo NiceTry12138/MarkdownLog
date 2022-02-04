@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-04 16:40:02
+ * @LastEditTime: 2022-02-05 01:38:42
  * @Description: file content
 -->
 # JavaScipt语法
@@ -2785,3 +2785,260 @@ new Promise((resolve, reject) => {
 > **强烈建议运行代码查看结果**    
 > 对于**例子1**，因为`promise1`对象处于`Pedning`状态，所以影响了新`new`的`Promise`不执行`reslove`  
 > 对于**例子2**，因为`executor`部分的`obj`存在`then`方法，而`then`方法执行了`reject()`，从而导致`new`的`Promise`变成了`rejected`状态，而不会执行后续的`resolve()`方法  
+
+**Promise的状态一旦决定，就无法更改**
+
+------
+
+1. 同一个`Promise`可以多次调用`then`方法，而所有绑定的`then`方法在执行`resolve`时都会被执行
+
+```javascript
+const promise = new Promise((resolve, reject) => {
+    resolve("--");
+});
+promise.then(res => {
+    console.log("1");
+});
+promise.then(res => {
+    console.log("2");
+});
+promise.then(res => {
+    console.log("3");
+});
+```
+
+2. `then`传入的回调函数方法是可以有返回值的
+   1. 如果返回值是普通值（基本数据类型或字面量对象），那么会将返回值作为一个新的`Promise`的`resolve`的形参
+      - 从下面的代码 样例 1 可见，后续的`then`都是调用因返回普通值而新建的`Promise`对象的`then`
+    2. 如果返回的是`Promise`对象，可参见前面**resolve()函数的参数**这一栏的情况
+
+> 无论如何，`then`传入的回调函数的返回值都会出发`new Promise`，并把返回值传入到新的`Promise`的`resolve`的形参中  
+
+```javascript
+const test = Promise.resolve({name:"x"});
+// 等价于
+// const promise = new Promise((resolve, reject) => {
+//     resolve({name : "x"});
+// })
+
+// 样例 1
+// 返回值为普通值
+const promise = new Promise((resolve, reject) => {
+    resolve("promise 1 ");
+});
+promise.then((res) => {
+    console.log(res);
+    return "aaa";
+}).then(res => {
+    console.log("new promise 2 : ", res);
+    return "bbb";
+}).then(res => {
+    console.log("new promise 3 : ", res);
+});
+
+// 样例2
+// 返回值为Promise
+const promise = new Promise((resolve, reject) => {
+    resolve("promise 1 ");
+});
+promise.then((res) => {
+    console.log(res);
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve("return Promise");
+        }, 1000)
+    });
+}).then(res => {
+    console.log(res);
+});
+```
+
+-----
+
+- `finally`方法：无论`Promise`处于`fulfilled`还是`rejected`状态，最终都会执行的代码
+
+```javascript
+const promise = new Promise((resolve, reject) => {
+    reject("err");
+});
+promise.then(res => {
+    console.log(res);
+}, err => {
+    console.log(err);
+}).finally(() => {
+    console.log("finally");
+})
+```
+
+-----
+
+`Promise.all`等待所有`Promise`对象都进入`fulfilled`状态时触发，返回值是一个数组，数组的item就是`resolve`函数的参数  
+
+如果`Promise`数组中存在某个`Promise`触发了`reject`，则会导致`Promise.all`立即停止监听，并返回该`reject`的参数
+
+```javascript
+// 全部都执行 resolve
+const p1 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(1);
+    }, 1000);
+});
+const p2 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(2);
+    }, 2000);
+});
+const p3 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(3);
+    }, 3000);
+});
+
+Promise.all([p1, p2, p3]).then(res => {
+    console.log(res);
+}, (err) => {
+    console.log(err);
+});
+
+// 某个Promise触发了reject
+const p4 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(1);
+    }, 1000);
+});
+const p5 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        reject(2);
+    }, 2000);
+});
+const p6 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(3);
+    }, 3000);
+});
+
+Promise.all([p4, p5, p6]).then(res => {
+    console.log(res);
+}, (err) => {
+    console.log(err);
+});
+```
+
+------
+
+`Promise.allSettled`等待所有的`Promise`都有结果的时候才会触发
+
+```javascript
+const p1 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(1);
+    }, 1000);
+});
+const p2 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        reject(2);
+    }, 2000);
+});
+const p3 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(3);
+    }, 3000);
+});
+
+Promise.allSettled([p1, p2, p3]).then(res => {
+    console.log("resolve ", res);
+}, (err) => {
+    console.log("reject", err);
+});
+// 输出
+// resolve  [
+//   { status: 'fulfilled', value: 1 },
+//   { status: 'rejected', reason: 2 },
+//   { status: 'fulfilled', value: 3 }
+// ]
+```
+
+-----
+
+`Promise.race`只要有一个`Promise`变成`fulfilled`或者`rejected`状态，那么就结束  
+如果`Promise`中有一个触发了`reject`，就会直接拿到`reject`的结果并结束  
+
+```javascript
+const p1 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(1);
+    }, 1000);
+});
+const p2 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        reject(2);
+    }, 2000);
+});
+const p3 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(3);
+    }, 3000);
+});
+Promise.race([p1, p2, p3]).then(res => {
+    console.log("resolve ", res);
+}, (err) => {
+    console.log("reject", err);
+});
+// 输出
+// resolve  1
+
+const p1 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(1);
+    }, 1000);
+});
+const p2 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        reject(2);
+    }, 500);
+});
+const p3 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(3);
+    }, 3000);
+});
+Promise.race([p1, p2, p3]).then(res => {
+    console.log("resolve ", res);
+}, (err) => {
+    console.log("reject", err);
+});
+// 输出
+// reject 2
+```
+
+------
+
+**ES12**的方法
+`Promise.any`会等到一个`fulfilled`状态，才会决定新的`Promise`的状态，如果所有的`Promise`都是`reject`的，那么也会等到所有的`Promise`都变成`rejected`状态  
+
+```javascript
+const p1 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(1);
+    }, 1000);
+});
+const p2 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        reject(2);
+    }, 500);
+});
+const p3 = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        resolve(3);
+    }, 3000);
+});
+Promise.any([p1, p2, p3]).then(res => {
+    console.log("resolve ", res);
+}, (err) => {
+    console.log("reject", err);
+});
+// 输出
+// resolve  1
+```
+
+## 
