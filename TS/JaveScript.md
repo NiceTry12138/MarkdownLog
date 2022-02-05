@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-05 16:52:27
+ * @LastEditTime: 2022-02-05 18:03:39
  * @Description: file content
 -->
 # JavaScipt语法
@@ -3366,3 +3366,106 @@ console.log("---------", generator.next(999));
 当生成器函数遇到`yield`的时候停止执行，`done`的值为`false`;当生成器函数遇到`return`的时候，`done`的值就变成`true`了  
 `yield v1;`表示返回生成器的值为`v1`的值  
 `const n1 = yield v1;`表示用`n1`接受`next`传入参数的值  
+
+------ 
+
+```javascript
+// return
+
+const generator = foo();
+console.log(generator.next(10));
+console.log(generator.return(20));
+console.log(generator.next(30));
+console.log(generator.next(40));
+```
+
+使用`return(20)`相当于在对应给`yield`前面加上了`return 20`，不仅当前`yield`部分不执行，后续所有部分都不会执行
+
+------
+
+```javascript
+// throw
+function* foo() {
+    console.log("start");
+    const v1 = 100;
+    try {
+        yield v1;
+    } catch (err) {
+        console.log("err", err);
+    }
+
+    const v2 = 200;
+    console.log("第二部分");
+    yield v2;
+
+    console.log("end");
+}
+
+const generator = foo();
+console.log(generator.next(10));
+console.log(generator.throw(20));
+console.log(generator.next(30));
+```
+
+> `throw()`抛出异常
+
+代码运行可知，如果有`try...catch`捕获到了异常，代码仍然会继续执行  
+
+------
+
+### 生成器替代迭代器
+
+```javascript
+function* createArrayIterator(arr) {
+    for (const item of arr) {
+        yield item;
+    }
+}
+
+function* createArrayIterator2(arr) {
+    yield* arr;
+}
+
+const names = [1, 2, 3, 4];
+const namesIterator = createArrayIterator(names);
+console.log(namesIterator.next());
+console.log(namesIterator.next());
+console.log(namesIterator.next());
+console.log(namesIterator.next());
+console.log(namesIterator.next());
+
+const namesIterator1 = createArrayIterator2(names);
+console.log(namesIterator1.next());
+console.log(namesIterator1.next());
+console.log(namesIterator1.next());
+console.log(namesIterator1.next());
+console.log(namesIterator1.next());
+
+```
+
+> `createArrayIterator2`就是`createArrayIterator`的简易写法，`yield*`后面**必须跟上一个可迭代对象**
+
+```javascript
+class ClassRoom {
+    constructor(address, name, students) {
+        this.address = address;
+        this.name = name;
+        this.students = students;
+    }
+
+    entry(newStudent) {
+        this.students.push(newStudent);
+    }
+
+    [Symbol.iterator] = function*() {
+        yield* this.students;
+    }
+};
+const c1 = new ClassRoom("", "", [1, 2, 3]);
+for (let s of c1) {
+    console.log(s);
+}
+```
+
+> 通过生成器，简化迭代器的写法
+
