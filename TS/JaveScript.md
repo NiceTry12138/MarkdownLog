@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-05 18:03:39
+ * @LastEditTime: 2022-02-05 23:06:32
  * @Description: file content
 -->
 # JavaScipt语法
@@ -2752,7 +2752,7 @@ new Promise((resolve, reject) => {
 - `resolve()`函数的参数
   1. 普通的值和对象（就当普通的函数传递一样使用，会从`Pedning`转到`fulfilled`状态）
   2. 传入一个`Promise`对象(当前`Promise`的状态会由传入的`Promise`的状态来决定，看下面代码 **例子1**)
-  3. 转入一个对象，并且对象有`then`方法，那么会执行该`then`方法，并且由`then`方法决定后续状态(下面代码 **例子2**)
+  3. 传入一个对象，并且对象有`then`方法，那么会执行该`then`方法，并且由`then`方法决定后续状态(下面代码 **例子2**)
 
 ```javascript
 // 例子 1
@@ -3468,4 +3468,300 @@ for (let s of c1) {
 ```
 
 > 通过生成器，简化迭代器的写法
+
+### 异步函数的处理方法（前面Promise）
+
+- 需求：三次请求，请求就是返回原字符串，然后分别往初始字符串后添加"aa", "bb"
+
+> 模拟：通过 用户ID->用户信息->部门信息->其他信息，这种链式请求
+
+```javascript
+function requestData(url){
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(url);
+        }, 1000);
+    })
+}
+
+// 方案1
+requestData("test").then(res => {
+    requestData(res + "aa").then(res => {
+        requestData(res + "bb").then(res => {
+            console.log(res);
+        })
+    })
+})
+
+// 方案2
+requestData("test").then(res=>{
+    return requestData(res + "aa")
+}, () => {}).then(res => {
+    return requestData(res + "bb")
+}, () => {}).then(res => {
+    console.log(res);
+}, () => {});
+
+// 方案3 Promise + generator
+function* getData() {
+    let val1 = yield requestData("test");
+    let val2 = yield requestData(val1 + "aa");
+    let val3 = yield requestData(val2 + "bb");
+    console.log(val3);
+}
+
+const generator = getData();
+// generator返回的是对象，它的value是Promise对象
+generator.next().value.then(res => {
+    generator.next(res).value.then(res => {
+        generator.next(res).value.then(res => {
+            generator.next(res);
+        })
+    })
+})
+
+// 方案4 （方案3的升级版）
+function execGeneractor(generatorFunc) {
+    const generactor = generatorFunc();
+
+    function exec(res) {
+        const result = generactor.next(res);
+        if (result.done === true) {
+            return result.value;
+        }
+        result.value.then(res => {
+            exec(res);
+        });
+    }
+    exec();
+}
+
+execGeneractor(getData);
+
+// 方案5
+async function getData(){
+    const res1 = await requestData("test");
+    const res2 = await requestData(res1 + "aa");
+    const res3 = await requestData(res2 + "bb");
+    console.log(res3);
+}
+getData();
+```
+
+- 方案1：嵌套，回调套回调
+- 方案2：没有回调套回调，利用Promise的then的特性，可读性差
+- 方案3：利用生成器，但是回调嵌套了
+- 方案4：利用生成器、递归，自动执行代码到结束为止，并且扩展性强
+- 方案5：`async` + `await`组合（`Promise`和生成器组合的语法糖）
+
+## async-await-事件循环(ES8)
+
+### 异步函数 async function
+
+- `async`关键字用于声明一个异步函数
+  - `async`是`asynchronous`单词的缩写，异步、非同步
+  - `sync`是`synchronous`单词的缩写，同步，同时
+
+```javascript
+async function foo1(){
+
+}
+
+const foo2 = async() => {
+    
+}
+
+class Foo{
+    async foo3(){
+
+    }
+}
+```
+
+> 异步函数的写法
+
+**异步函数**的代码在函数中没有特殊内容时，函数的执行流程跟普通函数是一样的  
+
+```javascript
+async function foo(){
+    console.log("1");
+    console.log("2");
+    console.log("3");
+    console.log("4");
+}
+
+foo();  // 1 2 3 4
+```
+
+**异步函数**的返回值一定是`Promise`(没有返回值也是Promise)  
+
+```javascript
+// 返回普通值
+async function foo(){
+    console.log("start...");
+    console.log("mid code...");
+    console.log("end...");
+    // 没有返回值时 默认return undefined
+    return 123;
+}
+
+// 返回带then方法对象
+async function foo1(){
+    console.log("start...");
+    console.log("mid code...");
+    console.log("end...");
+    // 没有返回值时 默认return undefined
+    return {
+        then : function(resolve, reject){
+            resolve("hhh");
+        }
+    };
+}
+
+// 返回Promise
+async function foo2(){
+    console.log("start...");
+    console.log("mid code...");
+    console.log("end...");
+    // 没有返回值时 默认return undefined
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve("www");
+        }, 1000);
+    });
+}
+
+const promise = foo();
+promise.then(res => {
+    console.log("promise run code", res);
+})
+const promise1 = foo1();
+promise1.then(res => {
+    console.log("promise1 run code", res);
+})
+const promise2 = foo2();
+promise2.then(res => {
+    console.log("promise run resolve", res);
+}, (err) => {
+    console.log("promise run err", err);
+});
+```
+
+> `promise`执行的时机是`foo()`函数return的时候  
+> 如果**异步函数**返回的是含有`then`方法的对象，跟`Promise`返回含有`then`方法对象一样(`resolve()函数的参数`<=搜索关键字)  
+> 如果**异步函数**返回值是`Promise`，会等待`resolve`或者`reject`执行完毕才会出发`then`  
+
+-----
+
+**异步函数**的异常，会被捕获为`Promise`的`reject`的值
+
+```javascript
+async function foo2() {
+    console.log("foo2 start");
+
+    throw new Error("error message");
+
+    console.log("foo2 end");
+}
+
+foo2().catch(err => {
+    console.log(err);
+});
+
+console.log("other code...");
+```
+
+> 继续执行后续代码，打印`other code...`
+
+```javascript
+function foo1() {
+    console.log("foo2 start");
+
+    throw new Error("error message");
+
+    console.log("foo2 end");
+}
+foo1();
+console.log("other code...");
+```
+
+> 普通函数遇到异常，直接整个中断不会执行最后的输出`other code...`
+
+### await
+
+`async`函数另外一个特殊之处，就是它可以在**内部使用await关键字**，而在**普通函数中不可以使用**
+
+> await if only valid in async function  
+
+一般而言`await`后面会跟着也给**表达式**，并且返回一个`Promise`
+
+> await 表达式(Promise)
+  
+
+```javascript
+function requestData(){
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve("1234");
+        }, 10000)
+    });
+}
+
+// await跟上表达式
+async function foo(){
+    let res = await requestData();  // 在调用resolve时给到res结果
+    console.log("-----", res);
+    console.log("-----");
+
+    let res = await requestData();  // 在调用resolve时给到res结果
+    console.log("+++++", res);
+    console.log("+++++");
+}
+foo();
+```
+
+> `await`之后的代码会等待`await`有返回值之后才会执行  
+> 可以把`await`后面的代码理解为是在`Prommise`里面`then`回调中执行的
+
+```javascript
+// await跟上其他的值
+async function foo1(){
+    const res1 = await 123;
+    console.log(res1);
+
+    const res2 = await {
+        then : function(resolve, reject) {
+            resolve(234);
+        }
+    }
+    console.log(res2);
+}
+
+foo1();
+```
+
+> `await`后面跟普通的值会立即返回  
+> 如果返回对象中含有名为`then`的`function`，会执行`then`方法，并返回`resolve`的值  
+
+```javascript
+function requestData() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            reject("1234");
+        }, 100)
+    });
+}
+
+async function foo2() {
+    const res2 = await requestData();
+    console.log(res2);
+    console.log("------------");
+}
+
+foo2().catch(err => {
+    console.log(err);
+});
+```
+
+> 如果`await`后面的`Promise`执行`reject`函数，那么整个`foo2`都会立即终止，并且触发**异步函数**的`catch`
 
