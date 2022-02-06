@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-05 23:06:32
+ * @LastEditTime: 2022-02-06 22:49:02
  * @Description: file content
 -->
 # JavaScipt语法
@@ -3764,4 +3764,108 @@ foo2().catch(err => {
 ```
 
 > 如果`await`后面的`Promise`执行`reject`函数，那么整个`foo2`都会立即终止，并且触发**异步函数**的`catch`
+
+## 事件循环
+
+JavaScript是**单线程**的，但是**JavaScript的线程应该有自己的容器进程**：**浏览器**或者**Node**  
+
+- 浏览器
+  - **多数的浏览器其实是多进程的**，当我们打开一个tab页面时就会开启一个新的进程，这是为了防止一个页面卡死而造成所有页面无法响应，整个浏览器需要强制退出  
+  - 每个进程又有很多的线程，其中包括执行JavaScript代码的线程
+
+- JavaScript是在一个单独的线程中执行的
+  - JavaScript**同一时刻只能做一件事**
+  - 如果做的事非常耗时，就意味着当前线程会被阻塞
+
+- 真正耗时的操作，实际上并不是JavaScript线程在执行
+  - 浏览器的每个进程都是多线程的，**耗时的操作可以交给其他线程完成**
+  - 比如网络请求、定时器等，只需要在特定的时候执行传入的回调即可
+
+![浏览器事件循环](./Image/20.png)
+
+如果在执行JavaScript代码的过程中，需要异步操作（比如setTimeout），这个函数会被放入到调用栈中，执行会立即结束，并不会阻塞后续代码的的执行  
+
+> 蓝色为JavaScript线程  
+> 黄色为浏览器其他进程  
+> 绿色为任务队列  
+
+- 任务队列
+  - 宏任务队列（macrotask queue）: 定时器、ajax、DOM事件、UI Rendering回调
+  - 微任务队列（microtask queue）: queueMicrotask、Promise的then回调、MutationObserver
+
+在执行**任何一个宏任务**之前，都需要保证**微任务队列已经被清空**  
+
+> 一般而言都是微任务先执行，在执行宏任务  
+
+`main script`中的代码优先执行（编写的顶层script代码）,然后再判断执行宏任务/微任务  
+
+```javascript
+// setTimeout1
+setTimeout(function (){
+    console.log("setTimeout1");
+    new Promise((resolve, reject) => {
+        resolve();
+    }).then(function() {
+        new Promise(function (resolve, reject){
+            resolve()
+        }).then(function() {
+            console.log("then4");
+        });
+        console.log("then2");
+    });
+});
+
+new Promise(function(resolve, reject) {
+    console.log("promise1");
+    resolve();
+}).then(function() {
+    console.log("then1");
+});
+
+setTimeout( function() {
+    console.log("setTimeout2");
+})
+
+console.log(2);
+
+queueMicrotask(() => {
+    console.log("queueMicrotask");
+})
+
+new Promise(function(resolve, reject){
+    resolve();
+}).then(function() {
+    console.log("then3");
+});
+
+// promise1
+// 2
+// then1
+// queueMicrotask
+// then3
+// setTimeout1
+// then2
+// then4
+// setTimeout2
+```
+
+> `Promise`的`exector`回调函数不会进入任务队列，而是直接执行  
+> **建议运行查看代码执行流程**
+
+![浏览器事件循环](./Image/21.png)
+
+| 序号 | 执行顺序                                                                                                                                           | 注释                                                                                                  |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 1    | `setTimeout`回调函数加入到宏任务队列                                                                                                               | 默认设置为0s，但是不会立即执行回调函数内容，而是加入到宏任务队列，因为此时`main script`代码并未执行完 |
+| 2    | `console.log("promise1");`                                                                                                                         | `Promise`的`exector`回调函数不会进入任务队列，而是直接执行                                            |
+| 3    | `promise1`的`resolve()`,将`promise1`的`then`加入到微任务队列                                                                                       | 代码顺序执行，而根据浏览器规定，Promise的then加入到微任务                                             |
+| 4    | `setTimeout`回调函数加入到宏任务队列                                                                                                               | 与第一个`setTimeout`相同处理                                                                          |
+| 5    | `console.log(2)`                                                                                                                                   | `main script`代码直接执行                                                                             |
+| 6    | `queueMicrotask`将回调加入到微任务队列                                                                                                             | 浏览器规定`queueMicrotask`加入到微任务队列                                                            |
+| 7    | 执行`promise`的`resolve`，将该`Promise`的`then`添加到微任务                                                                                        | `Promise`的`then`添加到宏任务                                                                         |
+| 8    | 先清空微任务队列，依次执行`console.log("then1")`、`console.log("setTimeout2")`、`console.log("then3");`                                            | 在执行**任何一个宏任务**之前，都需要保证**微任务队列已经被清空**                                      |
+| 9    | 执行宏任务中第一个`setTimeout`，`new`一个新的`Promise`并将`then`加入到微任务                                                                       |                                                                                                       |
+| 10   | 因为添加了新的微任务，此时微任务列表不为空，所以执行微任务新增`Promise`的`then`中的`console.log("then2")`以及`new Promise`并加入新任务到微任务队列 | 微任务不为空，时刻注意                                                                                |
+| 11   | 因为微任务队列不为空，所以执行`console.log("then4")`                                                                                               |                                                                                                       |
+| 12   | 微任务空，执行宏任务中最后一个`setTimeout`                                                                                                         |                                                                                                       |
 
