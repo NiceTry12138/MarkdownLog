@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-02-07 21:23:25
+ * @LastEditTime: 2022-02-07 21:24:31
  * @Description: file content
 -->
 # JavaScipt语法
@@ -4239,6 +4239,6 @@ exports = {
 1. 模块再被第一次引入的时候，模块中的js代码会被执行一次
 2. 模块被多次引入时，会缓存，最终只加载（运行）一次
    - 因为模块对象module有个属性`loaded`，ture表示已经加载，false表示未加载
-3. 循环引入的加载顺序，深度优先搜索
+3. 循环引入的加载顺序，深度优先搜索：main->aaa->ccc->ddd->eee->bbb
 
 ![循环引用的加载顺序](./Image/23.png)
