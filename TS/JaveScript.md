@@ -2,8 +2,8 @@
  * @Version: 
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-02-06 22:49:02
+ * @LastEditors: LC
+ * @LastEditTime: 2022-02-07 21:23:25
  * @Description: file content
 -->
 # JavaScipt语法
@@ -630,7 +630,7 @@ Object.defineProperty(obj, prop, descriptor);
 
 - `writable` 是否可以修改属性的值
   - 直接在一个对象上定义某个属性时，`writable`为true
-  - 通过属性描述符定义一个属性时，`writable`为false
+  - 通过属性描述符`Object.defineProperty`定义一个属性时，`writable`为false
 - `value` 的具体值，读取属性时返回该值，修改属性时修改该值
   - 默认情况下`value`是`undefined`的
 - get/get，为获得和设置使用的函数
@@ -3721,7 +3721,7 @@ foo();
 ```
 
 > `await`之后的代码会等待`await`有返回值之后才会执行  
-> 可以把`await`后面的代码理解为是在`Prommise`里面`then`回调中执行的
+> 可以把`await`后面的代码理解为是在`Promise`里面`then`回调中执行的
 
 ```javascript
 // await跟上其他的值
@@ -3765,7 +3765,44 @@ foo2().catch(err => {
 
 > 如果`await`后面的`Promise`执行`reject`函数，那么整个`foo2`都会立即终止，并且触发**异步函数**的`catch`
 
+
+```javascript
+async function bar(){
+    console.log(222);
+    return new Promise((resolve, reject) => {
+        resolve();
+    });
+}
+
+async function foo(){
+    console.log(111);
+    await bar();
+    console.log(333);
+}
+
+foo();
+console.log(444);
+// 111
+// 222
+// 444
+// 333
+
+function foo1(){
+    console.log(111);
+    bar().then(() => {
+        console.log(333);
+    }, () => {
+        console.log(333);
+    });
+}
+```
+
+> 比较`foo()`和`foo1()`理解`await`
+> 可以把`await`后面的代码理解为是在`Promise`里面`then`回调中执行的
+
 ## 事件循环
+
+### 浏览器事件循环
 
 JavaScript是**单线程**的，但是**JavaScript的线程应该有自己的容器进程**：**浏览器**或者**Node**  
 
@@ -3869,3 +3906,339 @@ new Promise(function(resolve, reject){
 | 11   | 因为微任务队列不为空，所以执行`console.log("then4")`                                                                                               |                                                                                                       |
 | 12   | 微任务空，执行宏任务中最后一个`setTimeout`                                                                                                         |                                                                                                       |
 
+-----
+
+```javascript
+async function async1(){
+    console.log("async1 start");
+    await async2();
+    console.log("async1 end");
+}
+
+async function async2(){
+    console.log("async2");
+}
+
+console.log("main script start");
+
+setTimeout(function(){
+    console.log('setTimeout');
+}, 0);
+
+async1();
+
+new Promise(function(resolve, reject) {
+    console.log("promise1");
+    resolve();
+}).then(() => {
+    console.log("promise2");
+}, () => {})
+
+console.log("main script end");
+
+/**
+ * main script start
+ * async1 start
+ * async2
+ * promise1
+ * main script end
+ * async1 end
+ * promise2
+ * setTimeout
+ */
+```
+
+| 序号 | 执行顺序                                                                                                                                                  | 注释                         |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| 1    | `console.log("main script start");`                                                                                                                       | `main script` 优先执行       |
+| 2    | `setTimeout`加入到宏任务队列                                                                                                                              | 前面案例有讲，浏览器规则     |
+| 3    | 执行`async1`函数，直接`console.log("async1 start")`然后将`async2`作为`Promise`的`exector`直接执行`console.log("async2")`并将后续代码作为`Promise`的`then` | `async`函数运行规则前面有讲  |
+| 4    | 直接执行`Promise`的`exector`——`console.log("promise1")`并将`then`加入到微任务队列                                                                         | `Promise`的`exector`直接执行 |
+| 5    | `console.log("main script end")`                                                                                                                          | `main script`代码直接执行    |
+| 6    | 根据微任务队列顺序执行`console.log("async2 end")`、`console.log("async2 end")`                                                                            | 优先清空微任务               |
+| 7    | 执行`console.log('setTimeout')`                                                                                                                           | 清空宏任务                   |
+
+-----
+
+```javascript
+Promise.resolve().then(() => {
+    console.log(0);
+    // return Promise.resolve(4);
+    
+    // return 4;
+
+    return {
+        then : function(resolve, reject){
+            resolve(4);
+        }
+    }
+}).then((res) => {
+    console.log(res);
+});
+
+Promise.resolve().then(() => {
+    console.log(1);
+}).then(() => {
+    console.log(2);
+}).then(() => {
+    console.log(3);
+}).then(() => {
+    console.log(5);
+}).then(() => {
+    console.log(6);
+});
+```
+
+> 分别执行`Promise`的三种return，比较差异  
+> `return {then : function() {}}`的`then`方法会被推移到**微任务**的下一次轮询中执行  
+> `return Promise.resolve()` 因为return不是普通的值会往后推移一次，又因为`Promise.resolve`会再往后推移一次，所以累计往后推移两次  
+
+### Node事件循环
+
+1. 开启Node进程
+2. Node进程是多线程的
+3. 多个线程中的一个是JS线程，负责执行JS代码
+4. 定时器、耗时操作交给其他线程处理
+5. 再将任务提交到任务队列中（跟浏览器的任务队列类似）
+
+- 浏览器中的事件循环（event loop）是根据HTML5定义的规范来实现的，不同的浏览器可能会有不同的实现，而Node中是由`libuv`实现的  
+
+- Node的架构图
+  - `libuv`中主要维护`EventLoop`(事件循环)和`worker threads`(线程池)
+  - `EventLoop`负责调用系统的一些其他操作：文件IO、Network、child-processes等
+
+- `libuv`是一个多平台的专注于异步IO的库，最初是为Node开发的，现在也用到Luvit、Julia、pyuv等地方
+
+![Node架构](./Image/22.png)
+
+- **事件循环像是一个桥梁**，连接着应用程序和`JavaScript和系统调用`之间的通道
+  - 无论是文件IO、数据库、网络IO、定时器、子进程，在完成对应的操作后，都会将对应的结果和回调函数放到事件循环(任务队列)中
+  - 事件循环会不同的从**任务队列中取出对应的事件（回调函数）**来执行
+
+- 完整的事件循环Tick分成很多阶段
+  1. **定时器**：本阶段执行已经被`setTimeout`和`setInterval`的调度回调函数
+  2. **待定回调**：对某些系统操作（比如TCP错误类型）执行回调，比如TCP连接时接收到ECONNERFUSED(链接拒绝错误)
+  3. **idel、prepare**：仅系统内部调用
+  4. **轮询**：检索新的I/O事件：执行与I/O相关的回调
+  5. **检测**：`setImmediate()`回调函数在这里执行
+  6. **关闭的回调函数**：一些关闭的回调函数，如：`socket.on('close', ...)`
+
+- Node的任务队列也区分**宏任务**、**微任务**
+  - **宏任务**：setTimeout、setInterval、IO事件、setImmediate、close事件
+  - **微任务**：Promise的then回调，process.nextTick、queueMicrotask
+
+> Node事件循环Tick的**每个阶段执行任务都会按照优先清空微任务队列**，再处理宏任务
+
+- 但是Node的事件循环不只是 **微任务队列**和**宏任务队列**
+  - 微任务队列
+    - next tick queue : process.nextTick
+    - other queue : Promise的then回调、queueMicrotask
+  - 宏任务队列
+    - timer queue : setTimeout、setInterval
+    - poll queue : IO事件
+    - check queue : setImmediate
+    - close queue : Close事件
+
+- 所以在每次事件循环的tick中，会按照如下的顺序执行代码
+  1. next tick microtask qeue
+  2. other microtask queue
+  3. timer queue
+  4. poll queue
+  5. check queue
+  6. close queue
+
+## 错误处理
+
+```javascript
+function sum(num1, num2){
+    // 目标num1、num2是数字，对于其他数据类型希望抛出异常
+    if (typeof num1 !== "number" || typeof num2 !== "number"){
+        throw "parameters is error type";
+    }
+    return num1 + num2;
+}
+
+console.log(sum({}, true)); // 一次错误的函数调用
+```
+
+- 封装了工具函数或者其他函数库，想告诉外界封装函数在某些情况下出现了错误，并且想要调用者知道这个错误，就需要通过`throw`抛出错误信息  
+
+- throw语句用于抛出一个用户自定义异常，当遇到throw语句时，当前函数的执行会被停止（throw后面的语句不会执行）
+
+```javascript
+class MyError{
+    constructor(errorcode, errorMessage){
+        this.errorMessage = errorMessage;
+        this.errorcode = errorcode;
+    }
+}
+
+class MyError2 extends Error {
+
+}
+
+function foo(type){
+    console.log("start");
+
+    if(type === 0){
+        throw "param can't 0";      // 直接返回字符串
+    } else if (type === 1){
+        throw { errorcode : -1, errorMessage : "type 不能为 1"};    // 返回对象，包含更多信息
+    } else if (type === 2){
+        throw new MyError(-2, "type 不能为2");  // 返回指定类型对象
+    } else if (type === 3){
+        throw new Error("type不能为3");         // 使用系统提供的Error对象，打印信息更多（函数调用栈）
+    } else if (type === 4){
+        throw new TypeError("类型错误");        // 抛出Error的子类
+    }
+
+    console.log("end");
+}
+
+foo(0);
+console.log("other code");
+```
+
+- Error包含三个属性
+  - message：创建error对象时传入的message
+  - name：Error的名称，通常和类的名称一致
+  - stack：整个Error的错误信息，包括函数的调用栈，当我们直接打印Error对象时，打印的就是stack
+- Error的一些子类
+  - RangeError：下标值越界
+  - SyntaxError：语法解析错误
+  - TypeError：类型错误
+
+- 针对异常的两种处理方法
+  - 不处理，会继续将异常往外层函数抛出，一直抛出到顶层调用为止(main script)，如果到顶层都没处理，程序会直接中止
+  - 使用`try...catch...`捕获异常
+
+```javascript
+function foo() {
+    throw new Error("foo err");liu'lan
+}
+
+function bar() {
+    try {
+        foo();
+    } catch (err){
+        console.log(err);
+    } finally {
+        console.log("bar end");
+    }
+}
+```
+
+> `catch`参数中的`err`就是`foo`抛出的`Error`对象  
+> `finally`不管是否发生异常，最后`finally`的代码一定会执行
+
+## JS模块化
+
+- 模块化
+  - 模块化的最终目的是将程序划分成**一个个小的结构**
+  - 结构中编写属于**自己的逻辑代码**，有**自己的作用域**，不会影响到其他的结构
+  - 结构希望暴露的**变量**、**函数**、**对象**等到处给其他结构使用
+  - 可以通过某种方式，导入另外结构中的**变量**、**函数**、**对象**等
+
+> 一般来说一个文件就是一个模块
+
+因为JavaScript是在ES6(2015年)才支持模块化，所以在此之前有很多其他的社区规范：`AMD`、`CMD`、`CommonJS`等
+
+> `CommonJS`用的还是很多，`AMD`和`CMD`现在用的少，其他的规范就很少使用了 
+
+### CommondJS
+
+- CommonJS是一个规范，最初叫ServerJS，后来为了体现它的广泛性改名CommonJS，简称CJS
+  - Node时CommonJS在服务器端一个具有代表性的实现
+  - Browserify时CommonJS在浏览器中的一种实现
+  - webpack打包工具具备对CommonJS的支持和转换
+
+- Node中对CommonJS进行了支持和实现
+  - Node中**每一个js文件都是一个单独的模块**
+  - 模块中包括**CommonJS规范的核心变量**：exports（导出）、module.exorts、require（导入）
+  - 可以使用上述变量来方便的进行**模块化开发**
+
+> `exports`和`module.exports`可以负责对模块中的内容进行导出  
+> `require`函数可以导入其他模块（自定义模块、系统模块、第三方库模块）中的内容  
+
+```javascript
+// run1.js
+const name = "x";
+const age = 19;
+
+function sum(num1, num2){
+    return num1 + num2;
+}
+
+// 1. module.export
+module.exports = {
+    name,
+    age,
+    sum,
+    aaa : "aaa"
+}
+```
+
+> `module`是`run.js`模块本身的对象，`exports`也是一个对象
+
+```javascript
+// run2.js
+const {name, age, sum, aaa} = require("./run1.js");
+console.log(name);          // x
+console.log(age);           // 19
+console.log(sum(1, 2));     // 3
+console.log(aaa);           // aaa
+```
+
+> `module.exports`和`require(file)`指向的同一块内存区域  
+
+```javascript
+// run1.js
+const name = "x";
+const age = 19;
+
+function sum(num1, num2){
+    return num1 + num2;
+}
+
+// 2.exports
+exports.name = name;
+exports.age = age;
+exports.sum = sum;
+exports.aaa = "aaa";
+
+// Error
+exports = {
+    name,
+    age,
+    sum
+}
+```
+
+> CommondJS底层中是先`module.exports = {}`然后`exports = module.exports`  
+> 最后导出出去的肯定是`module.exports`，所以重新给`exports`赋值不会影响到`module.exports`从而导致导出失败  
+
+[require规范](https://nodejs.org/dist/latest-v14.x/docs/api/modules.html#modules_all_together)
+
+- 常见require的查找规则(`require(XX)`)
+  - 如果XX是一个Node的核心模块，比如path、http，直接返回核心模块，并且停止查找(`require("path")`)
+  - 如果XX是一个路径
+    - 如果有后缀名，按照后缀名的格式查找对应的文件(`require("./abc.js")`)
+    - 如果没有后缀名
+      1. 直接查找文件XX
+      2. 查找XX.js文件
+      3. 查找XX.json文件
+      4. 查找XX.node文件
+    - 如果没有找到对应的文件，将XX作为目录，并查找目录下的index文件
+      1. XX/index.js文件
+      2. XX/index.json文件
+      3. XX/index.node文件
+  - 既不是路径也不是核心模块，去`node_modules`查找
+
+### 模块的加载过程
+
+1. 模块再被第一次引入的时候，模块中的js代码会被执行一次
+2. 模块被多次引入时，会缓存，最终只加载（运行）一次
+   - 因为模块对象module有个属性`loaded`，ture表示已经加载，false表示未加载
+3. 循环引入的加载顺序，深度优先搜索
+
+![循环引用的加载顺序](./Image/23.png)
