@@ -3,7 +3,7 @@
  * @Autor: LC
  * @Date: 2022-01-20 10:45:55
  * @LastEditors: LC
- * @LastEditTime: 2022-02-07 21:24:31
+ * @LastEditTime: 2022-02-08 11:29:07
  * @Description: file content
 -->
 # JavaScipt语法
@@ -4242,3 +4242,278 @@ exports = {
 3. 循环引入的加载顺序，深度优先搜索：main->aaa->ccc->ddd->eee->bbb
 
 ![循环引用的加载顺序](./Image/23.png)
+
+
+**暂停 跳过 工作暂时不涉及 为时间紧张暂不学习**
+
+## JSON-数据存储
+
+**JSON**是非常重要的**数据格式**，轻量级资料交换格式  
+
+- JSON使用场景
+  - 网络数据的传输JSON数据
+  - 项目的配置文件
+  - 非关系型数据库（NoSQL）将json作为存储格式
+
+- JSON的顶层支持三种类型的值
+  - 简单值：数字（Number）、字符串（String，不支持单引号）、布尔类型（Boolean）、null类型
+  - 对象值：k-v组成，key是字符串类型，而且必须双引号，值可以是简单值、对象值、数组值
+  - 数组值：数组的值可以是简单值、对象值、数组值
+
+```json
+123
+```
+
+```json
+"123"
+```
+
+```json
+null
+```
+
+```json
+true
+```
+
+```json
+{
+    "name" : "x",
+    "frien" : {
+        "name" : "y"
+    },
+    "hobbies" : ["1", "2"]
+}
+```
+
+```json
+[
+    "abc",
+    1234,
+    {
+        "name" : "x"
+    }
+]
+```
+
+> JSON注释不能写  
+> 最后一个item后面不能加上逗号
+
+### JS中使用JSON
+
+```javascript
+const obj = {
+    name : "x",
+    age : 10,
+    hobbies : ["1", "2"]
+}
+
+// 将obj转成JSON格式的字符串
+const objString = JSON.stringify(obj);
+console.log(objString);
+
+// JSON格式转成对象
+const info = JSON.parse(objString);
+console.log(info);
+```
+
+### 一些细节
+
+```javascript
+const obj = {
+    name : "x",
+    age : 10,
+    hobbies : ["1", "2"]
+}
+// JSON.stringify(value : any, replacer ?: (this : any, key : string, value : any) => any, splace ? : string | number) : string
+
+// 直接转换
+const objString = JSON.stringify(obj);
+console.log(objString);
+
+// stringify的第二个参数 replacer
+
+// replacer传入数组 设定哪些key是需要转换的
+const objString2= JSON.stringify(obj, ['name', 'age']);
+console.log(objString2);
+
+// 传入回调函数 遍历整个kv对，对数据进行处理
+const objString3 = JSON.stringify(obj, (key, value) => {
+    if(key === "age"){
+        value += 1;
+    }  
+    return value;
+});
+console.log(objString3);
+
+// stringify的第三个参数用于美化，第二个参数设null表示使用默认的
+
+// 传入数字，表示缩进空格数目
+const jsonString4 = JSON.stringify(obj, null, 2);
+console.log(jsonString4)
+
+const jsonString5 = JSON.stringify(obj, null, 4);
+console.log(jsonString5)
+
+// 传入字符，表示缩进不使用空格，而是指定字符串
+const jsonString6 = JSON.stringify(obj, null, ".");
+console.log(jsonString6)
+```
+
+> `JSON.stringify`方法的一些解释和用法
+
+```javascript
+const obj = {
+    name : "x",
+    age : 10,
+    hobbies : ["1", "2"],
+    toJSON : function() {
+        return "myself JSON String";
+    }
+}
+
+const objString = JSON.stringify(obj);
+console.log(objString);
+
+const objString3 = JSON.stringify(obj, (key, value) => {
+    if(key === "age"){
+        value += 1;
+    }  
+    return value;
+});
+console.log(objString3);
+```
+
+> 当对象中存在`toJSON`方法时，`JSON.stringify`会直接使用`toJSON`的返回值
+
+```javascript
+const objString = '{"name":"x","age":10,"hobbies":["1","2"]}';
+const obj = JSON.parse(objString);
+
+// JSON.parse(text : string, reviver : (this : any, key : string, value : any) => any) : any
+
+// 第二个参数 reviver，对每个key、value进行操作
+const obj2 = JSON.parse(objString, (key, value) => {
+    if(key === "age"){
+        value += 1;
+    }
+    return value;
+});
+console.log(obj2);
+```
+
+### 利用JSON做深拷贝
+
+就是利用`JSON.stringify`和`JSON.parse`做对象转换
+
+## 自定义深拷贝函数
+
+- 几种对象赋值关系
+  - 引入的赋值：指向同一个对象，互相之间影响(`x = y`)
+  - 对象的浅拷贝：只是浅层的拷贝，内部引入对象时，依然会互相影响(`x = [...y]`)
+  - 对象的深拷贝：两个对象不再有任何关系，不会互相影响
+
+```javascript
+// 简单的深拷贝
+let s1 = Symbol();
+const boj = {
+    name : "x",
+    foo : function() {
+        return 1;
+    }
+    [s1] : "qwe",
+}
+boj.inner = obj;    // 某些情况需要自己引用自己
+const info = JSON.parse(JSON.stringify(boj));
+```
+
+> 利用JSON深拷贝对象时，对函数无法进行处理  
+> 如果`Symbol`作为key，也无法处理  
+> 不支持循环引用  
+
+- 自定义深拷贝函数
+  - 自定义深拷贝的基本功能
+  - 对`Symbol`的key进行处理
+  - 其他数据类型的值进程处理：数组、函数、Symbol、Set、Map
+  - 对循环引用的处理
+
+```javascript
+function isObject(value){
+    const valueType = typeof value;
+    return (value !== null) && (valueType === "object" || valueType === "function");
+}
+
+// 因为deepClone可能在多个地方调用，所以将noteObjs声明为局部变量
+// 又因为Map是强引用会影响对象的销毁，所以需要使用WeakMap弱引用
+function deepClone(originValue, noteObjs = new WeakMap()){
+    // 判断是否是set类型 这里写的是浅拷贝 一般而言够用
+    if (originValue instanceof Set){
+        return new Set([...originValue]);
+    }
+
+    // 判断是否是map类型 这里写的是浅拷贝 一般而言够用
+    if (originValue instanceof Map){
+        return new Map([...originValue]);
+    }
+    
+    // 一般而言函数可以复用 直接返回就行
+    if(typeof originValue === "function"){
+        return originValue;
+    }
+    
+    // 普通类型直接return 普通类型是值拷贝
+    if(!isObject(originValue)){  
+        return originValue;
+    }
+
+    if(noteObjs.has(originValue)){
+        return noteObjs.get(originValue);
+    }
+    
+    // 不做判断，数组直接赋值给对象是错误的效果
+    // const newObj = {};
+    const newObj = Array.isArray(originValue) ? [] : {};    
+    noteObjs.set(originValue, newObj);  // 记录一下 表示该对象本次被处理了 防止对象中循环引用
+    for(const key in originValue){
+        newObj[key] = deepClone(originValue[key], noteObjs);  // 递归拷贝复制
+    }
+    
+    // 对Symbol的key做特殊处理，因为Symbol作为key时遍历不到
+    const symbolKeys = Object.getOwnPropertySymbols(originValue);
+    for(const sKey of symbolKeys){
+        // 一般而言Symbol是为了防止对象内部key的冲突，不同对象倒不影响
+        // const newsKey = Symbol(sKey.description);
+        // newObj[newsKey] = deepClone(originValue[sKey]);
+        newObj[sKey] = deepClone(originValue[sKey], noteObjs);
+    }
+
+    return newObj;
+}
+const s1 = Symbol("aaa");
+const s2 = Symbol("bbb");
+const obj = {
+    name : "x",
+    age : 10,
+    friend : {
+        name : "y",
+        age : 11,
+        address : {
+            city : "BJ"
+        }
+    },
+    hobbies : [1, 2, 3],
+    foo : function(){
+        console.log("qwer");
+    },
+    [s1] : "aaa",
+    s2key : s2,
+    set : new Set([1, 2, 3, 4]),
+    map : new Map([["x", 1], ["y", 2]])
+}
+
+obj.inner = obj;    // 自己引用自己
+
+const newObj = deepClone(obj);
+console.log(newObj);
+```
+
