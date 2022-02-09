@@ -491,3 +491,599 @@ function sum(...nums : number[]) : number{
 }
 console.log(sum(1, 2, 3, 4, 5, 6));
 ```
+
+### 函数的重载
+
+```typescript
+function add(a1 : number | string, a2 : number | string){
+
+    return a1 + a2; // Error 因为 a1 是 number | string 类型， a2 是 number | string类型，这个(number | string)类型没有加法
+
+    if (typeof a1 === 'number' && typeof a2 === 'number'){
+        return a1 + a2;
+    } else {
+        // ...
+    }
+}
+
+```
+
+> 通过判断类型的方法，会导致各种类型判断的问题，突出一个复杂
+
+- 函数的重载：函数的名称相同，但是参数不同的几个函数，就是函数的重载
+
+```typescript
+function add(num1: number, num2: number) : number;  // 定义函数
+function add(num1: string, num2: string) : string;  // 定义函数
+
+// 实现函数
+function add(num1: any, num2: any){
+    if(typeof num1 === 'string' && typeof num2 === 'string'){
+        return num1.length + num2.length;
+    }
+    return num1 + num2;
+}
+
+add(1, 2);
+add("23", "23");
+// 在重载的函数中，实现函数是不能直接被调用的
+add(true, false);   // Error
+```
+
+- TS的重载 突出一个难受
+- 优先使用联合类型实现，如果联合类型可以实现的话
+
+## 类的使用
+
+### 类的定义
+
+- 类定义时，属性必须初始化
+
+```typescript
+class Person{
+    name: string = "";
+    age: number = 0;
+
+    eating() {
+        console.log(this.name, this.age);
+    }
+}
+
+class Person1 {
+    name: string;
+    age: number;
+    constructor(name: string, age: number){
+        this.name = name;
+        this.age = age;
+    }
+    eating() {
+        console.log(this.name, this.age);
+    }
+}
+```
+
+> 属性要么定义时初始化，要么在构造函数初始化，否则会报错
+
+### 继承
+
+```typescript
+class Person{
+    name: string = "";
+    age: string = 0;
+
+    eating() {
+
+    }
+}
+class Student extends Person{
+    sno: number = 0;
+    constructor(name: string, age: number, sno: number){
+        this.name = name;
+        this.age = age;
+        this.sno = sno;
+    }
+    studying() {
+
+    }
+}
+```
+
+> 父类没有定义构造函数
+
+```typescript
+class Person{
+    name: string;
+    age: string;
+    constructor(name: string, age: string){
+        this.name = name;
+        this.age = age;
+    }
+    eating() {
+
+    }
+}
+class Student extends Person{
+    sno: number = 0;
+    constructor(name: string, age: number, sno: number){
+        super(name, age);   // 调用父类的构造函数 super等于父类
+        this.sno = sno;
+    }
+    studying() {
+
+    }
+    // 重写
+    eating() {
+        super.eating();     // 调用父类的eating方法
+        console.log("s");
+    }
+}
+```
+
+> 父类定义了构造函数
+
+### 多态
+
+```typescript
+class Animal{
+    action(){
+        console.log("animal running");
+    }
+}
+class Dog extends Animal{
+    action(){
+        console.log("Dog running");
+    }
+}
+class Fish extends Animal{
+    action(){
+        console.log("Fish running");
+    }
+}
+function runAction(animals : Animal[]){
+    animals.forEach(animal => {
+        animal.action();
+    })
+}
+runAction([new Dog(), new Fish()]);
+```
+
+> 父类引用指向子类对象
+
+### 类的成员修饰符
+
+- 类的成员修饰符
+  - public：任何地方可见，公有的属性、方法(默认public)
+  - private：仅在同一类中可见，私有的属性、方法
+  - protected：仅在类自身及子类中可见，受保护的属性、方法
+
+```typescript
+class Person{
+    private name: string = "";
+
+    // 封装方法访问属性
+    getName(){
+        return this.name;
+    }
+    setName(val: string){
+        this.name = newName;
+    }
+}
+
+```
+
+### 只读属性 readonly
+
+- readonly修饰属性时，该属性只能在构造函数中赋值，但是赋值之后不可修改
+
+```typescript
+class Foo{
+    age: number = 10;
+}
+class Person{
+    readonly name: string;
+    readonly foo : Foo;
+    constructor(name: string, foo: Foo){
+        this.name = name;
+        this.foo = foo;
+    }
+}
+
+let p = new Person("123", new Foo());
+p.name = "234";     // Error
+p.foo.age = 20;     // Success
+```
+
+> 不能修改readonly指向的对象，但是可以修改readonly对象内部的属性
+
+### 属性的get、set
+
+- 一般而言，私有变量前面会加上下划线
+
+```typescript
+class Person{
+    private _name: string;
+    constructor(name: string){
+        this._name = name;
+    }
+
+    // 访问器
+    set name(val: string) {
+        this._name = val;
+    }
+    get name() {
+        return this._name;
+    }
+}
+
+const p = new Person('x');
+p.name = "y";
+```
+
+### 类的静态成员
+
+不用new出对象，可以直接通过类名访问的属性和方法
+
+```typescript
+class Person{
+    static time: string = "20:00";
+    static attendClass(){
+        console.log("static function");
+    }
+}
+console.log(Person.time);
+console.log(Person.attendClass());
+```
+
+### 抽象类
+
+- 在定义很多通用的调用接口时，通常会让调用者传入父类，通过多态来实现更加灵活的调用方式，但是**父类本身可能不需要对某些方法进行具体的实现**，所以父类中定义的方法，我们可以定义为抽象方法
+
+```typescript
+abstract class Shape{
+    abstract getArea(): number;
+}
+
+class Rectangle extends Shape{
+    private width: number;
+    private height: number;
+
+    constructor(width: number, height: number){
+        super();
+        this.width = width;
+        this.height = height;
+    }
+
+    getArea(){
+        return this.width * this.height;
+    }
+}
+
+class Circle extends Shape{
+    private r: number;
+    constructor(r: number){
+        super();
+        this.r = r;
+    }
+
+    getArea(){
+        return this.r * this.r *3.1415;
+    }
+}
+
+function makeArea(shape: Shape){
+    return shape.getArea();
+}
+makeArea(new Rectangle(10, 20));
+makeArea(new Circle(10));
+```
+
+- **抽象方法**(`abstract getArea`)必须定义在**抽象类**中(`abstract class Shape`)
+- 如果只给函数加上`abstract`而不给类加上`abstract`是会报错的
+- **抽象类**中可以实现其他方法，有实现体的方法不用加上`abstract`
+
+继承**抽象类**时，必须实现**抽象方法**
+
+### 类的类型
+
+- 用类作为类型
+
+```typescript
+class Person{
+    name: string = "123";
+
+    eating() {
+
+    }
+}
+
+function printPerson(p: Person){
+    console.log(p.name);
+}
+let p: Person = new Person();
+let p1: Person = {
+    name : "x",
+    eating() {
+
+    }
+}
+printPerson(p);
+printPerson(p1);
+```
+
+### 枚举类型
+
+枚举就是将一组可能出现的值，一个个列举出来，定义在一个类型中，这个类型就是枚举类型  
+枚举允许开发者定义一组命名常量，常量可以是数组、字符串类型  
+
+```typescript
+enum Direction {
+    LEFT = 100,         // 100
+    RIGHT,              // 101
+    TOP,                // 102
+    BOTTOM = 104        // 104
+}
+enum Direction2 {
+    LEFT = "LEFT",      
+    RIGHT = "RIGHT",      
+    TOP = "TOP",        
+    BOTTOM  = "BOTTOM"    
+}
+
+function turnDirection(direction: Direction){
+
+}
+turnDirection(Direction.LEFT);
+turnDirection(Direction.RIGHT);
+turnDirection(Direction.TOP);
+turnDirection(Direction.BOTTOM);
+```
+
+> 编程习惯——枚举类型大写
+
+
+## 接口
+
+**interface**
+
+### 声明对象类型
+
+- 接口类型定义时，会在类型前多加一个`I`，表示该类型为interface
+
+```typescript
+// 通过type声明对象类型
+type InfoType = {name: string, age: number}
+
+// 接口interface
+
+interface IInfoType = {name: string, age: number}
+
+const info: IInfoType = {
+    name: "x",
+    age: 19
+}
+
+```
+
+### 索引类型
+
+- 使用**interface**来限制对象的索引类型
+
+```typescript
+interface IIndexLanguage{
+    [index: number]: string
+}
+
+// 限制frontLanguage必须是number索引string
+const frontLanguage: IIndexLanguage = {
+    0: "HTML",
+    1: "CSS",
+    2: "JavaScript",
+    3: "Vue",
+}
+```
+
+### 函数类型
+
+```typescript
+function calc(num1 : number, num2 : number, calcFn: (n1: number, n2: number) => number){
+    return calcFn(num1, num2);
+}
+
+type CalcFn = (n1: number, n2: number) => number;
+function calc(num1 : number, num2 : number, calcFn: CalcFn){
+    return calcFn(num1, num2);
+}
+
+interface encrypt {
+  (key: string, value: string): string;
+}
+
+// 对传入的参数以及返回值进行约束
+let md1: encrypt = function (key: string, value: string): string {
+  return key + value;
+}
+console.log(md1('张三', '初一一班'));
+
+
+let md2: encrypt = function (key: string, value: string): string {
+  return key + value;
+}
+console.log(md2('李四', '初二三班'));
+```
+
+### 接口的继承
+
+TS的class不支持多重继承，但是interface支持多重继承
+
+```typescript
+interface ISwim{
+    swimming:() => void;
+}
+
+interface IFly{
+    flyin: () => void;
+}
+
+interface IAction extends ISwim, IFly{
+
+}
+
+const action: IAction = {
+    swimming() {}
+}
+```
+
+### 交叉类型
+
+```typescript
+type WhyType = number | string;
+type Direction = 'left' | 'right' | 'center';
+
+// 另一种组合类型的方式：交叉类型
+type WType = number & string;
+
+interface ISwim{
+    swiming:() => void;
+}
+
+interface IFly{
+    flying: () => void;
+}
+
+type MyType1 = ISwim | IFly;
+type MyType2 = ISwim & IFly;
+
+const obj: MyType1 = {
+    flying() {
+
+    }
+}
+
+const obj1: MyType2 = {
+    swimming() {
+
+    },
+    flying() {
+
+    }
+}
+```
+
+### 接口的实现
+
+- 推荐使用面向接口编程，降低耦合度
+
+```typescript
+interface ISwim{
+    swimming: ()=>void;
+}
+
+interface IEat{
+    eating: ()=>void;
+}
+
+// 类实现接口
+class Animal  {
+
+}
+
+class Fish extends Animal implements ISwim, IEat{
+    swimming() {
+        console.log("animal swiming");
+    }
+    eating() {
+        console.log("animal eating");
+    }
+}
+
+class Person implements ISwim{
+    swimming() {
+        console.log("Person swimming");
+    }
+}
+
+function swimAction(swimer: ISwim){
+     swimer.simming();
+}
+
+swimAction(new Fish());
+swimAction(new Person());
+```
+
+### interface 和 type的区别
+
+![官方对interface和type的区分](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces)
+
+- interface和type都可以用来定义对象类型
+  - 如果定义非对象类型，通常推荐使用type，比如前面代码中的：Direction、Alignment、一些Funciton
+  - 如果定义对象类型，他们是有区别的（推荐使用interface）
+    - interface可以重复的对某个接口来定义属性和方法
+    - type定义的是别名，别名是不能重复的
+
+```typescript
+interface IFoo{
+    name: string
+}
+
+interface IFoo{
+    age: number
+}
+
+const foo: IFoo = {
+    name : "x",
+    age : 10
+}  
+```
+
+> 名称相同的interface最后会合并到一起  
+> 比如上面的两个`IFoo`不会报错，最后定义的foo变量需要实现name和age属性  
+
+```typescript
+type IBar = {
+    name: string;
+}
+type IBar = {
+    age: number;
+}
+```
+
+> `Duplicate identifier 'IBar'`
+
+### 字面量赋值
+
+```typescript
+interface IPerson{
+    name: string,
+    age: number,
+    height: number
+}
+
+const p: IPerson = {
+    name: "why",
+    age: 19,
+    height: 198,
+    address: "BJ"
+};  // Error 多了address属性
+
+let p1 = {
+    name: "why",
+    age: 19,
+    height: 198,
+    address: "BJ"
+}
+let p2: Person = p1;    // Success 可以赋值
+console.log(p2);
+```
+
+**为什么直接赋值字面量给p变量时会报错**
+
+typescript会对`{name: "why",age: 19,height: 198,address: "BJ"}`进行类型推导=>`{name,age,height,address}`，这个推导出来的类型就是`p`最后的类型，而这个最后的类型跟`IPerson`不相同，所以报错
+
+而`p2: Person = p1`中，是给`p2`赋值成了`p1`的引用，在赋值的过程中会进行**freshness擦除**的操作  
+
+**freshness擦除**操作就是给将`p1`赋值给`p2`进行类型检测的时候，将多余的属性进行**擦除**，不是将属性去除掉，而是类似不考虑多余属性的操作
+
+> 通过**freshness擦除**的操作，让函数传参的时候更加灵活  
+
+## 泛型
+
