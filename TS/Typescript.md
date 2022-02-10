@@ -1029,7 +1029,7 @@ interface IFoo{
     age: number
 }
 
-const foo: IFoo = {
+onst foo: IFoo = {
     name : "x",
     age : 10
 }  
@@ -1087,3 +1087,208 @@ typescript会对`{name: "why",age: 19,height: 198,address: "BJ"}`进行类型推
 
 ## 泛型
 
+**为了让代码具有很强的可重用性**
+
+在定义函数的时候，不决定参数的类型，而是让调用者以参数的形式决定函数参数应该是什么类型  
+
+```typescript
+function sum2<Type>(num1 : Type, num2: Type){
+    return num1 + num2; // Error Type不一定是可以相加的类型 比如数组
+}
+
+function sum<Type>(num1: Type, num2: Type){
+    return num1;
+}
+function sum1<Type>(num1: Type){
+    return num1;
+}
+console.log(typeof sum<number>(20, 30) === 'number');
+
+// 1. 明确传入类型
+sum<number>(20, 30);
+sum<{name : string}>({name: "x"}, {name: "y"});
+sum<any[]>([20], [30]);
+
+// 2. 类型推导
+sum1(40);
+```
+
+![类型推导](./Image/24.png)
+
+> 类型推导出来`Type`是字面量类型，如果不想是字面量类型就需要`sum<number>(40)`明确指定类型  
+
+```typescript
+function foo<T, V>(arg1: T, arg2: V){
+    console.log(arg1, arg2);
+}
+foo<number, string>(10, "qwer");
+```
+
+### 泛型接口
+
+```typescript
+interface IPerson<T1, T2>{
+    name: T1,
+    age: T2
+}
+
+let p: IPerson<string, number> = {
+    name: "x",
+    age: 10
+}
+
+interface IStu<T1 = string, T2 = number>{
+    name: T1,
+    age: T2
+}
+
+let p2: IStu = {
+    name: "y",
+    age: 10
+}
+```
+
+> 泛型接口没有类型推导，所以必须写明类型，例：IPerson  
+> 可以使用默认类型，例：IStu  
+
+### 泛型类
+
+```typescript
+class Point<T>{
+    x: T;
+    y: T;
+    z: T;
+
+    constructor(x: T, y: T, z: T){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}
+
+let p0 = new Point<string>("1", "2", "3");
+// 类型推导
+const p = new Point("1", "2", "3");
+```
+
+> 泛型类可以类型推导
+
+### 泛型的类型约束
+
+```typescript
+// 使用联合类型
+function getLength(arg: string | any[]){
+    return arg.length;
+}
+
+interface ILength{
+    length: number
+}
+// 使用泛型
+function getLength1<Type extends ILength>(arg: Type){
+    return arg.length;
+}
+
+getLength1("abav");
+getLength1([1, 2, 3, 4]);
+getLength1({length: 100});
+```
+
+> 使用`extends`来限制Type的类型或者必须包含的属性等
+
+## 模块化
+
+```typescript
+// math.ts文件
+export function add(num1: number, num2: number){
+    return num1 + num2;
+}
+
+export function sub(num1: number, num2: number){
+    return num1 - num2;
+}
+
+// index.ts
+import {add, sub} from "./math"
+console.log(add(1, 2));
+console.log(sub(1, 2));
+```
+
+### 命名空间
+
+命名空间在typescript早期时，称之为内部模块，主要目的是将一个模块内部再进行作用域的划分，防止一些命名冲突的问题  
+
+```typescript
+namespace time {
+    export function format(time: string){
+        return "2022-1-1";
+    }
+
+    function foo(){
+
+    }
+
+    let name: string = "time"
+}
+namespace price {
+    export function format(price: number){
+        return "100,000,000";
+    }
+
+    function foo(){
+
+    }
+    let name: string = "price "
+}
+
+export namespace test{  // 导出命名空间
+    export function Run(){
+
+    }
+}
+
+time.format("1234");    // Success
+time.foo();             // Error
+time.name;              // Error
+
+// index.ts
+import {test} from './test.ts'  // 
+test.Run();
+```
+
+> 如果想要函数、自变量可以在命名空间的外部进行访问，需要将其设置为`export`
+
+### 类型的查找
+
+之前我们所有的typescript中的类型，几乎都是我们自己编写的，但是也有用过一些其他的类型  
+
+> `const imageEl = document.getElementById("image") as HTMLImageElement`
+
+上述代码中的`HTMLImageElement`我们没有进行定义或者声明，那么它是从哪里来的呢？  
+
+- Typescript对类型的**管理和查找规则**  
+
+之前编写的代码都是.ts文件中的，这些文件最终会输出成.js文件。除此之外，还有另一种.d.ts文件，他hi是用来做类型的声明(declare)。它仅仅是用来做类型检测，告知typescript有哪些类型  
+
+- TS会在这些地方查找类型声明
+  - 内置类型声明：安装typescript时自带的，包括Array等[TS内置类型(.d.ts文件))](https://github.com/microsoft/Typescript/tree/main/lib)
+  - 外部定义类型声明：安装的一些库，自带`.d.ts`文件，表示对三方库的类型声明
+    - 安装的三方库中自带`.d.ts`类型声明文件
+    - 安装的三方库，通过社区的公有库`DefinitelyTyped`存放类型声明文件
+      - [该库的地址](https://github.com/DefinitelyTyped/DefinitelyTyped)
+      - [该库查找声明安装方式的地址](https://www.typescriptlang.org/dt/search?search=)
+      - 比如安装react的类型声明：`npm io @types/react --save-dev`
+  - 自己定义类型声明
+    - 使用的第三方库是一个纯的Javascript库，没有对应的声明文件时，需要自己定义，比如：`lodash`
+    - 我们自己的代码中声明一些类型，方便在其他地方直接进行使用
+
+```typescript
+// 内置声明 HTMLImageElement 
+const imageEl = document.getElementById("image") as HTMLImageElement;
+
+// 自定义类型声明 
+// MyD.d.ts 自己声明lodash库
+declare module 'lodash' {
+    export function join(arr: any[]): void;
+}
+```
