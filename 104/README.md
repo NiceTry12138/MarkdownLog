@@ -210,3 +210,48 @@ void tickMain(float delta_time) {
 
 一般来说高层次的发展会更加快速，低层次发展会较慢
 
+## 构建游戏世界
+
+1. 动态物：游戏中会运动的物体，例如：人
+2. 静态物：游戏中不会移动的物体，例如：房子
+3. 地形系统
+4. 植被
+5. 天空
+
+游戏中所有的物体都可以抽象成GO->**GameObject**，游戏最重要的就是管理这些GameObject
+
+那么如何定义游戏中的对象？
+
+最经典的做法就是**继承**，鸭子=>会叫的鸭子=>会飞的鸭子=>...
+
+但是随着游戏越做越复杂，很多东西并没有清晰的父子关系：水陆两栖坦克(坦克+巡逻艇， 坦克派生自汽车，巡逻艇派生自船)
+
+为了应对**继承**带来的一些问题，现代游戏引擎提供了**组件化**的开发方法，将行为/能力拆分到组件中，然后添加到对象上
+
+对于**组件化**开发，最容易想到的就是枪械了，比如吃鸡中的1、2、3、4倍镜，各种握把等，都可以理解为组件，为枪械提供了某些能力
+
+```cpp
+class BaseComponent {
+
+}
+
+class TransformComponnet : public BaseComponent{
+
+};
+
+class AIComponent : public BaseComponnet {
+
+};
+
+class FlyComponent : public BaseComponent {
+
+};
+
+class GameobjectBase {
+    vector<BaseComponent*> Components;
+}
+
+class FlyRobot : public GameobjectBase {
+    Components = [FlyComponent, AIComponent, TransformComponnet];
+}
+```
