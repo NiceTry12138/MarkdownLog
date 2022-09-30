@@ -212,6 +212,8 @@ void tickMain(float delta_time) {
 
 ## 构建游戏世界
 
+### GameObject和Component
+
 1. 动态物：游戏中会运动的物体，例如：人
 2. 静态物：游戏中不会移动的物体，例如：房子
 3. 地形系统
@@ -255,3 +257,114 @@ class FlyRobot : public GameobjectBase {
     Components = [FlyComponent, AIComponent, TransformComponnet];
 }
 ```
+
+角色能力统一封装到组件中，在角色中存储这些组件，即代表角色存在这些能力，此时想要添加或者修改能力只需要添加或者替换组件即可实现
+
+![U3D和UE对组件的支持](./Image/104_08.png)
+
+> U3D和UE中的Component
+
+**综上**：游戏中的任何物体都是一个GameObject，每个GameObject由各种不同的Component组成
+
+### GameObject之间的交互
+
+最简单的写法就是
+
+```cpp
+void Bomb::OnExpode(){
+    // 炸弹要自己判断各种类型的处理方式
+    // ...
+    switch(touch_type){
+        case TouchType.Humen:
+            // 扣血
+            break;
+        case TouchType.Tank:
+            // 扣血
+            break;
+        case TouchType.Stone:
+            // 不做处理
+            break;
+    }
+    // ...
+}
+```
+
+上面就是最暴力的写法，爆炸的时候获得爆炸影响的对象，用switch判断其类型，走不同的逻辑
+
+这种写法最大的问题就是，**不好维护**，当后续对象类型添加到几百种，总不能写几百种Switch-case
+
+此时，比较好的解决方案其实是 **事件**（Event） 机制
+
+参考设计模式：观察者模式，使用事件的好处就是只是通知被影响的物体发生了何种事情，由被通知的对象自行做后续处理
+
+```cpp
+void Bomb::OnExpode(){
+    // ...
+    sendExploadEvent(go_actor); // 炸弹只做事件分发，不做数据处理
+    // ...
+}
+```
+
+```cpp
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_TwoParams(FActorComponentActivatedSignature, UActorComponent, OnComponentActivated, UActorComponent*, Component, bool, bReset);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FActorComponentDeactivateSignature, UActorComponent, OnComponentDeactivated, UActorComponent*, Component);
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FActorComponentGlobalCreatePhysicsSignature, UActorComponent*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FActorComponentGlobalDestroyPhysicsSignature, UActorComponent*);
+```
+
+> 虚幻中的事件声明
+
+### GameObject的管理
+
+每个GameObject都需要一个唯一ID 作为唯一标识  
+每个GameObject都需要一个坐标
+
+> 这里GameObject是场景中的物体，并非UE中的UObject这种，更像是UE中的AActor
+
+![八叉树](./Image/104_09.png)
+
+上图中左边为普通网格管理，右边为八叉树管理
+
+因为地图中的物体并不是均匀分布的，导致如果采用网格管理的方式，会出现一些网格中的对象过多，另一部分网格中却没有对象
+
+
+当然除了**八叉树**外，还有其他的算法去做场景对象管理
+
+![场景对象管理](./Image/104_10.png)
+
+当时游戏发开并没有完全通用的解决方案，还是不同情况采用更为合适的方案为宜
+
+### 其他
+
+当子GameObject绑定到父GameObject后，tick时要先计算父GameObject，再计算子GameObject
+
+再比如消息的传递，A给B发送信息，同时B也给A发送了信息，此时微观上其实是由先后顺序的，但是如果信息的处理是交给两个核心处理，那么可能这次是A先收到信息，下次是B先收到信息，这样程序的运行结果可能不同，导致严重的问题出现
+
+所以，很多时候会有信息管理器，将信息统一发送到一个管理器中，再由管理器去根据顺序统一发送信息
+
+因此游戏引擎中，**时序**是一个很重要的问题，需要着重考虑
+
+## 游戏引擎的渲染
+
+游戏绘制系统会遇到的问题
+1. 成千上万的渲染对象和千奇百怪的渲染类型(水体、植被、角色、云等绘制算法各不相同)
+2. 深度适配当代硬件(CPU、GPU)
+3. 如何把计算时间维持在固定的时间内，以此来维持帧率
+4. 游戏渲染不能占用100%的CPU资源，否则其他模块无法计算
+
+ ### 基础游戏渲染
+
+1. 传入顶点的3D空间坐标
+2. 映射顶点的3D空间坐标到屏幕空间上
+3. 三角面片
+4. 栅格化
+5. 贴图
+6. 输出
+
+ ### 材质、Shader和光照
+
+ ### 特殊的渲染（后处理）
+
+ ### 管道
+
