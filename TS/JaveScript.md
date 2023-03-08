@@ -188,7 +188,7 @@ function foo(){
     console.log(message);
 }
 function bar(){
-    message = "Hello Bar";
+    var message = "Hello Bar";
     foo();
 }
 
@@ -213,6 +213,7 @@ bar();      // 输出 Hello Global
 function foo(){
     m = 100;
 }
+foo();
 console.log(m);
 
 function foo1(){
