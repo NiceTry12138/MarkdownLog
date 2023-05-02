@@ -353,7 +353,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FActorComponentGlobalDestroyPhysicsSignature
 3. 如何把计算时间维持在固定的时间内，以此来维持帧率
 4. 游戏渲染不能占用100%的CPU资源，否则其他模块无法计算
 
- ### 基础游戏渲染
+渲染顺序
 
 1. 传入顶点的3D空间坐标
 2. 映射顶点的3D空间坐标到屏幕空间上
@@ -362,9 +362,51 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FActorComponentGlobalDestroyPhysicsSignature
 5. 贴图
 6. 输出
 
- ### 材质、Shader和光照
+![](./Image/104_11.png)
 
- ### 特殊的渲染（后处理）
+一些游戏内的物体需要挂载`MeshComponent`才能被渲染出来，换句话说物体想要被看到需要挂载一些 `Renderable` 的组件
 
- ### 管道
 
+`Mesh Primitive` 网格基本体的形状数据
+
+通过记录每个点的坐标、连接关系可以绘制出一个形状
+
+```cpp
+struct Vertex {
+    Vector3 m_Position;
+    UByte4 m_Color;
+    Vector3 m_Normal;
+}
+
+struct Triangle {
+    Vertext m_Vertex[3];
+};
+```
+
+使用 `OpenGL` 或者 `DX` 时可以发现，并没有定义 `Triangle` 这种对象，而是使用一个数组去存储所有的顶点，然后模型去存出顶点的索引值。因为一些顶点是通用的，如果每个三角形都存储所有点的信息，很多信息就是冗余的，浪费了内存空间
+
+![](./Image/104_12.png)
+
+`Mesh Primitive` 网格基本体的材质数据
+
+常见的渲染模型：`Phong Model`、`PBR Model`、`Subsurface Material`....
+
+除了模型之外，纹理`Texture`也非常重要
+
+另外还有`Shader`着色器
+
+每个 Mesh 可以有多个 submesh 来使用不同的贴图
+
+![](./Image/104_13.png)
+
+抽象来看就是：将整个 Mesh 抽成了一个大buffer， 每个 submesh 只用了 buffer 中的一部分；每个 submesh 有对应的材质、贴图、shader
+
+如果场景中存在很多的Mesh，那么数据量会特别大，甚至很多Mesh 会使用相同的贴图、材质等
+
+现代游戏引擎中，一般的做法是建立 Pool：`MeshResPool`、`ShaderResPool`、`TextureResPool`，那么即使场景中有多个相同的Mesh，其对应的内存数据也只用存储一份即可
+
+![](./Image/104_14.png)
+
+![](./Image/104_15.png)
+
+> 参考设计模式中的享元模式
