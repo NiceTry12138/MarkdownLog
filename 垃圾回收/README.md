@@ -466,7 +466,71 @@ dec_ref_cnt(obj) {
 - 同步开销：在多线程环境中，为了保证引用计数的正确性，可能需要使用锁或者其他同步机制来保护计数器，以防止并发的引用修改导致计数错误。这会增加额外的同步开销 
 - 内存开销：每个对象都需要一个额外的计数器来存储引用计数，这会增加内存开销
 
+于是引入 ZCT(Zero Count Table)， ZCT 是一个表，它会事先记录下计数器数值在 `dec_ref_cnt` 函数作用下变为0的对象
 
+![](Image/011.png)
+
+```cpp
+dec_ref_cnt(obj) {
+    obj.ref_cnt --
+    if(obj.ref_cnt == 0) {
+        if(is_full($zct) == true) {
+            scan_zct()
+        }
+        push($zct, obj)
+    }
+}
+```
+
+当 `obj` 的计数器值为0时，将 `obj` 添加到 `$zct` 中。如果 `$zct` 爆满，就需要先通过 `scan_zct` 函数来减少 `$zct` 中的对象
+
+```cpp
+new_obj(size) {
+    obj = pickup_chunk(size, $free_list)
+
+    if(obj == NULL) {
+        scan_zct()
+        obj = pickup_chunk(size, $free_list)
+        if(obj == NULL) {
+            allocation_fail()
+        }
+    }
+
+    obj.ref_cnt = 1
+    return obj
+}
+```
+
+第一次分配没有成功，意味着空闲链表中没有合适大小的分块，于是使用 `scan_zct` 释放一些分块之后再次尝试分配，如果还分配失败那就是失败了
+
+```cpp
+scan_zct() {
+    for(r: $roots) 
+        (*r).ref_cnt++
+
+    for(obj: $zct) {
+        if(obj.ref_cnt == 0) {
+            remove($zct, obj)
+            delete(obj)
+        }
+    } 
+    for(r: $roots) 
+        (*r).ref_cnt--
+}
+```
+
+在清理之前先增加所有根对象的引用计数，是为了防止在清理过程中误删除那些实际上还被根对象引用的对象。这种情况可能发生，因为在函数开始时，有些对象可能正好被放入了零计数表，但实际上它们仍然被根对象引用。对这些对象的引用计数进行增加，就可以防止它们被误删除。在清理结束后，再将这些引用计数减回去，就可以保证引用计数的正确性
+
+> 在并发环境中，如果两个线程同时修改同一个对象的引用计数（例如一个线程在增加计数，另一个线程在减少计数），可能会导致计数器的值与实际的引用数量不一致，即出现被根对象引用但引用计数为0的情况。这就需要使用锁或其他同步机制来保护引用计数器
+
+- **优点**
+
+延迟了根引用的计数，将垃圾一并回收。通过延迟，减轻了引用频繁发生变化而导致的计数器增减所带来的额外负担
+
+- **缺点**
+
+1. 垃圾无法立刻回收，这样垃圾回压迫堆，同时也丢失了引用计数的一大优点——即时垃圾回收
+2. `scan_zct` 函数导致最大暂停时间延长, `$zct` 越大要搜索的对象越多，占用的时间越长
 
 ### Sticky引用计数法
 
@@ -503,7 +567,105 @@ dec_ref_cnt(obj) {
 
 ### 1位引用计数法
 
+一位引用计数法是 Sticky引用计数法 的一个极端例子，因为计数器只有一位大小，所以瞬间就会溢出，看上去几乎没有什么意义
+
+在某些程序或系统中，对象之间的引用关系可能非常简单，大多数对象可能只被一个其他对象引用，也就是说，它们不是被共有的。考虑到这点，即使计数器只有1位，通过0表示引用数为1，用1表示引用数大于等于2，这样也可以有效的进行内存管理
+
+不过由于计数位宽只有1位，所以称之为标记位(`tag`)可能更加合适。设对象引用数位1时标签位为0，引用数大于等于2时标签位为1。分别称上述两种状态为 `UNIQUE` 和 `MULTIPLE`，处于 `UNIQUE` 状态下的指针为 **UNIQUE指针**，处于 `MULTIPLE` 状态下的指针为 **MULTIPLE指针**
+
 ### 部分标记-清除算法
+
+单纯使用 引用计数算法 无法处理循环引用的问题，使用 标记-清除算法 就不会出现这种问题。
+
+这个在之前的 Sticky引用计数法 中有提到过，但是直接运行标记-清除算法的效率很低。因为这里使用 标记清除 是为了解决循环引用的问题，但一般来说这种垃圾应该很少，单纯的标记清除算法又是以全部堆为对象的，所以会产生许多无用的搜索
+
+对此，只对 **可能有循环引用的对象群** 使用 GC标记-清除算法啊，对其他对象进行管理时使用引用计数法
+
+这种只对一部分对象群使用GC标记-清除算法的方法叫做 **部分标记-清除算法**
+
+一般**标记-清除算法**是为了找到活动对象，**部分标记-清除算法**目的则是为了查找非活动对象
+
+在部分标记-清除算法中会将对象涂成四种颜色来进行管理
+
+- 黑（BlACK）：绝对不是垃圾的对象（对象产生时的初始颜色）
+- 白（WHITE）：绝对是垃圾的对象
+- 灰（GRAY）：搜索完毕的对象
+- 阴影（HATCH）：可能是循环垃圾的对象
+
+毕竟不可能真的给对象上色，而是向头中分配2位空间，然后用 00~11的值对应这4个颜色
+
+![](Image/012.png)
+
+> 上图中 ABC 和 DE 是两个循环引用的对象群
+
+```cpp
+dec_ref_cnt(obj) {
+    obj.ref_cnt --
+    if(obj.ref_cnt == 0) {
+        delete(obj)
+    }
+    else if (obj.color != HATCH) {
+        obj.color = HATCH
+        enqueue(obj, $hatch_queue)
+    }
+}
+```
+
+与普通引用计数法不同的地方是增加了颜色判断，当 obj 的颜色不是阴影的时候，算法将其设置为阴影，并且添加到队列中。如果 obj 的颜色是阴影，那么它肯定已经添加到阴影队列中了
+
+![](Image/013.png)
+
+> 由根到 A 的引用被删除了，指向 A 的指针被追加到了队列($hatch_queue)中，并且 A 被设置为 Hatch
+> 连接到队列的对象会被作为 GC标记-清除算法 的对象，使得循环引用的垃圾被回收
+
+```cpp
+new_obj(size) {
+    obj = pickup_chunk(size)
+    if(obj != NULL) {
+        obj.color = BLACK
+        obj.ref_cnt = 1
+        return obj
+    } else if (is_empty($hatch_queue) == false) {
+        scan_hatch_queue()
+        return new_obj(size)
+    } else {
+        allocation_fail()
+    }
+}
+```
+
+当可以分配时，对象就会被涂成 黑色(BLACK)；当分配无法顺利进行时，程序会检查队列是否为空，如果不空则通过 `scan_hatch_queue` 函数搜索队列，分配分块
+
+```cpp
+scan_hatch_queue() {
+    obj = dequeue($hatch_queue)
+    if(obj.color == HATCH) {
+        paint_gray(obj)
+        scan_gray(obj)
+        collet_white(obj)
+    } else if (is_empty($hatch_queue) == false) {
+        scan_hatch_queue()
+    }
+}
+```
+
+如果取出的对象obj被涂上了阴影，程序就会将obj作为参数，依次调用 `paint_gray` `、scan_gray` 和 `collect_white`，从而通过这些函数找出循环引用的垃圾，将其回收
+
+当obj没有被涂上阴影时，就意味着obj没有形成循环引用。此时程序对obj不会进行任何操作，而是再次调用 `scan_hatch_queue`
+
+```cpp
+paint_gray(obj) {
+    if(obj.color == (BLACK | HATCH)) {
+        obj.color = GRAY
+        for(child: children(obj)) {
+            (*child).ref_cnt--;
+            paint_gray(*child)
+        }
+    }
+}
+```
+
+
 
 ## GC复制算法
 
