@@ -649,7 +649,7 @@ scan_hatch_queue() {
 }
 ```
 
-如果取出的对象obj被涂上了阴影，程序就会将obj作为参数，依次调用 `paint_gray` `、scan_gray` 和 `collect_white`，从而通过这些函数找出循环引用的垃圾，将其回收
+如果取出的对象obj被涂上了阴影，程序就会将obj作为参数，依次调用 `paint_gray` 、`scan_gray` 和 `collect_white`，从而通过这些函数找出循环引用的垃圾，将其回收
 
 当obj没有被涂上阴影时，就意味着obj没有形成循环引用。此时程序对obj不会进行任何操作，而是再次调用 `scan_hatch_queue`
 
@@ -663,11 +663,64 @@ paint_gray(obj) {
         }
     }
 }
+
+scan_gray(obj) {
+    if(obj.ref_cnt > 0) {
+        paint_black(obj)
+    } else {
+        obj.color = WHITE
+        for(child: children(obj)) {
+            scan_gray(*child)
+        }
+    }
+}
+
+paint_black(obj) {
+    obj.color = BLACK
+    for(child: children(obj)) {
+        (*child).ref_cnt ++
+        if((*child).color != BLACK) {
+            paint_black(*child)
+        }
+    }
+}
 ```
 
+通过 paint_gray 会把黑色或阴影对象涂成灰色，对子对象进行计数器减量操作，并调用 paint_gray 函数
 
+把对象涂成 GRAY 是为了防止程序重复搜索
+
+![](Image/014.png)
+
+通过 scan_hatch_queue 和 paint_gray 之后对象的引用关系和引用计数就变成上图所示
+
+![](Image/015.png)
+
+最后将 WHITE 的对象回收就行
+
+```cpp
+collect_white(obj) {
+    if(obj.color == WHITE) {
+        obj.color = BLACK
+        for(child: children(obj)) {
+            collect_white(*child)
+        }
+        reclaim(obj)
+    }
+}
+```
+
+其实关键点就是 `paint_gray` 将根引用对象的子对象的引用计数减一，obj自身的计数器并没有被执行减量操作，这点非常重要
+
+如果对 obj 自身也执行减量操作，那么无法判断循环引用和普通引用，任意引用方式的对象的引用计数都会变成0
+
+综上所述，部分标记-清除算法可以解决循环引用的问题，但是同时引入了新的问题: **从队列搜索对象的成本太大**
+
+被队列记录的对象毕竟是候选垃圾，所以要搜索的对象绝对不在少数，这个算法总计需要查找3次对象，也就是说需要对从队列取出的阴影对象分别执行 `mark_gray`、 `scan_gray`、 `collect_white`，这样大大增加了内存管理所需要的时间，破坏了引用计数最大的优点——最大暂停时间短
 
 ## GC复制算法
+
+
 
 ## GC标记-压缩算法
 
