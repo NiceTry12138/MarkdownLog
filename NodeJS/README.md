@@ -182,3 +182,198 @@ web服务器会用到 `URL`
 
 ## JavaScript 的模块化
 
+基于node进行开发时，绝大多数情况都是编写 JS 代码
+
+什么是模块化？
+
+- 事实上模块化开发的最终目的是将程序分成**一个个小的结构**
+- 不同结构编写属于**自己的逻辑代码**，并且有自己的作用域，不会影响到其他结构
+- 每个结构可以将自己希望暴露的**变量**、**函数**、**对象**等导出给其他结构使用
+- 每个结构可以通过某种方式，导入其他结构的**变量**、**函数**、**对象**等 
+
+> 上面的**结构**就是**模块**；按照这种结构划分的过程，就是**模块化**开发的过程
+
+`node` 中使用的模块规范是 `CommonJS`
+
+`CommonJS`是一个**规范**，最初提出来是在浏览器以外的地方使用，并且当时被命名为`ServerJS`，后来为了体现它的广泛性，修改为`CommonJS`，简称为`CJS`
+
+- `Node`是`CommonJS`在服务器端一个具有代表性的实现
+- `Browserify`是`CommonJS`在浏览器中的一种实现
+- `webpack`打包工具具备对`CommonJS`的支持和转换
+
+`Node`中对 `CommonJS` 进行了支持和实现，帮助可以方便的进行模块化开发
+- 在`Node`中每一个 JS 文件都是一个**单独的模块**
+- 单独的模块中包括 `CommonJS` 规范的核心变量：`exports`、`module.exports`、`require`，可以使用这些变量进行模块化开发
+
+`exports` 和 `module.exports` 负责导出，但是两者是不一样的
+
+`require`函数可以帮助导入其他模块(自定义模块、系统模块、第三方模块)
+
+### 测试案例1
+
+为了证明一个JS文件就是一个模块
+
+新建两个js文件：`bar.js` 和 `main.js`
+
+在 `bar.js` 中定义属性和函数，在`main.js`中直接调用`bar.js`中定义的属性和函数
+
+```js
+// bar.js
+const name = "bar.js"
+
+const age = 10
+
+let message = "my name is bar.js"
+
+function barFunc(name) {
+    console.log("hello " + name);
+}
+```
+
+```js
+// main.js
+console.log(name)
+console.log(age)
+```
+
+最后的结果就是报错，在`main.js`中并不能找到`name`属性
+
+### 测试案例2
+
+将前面 `bar.js` 中定义的属性和函数导出
+
+还记得前面提到的全局对象吗？其中有一个叫 exports 的特殊全局对象，它是每个模块都有一个的对象
+
+exports 是一个对象，那么就可以给对象添加属性，属性就会跟着 exports 对象一起被导出
+
+```js
+// bar.js
+const name = "bar.js"
+
+const age = 10
+
+const obj = {
+    name: "bar",
+    age: 10
+}
+
+let message = "my name is bar.js"
+
+function barFunc(name) {
+    console.log("hello " + name);
+}
+
+exports.name = name
+exports.age = age
+exports.obj = obj
+
+setInterval(() => {
+    console.log(obj.name)
+    console.log(age)
+}, 1000);
+```
+
+`main.js`需要导入对应的`bar.js`的`name`和`age`
+
+```js
+// 获得整个对象
+const bar = require('./bar')
+
+console.log(bar.name)
+console.log(bar.age)
+
+// 通过解构获得对象对应的属性
+const {name, age} = require('./bar')
+
+console.log(name)
+console.log(age)
+
+setTimeout(() => {
+    bar.obj.name = "main"
+    bar.age = 0;
+}, 1500);
+```
+
+通过`require()` 会返回一个对象，这个对象就是 `bar.js` 的 `exports` 对象
+
+参考 `bar.js` 中 `interval` 回调函数的输出，可以发现 obj 的属性被修改了(即使 obj 是 const 的)，因为 obj 是浅拷贝
+
+但是 `bar.js` 中的 `age` 作为 `number`，是值传递，所以 `main.js` 不能对 `bar.js` 中的 `age` 产生修改
+
+通过输出结果的变化，可以论证 `require('./bar')` 函数的返回值就是 `bar.js` 中的 `exports` 对象
+
+> 每个模块的 `exports` 对象默认是一个空对象 `exports = {}`
+
+所以单从 `require` 和 `exports` 来看，就是一个浅拷贝罢了
+
+### 测试案例3
+
+`module.exports` 是什么？
+
+`CommonJS`中是没有 `module.exports` 的概念的，但是为了实现模块的导出，`node`中使用的是 `Module` 的类，每一个模块都是 `Module` 的一个实例，也就是 `module` 
+
+> `let module = new Module()`
+
+所以在 `Node` 中真正用于导出的其实根本不是 `exports`，而是 `module.exports`，因为 `module` 才是导出的真正实现者
+
+
+```js
+console.log(module.exports === exports)// true
+console.log(module) // 查看对象的所有属性
+```
+
+![](Image/013.png)
+
+> module 对象中有个 exports 属性，exports 属性存储了所有设置的导出对象
+
+node 的逻辑大概是将 exports 赋值给 module 的对应属性中
+
+```js
+module.exports = exports
+```
+
+本质上是 `module.exprots` 在导出，为了验证这个观点，我们对 `module.exports` 做一些操作
+
+```js
+// bar.js
+const name = "bar.js"
+
+const age = 10
+
+exports.name = name
+exports.age = age
+
+module.exports = {}
+```
+
+```js
+// main.js
+const bar = require('./bar')
+
+console.log(bar.name)   // undefined
+console.log(bar.age)    // undefined
+```
+
+命名 `bar.js` 的 `exports` 对象中存在 `name` 和 `age` 属性，但是 `main.js` 获得的对象却没有 `name` 和 `age` 属性
+
+由此可见，导出本质上是导出 `module.exports` 而不是 `exports` 对象
+
+那么 `exports` 对象有什么存在的必要呢？
+
+因为 `CommonJS` 的规范要求必须有一个 `exports` 对象作为导出，`nodejs` 为了满足 `CommonJS` 做出了一种妥协
+
+### 测试案例4
+
+```js
+// bar.js
+exports = 123
+
+```
+
+```js
+// main.js
+console.log(require(`./bar`)) // 输出 {}
+```
+
+根据 main.js 的输出可以得出结论， `module.exports = exports` 赋值是在文件一开始就做了，如果赋值是在文件最后做的话 `main.js` 应该输出 `123` 才对
+
