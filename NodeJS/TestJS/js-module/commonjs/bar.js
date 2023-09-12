@@ -25,3 +25,5 @@ setInterval(() => {
 }, 1000);
 
 console.log(module)
+
+console.log(`loaded = ${module.loaded}`)

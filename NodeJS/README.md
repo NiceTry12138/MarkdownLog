@@ -377,3 +377,175 @@ console.log(require(`./bar`)) // 输出 {}
 
 根据 main.js 的输出可以得出结论， `module.exports = exports` 赋值是在文件一开始就做了，如果赋值是在文件最后做的话 `main.js` 应该输出 `123` 才对
 
+### 关于 require 的细节
+
+[官方文档中 require 的查找细节](https://nodejs.org/dist/latest-v18.x/docs/api/modules.html#all-together)
+
+require 是一个**函数**，可以帮助引入一个文件(模块)中导入的对象
+
+一些比较常用的规则(规则很多不全部介绍)，导入格式：`require(X)`
+
+1. 如果 X 是一个核心模块，比如`path`、`http`、`fs`等
+   - 直接返回核心模块，并停止查找（优先查找核心模块）
+2. 如果 X 是以 `./` 或者 `../` 或 `/`(根目录) 开头的
+   - 说明是查找文件或者文件夹
+   - 如果是查找文件
+     - 如果有后缀名，按照后缀名的格式查找对应的文件
+     - 如果没有后缀名，按照如下顺序查找
+       - 直接查找文件 X
+       - 查找 X.js 文件
+       - 查找 X.json 文件
+       - 查找 X.node 文件
+   - 如果没有找到对应文件，那么将 X 看成是目录
+     - 查找目录下的 index 文件
+       - 查找 X/index.js 文件
+       - 查找 X/index.json 文件
+       - 查找 X/index.node 文件
+   - 如果都没有找到，那就报错：not found
+
+3. 如果直接是一个 X ，不是路径也不是一个核心模块
+   - 优先查找是否是核心模块
+   - 然后在运行 `require` 函数的js文件同级目录的 node_modules 中查找
+   - 然后在上一层级的 node_modules 文件夹中查找
+   - 更上一级的 node_modules 文件夹中查找
+   - 直至查找到根目录位置
+
+假设当前运行 `require` 函数的是 `main.js` 文件，其路径是 `/User/codewhy/Desktop/Node/TestCode/04_learn_node/05_javascript-module/02_commonjs/main.js` 那么其 `require` 的查找路径如下
+
+![](Image/014.png)
+
+```js
+console.log(module.path)
+console.log(module.paths)
+```
+
+通过 `module.paths` 即可获得查找路径
+
+### 模块的加载过程
+
+1. 模块在被第一次引入时，模块中的js代码会被运行一次
+
+```js
+// bar.js
+console.log(`bar`)
+```
+
+```js
+// main.js
+require("./bar")
+
+console.log("main")
+```
+
+其打印顺序是先打印 `bar` 再打印 `main` 
+
+`CommondJS` 的加载是同步的，也就是说等到 `require` 加载的模块执行完毕之后，才会执行后续代码
+
+`CommondJS` 的加载规则用在服务器上不会出现什么问题，因为文件都在本地，同步加载不会影响模块的执行
+
+`CommondJS` 的加载规则如果用在浏览器中会出现大问题，必须等到 `require` 的文件下载完毕才能加载，会严重阻碍当前模块的运行
+
+2. 模块被多次引入时，会缓存，最终只加载(运行)一次
+
+`module` 对象有一个属性叫做 `loaded` ，值为 `false` 表示没有被加载，为 `true` 表示被加载了
+
+```js
+// bar.js
+console.log(`bar`)
+```
+
+```js
+// foo.js
+require("./bar")
+
+console.log(`foo`)
+```
+
+```js
+// main.js
+require("./bar")
+require("./foo")
+
+console.log(module.children)
+console.log(module.loaded)
+```
+
+最终只会输出一个 `bar`，说明了一个模块只会被加载一次
+
+关注一下 main.js 中的输出
+
+- `module.children` 输出了子模块的 `module` 信息，其中就包括其 `loaded` 的值
+- `module.loaded` 表示当前模块的是否被加载完毕，当前模块没有全部执行完毕，所以 `loaded` 的值是 `false`
+
+> module.children 中存储了所有加载的子模块的 module
+
+3. 如果存在循环引用，如何处理？
+
+![](Image/015.png)
+
+Node 采用的是深度优先算法，也就是 main => aaa => ccc => ddd => eee => bbb，按照这个顺序加载文件
+
+```js
+// main.js
+
+console.log("main")
+require("./foo")
+console.log("main finish")
+```
+
+```js
+// foo.js
+
+console.log("foo")
+require("./bar")
+console.log("foo finish")
+```
+
+```js
+// bar.js
+
+console.log("bar")
+require("./main")
+console.log("bar")
+```
+
+![](Image/016.png)
+
+### 对应 node 代码
+
+当前使用的 node 版本为 v16.13.2，不同版本目录可能不同
+
+![](Image/017.png)
+
+模块相关内容在 `modules` 文件夹中，其包含了两种加载规则 `cjs` 和 `esm`
+
+```js
+Module.prototype.require = function(id) {
+  validateString(id, 'id');
+  if (id === '') {
+    throw new ERR_INVALID_ARG_VALUE('id', id,
+                                    'must be a non-empty string');
+  }
+  requireDepth++;
+  try {
+    return Module._load(id, this, /* isMain */ false);
+  } finally {
+    requireDepth--;
+  }
+};
+```
+
+在 `Module` 的原型上添加了 `require` 函数，其本质就是调用了 `Module._load` 函数
+
+```js
+Module._load = function(request, parent, isMain) {
+    if(parent) {
+        // 如果存在父模块，说明当前模块被加载过，则直接从 Module._cache[filename] 中获取缓存的 module 对象
+        return cachedModule.exports;
+    }
+
+    // ... to some thing
+    return module.exports;
+};
+```
+

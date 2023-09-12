@@ -1,5 +1,6 @@
 // 获得整个对象
 const bar = require('./bar')
+const foo = require('./foo')
 
 console.log(bar.name)
 console.log(bar.age)
@@ -18,3 +19,5 @@ setTimeout(() => {
 console.log(module.exports === exports) // true
 
 console.log(module)
+
+console.log(module.paths)
