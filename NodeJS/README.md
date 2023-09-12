@@ -193,6 +193,8 @@ web服务器会用到 `URL`
 
 > 上面的**结构**就是**模块**；按照这种结构划分的过程，就是**模块化**开发的过程
 
+### CommonJS
+
 `node` 中使用的模块规范是 `CommonJS`
 
 `CommonJS`是一个**规范**，最初提出来是在浏览器以外的地方使用，并且当时被命名为`ServerJS`，后来为了体现它的广泛性，修改为`CommonJS`，简称为`CJS`
@@ -209,7 +211,7 @@ web服务器会用到 `URL`
 
 `require`函数可以帮助导入其他模块(自定义模块、系统模块、第三方模块)
 
-### 测试案例1
+#### 测试案例1
 
 为了证明一个JS文件就是一个模块
 
@@ -238,7 +240,7 @@ console.log(age)
 
 最后的结果就是报错，在`main.js`中并不能找到`name`属性
 
-### 测试案例2
+#### 测试案例2
 
 将前面 `bar.js` 中定义的属性和函数导出
 
@@ -306,7 +308,7 @@ setTimeout(() => {
 
 所以单从 `require` 和 `exports` 来看，就是一个浅拷贝罢了
 
-### 测试案例3
+#### 测试案例3
 
 `module.exports` 是什么？
 
@@ -362,7 +364,7 @@ console.log(bar.age)    // undefined
 
 因为 `CommonJS` 的规范要求必须有一个 `exports` 对象作为导出，`nodejs` 为了满足 `CommonJS` 做出了一种妥协
 
-### 测试案例4
+#### 测试案例4
 
 ```js
 // bar.js
@@ -377,7 +379,7 @@ console.log(require(`./bar`)) // 输出 {}
 
 根据 main.js 的输出可以得出结论， `module.exports = exports` 赋值是在文件一开始就做了，如果赋值是在文件最后做的话 `main.js` 应该输出 `123` 才对
 
-### 关于 require 的细节
+#### 关于 require 的细节
 
 [官方文档中 require 的查找细节](https://nodejs.org/dist/latest-v18.x/docs/api/modules.html#all-together)
 
@@ -421,7 +423,7 @@ console.log(module.paths)
 
 通过 `module.paths` 即可获得查找路径
 
-### 模块的加载过程
+#### 模块的加载过程
 
 1. 模块在被第一次引入时，模块中的js代码会被运行一次
 
@@ -511,7 +513,7 @@ console.log("bar")
 
 ![](Image/016.png)
 
-### 对应 node 代码
+#### 对应 node 代码
 
 当前使用的 node 版本为 v16.13.2，不同版本目录可能不同
 
@@ -548,4 +550,227 @@ Module._load = function(request, parent, isMain) {
     return module.exports;
 };
 ```
+
+### ESModule
+
+`ESModule` 使用了 `import` 和 `export` 关键字，采用编译器的**静态分**析，同时也加入了**动态引用**
+
+`ESModule` 中 `export` 负责将模块内的内容导出，`import` 负责从其他模块导入内容
+
+使用 `ESModule` 将自动采用严格模式 `use strick`
+
+[什么是严格模式？](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/strict_mode)
+
+#### named export 有名字的导出
+
+常用的导出主要有三种
+
+1. 在想导出的对象前面加上 export 关键字
+
+```js
+export const name = "bar";
+```
+
+2. 统一导出
+
+```js
+const name = "bar";
+const sayHello = function(name) {
+    console.log("hello");
+}
+
+export {
+    name,
+    sayHello
+}
+```
+
+需要注意， `export {}` 后面的 `{}` 并不是一个Object对象，而是放置要导出的变量的引用列表
+
+3. 导出时可以给变量起别名
+
+```js
+const name = "bar";
+const sayHello = function(name) {
+    console.log("hello");
+}
+
+export {
+    name as FName,
+    sayHello as FSayHello
+}
+```
+
+常用的导入方式也有三种
+
+1. 使用 `import` 关键字
+
+```js
+import { name, sayHello } from "./bar.js"
+```
+
+> 必须指定确定文件后缀，原生ESM不会像 CJS 去搜索文件
+
+2. 起别名
+
+```js
+import { name as FName, sayHello as FSayHello } from "./bar.js"
+```
+
+3. 通过 `* as ` 
+
+```js
+import * as bar from "./bar.js"
+
+console.log(bar.name);
+bar.sayHello();
+```
+
+> 本质来看就是将 bar.js 中导出的东西放置到 bar 对象中，作为属性进行调用
+
+`export` 和 `import` 还可以结合使用
+
+```js
+// foo.js
+export { name, sayHello } from "./bar.js"
+```
+
+通过上面的写法可以直接在在 `foo.js` 中导出 `bar.js` 中的内容，而不用先写 `import` 导入 `bar.js` 的内容， 再写 `export` 导出刚导入的 `bar.js` 的内容
+
+上面这种写法一般用在自己开发或者封装一个功能库的时候，通常希望将暴露的所有接口放到一个文件中
+
+比如模块中有 `mathUtil.js` 文件里面有三四个工具函数，有 `format.js` 里面有一个工具函数，希望把这些工具函数暴露给其他模块使用，但是其他模块又不知道我自己模块的内部文件名，所以一般在模块中有一个 `index.js` 专门负责导出
+
+#### default export 默认导出
+
+`export` 时不需要使用 `{}` 来指定名称，导入时也不需要使用 `{}`
+
+```js
+// bar.js
+
+export default function() {
+    console.log("hello world")
+}
+```
+
+```js
+// main.js
+import format from 'bar.js'
+
+format();
+```
+
+一个模块中，只能有一个默认导出
+
+如上代码所示，直接导出对应函数，在 main 中也直接使用对应，因为只能有一个默认导出，所以导入的时候就知道导出的是什么
+
+#### import 函数
+
+通过 import 加载一个模块时不可以将其放到逻辑代码中，比如
+
+```js
+if(falg) {
+    import * as bar from './bar.js';
+}
+else {
+    import * as bar from './foo.js';
+}
+```
+
+上述代码会报错，因为依赖关系是在解析的时候就确定了的，没有等到运行时。解析的时候 `flag` 值并没有确定，所以这个时候会报错
+
+> 之前 `cjs` 的 `require` 是一个函数，是运行阶段时处理的，所以 cjs 可以通过 `if-else` 进行处理
+
+由于 webpack 支持 ESM 和 CJS，所以在 webpack 的环境下可以直接使用 `require` 来进行条件判断式的模块导入
+
+如果在纯 ESM 环境下运行，可以使用 `import(模块名)` 来条件判断式的加载模块
+
+```js
+if(flag) {
+    import('./bar.js').then(res => {
+        console.log(res.name)
+    }).catch(err => {
+        // 错误处理
+    })
+}
+```
+
+注意，此时 `import()` 是一个函数，只有函数才能在运行时执行。使用 `import()` 函数本质上返回的就是一个 `Promise` 
+
+#### ESModule 加载过程
+
+ESModule 加载 JS 文件的过程是编译(解析)时加载的，并且是异步的
+
+- 编译(解析)时加载，意味着 `import` 不能和运行时相关的内容放在一起使用
+  - 比如 import from 后的路径不能动态设置
+  - 比如 import 不能放在 if 语句中判断执行
+
+```js
+// bar.js
+
+let name = "bar"
+
+setTimeout(() => {
+    name = "aaa"
+}, 1000);
+
+export {
+    name
+}
+```
+
+```js
+// main.js
+import { name } from './bar.js'
+
+setTimeout(() => {
+    console.log(name)   // 输出 aaa
+}, 2000)
+```
+
+如果与 CJS 一样 `bar.js` 导出的是一个对象，那么 `main.js` 应该输出 `bar`，但是这里输出的是 `aaa`，说明 ESM 导出的是**变量的引用**
+
+根据 ESM 的解释，创建了一块内存空间，名为模块环境记录(module environment record) 用于绑定(bindings)导出数据，并且是实时绑定。这一系列操作都是在 JS引擎 解析的时候进行处理的
+
+```js
+// main.js
+import { name } from './bar.js'
+
+setTimeout(() => {
+    name = "bbb"
+}, 1000)
+```
+
+上面修改其他模块变量的操作，会直接报错。因为 import 的变量是 const 的，所以不能修改
+
+但是，众所周知，JS对const对象只封装了一层，也就是说可以通过下面的操作进行值的修改
+
+```js
+// bar.js
+
+let obj = {
+  name: "bar",
+  age: 18
+}
+
+setTimeout(() => {
+  console.log(obj.name) // 输出 main
+}, 1000)
+
+export {
+  obj
+}
+```
+
+```js
+// main.js
+
+import { obj } from './bar.js'
+
+console.log(obj.name)
+
+obj.name = "main"
+```
+
+## 常见的内置模块解析
 
