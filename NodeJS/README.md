@@ -609,7 +609,7 @@ export {
 import { name, sayHello } from "./bar.js"
 ```
 
-> 必须指定确定文件后缀，原生ESM不会像 CJS 去搜索文件
+<!-- > 必须指定确定文件后缀，原生ESM不会像 CJS 去搜索文件 -->
 
 2. 起别名
 
@@ -772,5 +772,214 @@ console.log(obj.name)
 obj.name = "main"
 ```
 
-## 常见的内置模块解析
+### CJS 和 ESM 交互
 
+- 通常情况下 CJS 不能加载 ESM
+
+因为 CJS 是同步加载；ESM 必须经过静态分析，此时并没有运行JS代码
+
+但是某些平台在实现的时候可以对代码进行针对性的解析，也可能会支持；但是Node是不支持的 
+
+- 多数情况下，ESM 可以加载 CJS
+
+ESM 在加载 CJS 时，会将其 module.exports 导出的内容作为 default 导出方式来使用
+
+这个依然需要看具体实现，比如webpack支持，Node 新版本支持
+
+```js
+// bar.js
+const name = "bar";
+
+module.exports = {
+    name
+}
+```
+
+```js
+// main.mjs
+import foo from './bar.js';
+
+console.log(foo.name)
+```
+
+> 为什么是 mjs 后缀，因为如果要模块支持 ESM 需要设置 package.json 或者将 js 后缀改为 mjs
+
+## node常见的内置模块
+
+### Path
+
+path 模块用于对路径和文件进行处理，提供了很多好用的方法
+
+由于 MacOs/Linux 和 Windows 的文件层级符号不同，所以对路径直接硬编码会导致平台兼容性问题，因此推荐使用 path 模块进行路径处理，而不是手动编写 `bastPath + "\\" + filename`
+
+[path官方文档](https://nodejs.org/dist/latest-v18.x/docs/api/path.html)
+
+```js
+const path = require('path');
+// import path from 'path' // ESM 导入
+
+const bastPath = 'Temp';
+const rootPath = "/User/root/Temp"
+const filename = 'test.txt'
+
+// resolve 用于路径拼接
+const fileFullPath = path.resolve(bastPath, filename)
+const fileFullPath2 = path.resolve(rootPath, filename)
+
+console.log(fileFullPath);  // 以 当前运行文件夹为相对路径
+console.log(fileFullPath2); // 以 根目录 为绝对路径
+
+// 获取路径信息
+const TempFilePath = "/User/root/config.txt"
+const TempFileDir = "/User/root/config"
+
+console.log(path.dirname(TempFilePath))     // /User/root
+console.log(path.dirname(TempFileDir))      // /User/root
+
+console.log(path.basename(TempFilePath))    // 文件名 config.txt
+
+console.log(path.extname(TempFilePath))     // 文件后缀 .txt
+
+// join 路径拼接
+const TempBasePath = '/User/root'
+const TempFileName = 'acb.txt'
+
+console.log(path.join(TempBasePath, TempFileName))
+
+// resolve 路径拼接 对比 join resolve 会多判断判断路径字符串开头是否有 "/" "./" "../"
+console.log(path.resolve(TempBasePath, TempFileName))
+```
+
+### FS
+
+File System 简称 FS，表示文件系统
+
+[官方文档中对 FS 的解释](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html)
+
+借助 node 封装的文件系统，可以在任何操作系统上直接操作文件
+
+FS 的 API 非常多，这些 API 大多数提供三种操作方式
+
+1. 同步操作文件：代码会阻塞，不会继续执行
+2. 异步回调函数操作文件：代码不会被阻塞，需要传入回调函数，当获取到结果时，回调函数执行
+3. 异步`Promise`操作文件：代码不会被阻塞，通过`fs.promises`调用方法操作，会返回一个`Promise`，可以通过`then`、`catch`进行处理
+
+```js
+const fs = require('fs')
+
+const filepath = './tempfil.txt'
+
+// 同步执行
+// const info = fs.statSync(filepath)
+// console.log("后续需要执行的代码")
+// console.log(info);
+
+// 异步操作
+// fs.stat(filepath, (err, info) => {
+//     if(err) {
+//         console.log(err)
+//     }
+//     else {
+//         console.log(info);
+//     }
+// })
+// console.log("后续需要执行的代码")
+
+// promise
+fs.promises.stat(filepath).then((info) => {
+    console.log(info);
+}).catch(err => {})
+console.log("后续需要执行的代码")
+```
+
+#### 文件描述符
+
+什么是文件描述符？为什么需要文件描述符？
+
+```js
+fs.open('./tempfil.txt', (err, fd) => {
+    if(err) {
+        console.log(err);
+        return;
+    }
+    console.log(fd);
+})
+```
+
+> fd 即 文件描述符
+
+fs 的 API 如果以 **f** 开头，那么一般都是需要传入 文件描述符 的 API
+
+#### 写文件
+
+`fs.writeFile(file, data[, options], callback)` API 除了文件路径、文本信息外还有一个 options 的选项参数
+
+options 包括 `encoding`、`mode`、`flag` 和 `signla`
+
+[flags的选项及其含义](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html#file-system-flags)
+
+| flag | 含义 |
+| --- | --- |
+| w | 打开文件写入，默认值 |
+| w+ | 打开文件进行读写，如果不存在创建文件 |
+| r+ | 打开文件进行读写，如果不存在抛出异常 |
+| r | 打开文件读取，读取时的默认值 |
+| a | 打开要写入的文件，将流放在文件末尾。如果不存在则创建文件 |
+| a+ | 打开文件进行读写，将流放在文件末尾。如果不存在则创建文件 |
+
+```js
+const fs = require('fs')
+
+const filepath = './tempfil.txt'
+
+const fileContent = 'file content ....'
+
+// 回调写入文件
+fs.writeFile(filepath, fileContent, {flag : "a"}, (err) => {
+    console.log(err)
+});
+```
+
+至于默认编码 `encoding` 使用的是 `utf-8`
+
+#### 读文件
+
+那么如何读取文件呢？肯定是 `readFile` 相关接口了
+
+```js
+fs.readFile(filepath, (err, data) => {
+    if(err) {
+        console.log(err)
+    }
+    else {
+        console.log(data)   // 输出 buffer 十六进制
+    }
+})
+```
+
+以 `fs.readFile` 为例，直接输入 data 内容 其实是一个 buffer 对象，是文件的 **十六进制** 内容
+
+为了输出的是十六进制内容，而不是具体文字内容呢？是因为没有指定字符串，fs并不知道应该如何解析
+
+```js
+fs.readFile(filepath, {encoding: 'utf-8'}, (err, data) => {
+    if(err) {
+        console.log(err)
+    }
+    else {
+        console.log(data)   // 输出 buffer 十六进制
+    }
+})
+```
+
+如果输出乱码，那么就是文本的读取编码设置错误
+
+#### 文件夹相关操作
+
+创建文件夹： `fs.mkdir` 
+
+一般创建文件夹是会先判断文件夹是否存在 `fs.existsSync` ，如果文件不存在那么需要创建文件夹，如果文件不存在就不需要创建
+
+读取文件夹下所有的文件： `fs.readdir`
+
+文件夹重命名：
