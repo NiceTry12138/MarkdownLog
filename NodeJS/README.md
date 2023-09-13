@@ -1052,3 +1052,89 @@ console.log(emitter.listeners('click'));    // 获取所有回调函数对象
 
 还有很多 API 就需要看文档了，其他 API 用的不多
 
+## 包管理工具
+
+如何想要把自己开发的工具分享给其他程序员使用？
+
+首先想到的就是上传到 Github 并且提供说明文档
+
+存在一些小问题：
+- 需要手动管理相关依赖
+- 需要手动下载
+- 版本升级时需要重复上面的操作
+
+所以我们需要一个工具，可以直接让我们把自己的库发到工具的仓库中，并且对所有人开放下载、升级、删除接口
+
+`npm`(`node package manager`)就是这样一种工具，它也可以管理 `express`、`koa`、`react`、`react-dom`、`axios`、`babel`、`webpack` 等
+
+npm管理的包可以在哪里查看、搜索？ [npm包的官网](https://www.npmjs.com/)
+
+### 项目配置文件
+
+每个项目都会有一个对应的配置文件，这个配置文件记录项目的名称、版本号、项目描述、对其他库的依赖信息等
+
+这个配置文件在 node 环境下就是 `package.json`
+
+通过 `npm init` 即可创建一个 `package.json` 并设置一些参数；通过 `npm init -y` 所有信息使用默认的
+
+| 属性名 | 含义 |
+| --- | --- |
+| name | 项目名称(必填) |
+| version | 当前版本号(必填) |
+| description | 描述信息 |
+| author | 作者相关信息(发布时用到) |
+| licnese | 开源协议(发布时用到) |
+| private | 表示当前项目是否是私有的，如果为true，则npm不能发布它，这是为了防止私有项目或者模块被发布出去 |
+| main | 设置程序的入口 |
+| script | 配置一些脚本命令，以键值对的形式存在。比如 `"start" : "node index.js"` 表示通过 `start` 去执行 `node index.js` 命令来启动 `index.js` 文件  |
+| dependencies | 无论开发环境还是生成环境都需要依赖的包 |
+| devDependencies | 一些包在生成环境是不需要的，开发项目时需要，比如 webpack、label 等。会通过 `npm install webpack --save-dev` 将其安装到 `devDependencies` 属性中 |
+| engines | 指定 node 和 npm 的版本号，安装的过程中先检查对应的引擎版本，如果不符合就会报错；也可以指定所在的操作系统 `"os" : [""darwin", "linux"]` |
+| browserslist | 用于配置打包后的 JavaScript 浏览器的兼容情况，决定是否需要手动添加一些 `polyfills`(补丁) |
+
+
+在 `dependencies` 属性中会写明依赖模块的名称和它的版本，其版本号有 `^2.0.3` 或者 `~2.0.3`，那么或者 `^` 和 `~` 分别表示什么呢？
+
+npm 的包通常需要遵从 semver 版本规范： [semver规范](https://semver.org/lang/zh-CN/)
+
+根据 semver 版本规范，`2.0.3` 对应的就是： **主版本号.次版本号.修订号**
+
+版本号递增规则如下：
+- 主版本号：当你做了不兼容的 API 修改 （可能不兼容之前的版本）
+- 次版本号：当你做了向下兼容的功能性新增（新功能增加，但是兼容之前的版本）
+- 修订号：当你做了向下兼容的问题修正（没有新功能，修复了之前版本的bug）
+
+至于 `^` 和 `~` 的区别
+
+- `^x.y.z`: 表示 x 保持不变的，y 和 z 永远安装最新版本
+- `~x.y.z`: 表示 x 和 y 保持不变的，z 永远安装最新版本
+
+### npm install 命令
+
+- 全局安装: `npm install <package> -g`
+- 项目(局部)安装: `npm install <package>`
+
+通常使用 npm 全局安装的包都是一些**工具包**: yarn、webpack等
+
+但是一些库文件比如 axios、express、koa 等即使全局安装了之后，也并不能让我们在所有项目中使用 axios 等库
+
+还记得前面所讲的 `require` 导入库的顺序吗？它会去一级一级查找 `node_modules` 文件中的库，全局安装时库所在的路径可能并不再它`require`的查找路径中，从而会导致报错
+
+```bash
+# 安装开发和生产依赖
+npm install axios
+npm i anxios
+
+# 开发依赖
+npm install webpack --save-dev
+npm install webpack -D
+npm i webpack -D
+
+# 根据 package.json 中的依赖包进行安装
+npm install
+```
+
+在执行了 `npm install` 之后到底进行了哪些操作？
+为什么会有一个 `package-lock.json`文件？它的作用是什么？
+npm5开始，npm支持缓存策略，那么缓存有什么作用？
+
