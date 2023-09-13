@@ -1138,3 +1138,126 @@ npm install
 为什么会有一个 `package-lock.json`文件？它的作用是什么？
 npm5开始，npm支持缓存策略，那么缓存有什么作用？
 
+![](Image/018.png)
+
+> npm install 的原理图
+
+第一次启动项目，执行 `npm install` 命令
+ 
+- 先判断当前是否存在 `package-lock.json`文件，由于是第一次启动项目，所以没有`package-lock.json`文件
+- 通过 `package.json` 文件构建依赖关系
+- 通过 `registry` 仓库下载对应模块的压缩包(下载仓库可配置，就是设置npm镜像)
+- npm5 之后会将下载的压缩包缓存起来，方便其他项目使用
+- 将下载的压缩包解压到当前项目的 `node_modules` 文件夹中
+- 生成 `package-lock.json` 文件
+
+第二次启动项目，执行 `npm install`命令
+
+- 存在 `package-lock.json` 文件
+- 检查依赖一致性
+  - `package.json`可以记录`^2.0.3` 这种动态版本，但是`package-lock.json`记录的是明确的版本，也就是`2.0.3`
+  - 此时会检查当前`package-lock.json`中记录的版本是否符合 `package.json` 中配置的版本规则，如果不符合就重新构建依赖关系
+- 如果存在缓存，则查找缓存，无需重新下载
+- 找到缓存文件对应的压缩包，解压到 `node_modules` 文件夹中
+
+```json
+{
+  "name": "test-npm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies" : {
+    "axios": "^0.20.0"
+  }
+}
+```
+
+通过上面的 `package.json` 会生成下面的 `package-lock.json`
+
+> 我删除了 `package-lock.json` 中的 `package` 部分，内容太多 
+
+```json
+{
+  "name": "test-npm",
+  "version": "1.0.0",
+  "lockfileVersion": 2,
+  "requires": true,
+  "dependencies": {
+    "axios": {
+      "version": "0.20.0",
+      "resolved": "https://registry.npmmirror.com/axios/-/axios-0.20.0.tgz",
+      "integrity": "sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==",
+      "requires": {
+        "follow-redirects": "^1.10.0"
+      }
+    },
+    "follow-redirects": {
+      "version": "1.15.2",
+      "resolved": "https://registry.npmmirror.com/follow-redirects/-/follow-redirects-1.15.2.tgz",
+      "integrity": "sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA=="
+    }
+  }
+}
+```
+
+`package-lock.json` 中
+
+| 属性 | 作用 |
+| --- | --- |
+| lockfileVersion | 表示 lock 文件的版本 |
+| requires | 表示后面的模块通过 require 来管理子依赖 |
+
+然后 `dependencies` 就是具体依赖的包
+
+`axios` 的版本 `version` 是 `0.20.0` 是真实版本；`resolved` 表示压缩包下载路径； `requires` 表示依赖其他的库，这里依赖 `follow-redirects` 
+
+![](Image/019.png)
+
+通过 `npm config get cache` 可以看到当前配置的缓存路径
+
+### npm 的其他命令
+
+删除某个依赖包
+
+```bash
+npm uninstall <package>
+npm uninstall <package> --save-dev
+npm uninstall <package> -D
+```
+
+强制重新build
+
+```bash
+npm rebuild
+```
+
+清除缓存
+
+```bash
+npm cache clean
+```
+
+> 可能是缓存包被破坏了，不能正常使用了，这个时候就需要 clean 掉
+
+[npm的命令](https://docs.npmjs.com/cli/v10/commands)
+
+### yarn 工具
+
+一个 node 包管理工具 yarn
+
+yarn 是由 Facebook、Google、exponent 和 Tilde 联合推出了新的 JS 包管理工具
+
+yarn 是为了弥补 npm 的一些缺陷而出现的。早期 npm 存在很多缺陷，比如安装依赖速度慢、版本依赖混乱等问题。虽然 npm5 版本开始有很多的改进和升级，但是仍然有很多人喜欢使用 yarn
+
+```
+npm install yarn -g
+```
+
+通过上面的命令就可以安装 yarn 工具了
+
+![](Image/020.png)
