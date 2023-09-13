@@ -982,4 +982,73 @@ fs.readFile(filepath, {encoding: 'utf-8'}, (err, data) => {
 
 读取文件夹下所有的文件： `fs.readdir`
 
-文件夹重命名：
+文件夹重命名：`fs.rename`
+
+> 很少会做重命名的事情，一般都是新建文件或者文件夹
+
+### Events
+
+[官方文档中对Events的介绍](https://nodejs.org/dist/latest-v18.x/docs/api/events.html)
+
+Node 中的核心 API 都是基于异步事件驱动的，在这个体系中，某些对象(发射器`Emitters`) 发出某一个事件；其他部分可以监听这个事件(监听器`Listeners`)，并且可以传入回调函数，这个回调函数会在监听到这个事件时调用
+
+发出事件和监听事件都是通过 `EventEmitter` 类来完成的，它们都属于 `events` 对象
+
+- `emitter.on(eventName, listener)`： 监听事件，也可以使用 addListener
+- `emitter.off(eventName, listener)`： 移除事件监听，也可以使用 removeListener
+- `emitter.emit(eventName[, ...args])`：发出事件，也可以携带一些参数
+
+```js
+const EventEmitter = require('events')
+
+// 创建发射器
+const emitter = new EventEmitter();
+
+// 监听事件： on 和 addListener 作用一样
+emitter.on('click', (args) => {
+    console.log(`listener1 clicked, args => ${args}`);
+})
+
+const listener2 = (arg1, arg2, arg3) => {
+    console.log(`listener2 clicked, args =>`, arg1, arg2, arg3);
+};
+
+const listener3 = (args) => {
+    console.log(`listener3 clicked, args => ${args}`);
+};
+
+emitter.on('click', listener2)
+
+emitter.once('click', listener3)    // 只监听一次
+
+// 发送事件
+emitter.emit(`click`, 1, 2, 3, 4, 5);
+
+// 取消事件监听
+emitter.off(`click`, listener2);
+
+// 发送事件
+emitter.emit(`click`, 1, 2, 3, 4, 5);
+```
+
+> 为什么要新建 listener2 变量，是因为要知道取消哪个回调
+
+`events` 还提供很多事件信息获取接口
+
+```js
+// 获取注册的事件
+console.log(emitter.eventNames()); // 获得所有事件的名称
+
+console.log(emitter.listenerCount(`click`));    // 获取事件绑定的回调个数
+
+console.log(emitter.listeners('click'));    // 获取所有回调函数对象
+```
+
+`events` 还有一些其他接口
+
+- `emitter.prependListener` 将当前监听回调放到最前面执行
+- `emitter.prependOnceListener` 将当前监听回调放到最前面执行一次
+- `emitter.removeAllListeners()` 移除所有的监听器，参数可以填入事件的string，移除指定事件
+
+还有很多 API 就需要看文档了，其他 API 用的不多
+
