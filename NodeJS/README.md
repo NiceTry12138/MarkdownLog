@@ -1447,3 +1447,28 @@ windows 跑这个命令工具库可能会出现一些问题，需要特殊处理
 [ejs语法文档](https://ejs.bootcss.com/)
 
 可以先将目标文件赋值一遍，将其中需要动态设置的部分替换成ejs的代码
+
+`ejs.renderFile` 需要传入模板文件的绝对路径，第二个是传入 `ejs` 文件所需的数据，第三个是 `Option`，最后一个是渲染的回调函数
+
+```js
+const ejs = require('ejs')
+const path = require('path')
+
+const compile = (template, data) => {
+    const templatePosition = `../template/${template}`
+    const templatePath = path.resolve(__dirname, templatePosition)
+    // console.log(templatePath)
+    return new Promise((resolve, reject) => {
+        ejs.renderFile(templatePath, {data}, {}, (err, result) => {
+            if(err) {
+                reject(err);
+                return;
+            }
+
+            resolve(result);
+        })
+    })
+}
+```
+
+> `result` 就是编译之后 js 文件的内容
