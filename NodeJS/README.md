@@ -1266,7 +1266,166 @@ npm install yarn -g
 
 具有 自动拉去项目模板、安装项目依赖、打开浏览器`http://localhost:8080`、启动启动项目 功能
 
-### 命令行直接运行自己项目的命令
+### 命令行直接运行自己的项目
 
 首先在 `package.json` 文件中定义项目的入口文件 `"main": "index.js"`
 
+然后 index.js 文件头需要写一些内容
+
+```js
+#!/usr/bin/env node
+
+console.log("hello custom-cli")
+```
+
+`#!` 称之为 `shebang` 或者 `hashbang`, 后面跟着的是配置的环境 路径 和 命令来启动该文件
+
+那么按照上面的写法 `#!/usr/bin/env node` 就是找到对应路径下的`node`来启动该文件
+
+然后就是注册运行的指令
+
+```json
+"main": "index.js",
+"bin": {
+  "custom-cli": "index.js"
+},
+```
+
+最后在项目文件夹下启动命令行，使用 `npm link` 来连接项目
+
+```bash
+F:\TestJS\test-npm>npm link
+
+added 1 package in 564ms
+```
+
+然后就可以使用在 `bin` 中配置的命令来启动 `index.js` 文件了
+
+### 命令参数解析
+
+直接使用三方库，这里使用的是 `commander` 库
+
+[Commander项目库](https://github.com/tj/commander.js)
+
+对应的安装命令 `npm install commander`
+
+`commander` 的使用大致如下，先导入、再配置、最后解析参数
+
+```js
+// 导入库
+const program = require("commander")
+
+// program.version(`1.0.0`)    // 直接设置版本号
+program.version(require('./package.json').version)  // 从 package.json 中获取 version 信息
+
+program.option('-s, --separator <char>', "测试参数设置");
+
+// 最后解析传入参数
+program.parse(process.argv)
+
+const opts = program.opts()
+
+console.log(opts.separator)
+```
+
+> 还记得 `process.argv` 是什么吗？ `process` 是常用的全局变量之一前面有介绍过
+
+通过 `option` 可以获得设置的参数, `'-s, --separator <char>'` 表示设置 `-s` 和 `--separator` 命令，其作用是设置后续的参数到 `option` 中。通过 `option` 设置的命令表示运行时是可选的，但是 `<char>` 表示后续必须跟着参数不能为空
+
+```js
+program.option('-t, --Test');
+
+program.on('option:Test', function() {
+    console.log("-s 命令触发")
+});
+```
+
+还可以通过 `.on` 来自定义一些命令触发的事件
+
+不过一般来说，对于命令行参数的设置肯定不会放置在 `index.js` 中，会单独封装到某个文件中
+
+```js
+// index.js
+const program = require("commander")
+const helpOptions = require('./src/core/help')
+
+program.version(require('./package.json').version)  // 从 package.json 中获取 version 信息
+
+// helpOptions();
+helpOptions()
+
+program.parse(process.argv)
+```
+
+```js
+// src/core/help.js
+
+const program = require('commander')
+
+const helpOptions = () => {
+    program.option('-s, --separator <char>');
+
+    program.option('-t, --Test');
+
+    program.on('option:Test', function() {
+        console.log("-s 命令触发")
+    });
+}
+
+module.exports = helpOptions
+```
+
+> 这里使用 exports 直接导出一个方法出去
+> 还记得 CJS 中 exports 和 module.exports 的作用和区别吗
+
+### 执行命令
+
+以 `vue` 为例，下载 模板项目、重命名部分文件、安装项目依赖（`npm install`）、运行 `npm run server`
+
+比如接下来我们要 `custom-cli create demo` 命令来创建 demo 项目
+
+使用 `program.command` 来创建命令，使用 `description` 设置命令描述，使用 `action` 来设置命令回调
+
+`action` 绑定回调函数就是命令输入的参数
+
+```js
+// src/core/create.js
+const program = require("commander")
+
+const createCommand = () => {
+    // custom-cli create demo
+    program
+        .command('create <project> [others...]')
+        .description(`创建一个自定义项目`)
+        .action((project, others) => {
+            console.log(project, others);
+        })
+}
+
+module.exports = createCommand
+```
+
+以 `custom-cli create demo d f s` 为例，`action` `回调函数中project` 对应的就是 `demo`， `other` 对应的就是 `[d, f, s]`
+
+- 拉取github上的demo项目
+
+需要使用 `download-git-repo` 库, [库的使用文档](https://www.npmjs.com/package/download-git-repo)
+
+`download-git-repo` 会用到的只有一个函数 `download`, 根据不同的类型需要设置不同的路径
+
+`download` 函数参数是 下载路径、本地路径、下载结束回调函数， 由于下载结束的回调函数可能会套其他事件的回调函数，这里使用 `promisify` 将其转换成 `promise`， 然后使用 `async` 和 `await` 将异步功能用同步的写法完成
+
+- 执行命令，可以 `npm install` 也可能是其他命令
+
+JS 执行命令需要使用 `child_process` 库，这个是核心库，不需要 `npm install`
+
+[Spawn执行命令行说明](https://nodejs.org/dist/latest-v18.x/docs/api/child_process.html#child_processspawncommand-args-options)
+
+```js
+const childProcess = spawn(command, args, options)
+childProcess.stdout.pipe(process.stdout)
+```
+
+命令行是创建一个新的进程执行命令，所以命令的输出其实是在另一个进程中，为了将命令的输出显示到当前命令行窗口中需要将输入输出流进行绑定
+
+windows 跑这个命令工具库可能会出现一些问题，需要特殊处理解决

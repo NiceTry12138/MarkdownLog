@@ -1,4 +1,12 @@
 #!/usr/bin/env node
 
-// #! 称之为 shebang, 后面跟着的是配置的环境 路径 和 node 命令来启动该文件
+const program = require("commander")
+const helpOptions = require('./src/core/help')
+const createCommand = require('./src/core/create')
 
+program.version(require('./package.json').version)  // 从 package.json 中获取 version 信息
+
+helpOptions()
+createCommand()
+
+program.parse(process.argv)
