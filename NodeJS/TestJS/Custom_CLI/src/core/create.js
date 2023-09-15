@@ -1,5 +1,5 @@
 const program = require("commander")
-const {createProjectAction} = require('./actions')
+const {createProjectAction, addCpmAction} = require('./actions')
 
 const createCommand = () => {
     // custom-cli create demo
@@ -11,6 +11,11 @@ const createCommand = () => {
             // 将命令与操作拆分到不同的文件中
             createProjectAction(project);
         })
+
+    program
+        .command(`addCpn <name>`)
+        .description(`创建指定类型的文件模板 根据名称进行替换`)
+        .action(addCpmAction)
 }
 
 module.exports = createCommand
