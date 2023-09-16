@@ -1472,3 +1472,34 @@ const compile = (template, data) => {
 ```
 
 > `result` 就是编译之后 js 文件的内容
+
+
+### Buffer
+
+在 node 中想要操作图片、音频、视频、文本等文件，需要将其转换成**二进制**数据才能进行后续操作
+
+比如某一个保存文本的文件并不是使用 utf-8 进行编码的，而使用 GBK，需要读取到它的二进制数据，再通过GKB转换成对应的文字
+
+比如需要读取一张图片数据，再通过某些手段对图片数据进行二次处理， node 中有一个 sharp 的库，就是读取图片或者传入图片的 buffer 再对其进行处理
+
+比如 node 中通过 tcp 建立长链接， tcp 传输的是字节流， 需要将数据转换成自己再进行传入，并且需要治澳传输字节的大小（客户端需要根据大小来判断读取多少内容）
+
+对前端来说很少会与二进制打交道，但是对服务端来说为了很多功能必须与二进制打交道， node 为了可以方便开发者完成更多功能提供了一个类 Buffer，并且是全局的
+
+Buffer 中存储的是二进制数据，可以将 Buffer 看成是一个存储二进制的数组，这个数组的中的每一项可以保存 **8位** 二进制
+
+```js
+const msg = "hello world";
+
+// 1. 直接new，过时的方法，会有警告
+const buffer = new Buffer(msg);
+console.log(buffer) // 输出对应字符串的十六进制
+
+// 其他创建方法
+// Buffer.alloc()、Buffer.allocUnsafe()、Buffer.from()
+const buffer1 = Buffer.from(msg)
+console.log(buffer)
+```
+
+## 浏览器的事件循环
+
