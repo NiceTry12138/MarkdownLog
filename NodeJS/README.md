@@ -1474,7 +1474,7 @@ const compile = (template, data) => {
 > `result` 就是编译之后 js 文件的内容
 
 
-### Buffer
+[Buffer的官方文档S](https://nodejs.org/dist/latest-v18.x/docs/api/buffer.html)
 
 在 node 中想要操作图片、音频、视频、文本等文件，需要将其转换成**二进制**数据才能进行后续操作
 
@@ -1497,9 +1497,327 @@ console.log(buffer) // 输出对应字符串的十六进制
 
 // 其他创建方法
 // Buffer.alloc()、Buffer.allocUnsafe()、Buffer.from()
-const buffer1 = Buffer.from(msg)
+// const buffer1 = Buffer.from(msg)
+const buffer1 = Buffer.from(msg, , 'utf8')
 console.log(buffer)
 ```
 
-## 浏览器的事件循环
+除了 `from` , `Buffer` 还可以通过 `alloc` 分配内存的方式来创建
+
+```js
+const buffer = Buffer.alloc(8); // 申请了8字节的Buffer
+
+console.log(buffer);  // 00 00 00 00 00 00 00 00
+
+buffer[0] = 88;
+buffer[1] = 0x11;
+
+console.log(buffer);  // 58 11 00 00 00 00 00 00
+```
+
+## 事件循环和异步IO
+
+什么是事件循环？事实上，可以把事件循环理解成我们编写的 JavaScript 和浏览器或者Node之间的一个桥梁
+
+- 浏览器的事件循环是一个我们编写的JavaScript代码和浏览器API调用(setTimeout/Ajax/监听事件等)的一个桥梁，桥梁之间通过回调函数进行沟通
+
+- Node的事件循环是一个我们编写的JavaScript代码和系统调用(file system、newworld等)之间的一个桥梁，桥梁之间通过回调函数进行沟通
+
+![](Image/022.png)
+
+JavaScript 是单线程的，但是 JavaScript 的线程应该有自己的容器进程：浏览器或者 node
+
+目前多数浏览器其实是多进程的，当打开一个新的tab页面时就会开启一个新的进程，这是为了防止一个页面卡死而造成所有页面无法响应，整个浏览器需要强制退出。每个页面进程又包括很多线程，其中就有执行 JavaScript 的线程
+
+JavaScript 代码的执行是在一个单独的线程中，所以 JavaScript 在同一个时刻只能做一件事情，如果这个事情非常耗时，就意味着当前的线程被阻塞
+
+```js
+const name = "name"
+console.log(name)
+
+function sum(s1, s2) {
+  return s1 + s2;
+}
+
+function bar() {
+  return sum(1, 2)
+}
+
+setTimeout(() => {}, 1000);
+
+const resule = bar()
+console.log(resule)
+```
+
+上述代码的执行流程如下
+
+1. 定义变量 name
+2. 执行 log 函数，压入调用栈
+3. log 函数执行完毕，退出调用栈
+4. 调用 setTimeout 函数，压入调用栈
+5. setTimeout 函数执行完毕，退出调用栈
+6. 调用 bar 函数，压入调用栈
+7. 执行 sum 函数，压入调用栈
+8. sum 函数执行完毕，退出调用栈
+9. bar 函数执行完毕，退出调用栈
+10. 执行 log 函数，压入调用栈
+11. log 函数执行完毕，退出调用栈
+
+当执行 setTimeout 函数时，该函数会被压入调用栈，但是会立刻执行结束，不会影响后续代码的执行
+
+通过 setTimeout 传入的回调函数存储起来，并且在时间到达的时候将其放到事件队列中，而事件循环发现事件队列中存在值，就会将其取出放入函数调用栈中执行
+
+![](Image/023.png)
+
+### 微任务 宏任务
+
+前面事件队列中的回调函数可以理解为是一个个的任务，这些任务被称为 `macrotask` 宏任务，宏任务会被添加到宏任务队列中
+
+除了宏任务外，还有微任务(`microtask`)，最常见的微任务是 `Promise().then()`。微任务也有一个微任务队列
+
+所以事件队列并不是只有一个，而是有两个。不同的任务添加到不同的队列中
+
+- 宏任务队列：ajax、setTimeout、setInterval、Dom监听、UI Rendering 等
+- 微任务队列：Promise的then回调、Mutation Observer API、queueMicrotask() 等
+
+> queueMicrotask 可以自己定义微任务
+
+当微任务队列和宏任务队列中都存在任务时
+
+1. 优先执行微任务队列中的任务，然后再执行宏任务队列
+2. 当微任务队列执行完毕之后，执行**一个**宏任务队列的任务
+3. 当**一个**宏任务执行完毕后，再次检测微任务队列中是否存在任务
+
+### 案例1
+
+```js
+setTimeout(function() {
+  console.log("set1");
+  new Promise(function(resolve) {
+    resolve()
+  }).then(function() {
+    new Promise(function (resolve) {
+      resolve()
+    }).then(function() {
+      console.log("then4")
+    })
+    console.log("then2")
+  })
+})
+
+new Promise(function(resolve) {
+  console.log("pr1")
+  resolve();
+}).then(function() {
+  console.log("then1")
+})
+
+setTimeout(function() {
+  console.log("set2")
+})
+
+console.log(2)
+
+queueMicrotask(() => {
+  console.log("queueMicrotask1")
+})
+
+new Promise(function(resolve) {
+  resolve();
+}).then(function() {
+  console.log("then3")
+})
+```
+
+根据所学知识，判断上述代码的输出顺序
+
+首先先从上到下执行整个js文件
+
+第一段代码，将回调函数添加到**宏任务**队列中
+
+```js
+setTimeout(function() {
+  console.log("set1");
+  new Promise(function(resolve) {
+    resolve()
+  }).then(function() {
+    new Promise(function (resolve) {
+      resolve()
+    }).then(function() {
+      console.log("then4")
+    })
+    console.log("then2")
+  })
+})
+```
+
+第二段代码，对于 Promise 来说，会直接执行回调函数，然后将 then 的回调函数添加到**微任务**队列中
+
+所以这里会输出 `pr1`
+
+```js
+new Promise(function(resolve) {
+  console.log("pr1")
+  resolve();
+}).then(function() {
+  console.log("then1")
+})
+```
+
+第三段代码，将回调函数添加到**宏任务**队列中
+
+```js
+setTimeout(function() {
+  console.log("set2")
+})
+```
+
+第四段代码，直接输出 `2`
+
+```js
+console.log(2)
+```
+
+第五段代码，新建一个**微任务**，添加到微任务列表中
+
+```js
+queueMicrotask(() => {
+  console.log("queueMicrotask1")
+})
+```
+
+第五段代码，新建一个 Promise，并将 then 中的回调函数作为微任务添加到微任务列表中
+
+```js
+new Promise(function(resolve) {
+  resolve();
+}).then(function() {
+  console.log("then3")
+})
+```
+
+现在整个 JS 文件执行完毕，此时微任务队列和宏任务队列中都存在任务，优先执行微任务队列中的任务
+
+也就是输出 `then1` 、 `queueMicrotask1` 、 `then3`
+
+此时微任务队列空，开始执行宏任务
+
+此时执行第一段代码中的回调函数，根据执行顺序，会先输出 `set1`，然后将 then 中的回调函数添加到**微任务**队列中
+
+```js
+console.log("set1");
+new Promise(function(resolve) {
+  resolve()
+}).then(function() {
+  new Promise(function (resolve) {
+    resolve()
+  }).then(function() {
+    console.log("then4")
+  })
+  console.log("then2")
+})
+```
+
+此时微任务队列不为空，所以开始执行微任务队列中的任务，输出 `then2`， 然后将新 Promise 的 then 回调函数作为**微任务**添加到微任务列表中
+
+```js
+new Promise(function (resolve) {
+  resolve()
+}).then(function() {
+  console.log("then4")
+})
+console.log("then2")
+```
+
+此时微任务队列不为空，所以开始执行微任务队列中的任务，输出 `then4`
+
+此时微任务队列为空，开始执行宏任务队列，输出 `set2`
+
+此时微任务队列和宏任务队列均为空，程序执行结束
+
+```
+pr1
+2
+then1
+queueMicrotask1
+then3
+set1
+then2
+then4
+set2
+```
+
+### 案例2
+
+async、await 是 Promise 的一个语法糖，可以将 await 关键字后面执行的代码，看作是包裹在 `(resolve, reject) => {函数执行}` 中的代码， await 后面的代码可以看作是 `then(res => {函数执行})` 中的代码
+
+也就是说
+
+```js
+async function async2() {
+  console.log(`async2`)
+}
+async function async1() {
+  console.log(`async1 start`)
+  await async2();
+  console.log(`async1 end`)
+}
+```
+
+对于 async1 函数来说就是 await 部分的代码可以理解为
+
+```js
+new Promise((resolve, reject) => {
+  async2();
+  resolve()
+}).then((res) => {
+  console.log(`async1 end`)
+})
+```
+
+----
+
+后面是面试题，请输出正确的输出顺序
+
+```js
+async function async1() {
+  console.log(`async1 start`)
+  await async2();
+  console.log(`async1 end`)
+}
+
+async function async2() {
+  console.log(`async2`)
+}
+
+console.log(`script start`)
+
+setTimeout(function() {
+  console.log(`setTimeout`)
+})
+
+async1()
+
+new Promise(function(resolve) {
+  console.log(`promise1`)
+  resolve();
+}).then(function() {
+  console.log(`promise2`)
+})
+
+console.log(`script end`)
+```
+
+输出结果
+
+```
+script start
+async1 start
+async2
+promise1
+script end
+async1 end
+promise2
+setTimeout
+```
 
