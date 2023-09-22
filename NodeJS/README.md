@@ -1952,3 +1952,24 @@ setTimeout 0
 setImmediate
 setTimeout 2
 ```
+
+`setImmediate` 和 `setTimeout` 理论执行顺序是 `setTimeout` 先执行，但是并不能确定每次执行都是 `setTimeout` 先执行
+
+```js
+setTimeout(function () {
+console.log(`setTimeout`)
+}, 0)
+
+setImmediate(() => { console.log(`setImmediate`) })
+```
+
+多次执行上述代码，会发现两个回调的执行顺序并不是每次都一样
+
+`setTimeout` 会将定时任务先添加到一个**时间管理器**中，然后由时间管理器判断是否可以执行，再将其添加到宏任务列表
+
+初始化时间管理器，并将任务添加到事件列表中，假设这个流程花费 **10ms**；与此同时，`node` 也会初始化事件循环，假设初始化事件循环需要 **20ms**。那么事件管理器开始运行的时候 `setTimeout` 的队列中存在任务，就会正常执行
+
+如果 初始化时间管理器用时**20ms**, 但是`node` 的初始化事件循环用了 **5ms**，那么此时 `setTimeout` 的队列中还没有任务，因为此时时间管理器的初始化流程还没有结束，所以不会执行第一个 `setTimeout，而是去执行` `setImmediate`
+
+上面 `setImmediate` 和 `setTimeout` 的执行乱序只会在初始化的时候出现
+
