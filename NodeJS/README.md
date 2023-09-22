@@ -1821,3 +1821,134 @@ promise2
 setTimeout
 ```
 
+前面解释的是**浏览器**的事件循环，浏览器中的事件循环是根据 `HTML5` 定义的规范来实现的，不同的浏览器可能由不同的实现
+
+**Node** 中是由 `libuv` 实现的，`libuv` 中主要维护了一个 `EventLoop` 和 `worker threads`(线程池)
+
+`EventLoop` 负责调用系统的一些其他操作：文件IO、Newwork、`child-process`等
+
+![](Image/005.png)
+
+对应 `libuv` 的源码存放在 `node` 项目的 `deps` 文件夹内， `deps` 就是 `depends`(依赖)的简称，在 `deps` 文件夹下有很多依赖的库，比如：`npm`、`openssl`、`base64`、`v8`等，`libuv` 相关源码就存在 `uv` 文件夹中
+
+![](Image/024.png)
+
+### 异步IO
+ 
+当我们对一个文件进行操作的时候，我们需要打开这个文件：通过**文件描述符**，但是 JavaScript 可以直接对一个文件进行操作吗？事实上任务程序中的文件操作都是需要进行**系统调用**(操作系统的文件系统、IO系统)
+
+其实 `JavaScript` 操作就是将 `JavaScript` 通过 `v8` 进行翻译执行，通过 `libuv` 调用系统命令，才能操作具体文件
+
+操作系统通常提供两种调用方式：**阻塞式调用**和**非阻塞式调用**
+
+- 阻塞式调用：调用结果返回之前，当前线程处于阻塞态(阻塞态CPU不会分配时间片)，调用线程只有在得到调用结果之后才会继续执行
+- 非阻塞式调用：调用结束后，当前线程不会停止执行，只需要过一段事件来检查一下有没有结果返回即可
+
+一般来说开发中很多**耗时操作**都可以基于**非阻塞式调用**
+
+- 比如网络请求本身使用了scoket通信，而socket本身提供了select模型，可以进行非阻塞方式工作
+- 比如文件读写的IO操作，可以使用操作系统提供的基于事件的回调机制
+
+非阻塞IO也会存在一些问题，当函数执行完毕之后我们并没有获取到需要的数据，为了知道文件是否读取完毕，我们需要频繁的询问，这个过程就是**轮询操作**
+
+轮询操作肯定不能在主线程中处理，因为轮询会影响到主线程执行代码的效率，尤其是多文件读写、网络IO、数据库IO、自进程调用的时候轮询更加耗时
+
+所以 `libuv` 提供了 **线程池**，线程池负责所有相关的操作，并且会通过轮询或者其他方式等待结果，当获取结果时，就可以将对应的回调放到事件循环中。事件循环就可以负责接关后续的回调工作，告知 JavaScript 应用程序执行对应的回调函数
+
+![](Image/025.png)
+
+### Node 的事件循环
+
+node 的事件循环与浏览器的事件循环有些许**差别**， node 中会做的事情比浏览器更多，所以 node 的事件循环更加复杂
+
+事件循环是一个桥梁，连接着应用程序的JavaScript和系统调用之间的通道
+
+无论时文件IO、数据库、网络IO、定时器、子进程，在完成对应的操作后，都会将对应的结果和回调函数放到事件循环中。然后事件循环会不断的从任务队列中取出对应的事件(任务)来执行
+
+在 node 中一次完整的事件循环 Tick 分成很多个阶段
+
+- 定时器 (Timers)：本阶段执行已经被 `setTimeout` 和 `setInterval` 的调度回调函数
+- 待定回调 (Pending Callback)：对某些系统操作(如 TCP 错误类型)执行回调，比如 TCP 连接时接收到 ECONNREFUSED
+- idle、prepare：仅系统内部使用
+- 轮询 (Poll)：检索新的 IO 事件；执行与 IO 相关的回调
+- 检测：`setImmediate` 回调函数在此执行
+- 关闭的回到函数：一些关闭的回调函数，如：`socket.on('close', ...)`
+
+[官方文档对事件循环的解释](https://nodejs.org/zh-cn/docs/guides/event-loop-timers-and-nexttick)
+
+Node 的事件循环更加复杂，也分为微任务和宏任务
+
+- 宏任务：setTimeout、setInterval、IO事件、setImmediate、Close事件
+- 微任务：Promise的then回调、process.nextTick、queueMicrotask
+
+> Promise的then回调 和 queueMicrotask 会添加到相同的微任务队列中
+> process.nextTick 会单独添加到一个单独的微任务队列中
+
+当然宏任务也有很多个宏任务的队列
+
+在一次 tick 中，执行顺序如下
+
+1. `tick microtask queue` 简称 ticks 队列
+2. 其他的微任务队列
+3. `setTimeout` 等 `timer` 队列
+4. IO 队列 (占用大部分时间)
+5. `setImmediate` 队列
+6. `close` 队列
+
+```js
+async function async1() {
+  console.log(`async1 start`)
+  await async2()
+  console.log(`async1 end`)
+}
+
+async function async2() {
+  console.log(`async2`)
+}
+
+console.log(`script start`)
+
+setTimeout(function () {
+  console.log(`setTimeout 0`)
+}, 0)
+
+setTimeout(function() {
+  console.log(`setTimeout 2`)
+}, 300)
+
+setImmediate(() => { console.log(`setImmediate`) })
+
+process.nextTick(() => { console.log(`nextTick1`) })
+
+async1()
+
+process.nextTick(() => { console.log(`nextTick2`) })
+
+new Promise(function (resolve) {
+  console.log(`promise 1`)
+  resolve()
+  console.log(`promise 2`)
+}).then(function() {
+  console.log(`promise 3`)
+})
+
+console.log(`script end`)
+```
+
+根据上面的代码和前面说明的 node 执行策略，可以得到如下的输出
+
+```js
+script start
+async1 start
+async2
+promise 1
+promise 2
+script end
+nextTick1
+nextTick2
+async1 end
+promise 3
+setTimeout 0
+setImmediate
+setTimeout 2
+```
