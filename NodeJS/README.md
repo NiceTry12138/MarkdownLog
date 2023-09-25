@@ -2088,7 +2088,7 @@ const fs = require(`fs`)
 
 //  Stream 写入
 const writer = fs.createWriteStream(`./tempfile.txt`, {
-    flags : "a",
+    flags : "r+",
     start : 4,
     encoding : "utf8"
 })
@@ -2121,4 +2121,3 @@ writer.end("最后的内容")
 这里 `writer.end` 和 `writer.close` 都会将文件流关闭，并且**文件流必须关闭**，也就是说必须手动调用一次 `end` 或者 `close`
 
 `writer.end` 会向文件中写入最后的内容，并且调用一次 `close`，随意指定 `end` 也会关闭文件
-
