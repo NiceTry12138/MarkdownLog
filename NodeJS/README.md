@@ -1988,4 +1988,137 @@ node 中的很多对象都是基于流实现的
 - http模块的Request 和 Response 对象
 - process.stdout 对象
 
-所有的流都是 EventEmitter 的实例
+所有的流都是 EventEmitter 的实例，从源码上看
+
+![](Image/026.png)
+
+可见 `Stream` 是从 `lib/internal/streams/legacy` 中导出的，查看该文件可得
+
+![](Image/027.png)
+
+| | |
+| --- | --- |
+| ObjectSetPrototypeOf(Stream.prototype, EE.prototype) | 将 Steam 原型上的方法映射到 EventEmitter 的原型方法中 |
+| ObjectSetPrototypeOf(Stream, EE) | 将 Stream 上的属性映射到 EventEmitter 上 |
+
+![](Image/028.png)
+
+可见 `Stream` 都是 `EventEmitter` 的实例
+
+Node.js中由四种基本流类型
+
+- `Writable` ： 可以向其写入数据的流，例如：`fs.createWriteStream()`
+- `Readble` ： 可以从中读取数据的类，例如：`fs.createReadStream()`
+- `Duplex` ： 同时为 `Readable` 和 `Writable`，例如：`net.Socket()`
+- `Transofrm` ： `Duplex` 可以在写入和读取数据时修改或者转换数据的流，例如：`zlib.createDefalte()`
+
+实际使用中，以 `fs.createWriteStream()` 为例
+
+官方解释： https://nodejs.org/dist/latest-v18.x/docs/api/fs.html#filehandlecreatereadstreamoptions
+
+| Option 参数 | 数据类型 | 作用 
+| --- | --- | --- |
+| start | integer | 开始位置 |
+| end | integer | Default: Infinity 结束位置，默认无限 |
+| highWaterMark | integer | Default: 64 * 1024 每次读多少 默认64kb |
+
+使用 `fs.createWriteStream()` 会返回一个 `ReadStream` 对象，该对象读取数据不是通过回调函数，而是通过事件监听 (因为 `Stream` 本身是 `EventEmitter` 的实例)
+
+使用 `on` 监听具体字符串事件即可
+
+```js
+on(event: 'close', listener: () => void): this;
+on(event: 'data', listener: (chunk: Buffer | string) => void): this;
+on(event: 'end', listener: () => void): this;
+on(event: 'error', listener: (err: Error) => void): this;
+on(event: 'open', listener: (fd: number) => void): this;
+on(event: 'pause', listener: () => void): this;
+on(event: 'readable', listener: () => void): this;
+on(event: 'ready', listener: () => void): this;
+on(event: 'resume', listener: () => void): this;
+```
+
+通过读取流从文件中读取数据
+
+```js
+const fs = require(`fs`)
+
+// 传统读取
+// fs.readFile('./tempfile.txt', {encoding: "utf8"}, (err, data) => {
+
+// })
+
+// 通过流读取
+
+const reader = fs.createReadStream(`./tempfile.txt`, {
+    start: 3,               // 从第三个字节开始读取
+    end: 6,                 // 读到第六个字节
+    highWaterMark: 2,       // 每次读取2个字节
+    encoding: `utf8`        // 通过 utf8 字节
+})
+
+reader.on(`data`, (data) => {
+    console.log(data)
+
+    reader.pause()      // 暂停读取
+    setTimeout(() => {
+        reader.resume()
+    }, 100)         // 0.1 s之后恢复读取
+})
+
+reader.on(`close`, () => {
+    console.log(`file closed`)
+})
+
+reader.on(`open`, () => {
+    console.log(`file opened`)
+})
+```
+
+通过上面 `data` 事件，可以设置每次读取的操作，比如上述代码就是每次读取都暂停 `0.1s` 之后，再继续向后读取
+
+通过写入流向文件中写入数据
+
+```js
+const fs = require(`fs`)
+
+// 普通写文件操作
+// fs.writeFile(`./tempfile.txt`, "asdfrgs", {falg:`a`}, (err) => {
+// })
+
+//  Stream 写入
+const writer = fs.createWriteStream(`./tempfile.txt`, {
+    flags : "a",
+    start : 4,
+    encoding : "utf8"
+})
+
+writer.write('你好啊', (err) => {
+    if(err) {
+        console.log(err)
+        return;
+    }
+    console.log(`写入成功`)
+})
+
+writer.write('你好啊', (err) => {
+    if(err) {
+        console.log(err)
+        return;
+    }
+    console.log(`写入成功`)
+})
+
+writer.on(`close`, () => {
+    console.log(`file closed`)
+})
+
+// 需要手动关闭文件
+// writer.close();
+writer.end("最后的内容")
+```
+
+这里 `writer.end` 和 `writer.close` 都会将文件流关闭，并且**文件流必须关闭**，也就是说必须手动调用一次 `end` 或者 `close`
+
+`writer.end` 会向文件中写入最后的内容，并且调用一次 `close`，随意指定 `end` 也会关闭文件
+
