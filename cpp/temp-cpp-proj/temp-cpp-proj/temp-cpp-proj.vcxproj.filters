@@ -24,5 +24,8 @@
     <ClCompile Include="src\Airplane.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\CustomAllocator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

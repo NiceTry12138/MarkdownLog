@@ -130,6 +130,7 @@
     <ClCompile Include="src\Airplane.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Screen.cpp" />
+    <ClCompile Include="src\CustomAllocator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -96,7 +96,7 @@ void foo_Ariplane() {
 	}
 }
 
-int main() {
-	foo_Ariplane();
-	return 0;
-}
+//int main() {
+//	foo_Ariplane();
+//	return 0;
+//}
