@@ -15,11 +15,13 @@ public:
 private:
 	obj* freeStore = nullptr;
 	const int CHUNK = 5;	// 标准库是20
+	const int min_size = 8;
 };
 
 void* MyAllocator::allocate(size_t size)
 {
 	obj* p = nullptr;
+	size =  size > min_size ? size : min_size;
 	if (!freeStore) {
 		size_t chunk = CHUNK * size;
 		freeStore = p = (obj*)malloc(chunk);
