@@ -50,23 +50,26 @@ void MyAllocator::deallocate(void* p, size_t)
 	freeStore = (obj*)p;
 }
 
+#define  DECLARE_POOL_ALOC()	\
+public:							\
+	static void* operator new(size_t size) { return myAlloc.allocate(size); }					\
+	static void operator delete(void* pDead, size_t size) { myAlloc.deallocate(pDead, size); }	\
+protected:\
+	static MyAllocator myAlloc; 
+
+#define IMPLEMENT_POOL_ALLOC(class_name) MyAllocator class_name::myAlloc;
+
 class Goo {
 public:
 	long L;
-	static MyAllocator myAlloc;
 
 public:
 	Goo(long l) : L(l) {}
-	static void* operator new(size_t size) {
-		return myAlloc.allocate(size);
-	}
 
-	static void operator delete(void* pDead, size_t size) {
-		myAlloc.deallocate(pDead, size);
-	}
+	DECLARE_POOL_ALOC()
 };
 
-MyAllocator Goo::myAlloc;
+IMPLEMENT_POOL_ALLOC(Goo);
 
 void foo_myALlocator() {
 	std::cout << sizeof(Goo) << std::endl;
@@ -87,7 +90,8 @@ void foo_myALlocator() {
 	}
 }
 
-int main() {
-	foo_myALlocator();
-	return 0;
-}
+//int main() {
+//	foo_myALlocator();
+//
+//	return 0;
+//}
