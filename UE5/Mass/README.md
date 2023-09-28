@@ -195,11 +195,118 @@ struct FMassArchetypeCompositionDescriptor{
 
 也就是 BitSet 对应 Index 的值为 1，则表示具有这个结构，值为 0 则表示没有这个结构。比如总共有 32 个 Fragment，那么一个 `FMassArchetypeCompositionDescriptor` 的 `FMassFragmentBitSett` 有 32位，可以表示这个 Archetype 可以具有 32个 Fragment 的哪几个，具有的 Fragment 对应需要序号(index)的值为 true
 
-使用 `BitSet` 可以快速的进行位运算，同时可以节省内存消耗
+使用 `BitSet` 可以快速的进行位运算，更方便做类型筛选；同时可以节省内存消耗，使用一个 int32(占32位) 的大小就可以代表32种 Fragment
 
+```cpp
+struct FMassArchetypeChunk
+{
+private:
+    // FMassEntityHandle[N] + Frag1[N] + Frag2[N]
+    uint8* RawMemory = nullptr;
+    TArray<FInstancedStruct> ChunkFragmentData;
+    FMassArchetypeSharedFragmentValues SharedFragmentValues;
+    // 其他属性和函数
+}
 
+struct FMassArchetypeData
+{
+private:
+    FMassArchetypeCompositionDescriptor CompositionDescriptor;
+
+    TArray<FMassArchetypeChunk> Chunks;
+
+    TMap<int32, int32> EntityMap;
+    // 其他属性和函数
+}
+
+USTRUCT()
+struct alignas(8) FMassEntityHandle
+{
+    UPROPERTY(VisibleAnywhere, Category = "Mass|Debug", Transient)
+    int32 Index = 0;    
+
+    UPROPERTY(VisibleAnywhere, Category = "Mass|Debug", Transient)
+    int32 SerialNumber = 0;
+
+    // 其他属性和函数
+}
+
+struct MASSENTITY_API FMassEntityManager : public TSharedFromThis<FMassEntityManager>, public FGCObject
+{
+    struct FEntityData
+    {
+        TSharedPtr<FMassArchetypeData> CurrentArchetype;
+        int32 SerialNumber = 0;
+    };    
+
+    TChunkedArray<FEntityData> Entities;
+
+    TMap<uint32, TArray<TSharedPtr<FMassArchetypeData>>> FragmentHashToArchetypeMap;
+
+    // Shared fragments
+    TArray<FConstSharedStruct> ConstSharedFragments;
+    // Hash/Index in array pair
+    TMap<uint32, int32> ConstSharedFragmentsMap;
+
+    TArray<FSharedStruct> SharedFragments;
+    // Hash/Index in array pair
+    TMap<uint32, int32> SharedFragmentsMap; 
+    // 其他属性和函数
+}
+```
+
+| FMassArchetypeData 属性 | 作用 |
+| --- | --- |
+| EntityMap | 作为全局 Index 到 内部 Index 的转换，可以知道 Entity 位于该 Archetype 里面第几个 Chunk 的第几号位置 |
+
+| FEntityData 属性 | 作用 |
+| --- | --- |
+| CurrentArchetype | |
+| SerialNumber | 序列号做数据校验 |
+
+| FMassEntityHandle 属性 | 作用 |
+| --- | --- |
+| Index | 全局 Entity 的索引下标，可以定位到具体 EntityData 数据 |
+| SerialNumber | 序列号做数据校验 | 
+
+| FMassEntityManager 的属性 | 作用 |
+| --- | --- |
+| FragmentHashToArchetypeMap | 所有的 Archetype 数据 |
+| Entities | 所有的 Entity 数据 |
+| ConstSharedFragments | 所有的共享参数 |
+| SharedFragments | 所有的共享参数 |
+
+```cpp
+UCLASS()
+class MASSENTITY_API UMassEntitySubsystem : public UWorldSubsystem
+{
+	GENERATED_BODY()
+    // ... 
+protected:
+	TSharedPtr<FMassEntityManager> EntityManager;
+};
+```
+
+`UMassEntitySubsystem` 持有全局唯一的 `EntityManager` 实例
+
+![](Image/009.png)
+
+Entityies 的列表存储在 EntityManager，但实际的数据存储在 ArcheType 的 Chunk 中
+
+随着项目的运行，可能会有些 Entity 被删除，从而导致 Chunk 的空洞，这些空洞将在下次创建 Entity 时被填补(内部做了内存效率性优化)
+
+另一点是不要动态的修改一个 Archetype 的 Fragment 的组成，这会导致创建新的 Archetype 然后把旧的 Entity 数据全部拷贝过去，这个过程消耗较大
 
 ### 运行机制
+
+如何高效的调度和处理数据？
+
+Mass 框架的运行机制分为两个步骤
+
+1. 筛选关心的数据
+2. 处理这些数据
+
+
 
 ### Editor 背后
 
