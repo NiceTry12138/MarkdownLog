@@ -314,7 +314,278 @@ Mass 框架的运行机制分为两个步骤
 
 由于 `FMassArchetypeCompositionDescriptor` 由四种数据 `Fragments`、`Tags`、`ChunkFragments`、`SharedFragments` 组成
 
-### Editor 背后
+![](Image/011.png)
 
-### 实践总结
+1. 对所有的的Archetypes 进行 4 项 Fragments 的逻辑类型过滤
+2. 判断存在性
+    - All，所有的都必须存在
+    - Any，有一个存在即可
+    - None，都不存在，用于排除
+    - Optional，如果存在就处理，否则忽略
+3. 判断访问模式
+    - None，不访问
+    - ReadOnly，只读不改变Frag
+    - ReadWrite，读写该Frag
+4. 获得多个 ValidArchetypes
+5. 对每一个 Valid Archetype 的所有 Chunk 进行  ChunkCondition 的过滤
+6. 最终获得目标 Chunk 集合，并对每个 Chunk 进行逻辑处理
 
+```cpp
+/** 
+ *  FMassEntityQuery is a structure that is used to trigger calculations on cached set of valid archetypes as described 
+ *  by requirements. See the parent classes FMassFragmentRequirements and FMassSubsystemRequirements for setting up the 
+ *	required fragments and subsystems.
+ * 
+ *  A query to be considered valid needs declared at least one EMassFragmentPresence::All, EMassFragmentPresence::Any 
+ *  EMassFragmentPresence::Optional fragment requirement.
+ */
+USTRUCT()
+struct MASSENTITY_API FMassEntityQuery : public FMassFragmentRequirements, public FMassSubsystemRequirements
+{
+    // ... some thing
+}
+/** 
+ *  FMassFragmentRequirements is a structure that describes properties required of an archetype that's a subject of calculations.
+ */
+USTRUCT()
+struct MASSENTITY_API FMassFragmentRequirements
+{
+    GENERATED_BODY()
+
+    TArray<FMassFragmentRequirementDescription> FragmentRequirements;
+    TArray<FMassFragmentRequirementDescription> ChunkFragmentRequirements;
+    TArray<FMassFragmentRequirementDescription> ConstSharedFragmentRequirements;
+    TArray<FMassFragmentRequirementDescription> SharedFragmentRequirements;
+
+    FMassTagBitSet RequiredAllTags;
+    FMassTagBitSet RequiredAnyTags;
+    FMassTagBitSet RequiredNoneTags;
+
+    FMassFragmentBitSet RequiredAllFragments;
+    FMassFragmentBitSet RequiredAnyFragments;
+    FMassFragmentBitSet RequiredOptionalFragments;
+    FMassFragmentBitSet RequiredNoneFragments;
+
+    FMassChunkFragmentBitSet RequiredAllChunkFragments;
+    FMassChunkFragmentBitSet RequiredOptionalChunkFragments;
+    FMassChunkFragmentBitSet RequiredNoneChunkFragments;
+
+    FMassSharedFragmentBitSet RequiredAllSharedFragments;
+    FMassSharedFragmentBitSet RequiredOptionalSharedFragments;
+    FMassSharedFragmentBitSet RequiredNoneSharedFragments;
+}
+
+struct MASSENTITY_API FMassFragmentRequirementDescription
+{
+    const UScriptStruct* StructType = nullptr;
+    EMassFragmentAccess AccessMode = EMassFragmentAccess::None;
+    EMassFragmentPresence Presence = EMassFragmentPresence::Optional;
+}
+```
+
+使用方法有两种：**初始化列表** 或者 **一个个定义**，然后使用 `ForEachEntityChunk` 方法来遍历所有 Chunk，这个**遍历是阻塞式**的，等所有遍历完毕之后代码才会继续运行，但是**遍历时依旧会去并行优化**，所以不可操作其他线程的数据，并且时刻提醒自己不要访问其他内存区域的数据
+System
+```cpp
+FMassEntityQuery quer1 { FMyIntFragment::StaticStruct(), FMyVectorFragment::StaticStruct() };
+
+FMassEntityQuery query2;
+query2.AddRequirement<FMyIntFragment>(EMassFragmentAccess::ReadWrite);
+query2.AddRequirement<FMyVectorFragment>(EMassFragmentAccess::ReadOnly);
+
+
+query2.ForEachEntityChunk(EntityManager,Context, [&,this](FMassExecutionContext& Context) {
+    // do something ...
+});
+```
+
+每次处理数据都定义一个 `FMassEntityQuery` 然后遍历所有的 Chunk 处理数据是非常零碎的，所以根据 ECS 思想抽象出一个 System 用于专门处理数据，这个 System 在虚幻 Mass 中被称为 `Processor`
+
+> 命名为 `Processor` 而不是 `System` 原因是 UE 中已经有很多命名为 `System` 的类了
+
+```cpp
+UCLASS(abstract, EditInlineNew, CollapseCategories, config = Mass, defaultconfig, ConfigDoNotCheckDefaults)
+class MASSENTITY_API UMassProcessor : public UObject
+{
+    GENERATED_BODY()
+
+    // something ...
+
+protected:
+    virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) PURE_VIRTUAL(UMassProcessor::Execute);
+
+    // something ...
+
+private:
+
+    /** Whether this processor should be executed on StandAlone or Server or Client */
+    UPROPERTY(EditAnywhere, Category = "Pipeline", meta = (Bitmask, BitmaskEnum = "/Script/MassEntity.EProcessorExecutionFlags"), config)
+    int32 ExecutionFlags;
+
+    /** Processing phase this processor will be automatically run as part of. */
+    UPROPERTY(EditDefaultsOnly, Category = Processor, config)
+    EMassProcessingPhase ProcessingPhase = EMassProcessingPhase::PrePhysics;
+
+    /** Configures when this given processor can be executed in relation to other processors and processing groups, within its processing phase. */
+    UPROPERTY(EditDefaultsOnly, Category = Processor, config)
+    FMassProcessorExecutionOrder ExecutionOrder;
+
+    /** Stores processor's queries registered via RegisterQuery. 
+        *  @note that it's safe to store pointers here since RegisterQuery does verify that a given registered query is 
+        *  a member variable of a given processor */
+    TArray<FMassEntityQuery*> OwnedQueries;
+
+    // something ...
+}
+```
+
+> 可以配置 实例化 运行或者直接用 CDO 对象运行
+
+| 属性 | 作用 |
+| --- | --- |
+| ExecutionFlags | 标记联机游戏中是否需要运行在客户端 |
+| ProcessingPhase | 指明 Processor 运行在引擎的哪个阶段 |
+| ExecutionOrder | 指明所在组的名称，以及必须运行在哪些 Porcessor 之后或之后 |
+| OwnedQueries | 查找 |
+
+```cpp
+USTRUCT()
+struct FMassProcessorExecutionOrder
+{
+    GENERATED_BODY()
+
+    /** Determines which processing group this processor will be placed in. Leaving it empty ("None") means "top-most group for my ProcessingPhase" */
+    UPROPERTY(EditAnywhere, Category = Processor, config)
+    FName ExecuteInGroup = FName();
+
+    UPROPERTY(EditAnywhere, Category = Processor, config)
+    TArray<FName> ExecuteBefore;
+
+    UPROPERTY(EditAnywhere, Category = Processor, config)
+    TArray<FName> ExecuteAfter;
+};
+```
+
+`Processor` 建议不要保存任何状态，它是一个专门用于处理数据逻辑的类，本身不需要任何状态
+
+真正开发的时候只需要继承 `UMassProcessor`，注册Query、配置自定义Query、编写逻辑三步即可
+
+```cpp
+UCLASS()
+class UCustomProcessor : public UMassProcessor
+{
+    GENERATED_BODY()
+
+    UMassLookAtProcessor();
+
+    protected:
+
+    virtual void ConfigureQueries() override;
+    virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
+
+    FMassEntityQuery EntityQuery_Conditional;
+}
+
+UCustomProcessor::UCustomProcessor() 
+    : EntityQuery_Conditional(*this)    // 注册Query
+{
+	ProcessingPhase = EMassProcessingPhase::FrameEnd;
+}
+
+void UCustomProcessor::ConfigureQueries()
+{
+    // 配置自定义Query
+    EntityQuery_Conditional.AddRequirement<FMassLookAtFragment>(EMassFragmentAccess::ReadWrite);
+    EntityQuery_Conditional.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
+
+    
+    // 或者手动注册 EntityQuery.RegisterWithProcessor(*this);
+}
+
+void UCustomProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+{
+    // 编写执行逻辑
+    const double CurrentTime = GetWorld()->GetTimeSeconds();
+
+    EntityQuery_Conditional.ForEachEntityChunk(EntityManager, Context, [this, &EntityManager, CurrentTime](FMassExecutionContext& Context) {
+        // do something ...
+    }
+}
+```
+
+一般情况下，`Processor` 类编写完毕后不需要手动调用，引擎的 Mass 框架会通过反射找到所有的 `Processor` 类，在引擎的 Mass 设置中可以看到所有的 `Processor` 的 CDO 对象
+
+通过注册的 `EntityQuery` 可以判断当前 `Processor` 关心哪些 Archetype，如果当前不存在这些 `Archetype`，就可以先将该 `Processor` 剔除，因为没有它所关心的数据，也就没有运行的必要，这样优化运行效率
+
+![](Image/012.png)
+
+很多时候，一个任务依赖另一个任务的计算结果，一个任务可能等到所有子任务完成之后才算能完成 (**参考行为树的 Task**)，所以 Mass 中定义 `UMassCompositeProcessor` 派生自 `UMassProcessor` 用于组合任务
+
+```cpp
+UCLASS()
+class MASSENTITY_API UMassCompositeProcessor : public UMassProcessor
+{
+    GENERATED_BODY()
+        
+protected:
+    UPROPERTY(VisibleAnywhere, Category=Mass)
+    FMassRuntimePipeline ChildPipeline;
+}
+
+
+USTRUCT()
+struct MASSENTITY_API FMassRuntimePipeline
+{
+    GENERATED_BODY()
+
+private:
+    UPROPERTY()
+    TArray<TObjectPtr<UMassProcessor>> Processors;
+}
+```
+
+通过前面的 `ExecutionOrder` 可以确定 `Processor` 的运行顺序，通过 `Processor` 的 `QueryEntity` 可以筛选需要被执行的 `Processor` ，接下来就是根据 `ProcessingPhase` 在指定的引擎阶段运行
+
+```cpp
+UENUM()
+enum class EMassProcessingPhase : uint8
+{
+    PrePhysics,    
+    StartPhysics,  
+    DuringPhysics, 
+    EndPhysics,    
+    PostPhysics,   
+    FrameEnd,      
+    MAX,
+};
+```
+
+| 阶段 | 适用 |
+| --- | --- |
+| PrePhysics | 这个阶段在物理模拟之前执行，可以用于更新实体的位置、速度等属性，或者进行一些预处理的操作，如碰撞检测、射线检测等 |
+| StartPhysics | 这个阶段在物理模拟开始时执行，可以用于设置实体的物理参数，如质量、摩擦力、弹力等，或者给实体施加一些外力，如重力、风力等 |
+| DuringPhysics | 这个阶段在物理模拟进行时执行，可以用于监控实体的物理状态，如是否发生碰撞、是否静止等，或者进行一些动态的调整，如改变实体的形状、大小等 |
+| EndPhysics | 这个阶段在物理模拟结束时执行，可以用于获取实体的最终位置、速度等属性，或者进行一些后处理的操作，如销毁实体、创建特效等 |
+| PostPhysics | 这个阶段在物理模拟之后执行，可以用于更新实体的逻辑状态，如生命值、状态机等，或者进行一些游戏逻辑的判断，如是否完成任务、是否触发事件等 |
+| FrameEnd | 这个阶段在帧结束时执行，可以用于清理一些临时数据，或者准备一些下一帧需要的数据 |
+
+![](Image/013.png)
+
+**如何在遍历 Entity 时进行操作?**
+
+在前面 `FMassQUery` 运行的时候需要提供一个 `Context`，这个 `Context` 是 `FMassExecutionContext` 类型，该类型中有一个属性 `TSharedPtr<FMassCommandBuffer> DeferredCommandBuffer`，该属性用于存储一些操作
+
+众所周知，在数组遍历的时候不能修改增删改变数据集合，否则容易导致循环混乱。在遍历 Entity 时也是这样，不能够杀掉 Entity 或者 变更Entity的Tag。所以此时引入 `FMassCommandBuffer` 来记录操作，等到循环结束之后再一并把这些操作命令都处理掉。通过 `Context.Defer()` 可以看到很多操作接口。
+
+**如何对 Entity 的值进行初始化？**
+
+在每次创建 Entity 时手动初始化并不合适，可能别的参数还没有创建或者初始化；这么写也很麻烦，需要自己筛选 Fragment 并运算；也破坏了 Entyiity 只存属性的规则，数据计算和设置应该交给 Processor 处理
+
+于是 Mass 框架中提供 `UMassObserverProcessor` 的子类，用于检测某一种 Fragment 、Data、Tag 的添加或删除事件从而触发
+
+> EntityManager 会根据是否有观察者而把有改变的 Entity 都记录下来，然后再每帧同一的触发各种 `UMassObserverProcessor`
+
+**Processor 之间如何通信？**
+
+采用信号的订阅处理系统来协调 Entity 之间的通信，需要继承 `UMassSignalProcessorBase` 来处理特定信号，这个信号的注册需要依赖 `UMassSignalSubsystem`
+
+具体信号传递的案例可以查看 `UMassStateTreeProcessor` 类，该类并没有重写 `Execute` 函数，而是重写了 `SignalEntities` 函数，因为 `UMassSignalProcessorBase` 基类中处理了本帧收到的信号，并将影响到的 Entity 都通过调用 `SignalEntities` 传递给子类
