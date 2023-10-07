@@ -306,7 +306,13 @@ Mass 框架的运行机制分为两个步骤
 1. 筛选关心的数据
 2. 处理这些数据
 
+那么 Mass 是如何筛选数据的呢？
 
+![](Image/010.png)
+
+所有的 Entity 的数据存储在 Chunk 中，所以我们的目标是筛选出合适的 Chunk 并返回出来，筛选 Chunk 的前提是筛选出合适的 Archetype
+
+由于 `FMassArchetypeCompositionDescriptor` 由四种数据 `Fragments`、`Tags`、`ChunkFragments`、`SharedFragments` 组成
 
 ### Editor 背后
 
