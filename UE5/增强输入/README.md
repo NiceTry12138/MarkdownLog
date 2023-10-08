@@ -5,7 +5,7 @@
 对于新的输入系统，有一些期望
 
 - 重新梳理简化。从 Axis/Action => Action
-- 运行时重映射输入场景， UInputMappingContext
+- 运行时重映射输入场景， `UInputMappingContext`
 - 对初级用户易配置，大量默认行为实现， Tap/Hold...
 - 对高级用户易扩展，可继承子类扩展
   - 修改器：修改输入值
