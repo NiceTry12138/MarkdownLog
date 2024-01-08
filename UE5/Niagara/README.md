@@ -59,7 +59,7 @@ Niagara 运作需要一系列脚本，包括蓝色、绿色、橙色三种
 
 UE 提供一些粒子发射器的模板，可以自己尝试；同时也可以创建空的粒子发射器，自行设置
 
-### 尝试复刻 Simple System 
+### 简单的 Sprite 粒子发射器（Sprite Emitter）
 
 ![](Image/008.png)
 
@@ -98,6 +98,9 @@ Niagara 系统中 `Emitter Update` 是发射器组的一个阶段，它会在发
 | Color Mode | 粒子颜色模式，不设置、指定颜色，随机颜色区间 |
 | Position Mode | 粒子位置模式，可以不设置、指定绝对世界坐标、指定相对偏移 |
 | Mass Mode | 粒子质量模式，可以不设置(默认值1)、指定质量、随机质量 |
+| Sprite Size Mode | 粒子初始大小 |
+
+> 这里例子中 `Sprite Size Mode` 需要设置一下，否则粒子太小了看不到
 
 4. 设置粒子的大小周期性变化
 
@@ -114,4 +117,92 @@ Niagara 系统中 `Emitter Update` 是发射器组的一个阶段，它会在发
 ![](Image/013.png) 
 
 通过上图的设置，可以将粒子的透明通道值变化通过曲线的方式来设置
+
+### 简单的多边形发射器（Mesh Emitter）
+
+> 5.2 的示例项目中表现效果并不相同
+
+重点：**自定义属性**
+
+初始化粒子不仅可以初始化简单的点属性（如 `lice cycle` 或 `color`），还可以初始化渲染器特定的属性（如 `mesh scale` 或 `sprite scale`）
+
+在这个粒子中，我们初始化网格比例，以及该网格的初始方向，然后随着时间的推移更新这些初始值
+
+![](Gif/_003.gif)
+
+1. 首先渲染部分需要设置成 `Mesh Render`
+
+![](Image/014.png)
+
+![](Image/015.png)
+
+2. 初始化属性
+
+![](Image/017.png)
+
+设置初始大小和生命周期
+
+3. 基本设置：`Spawn Rate`、`Add Velocity`
+
+![](Image/016.png)
+
+> 别忘了添加解算器
+
+4. 设置 Mesh 的旋转
+
+需要添加两个操作：`Initial Mesh Orientation` 和 `Update Mesh Orientation`，也就是初始化旋转和每帧更新旋转
+
+![](Image/018.png)
+
+在初始化 Mesh 的旋转角度时，设置朝向类型为 `Orient to Vector` 值为 `Velocity`，也就是朝向的方向
+
+![](Image/019.png)
+
+在每帧更新 Mesh 的旋转角度时，由于设置朝向为速度方向，所以 X 轴指向速度方向，因此如果想要 Mesh 自旋每帧修改 X 轴旋转即可
+
+5. 修改 Mesh 的初始移动速度
+
+当旋转角度设置完毕之后，我们可以得到一个类似 DNA 旋转的粒子特效
+
+![](Image/020.png)
+
+但是这个与我们目标的有些许差距，我们目标的粒子效果是粒子会摆动，就是如下图所示的效果
+
+![](Image/021.png)
+
+因此，粒子的初速度就不能是固定的 `(0, 0, 100)`，这个初速度需要叠加一个旋转方向
+
+但是如何将计算的方向缓存下来呢？参考类会将一些数据做成**属性**，粒子系统也有**属性**
+
+![](Image/022.png)
+
+从上图可以看到粒子系统的属性，如果没看到需要点击 `System` 或者 `Emitter` 蓝图节点
+
+属性中有一些带锁的属性用红框框出，这表示这些属性是系统提供的无需也无法设置
+
+- `System Attributes` 就是系统属性，跟着 `System` 节点走 
+- `Emitter Attributes` 就是粒子发射器属性，跟着 `Emitter` 节点走
+- `Particle Attributes` 就是粒子互行，跟着 `Particle` 节点走
+
+根据 `System`、`Emitter` 和 `Particle` 三者的关系，`System Attributes` 作用域最大，其次是`Emitter Attributes`，最后是`Particle Attributes`
+
+回归到当前的目标，我们期望粒子的初速度能够随时间进行 `sin` 的变化，所以应该是在 `Emitter Attributes` 中创建变量存储一个根据时间变化的值，并且在粒子初始化的时候设置给速度
+
+![](Image/023.png)
+
+![](Image/024.png)
+
+根据上面两步操作，在 `Emitter Attributes` 中创建了 `SineWave` 变量，并且在发射器的 `Update` 中设置其值随着 `Emitter` 的 `Age` 进行 `Sine` 计算变化，得到一个周期性变化的数值
+
+![](Image/025.png)
+
+最后就是在 `Particle Spawn` 的时候，设置其速度为 `Rotate Vector`
+
+> `Rotate Vector`：Rotate a vector using Euler AnglesCompiled Name: Rotate Vector
+
+给 `(0, 0, 100)` 的速度添加一个旋转
+
+最后得到目标效果
+
+![](Image/026.png)
 
