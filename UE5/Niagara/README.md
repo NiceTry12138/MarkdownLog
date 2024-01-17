@@ -330,3 +330,37 @@ GPU 模拟需要设置 `Fixed Bounds` 的原因是，由于粒子模拟是在 GP
 | ![](Image/042.png) | ![](Image/043.png) |
 | 更新平均耗时 1.04ms | 更新平均耗时 0.04ms |
 
+### 粒子贴图基础方向设置
+
+![](Image/045.png)
+
+使用 `Shape Location` 设置创建的 `Sprite` 在一个球形范围
+
+![](Gif/_008.gif)
+
+生成的 `Sprite` 其实是一个面片，`Sprite` 会让自己始终面向玩家，所以上图的 `Sprite` 看起来像一个球，其实本质上是一个始终朝向相机的圆
+
+![](Image/047.png)
+
+从 `Sprite Render` 中 `Facing Mode` 的设置可见一斑，默认为 `Face Camera`
+
+![](Image/048.png)
+
+当我们将 `Facing Mode` 设置为 `Custom Facing Vector`，在 5.2 版本设置后 Sprite 仍会朝向相机，但是之前的版本不会
+
+可以使用 `set new or exising parameter directly` 对粒子、发射器、系统的值进行设置修改
+
+![](Image/049.png)
+
+![](Image/050.png)
+
+![](Image/051.png)
+
+> 粒子系统的 `set new or exising parameter directly` 只能修改粒子相关的属性
+
+在 `Particle Update` 中设置 `Sprite Facing` 为 `(1.0, 0, 0)`
+
+![](Gif/_009.gif)
+
+通过设置 `Sprite` 的 `Facing Mode` 和 `Sprite Facing` 可以设置 `Sprite` 的朝向
+
