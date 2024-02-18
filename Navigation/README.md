@@ -214,3 +214,149 @@ bool isCross(Vector2D a, Vector2D b, Vector2D c, Vector2D d) {
 
 > `Recast Navigation` 在路径优化时使用 `String pulling` 漏斗算法
 
+### 体素化
+
+参考 `Denis Haumont` 在 2003 年发表的 `Volumetric cell-and-portal generation`，有三个重点：引入**体素化**去除高频细节；使用 `Watershed` 算法进行区域划分；引入**距离场**的概念
+
+为什么要使用体素化？
+
+在更多的材料中，体素化旨在处理 `Polygon Soup` (多边形大乱炖)问题。在面对若干 Mesh 时，体素化能将多个 Mesh **统一成一种表达**
+
+> 多边形大乱炖的意思是存在各种各样奇奇怪怪的多边形，它们互相组合成更多奇奇怪怪的多边形
+
+体素化约占 `Recast Navigation Build`耗时的 80%~90%
+
+对于 3D 场景来说，角色需要在一个碰撞体上移动，所以首先需要获得 `Collision` 数据
+
+在 Unreal 游戏引擎中，最后都是调用 `FRecastNavMeshGenerator::ExportRigidBodyGeometry()` 接口，可能不同的版本可能会使用不同的物理引擎(比如 Chaos 和 PhysX)，但是最后都是调用这个统一接口
+
+大多数的碰撞器有不同的表现，可能是 Box、Sphere 等，这些东西最后都会被聚合起来变成 Vertex + Index 的性质
+
+至于如何获取场景中的 Collision 数据，最简单的方法就是获得场景中所有的 Actor，遍历 Actor 上的 Component，将其与 `Nav Mesh Bounds Volume` 判断 AABB 碰撞，如果在范围内则导出该碰撞 Collision
+
+> 由于场景中 Actor 可能非常多，直接遍历场景中所有 Actor 明显是非常浪费的
+
+Unreal 会将所有的碰撞体维护在一颗八叉树中。将指定 `Nav Mesh Bounds Volume` 的 AABB 盒放入八叉树查询，找到与该 AABB 盒相交的所有碰撞体，体素化
+
+> 八叉树维护内存成本高
+
+**小场景遍历可能更快，内存消耗更小**
+
+Unreal 中如何实现 Actor 移动出发导航网格更新的呢？
+
+首先就是在 `UNavigationSystemV1` 绑定了组件移动的函数
+
+```cpp
+UNavigationSystemBase::UpdateComponentDataAfterMoveDelegate().BindLambda([](USceneComponent& Comp) { UNavigationSystemV1::UpdateNavOctreeAfterMove(&Comp); });
+```
+
+在回调函数中会出发了 `Octree` 的更新
+
+```cpp
+void UNavigationSystemV1::UpdateNavOctreeAfterMove(USceneComponent* Comp)
+{
+	AActor* OwnerActor = Comp->GetOwner();
+	if (OwnerActor && OwnerActor->GetRootComponent() == Comp)
+	{
+		UpdateActorAndComponentsInNavOctree(*OwnerActor, true);
+	}
+}
+```
+
+但是上面并不是直接更新八叉树的真实数据，而是将数据存储在 `OctreeController.PendingOctreeUpdates` 中
+
+```cpp
+struct FNavigationOctreeController
+{
+	enum EOctreeUpdateMode
+	{
+		OctreeUpdate_Default = 0,						// regular update, mark dirty areas depending on exported content
+		OctreeUpdate_Geometry = 1,						// full update, mark dirty areas for geometry rebuild
+		OctreeUpdate_Modifiers = 2,						// quick update, mark dirty areas for modifier rebuild
+		OctreeUpdate_Refresh = 4,						// update is used for refresh, don't invalidate pending queue
+		OctreeUpdate_ParentChain = 8,					// update child nodes, don't remove anything
+	};
+
+	TSet<FNavigationDirtyElement> PendingOctreeUpdates;
+	TSharedPtr<FNavigationOctree, ESPMode::ThreadSafe> NavOctree;
+	/** Map of all objects that are tied to indexed navigation parent */
+	TMultiMap<UObject*, FWeakObjectPtr> OctreeChildNodesMap;
+	/** if set, navoctree updates are ignored, use with caution! */
+	uint8 bNavOctreeLock : 1;
+
+	// 一些其他函数
+
+private:
+	static NAVIGATIONSYSTEM_API uint32 HashObject(const UObject& Object);
+};
+```
+
+随后由 `UWorld::Tick` 调用 `UNavigationSystemV1::Tick` 来更新数据信息
+
+```cpp
+void UWorld::Tick( ELevelTick TickType, float DeltaSeconds )
+{
+    // Begin: 做一些事 
+
+    // 调用 NavSystem 的 Tick
+	// update world's subsystems (NavigationSystem for now)
+	if (NavigationSystem != nullptr)
+	{
+		SCOPE_CYCLE_COUNTER(STAT_NavWorldTickTime);
+		CSV_SCOPED_TIMING_STAT_EXCLUSIVE(NavigationBuild);
+
+		NavigationSystem->Tick(DeltaSeconds);
+	}
+
+    // After: 做一些事
+}
+
+void UNavigationSystemV1::Tick(float DeltaSeconds)
+{
+    // Begin: 做一些事情
+
+    // 如果 PendingOctreeUpdates 不为空，更新 NacOctree
+	if (DefaultOctreeController.PendingOctreeUpdates.Num() > 0)
+	{
+        FNavigationDataHandler NavHandler(DefaultOctreeController, DefaultDirtyAreasController);
+        NavHandler.ProcessPendingOctreeUpdates();
+	}		
+
+    // After: 做一些事情
+}
+```
+
+```cpp
+// 遍历 PendingOctreeUpdates 所有对象，将其添加到 NavOctree 中
+void FNavigationDataHandler::ProcessPendingOctreeUpdates()
+{
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_Navigation_ProcessPendingOctreeUpdates);
+
+	if (OctreeController.NavOctree)
+	{
+		// AddElementToNavOctree (through some of its resulting function calls) modifies PendingOctreeUpdates so invalidates the iterators,
+		// (via WaitUntilAsyncPropertyReleased() / UpdateComponentInNavOctree() / RegisterNavOctreeElement()). This means we can't iterate
+		// through this set in the normal way. Previously the code iterated through this which also left us open to other potential bugs
+		// in that we may have tried to modify elements we had already processed.
+		while (TSet<FNavigationDirtyElement>::TIterator It = OctreeController.PendingOctreeUpdates.CreateIterator())
+		{
+			FNavigationDirtyElement Element = *It;
+			It.RemoveCurrent();
+			AddElementToNavOctree(Element);
+		}
+	}
+	OctreeController.PendingOctreeUpdates.Empty(32);
+}
+```
+
+为什么不直接更新 `NavOctree` 中的数据呢？
+
+因为一次更新 `NavOctree` 的性能消耗是很大的，所以收集一次信息后统一更新。可以将多个更新请求进行合并和优化，避免频繁地修改 NavOctree 的结构，从而提高性能和稳定性
+
+在 `AddNode` 的时候才真正收集碰撞体数据
+
+```cpp
+OctreeController.NavOctree->AddNode(ElementOwner, DirtyElement.NavInterface, ElementBounds, GeneratedData);
+
+OctreeController.NavOctree->AppendToNode(*ElementId, DirtyElement.NavInterface, ElementBounds, GeneratedData);
+```
