@@ -226,7 +226,9 @@ bool isCross(Vector2D a, Vector2D b, Vector2D c, Vector2D d) {
 
 体素化约占 `Recast Navigation Build`耗时的 80%~90%
 
-对于 3D 场景来说，角色需要在一个碰撞体上移动，所以首先需要获得 `Collision` 数据
+#### UE 获取 Collision
+
+对于 3D 场景来说，角色就是在一个碰撞体上移动，所以要获得可行走区域首先需要获得 `Collision` 数据
 
 在 Unreal 游戏引擎中，最后都是调用 `FRecastNavMeshGenerator::ExportRigidBodyGeometry()` 接口，可能不同的版本可能会使用不同的物理引擎(比如 Chaos 和 PhysX)，但是最后都是调用这个统一接口
 
@@ -353,10 +355,130 @@ void FNavigationDataHandler::ProcessPendingOctreeUpdates()
 
 因为一次更新 `NavOctree` 的性能消耗是很大的，所以收集一次信息后统一更新。可以将多个更新请求进行合并和优化，避免频繁地修改 NavOctree 的结构，从而提高性能和稳定性
 
-在 `AddNode` 的时候才真正收集碰撞体数据
+在 `AddNode` 的时候才真正收集碰撞体数据到 `NavOctree` 中
 
 ```cpp
 OctreeController.NavOctree->AddNode(ElementOwner, DirtyElement.NavInterface, ElementBounds, GeneratedData);
 
 OctreeController.NavOctree->AppendToNode(*ElementId, DirtyElement.NavInterface, ElementBounds, GeneratedData);
 ```
+
+#### 体素化
+
+相关功能在 `Engine\Source\Runtime\Navmesh\Private\Recast\RecastRasterization.cpp` 文件中
+
+把世界理解成一个 Minecraft 的世界，整个世界都是由一个一个方块组成的
+
+![](Image/012.png)
+
+每个体素由长方体构成，水平面上为正方形
+
+至于为什么不是正方体，是因为对于大多数用于行走的 NevMesh 来说对于高度的精度要求没有水平面那么高，所以很多时候 `Cell Height` 会比 `Cell Size` 大很多
+
+体素化实现过程
+
+1. 遍历所有偶碰撞器每个三角面
+2. 沿水平面垂直(y轴)切分 (以 `Cell Size` 切分)
+3. 沿水平面水平(x轴)七分 (以 `Cell Size` 切分)
+4. 将切分下来的多边形体素化(水平面切分后能保证在一个 Cell 里，这时根据多边形 z 值最大最小值，覆盖所有经过的体素)
+
+![](Image/013.png)
+
+上图为俯视角查看 `Collision` 的一个三角面，首先将三角面沿 y 轴切分，然后沿着 x 轴切分
+
+最后得到多个小块，根据小块上点的 z 轴的最大值和最小值和 `Cell Height` 可以计算出该占据的体素
+
+对应的代码如下
+
+```cpp
+/// @par
+///
+/// No spans will be added if the triangle does not overlap the heightfield grid.
+///
+/// @see rcHeightfield
+void rcRasterizeTriangle(rcContext* ctx, const rcReal* v0, const rcReal* v1, const rcReal* v2,
+						 const unsigned char area, rcHeightfield& solid,
+						 const int flagMergeThr, const int rasterizationFlags, const int* rasterizationMasks) //UE
+{
+	rcAssert(ctx);
+
+	ctx->startTimer(RC_TIMER_RASTERIZE_TRIANGLES);
+
+	const rcReal ics = 1.0f/solid.cs;
+	const rcReal ich = 1.0f/solid.ch;
+	rasterizeTri(v0, v1, v2, area, solid, solid.bmin, solid.bmax, solid.cs, ics, ich, flagMergeThr, rasterizationFlags, rasterizationMasks); //UE
+
+	ctx->stopTimer(RC_TIMER_RASTERIZE_TRIANGLES);
+}
+```
+
+**切割多边形算法**函数为 `static int clipPoly`，旧版本是 `static void dividePoly`
+
+算法的核心思路是**逆时针**遍历节点
+
+![](Image/014.png)
+
+对于 AE 来说，点 A 和点 E 在轴两边，所以 A 加入左边多边形，E 加入右边多边形，根据轴的坐标线性插值计算出 F 的坐标，同时加入左右两个多边形
+
+对于 AB 来说，点 A 和点 B 在轴的左边，所以两个点都加入左边多边形
+
+对于 BC 来说，点 B 和点 C 在轴两边，所以 B 加入左边多边形，C 加入右边多边形，根据轴的坐标线性插值计算出 G 的坐标，同时加入左右两个多边形
+
+```cpp
+static int clipPoly(const rcReal* in, int n, rcReal* out, rcReal pnx, rcReal pnz, rcReal pd)
+{
+	rcReal d[12];
+	for (int i = 0; i < n; ++i)
+		d[i] = pnx*in[i*3+0] + pnz*in[i*3+2] + pd;
+	
+	int m = 0;
+	for (int i = 0, j = n-1; i < n; j=i, ++i)
+	{
+		bool ina = d[j] >= 0;
+		bool inb = d[i] >= 0;
+		if (ina != inb)
+		{
+			rcReal s = d[j] / (d[j] - d[i]);
+			out[m*3+0] = in[j*3+0] + (in[i*3+0] - in[j*3+0])*s;
+			out[m*3+1] = in[j*3+1] + (in[i*3+1] - in[j*3+1])*s;
+			out[m*3+2] = in[j*3+2] + (in[i*3+2] - in[j*3+2])*s;
+			m++;
+		}
+		if (inb)
+		{
+			out[m*3+0] = in[i*3+0];
+			out[m*3+1] = in[i*3+1];
+			out[m*3+2] = in[i*3+2];
+			m++;
+		}
+	}
+	return m;
+}
+```
+
+最后将多边形所接触到的区域全部标记为占有，如下图所示
+
+![](Image/015.png)
+
+#### 体素化表达
+
+`aaabbbbccc` 可以表达为 `3a4b3c`，在运行时再解压缩成真正的字符串，这种方法被称为 `Run-length encoding`
+
+同理，对于体素来说也可以这么做
+
+![](Image/016.png)
+
+如果直接使用数组存储体素是比较占用内存的，所以可以先将相邻的体素压缩成一个 `span`，这个时候存储的是被占用的体素，可以将 `SolidHeightField` 转换成存储不被占用的体素，即 `CompactHeightField`
+
+一般来说 `CompactHeightField` 存储的就是可行走区域，这种存储结构可以让寻路效率增加，但是如果增减体素则效率低
+
+> 设定人体需要占用两个 `Cell Height`，所以最上面的体素是不能站人的，因此在 `CompactHeightField` 中被**剔除**
+
+上面三种数据结构 `DenseArray`、`SolidHeightField` 和 `CompactHeightField` 在不同情况各有优势
+
+- `DenseArray` 访问修改体素状态快、查询寻路慢、内存占用高
+- `SolidHeightField` 内存占用小、访问修改体素状态速度中、查询寻路速度中
+- `CompactHeightField` 内存占用小、访问修改体素修改速度慢、查询寻路速度快
+
+在不同的应用情况，可以考虑使用不同的数据结构存储体素信息
+
