@@ -481,4 +481,3 @@ static int clipPoly(const rcReal* in, int n, rcReal* out, rcReal pnx, rcReal pnz
 - `CompactHeightField` 内存占用小、访问修改体素修改速度慢、查询寻路速度快
 
 在不同的应用情况，可以考虑使用不同的数据结构存储体素信息
-
