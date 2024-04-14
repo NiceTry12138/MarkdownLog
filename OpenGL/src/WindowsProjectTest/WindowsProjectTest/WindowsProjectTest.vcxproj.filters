@@ -27,9 +27,18 @@
     <ClInclude Include="WindowsProjectTest.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="GTMATH.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Canvas.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WindowsProjectTest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Canvas.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -127,12 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Canvas.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GTMATH.hpp" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WindowsProjectTest.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="WindowsProjectTest.cpp" />
   </ItemGroup>
   <ItemGroup>
