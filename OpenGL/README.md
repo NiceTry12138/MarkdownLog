@@ -114,7 +114,7 @@ if (!InitInstance (hInstance, nCmdShow))
 
 ```cpp
 while (GetMessage(&msg, nullptr, 0, 0))
-``
+```
 
 这是主消息循环。GetMessage 函数从消息队列中检索消息。如果获取到的消息不是退出消息（WM_QUIT），则循环继续
 
