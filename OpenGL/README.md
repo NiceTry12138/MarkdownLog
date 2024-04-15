@@ -350,6 +350,11 @@ void Render() {
 
 上述代码在高度为 100 的地方绘制了一条横着的红线
 
+因为 `Canvas` 是直接对 `buffer` 进行操作，`buffer` 关联着 `hMem`， `hMem` 又同步给 `hDC` ，所以 `Canvas` 直接对 `buffer` 进行操作就可以改变显示的内容
+
+### 直接绘制算法： brenseham 算法
+
+
 
 ## 图形处理及纹理系统
 
