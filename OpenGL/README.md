@@ -258,6 +258,97 @@ buffer（Pointer to the Bitmap’s Pixel Data） |  buffer 是一个指针，它
 
 ### 点的绘制
 
+```cpp
+class Canvas
+{
+private:
+    int m_Width{ -1 };
+    int m_Height{ -1 };
+    RGBA* m_Buffer{ nullptr };
+
+
+public: 
+    Canvas(int _width, int _height, void* _buffer) {
+        if (_width <= 0 || _height <= 0) {
+            m_Width = -1;
+            m_Height = -1;
+        }
+        m_Width = _width;
+        m_Height = _height;
+        m_Buffer = (RGBA*)_buffer;
+    }
+
+    ~Canvas() {
+
+    }
+
+    // 画点操作
+    void drawPoint(int x, int y, RGBA _collor) {
+        if (x < 0 || x >= m_Width || y < 0 || y >= m_Height) {
+            return;
+        }
+
+        m_Buffer[y * m_Height + x] = _collor;
+    }
+
+    // 清理操作
+    void clear() {
+        if (m_Buffer != nullptr) {
+            memset(m_Buffer, 0, sizeof(RGBA) * m_Width * m_Height);
+        }
+    }
+};
+```
+
+封装 Canvas 类，用于绘制点以及对外提供接口
+
+在 `wWinMain` 中创建并初始化全局 `Canvas` 对象
+
+```cpp
+GT::Canvas* _canvas = nullptr;
+
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+                     _In_opt_ HINSTANCE hPrevInstance,
+                     _In_ LPWSTR    lpCmdLine,
+                     _In_ int       nCmdShow)
+{
+
+	/*===========创建绘图用的位图========*/
+
+	_canvas = new GT::Canvas(wWidth, wHeight, buffer);omFile("res/bk.jpg");
+
+    MSG msg;
+
+    // 主消息循环:
+    while (GetMessage(&msg, nullptr, 0, 0))
+    {
+        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        Render();
+    }
+}
+```
+
+随后在 `Render` 的时候设置绘制点的信息
+
+```cpp
+void Render() {
+    _canvas->clear();
+
+    for (int x = 0; x < wWidth; ++x) {
+        _canvas->drawPoint(x, 200, GT::RGBA(255, 0, 0, 0));
+    }
+
+	// 将 hMem 的数据一次写入到 hDC 中
+	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);
+}
+```
+
+上述代码在高度为 100 的地方绘制了一条横着的红线
 
 
 ## 图形处理及纹理系统

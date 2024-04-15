@@ -3,6 +3,8 @@
 
 #include "framework.h"
 #include "WindowsProjectTest.h"
+#include "GTMATH.hpp"
+#include "Canvas.h"
 
 #define MAX_LOADSTRING 100
 
@@ -18,6 +20,8 @@ int wHeight = 600;                              // 窗口高度
 HDC     hDC;
 HDC     hMem;
 
+GT::Canvas* _canvas = nullptr;
+
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -25,8 +29,11 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 void Render() {
-    
+    _canvas->clear();
 
+    for (int x = 0; x < wWidth; ++x) {
+        _canvas->drawPoint(x, 200, GT::RGBA(255, 0, 0, 0));
+    }
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);
@@ -78,6 +85,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	SelectObject(hMem, hBmp);
 
 	memset(buffer, 0, wWidth * wHeight * 4); //清空buffer为0
+
+	/*===========创建绘图用的位图========*/
+
+	_canvas = new GT::Canvas(wWidth, wHeight, buffer);
+	//_image = GT::Image::readFromFile("res/carma.png");
+	//_zoomImage = GT::Image::zoomImage(_image, 3, 3);
+	//_zoomImageSimple = GT::Image::zoomImageSimple(_image, 3, 3);
+	//// _image->setAlpha(0.5);
+	//_bkImage = GT::Image::readFromFile("res/bk.jpg");
 
     MSG msg;
 
