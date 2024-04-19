@@ -35,7 +35,10 @@ void Render() {
 	//	_canvas->drawPoint(x, 2 * x, GT::RGBA(255, 0, 0, 0));
 	//}
 
-    _canvas->drawLine(GT::intV2(1, 1), GT::intV2(wWidth, wHeight), GT::RGBA(255, 0, 0, 0));
+	_canvas->drawLine(GT::intV2(1, 1), GT::intV2(wWidth, wHeight), GT::RGBA(255, 0, 0, 0));
+	_canvas->drawLine(GT::intV2(1, wHeight), GT::intV2(wWidth, 1), GT::RGBA(255, 0, 0, 0));
+	_canvas->drawLine(GT::intV2(1, wHeight / 2), GT::intV2(wWidth, wHeight / 2), GT::RGBA(255, 0, 0, 0));
+	_canvas->drawLine(GT::intV2(wWidth / 2, 1), GT::intV2(wWidth / 2, wHeight), GT::RGBA(255, 0, 0, 0));
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);
