@@ -31,9 +31,11 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void Render() {
     _canvas->clear();
 
-    for (int x = 0; x < wWidth; ++x) {
-        _canvas->drawPoint(x, 200, GT::RGBA(255, 0, 0, 0));
-    }
+	//for (int x = 0; x < wWidth; ++x) {
+	//	_canvas->drawPoint(x, x, GT::RGBA(255, 0, 0, 0));
+	//}
+
+    _canvas->drawLine(GT::intV2(1, 1), GT::intV2(10, 10), GT::RGBA(255, 0, 0, 0));
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);

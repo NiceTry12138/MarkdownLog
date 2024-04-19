@@ -27,6 +27,9 @@ namespace GT {
 
 		}
 
+		// »­Ïß
+		void drawLine(intV2 pt1, intV2 pt2, RGBA _Color);
+
 		// »­µã²Ù×÷
 		void drawPoint(int x, int y, RGBA _collor) {
 			if (x < 0 || x >= m_Width || y < 0 || y >= m_Height) {
