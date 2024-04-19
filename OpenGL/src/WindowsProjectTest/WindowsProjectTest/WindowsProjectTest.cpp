@@ -32,10 +32,10 @@ void Render() {
     _canvas->clear();
 
 	//for (int x = 0; x < wWidth; ++x) {
-	//	_canvas->drawPoint(x, x, GT::RGBA(255, 0, 0, 0));
+	//	_canvas->drawPoint(x, 2 * x, GT::RGBA(255, 0, 0, 0));
 	//}
 
-    _canvas->drawLine(GT::intV2(1, 1), GT::intV2(10, 10), GT::RGBA(255, 0, 0, 0));
+    _canvas->drawLine(GT::intV2(1, 1), GT::intV2(wWidth, wHeight), GT::RGBA(255, 0, 0, 0));
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);
@@ -62,7 +62,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINDOWSPROJECTTEST));
+	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINDOWSPROJECTTEST));
 
 	/*===========创建绘图用的位图========*/
     void* buffer = 0;
@@ -70,20 +70,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     hDC = GetDC(hWnd);  // handle of device context
     hMem = ::CreateCompatibleDC(hDC);
     
-    BITMAPINFO bmpInfo;
-    bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmpInfo.bmiHeader.biWidth = wWidth;
-    bmpInfo.bmiHeader.biHeight = wHeight;
-    bmpInfo.bmiHeader.biPlanes = 1;
-    bmpInfo.bmiHeader.biBitCount = 32;
-    bmpInfo.bmiHeader.biCompression = BI_RGB;
-    bmpInfo.bmiHeader.biSizeImage = 0;
-    bmpInfo.bmiHeader.biXPelsPerMeter = 0;
-    bmpInfo.bmiHeader.biYPelsPerMeter = 0;
-    bmpInfo.bmiHeader.biClrUsed = 0;
-    bmpInfo.bmiHeader.biClrImportant = 0;
+	BITMAPINFO  bmpInfo;
+	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmpInfo.bmiHeader.biWidth = wWidth;
+	bmpInfo.bmiHeader.biHeight = wHeight;
+	bmpInfo.bmiHeader.biPlanes = 1;
+	bmpInfo.bmiHeader.biBitCount = 32;
+	bmpInfo.bmiHeader.biCompression = BI_RGB; //实际上存储方式为bgr
+	bmpInfo.bmiHeader.biSizeImage = 0;
+	bmpInfo.bmiHeader.biXPelsPerMeter = 0;
+	bmpInfo.bmiHeader.biYPelsPerMeter = 0;
+	bmpInfo.bmiHeader.biClrUsed = 0;
+	bmpInfo.bmiHeader.biClrImportant = 0;
 
-    HBITMAP hBmp = CreateDIBSection(hDC, &bmpInfo, DIB_RGB_COLORS, (void**)&buffer, 0, 0);  // 创建 Buffer 的内存
+	HBITMAP hBmp = CreateDIBSection(hDC, &bmpInfo, DIB_RGB_COLORS, (void**)&buffer, 0, 0);//在这里创建buffer的内存
 	SelectObject(hMem, hBmp);
 
 	memset(buffer, 0, wWidth * wHeight * 4); //清空buffer为0

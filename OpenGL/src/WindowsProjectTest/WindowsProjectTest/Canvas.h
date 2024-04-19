@@ -36,7 +36,7 @@ namespace GT {
 				return;
 			}
 
-			m_Buffer[y * m_Height + x] = _collor;
+			m_Buffer[y * m_Width + x] = _collor;
 		}
 
 		// ÇåÀí²Ù×÷
