@@ -15,7 +15,7 @@ namespace GT {
 		int stepX = 0;
 		int stepY = 0;
 
-		// ÅĞ¶Ï²½¾¶·½Ïò 
+		// åˆ¤æ–­æ­¥å¾„æ–¹å‘ 
 		if (pt1.m_x < pt2.m_x) {
 			stepX = 1;
 		}
@@ -30,18 +30,18 @@ namespace GT {
 			stepY = -1;
 		}
 
-		// ¶Ô±È x¡¢y Æ«ÒÆÁ¿£¬¾ö¶¨²½¾¶µÄ·½ÏòÑ¡È¡ x »òÕß y
+		// å¯¹æ¯” xã€y åç§»é‡ï¼Œå†³å®šæ­¥å¾„çš„æ–¹å‘é€‰å– x æˆ–è€… y
 		int sumStep = disX;
 		bool useXStep = true;
 
 		if (disX < disY) {
-			// ±íÊ¾Ğ±ÂÊ > 1
+			// è¡¨ç¤ºæ–œç‡ > 1
 			sumStep = disY;
 			useXStep = false;
 			SWAP_INT(disX, disY);
 		}
 
-		// ³õÊ¼»¯ p Öµ Ò²¾ÍÊÇ¹«Ê½ÍÆµ¼Ê±×î¿ªÊ¼µÄÖµ (2dy - dx)
+		// åˆå§‹åŒ– p å€¼ ä¹Ÿå°±æ˜¯å…¬å¼æ¨å¯¼æ—¶æœ€å¼€å§‹çš„å€¼ (2dy - dx)
 		int p = 2 * disY - disX;
 
 		for (int index = 0; index < sumStep; ++ index) {
@@ -65,7 +65,7 @@ namespace GT {
 				p += 2 * disY;
 			}
 
-			// ¸üĞÂ²½¾¶×ø±ê
+			// æ›´æ–°æ­¥å¾„åæ ‡
 			if (useXStep) {
 				xNow += stepX;
 			}
@@ -74,6 +74,11 @@ namespace GT {
 			}
 		}
 	}
+	void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
+	{
+		
+	}
+
 	inline RGBA Canvas::colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale)
 	{
 		RGBA result;

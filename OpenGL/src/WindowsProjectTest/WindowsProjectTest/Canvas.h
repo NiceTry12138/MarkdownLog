@@ -3,7 +3,7 @@
 #include <string.h>
 
 namespace GT {
-	// ²Ù×÷»­²¼µÄÀà
+	// æ“ä½œç”»å¸ƒçš„ç±»
 	class Canvas
 	{
 	private:
@@ -27,10 +27,12 @@ namespace GT {
 
 		}
 
-		// »­Ïß
+		// ç”»çº¿
 		void drawLine(const Point &pt1, const Point &pt2);
 
-		// »­µã²Ù×÷
+		void drawTriangle(const Point &pt1, const Point &pt2, const Point &pt3);
+
+		// ç”»ç‚¹æ“ä½œ
 		void drawPoint(const Point &_pt) {
 			if (_pt.m_x < 0 || _pt.m_x >= m_Width || _pt.m_y < 0 || _pt.m_y >= m_Height) {
 				return;
@@ -40,10 +42,10 @@ namespace GT {
 			m_Buffer[_index] = _pt.m_color;
 		}
 
-		// ÑÕÉ«ÏßĞÔ²åÖµ
+		// é¢œè‰²çº¿æ€§æ’å€¼
 		inline RGBA colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale);
 
-		// ÇåÀí²Ù×÷
+		// æ¸…ç†æ“ä½œ
 		void clear() {
 			if (m_Buffer != nullptr) {
 				memset(m_Buffer, 0, sizeof(RGBA) * m_Width * m_Height);
