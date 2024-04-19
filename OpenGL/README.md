@@ -518,6 +518,10 @@ for (int index = 0; index < sumStep; ++ index) {
 }
 ```
 
+### 三角形绘制
+
+
+
 ## 图形处理及纹理系统
 
 
