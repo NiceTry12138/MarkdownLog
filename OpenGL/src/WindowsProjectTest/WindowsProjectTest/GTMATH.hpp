@@ -3,8 +3,7 @@
 
 namespace GT
 {
-
-#define	PI									3.14159265358979323
+#define	PI									3.14159265358979323f
 #define	DEG2RAD(theta)						(0.01745329251994329 * (theta))
 #define MIN(a,b)							((a)<(b)?(a):(b))
 #define MAX(a,b)							((a)>(b)?(a):(b))
@@ -76,6 +75,24 @@ namespace GT
 			m_g = _g;
 			m_b = _b;
 			m_a = _a;
+		}
+	};
+
+	struct Point
+	{
+	public:
+		int m_x;
+		int m_y;
+		RGBA m_color;
+		Point(int _x = 0, int _y = 0, RGBA _color = RGBA(0, 0, 0, 0))
+		{
+			m_x = _x;
+			m_y = _y;
+			m_color = _color;
+		}
+		~Point()
+		{
+
 		}
 	};
 }

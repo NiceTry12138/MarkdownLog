@@ -28,16 +28,20 @@ namespace GT {
 		}
 
 		// 画线
-		void drawLine(intV2 pt1, intV2 pt2, RGBA _Color);
+		void drawLine(const Point &pt1, const Point &pt2);
 
 		// 画点操作
-		void drawPoint(int x, int y, RGBA _collor) {
-			if (x < 0 || x >= m_Width || y < 0 || y >= m_Height) {
+		void drawPoint(const Point &_pt) {
+			if (_pt.m_x < 0 || _pt.m_x >= m_Width || _pt.m_y < 0 || _pt.m_y >= m_Height) {
 				return;
 			}
 
-			m_Buffer[y * m_Width + x] = _collor;
+			int _index = _pt.m_y * m_Width + _pt.m_x;
+			m_Buffer[_index] = _pt.m_color;
 		}
+
+		// 颜色线性插值
+		inline RGBA colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale);
 
 		// 清理操作
 		void clear() {

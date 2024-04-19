@@ -5,25 +5,25 @@
 #include <string>
 
 namespace GT {
-	void Canvas::drawLine(intV2 pt1, intV2 pt2, RGBA _Color) {
-		int disY = abs(pt2.y - pt1.y);
-		int disX = abs(pt2.x - pt1.x);
+	void Canvas::drawLine(const Point& pt1, const Point& pt2) {
+		int disY = abs(pt2.m_y - pt1.m_y);
+		int disX = abs(pt2.m_x - pt1.m_x);
 
-		int xNow = pt1.x;
-		int yNow = pt1.y;
+		int xNow = pt1.m_x;
+		int yNow = pt1.m_y;
 
 		int stepX = 0;
 		int stepY = 0;
 
 		// ÅÐ¶Ï²½¾¶·½Ïò 
-		if (pt1.x < pt2.x) {
+		if (pt1.m_x < pt2.m_x) {
 			stepX = 1;
 		}
 		else {
 			stepX = -1;
 		}
 
-		if (pt1.y < pt2.y) {
+		if (pt1.m_y < pt2.m_y) {
 			stepY = 1;
 		}
 		else {
@@ -47,7 +47,9 @@ namespace GT {
 		for (int index = 0; index < sumStep; ++ index) {
 			//std::wstring str = L"index = " + std::to_wstring(index) + L" xNow = " + std::to_wstring(xNow) + L", yNow = " + std::to_wstring(yNow) + L"\n";
 			//OutputDebugString(str.c_str());
-			drawPoint(xNow, yNow, _Color);
+
+			auto pointColor = colorLerp(pt1.m_color, pt2.m_color, (float)index / sumStep);
+			drawPoint(Point(xNow, yNow, pointColor));
 			if (p >= 0) {
 				if (useXStep) {
 					yNow += stepY;
@@ -71,5 +73,16 @@ namespace GT {
 				yNow += stepY;
 			}
 		}
+	}
+	inline RGBA Canvas::colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale)
+	{
+		RGBA result;
+
+		result.m_r = _color1.m_r + (float)(_color2.m_r - _color1.m_r) * _scale;
+		result.m_g = _color1.m_g + (float)(_color2.m_g - _color1.m_g) * _scale;
+		result.m_b = _color1.m_b + (float)(_color2.m_b - _color1.m_b) * _scale;
+		result.m_a = _color1.m_a + (float)(_color2.m_a - _color1.m_a) * _scale;
+
+		return result;
 	}
 }

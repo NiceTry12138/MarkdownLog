@@ -468,7 +468,55 @@ void func(int x0, int y0, int x1, int y1) {
 
 对于 **区域7、8** 也就是 `slope < 0` 的区域来说，**对 x 轴做镜像变换**即可，让 $y = -y$ 就能变换到**区域1、2**，等像素坐标计算完毕之后再变换回来
 
+### 直线上的颜色
 
+封装 `Point` 类，用于存储点的信息，包括 `x、y` 坐标和 `RGBA` 颜色信息
+
+```cpp
+struct Point
+{
+public:
+    int m_x;
+    int m_y;
+    RGBA m_color;
+    Point(int _x = 0, int _y = 0, RGBA _color = RGBA(0, 0, 0, 0))
+    {
+        m_x = _x;
+        m_y = _y;
+        m_color = _color;
+    }
+    ~Point()
+    {
+
+    }
+};
+```
+
+简单的直线的颜色计算，只需要根据两端点的颜色信息进行线性插值即可
+
+```cpp
+inline RGBA colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale) {
+    RGBA result;
+
+    result.m_r = _color1.m_r + (float)(_color2.m_r - _color1.m_r) * _scale;
+    result.m_g = _color1.m_g + (float)(_color2.m_g - _color1.m_g) * _scale;
+    result.m_b = _color1.m_b + (float)(_color2.m_b - _color1.m_b) * _scale;
+    result.m_a = _color1.m_a + (float)(_color2.m_a - _color1.m_a) * _scale;
+
+    return result;
+}
+```
+
+然后在绘制直线的时候，只需要根据计算点的进入即可知道点的颜色插值
+
+```cpp
+for (int index = 0; index < sumStep; ++ index) {
+    auto pointColor = colorLerp(pt1.m_color, pt2.m_color, (float)index / sumStep);
+    drawPoint(Point(xNow, yNow, pointColor));
+
+    // 后续 brensenham 算法计算
+}
+```
 
 ## 图形处理及纹理系统
 
