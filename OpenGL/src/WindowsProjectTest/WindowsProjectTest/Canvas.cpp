@@ -45,8 +45,8 @@ namespace GT {
 		int p = 2 * disY - disX;
 
 		for (int index = 0; index < sumStep; ++ index) {
-			std::wstring str = L"index = " + std::to_wstring(index) + L" xNow = " + std::to_wstring(xNow) + L", yNow = " + std::to_wstring(yNow) + L"\n";
-			OutputDebugString(str.c_str());
+			//std::wstring str = L"index = " + std::to_wstring(index) + L" xNow = " + std::to_wstring(xNow) + L", yNow = " + std::to_wstring(yNow) + L"\n";
+			//OutputDebugString(str.c_str());
 			drawPoint(xNow, yNow, _Color);
 			if (p >= 0) {
 				if (useXStep) {

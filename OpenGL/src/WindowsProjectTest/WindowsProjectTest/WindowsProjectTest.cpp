@@ -5,6 +5,7 @@
 #include "WindowsProjectTest.h"
 #include "GTMATH.hpp"
 #include "Canvas.h"
+#include "Tool.h"
 
 #define MAX_LOADSTRING 100
 
@@ -31,14 +32,19 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void Render() {
     _canvas->clear();
 
+    // 测试点
 	//for (int x = 0; x < wWidth; ++x) {
 	//	_canvas->drawPoint(x, 2 * x, GT::RGBA(255, 0, 0, 0));
 	//}
 
-	_canvas->drawLine(GT::intV2(1, 1), GT::intV2(wWidth, wHeight), GT::RGBA(255, 0, 0, 0));
-	_canvas->drawLine(GT::intV2(1, wHeight), GT::intV2(wWidth, 1), GT::RGBA(255, 0, 0, 0));
-	_canvas->drawLine(GT::intV2(1, wHeight / 2), GT::intV2(wWidth, wHeight / 2), GT::RGBA(255, 0, 0, 0));
-	_canvas->drawLine(GT::intV2(wWidth / 2, 1), GT::intV2(wWidth / 2, wHeight), GT::RGBA(255, 0, 0, 0));
+    // 测试直线 极坐标绘制一圈线
+    for (int i = 0; i < 360; i += 10) {
+        float angle = i * PI / 180 ;
+        int x = cos(angle) * 300 + wWidth / 2;
+        int y = sin(angle) * 300 + wHeight / 2;
+        //GT::UTool::DebugPrint(L"angle = %d\n", angle);
+        _canvas->drawLine(GT::intV2(wWidth / 2, wHeight / 2), GT::intV2(x, y), GT::RGBA(255, 0, 0, 0));
+    }
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);

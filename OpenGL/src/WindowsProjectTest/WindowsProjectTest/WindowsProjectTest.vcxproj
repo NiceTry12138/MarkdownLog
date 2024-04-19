@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Canvas.cpp" />
+    <ClCompile Include="Tool.h" />
     <ClCompile Include="WindowsProjectTest.cpp" />
   </ItemGroup>
   <ItemGroup>

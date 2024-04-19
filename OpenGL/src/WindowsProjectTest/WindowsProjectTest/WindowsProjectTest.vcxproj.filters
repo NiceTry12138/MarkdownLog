@@ -41,6 +41,9 @@
     <ClCompile Include="Canvas.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Tool.h">
+      <Filter>头文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WindowsProjectTest.rc">
