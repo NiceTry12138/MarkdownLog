@@ -567,7 +567,10 @@ int dcmp(double x)
 //判断点Q是否在P1和P2的线段上
 bool OnSegment(Point P1,Point P2,Point Q)
 {
-    // 这个函数用于判断点 Q 是否在线段 P1P2 上。它先计算向量 (P1-Q)^(P2-Q) 的叉积是否为 0（判断点 Q 是否在直线 P1P2 上），然后再判断点 Q 是否在线段 P1P2 的范围内（计算 (P1-Q)*(P2-Q) 的点积是否小于等于 0）。如果满足这两个条件，则点 Q 在线段 P1P2 上
+    // 这个函数用于判断点 Q 是否在线段 P1P2 上
+    // 它先计算向量 (P1-Q)^(P2-Q) 的叉积是否为 0（判断点 Q 是否在直线 P1P2 上）
+    // 然后再判断点 Q 是否在线段 P1P2 的范围内（计算 (P1-Q)*(P2-Q) 的点积是否小于等于 0）
+    // 如果满足这两个条件，则点 Q 在线段 P1P2 上
     return dcmp((P1-Q)^(P2-Q))==0&&dcmp((P1-Q)*(P2-Q))<=0;
 }
 //判断点P在多边形内-射线法
@@ -649,6 +652,7 @@ void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
 这种方法的优势在于它简化了扫描过程，减少了计算量，使得三角形的填充效率更高
 
 ```cpp
+// pt1 和 pt2 是 y 相等的两个点，pt 是另一个顶点
 void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt)
 {
     float k1 = 0.0f;
@@ -681,6 +685,67 @@ void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& p
     }
 }
 ```
+
+上面代码是绘制一个平底平顶三角形的，接下来就是将任意三角形转成绘制一个或两个平底平顶三角形
+
+```cpp
+void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
+{
+    std::vector<Point> pVec;
+    pVec.push_back(pt1);
+    pVec.push_back(pt2);
+    pVec.push_back(pt3);
+
+    // 将顶点按照 y 坐标进行排序，使得 ptMax 是 y 坐标最大的点，ptMin 是 y 坐标最小的点
+    std::sort(pVec.begin(), pVec.end(), [](const Point& pt1, const Point& pt2) { return pt1.m_y > pt2.m_y; });
+
+    Point ptMax = pVec[0];  // y 最大的点
+    Point ptMid = pVec[1];  // y 中间的点
+    Point ptMin = pVec[2];  // y 最小的点
+
+    // 如果最大的两个 y 值相等，则是平顶三角形
+    if (ptMax.m_y == ptMid.m_y)
+    {
+        drawTriangleFlat(ptMax, ptMid, ptMin);
+        return;
+    }
+    // 如果最小的两个 y 值相等，则是平底三角形
+    if (ptMin.m_y == ptMid.m_y)
+    {
+        drawTriangleFlat(ptMin, ptMid, ptMax);
+        return;
+    }
+
+    // 其他则通过直线公式 求出另一个端点的值
+    float k = 0.0;
+
+    if (ptMax.m_x != ptMin.m_x)
+    {
+        k = (float)(ptMax.m_y - ptMin.m_y) / (float)(ptMax.m_x - ptMin.m_x);
+    }
+    float b = (float)ptMax.m_y - (float)ptMax.m_x * k;
+
+    Point npt(0, 0, RGBA(255, 0, 0));
+    npt.m_y = ptMid.m_y;
+    if (k == 0)
+    {
+        npt.m_x = ptMax.m_x;
+    }
+    else
+    {
+        npt.m_x = ((float)npt.m_y - b) / k;
+    }
+    float s = (float)(npt.m_y - ptMin.m_y) / (float)(ptMax.m_y - ptMin.m_y);
+    npt.m_color = colorLerp(ptMin.m_color, ptMax.m_color, s);
+
+    drawTriangleFlat(ptMid, npt, ptMax);
+    drawTriangleFlat(ptMid, npt, ptMin);
+
+    return;
+}
+```
+
+![](Image/010.png)
 
 ### 三角形效率绘制-绘制任意三角形
 
