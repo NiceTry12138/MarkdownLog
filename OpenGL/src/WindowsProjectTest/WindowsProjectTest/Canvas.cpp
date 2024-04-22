@@ -94,6 +94,30 @@ namespace GT {
 		pVec.push_back(pt2);
 		pVec.push_back(pt3);
 
+		GT_RECT _rect(0, m_Width, m_Height, 0);
+		//是否双方相交
+		while (true)
+		{
+			if (judgeInRect(pt1, _rect) || judgeInRect(pt2, _rect) || judgeInRect(pt3, _rect))
+			{
+				break;
+			}
+			Point rpt1(0, 0, RGBA());
+			Point rpt2(0, m_Width, RGBA());
+			Point rpt3(0, m_Height, RGBA());
+			Point rpt4(m_Width, m_Height,RGBA());
+
+			if (judgeInTriangle(rpt1, pVec) ||
+				judgeInTriangle(rpt2, pVec) ||
+				judgeInTriangle(rpt3, pVec) ||
+				judgeInTriangle(rpt4, pVec))
+			{
+				break;
+			}
+
+			return;
+		}
+
 		// 将顶点按照 y 坐标进行排序，使得 ptMax 是 y 坐标最大的点，ptMin 是 y 坐标最小的点
 		std::sort(pVec.begin(), pVec.end(), [](const Point& pt1, const Point& pt2) { return pt1.m_y > pt2.m_y; });
 
@@ -156,7 +180,17 @@ namespace GT {
 		int stepValue = upToDown ? -1 : 1;
 		int startX = pt.m_x;
 		int totalStemp = abs(pt.m_y - pt1.m_y) + 1;
-		for (int posY = pt.m_y, step = 0; step < totalStemp; posY += stepValue, ++step) {
+
+		int step = 0;
+		int posY = pt.m_y;
+
+		// TODO 限制绘制区域 计算 posY 和 step 的值
+
+		for (; step < totalStemp; posY += stepValue, ++step) {
+			// 超出边界 不做处理
+			if (!GT::UTool::inRange(posY, 0, m_Height)) {
+				break;
+			}
 			int l1x = startX + 1 / k1 * stepValue * step;
 			RGBA color1 = colorLerp(pt.m_color, pt1.m_color, step * 1.0 / totalStemp);
 			int l2x = startX + 1 / k2 * stepValue * step;
@@ -214,6 +248,13 @@ namespace GT {
 				flag = !flag;
 		}
 		return flag;
+	}
+
+	bool Canvas::judgeInRect(const Point& pt, const GT_RECT& rect)
+	{
+		bool inX = pt.m_x >= rect.m_left && pt.m_x <= rect.m_right;
+		bool inY = pt.m_y >= rect.m_bottom && pt.m_y <= rect.m_top;
+		return inX && inY;
 	}
 
 	inline RGBA Canvas::colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale)

@@ -747,16 +747,59 @@ void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
 
 ![](Image/010.png)
 
-### 三角形效率绘制-绘制任意三角形
-
-
 ### 三角形效率绘制-优化及剪裁提速
+
+如果三角形不在屏幕范围内，那么三角形是不需要绘制的；又或者如果三角形很大，超过屏幕，那么只需要绘制屏幕内的，而不用遍历整个三角形
+
+以 `1920 * 1080` 的屏幕为例，三角形三个点的坐标是 `(-5000, -5000), (0, 5000), (5000, -5000)` 为例，很明显如果便利三角形的每个点是及其浪费性能的，因为很多地方根本不需要计算
+
+所以，在绘制三角形之前要进行一个基本的剔除操作
+
+首先就是判断三角形与绘制矩形是否有交点
+
+如果三角形的某个点在矩形范围内，并且矩形的某个点在三角形范围内，那么三角形和矩形相交，那么这个三角形就是要绘制的
+
+| 情况一 | 情况二 |
+| --- | --- | 
+| ![](Image/011.png) | ![](Image/012.png) |
+
+```cpp
+std::vector<Point> pVec;
+pVec.push_back(pt1);
+pVec.push_back(pt2);
+pVec.push_back(pt3);
+
+GT_RECT _rect(0, m_Width, m_Height, 0);
+//是否双方相交
+while (true)
+{
+    if (judgeInRect(pt1, _rect) || judgeInRect(pt2, _rect) || judgeInRect(pt3, _rect))
+    {
+        break;
+    }
+    Point rpt1(0, 0, RGBA());
+    Point rpt2(0, m_Width, RGBA());
+    Point rpt3(0, m_Height, RGBA());
+    Point rpt4(m_Width, m_Height,RGBA());
+
+    if (judgeInTriangle(rpt1, pVec) ||
+        judgeInTriangle(rpt2, pVec) ||
+        judgeInTriangle(rpt3, pVec) ||
+        judgeInTriangle(rpt4, pVec))
+    {
+        break;
+    }
+
+    return;
+}
+```
+
+在绘制之前先判断是否需要绘制，只有需要绘制的三角形才会进入后续流程
+
+在绘制三角形时，为了避免超大三角形导致计算量爆炸，所以绘制之前先计算起点 Y 和终点 Y，起点 X 和终点 X 的值，剔除无效区域的绘制
+
 
 
 ## 图形处理及纹理系统
 
-
-
 ## 图形学状态机接口封装
-
-

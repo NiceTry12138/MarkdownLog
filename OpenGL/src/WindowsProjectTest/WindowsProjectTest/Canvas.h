@@ -56,6 +56,7 @@ namespace GT {
 
 		bool judgeInTriangle(const Point& pt, const std::vector<Point>& _ptArray);
 
+		bool judgeInRect(const Point& pt, const GT_RECT& rect);
 	};
 }
 
