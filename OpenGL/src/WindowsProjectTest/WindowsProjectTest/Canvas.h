@@ -31,23 +31,11 @@ namespace GT {
 		// 画线
 		void drawLine(const Point &pt1, const Point &pt2);
 
-		// 平底平顶三角形绘制
-		void drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt3);
-
-		// 扫描线算法实现三角形绘制
-		void drawTriangle_scan(const Point &pt1, const Point &pt2, const Point &pt3);
-
-		bool judgeInTriangle(const Point& pt, const std::vector<Point> &_ptArray);
-
 		// 画点操作
-		void drawPoint(const Point &_pt) {
-			if (_pt.m_x < 0 || _pt.m_x >= m_Width || _pt.m_y < 0 || _pt.m_y >= m_Height) {
-				return;
-			}
+		void drawPoint(const Point& _pt);
 
-			int _index = _pt.m_y * m_Width + _pt.m_x;
-			m_Buffer[_index] = _pt.m_color;
-		}
+		// 绘制多边形
+		void drawTriangle(const Point& pt1, const Point& pt2, const Point& pt);
 
 		// 颜色线性插值
 		inline RGBA colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale);
@@ -58,6 +46,16 @@ namespace GT {
 				memset(m_Buffer, 0, sizeof(RGBA) * m_Width * m_Height);
 			}
 		}
+
+	protected:
+		// 平底平顶三角形绘制 pt1 和 pt2 是平底或平顶的两点，pt 是单独的一个顶点
+		void drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt);
+
+		// 扫描线算法实现三角形绘制
+		void drawTriangle_scan(const Point& pt1, const Point& pt2, const Point& pt3);
+
+		bool judgeInTriangle(const Point& pt, const std::vector<Point>& _ptArray);
+
 	};
 }
 

@@ -49,7 +49,7 @@ void Render() {
     //}
 
     // 测试三角形
-    _canvas->drawTriangle_scan(GT::Point(10, 10, GT::RGBA(255, 0, 0, 0)), GT::Point(wWidth / 2, wHeight, GT::RGBA(255, 0, 0, 0)), GT::Point(wWidth, 10, GT::RGBA(255, 0, 0, 0)));
+    _canvas->drawTriangle(GT::Point(0, wHeight / 2, GT::RGBA(255, 0, 0, 0)), GT::Point(wWidth, 0, GT::RGBA(0, 255, 0, 0)), GT::Point(wWidth / 2, wHeight, GT::RGBA(0, 0, 255, 0)));
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);

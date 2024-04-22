@@ -649,7 +649,37 @@ void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
 这种方法的优势在于它简化了扫描过程，减少了计算量，使得三角形的填充效率更高
 
 ```cpp
+void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt)
+{
+    float k1 = 0.0f;
+    float k2 = 0.0f;
 
+    // 计算斜率 为了防止除0的情况 判断一层
+    if (pt.m_x != pt1.m_x) {
+        k1 = (pt1.m_y - pt.m_y) * 1.0f / (pt1.m_x - pt.m_x);
+    }
+    if (pt.m_x != pt2.m_x) {
+        k2 = (pt2.m_y - pt.m_y) * 1.0f / (pt2.m_x - pt.m_x);
+    }
+
+    bool upToDown = pt.m_y > pt1.m_y;       // 判断向上/向下
+    int stepValue = upToDown ? -1 : 1;      // 每次计算 y 值 +1/-1
+    int startX = pt.m_x;                    // 顶点的 x 坐标，后面根据斜率和顶点X去算
+    int totalStemp = abs(pt.m_y - pt1.m_y) + 1; // 总共要计算多少步
+    for (int posY = pt.m_y, step = 0; step < totalStemp; posY += stepValue, ++step) {
+        // 根据斜率计算该情况下点的 x 值
+        int l1x = startX + 1 / k1 * stepValue * step;
+        // 线性插值计算端点颜色
+        RGBA color1 = colorLerp(pt.m_color, pt1.m_color, step * 1.0 / totalStemp);
+        // 根据斜率计算该情况下点的 x 值
+        int l2x = startX + 1 / k2 * stepValue * step;
+        // 线性插值计算端点颜色
+        RGBA color2 = colorLerp(pt.m_color, pt2.m_color, step * 1.0 / totalStemp);
+        Point p1 = Point(l1x, posY, color1);
+        Point p2 = Point(l2x, posY, color2);
+        drawLine(p1, p2);
+    }
+}
 ```
 
 ### 三角形效率绘制-绘制任意三角形

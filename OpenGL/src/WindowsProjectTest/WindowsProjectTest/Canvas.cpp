@@ -1,5 +1,6 @@
 #include <cmath>
 #include <string>
+#include <algorithm>
 
 #include <Windows.h>
 
@@ -77,9 +78,93 @@ namespace GT {
 		}
 	}
 
-	void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt3)
-	{
+	void Canvas::drawPoint(const Point& _pt) {
+		if (_pt.m_x < 0 || _pt.m_x >= m_Width || _pt.m_y < 0 || _pt.m_y >= m_Height) {
+			return;
+		}
 
+		int _index = _pt.m_y * m_Width + _pt.m_x;
+		m_Buffer[_index] = _pt.m_color;
+	}
+
+	void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
+	{
+		std::vector<Point> pVec;
+		pVec.push_back(pt1);
+		pVec.push_back(pt2);
+		pVec.push_back(pt3);
+
+		// 将顶点按照 y 坐标进行排序，使得 ptMax 是 y 坐标最大的点，ptMin 是 y 坐标最小的点
+		std::sort(pVec.begin(), pVec.end(), [](const Point& pt1, const Point& pt2) { return pt1.m_y > pt2.m_y; });
+
+		Point ptMax = pVec[0];  // y 最大的点
+		Point ptMid = pVec[1];  // y 中间的点
+		Point ptMin = pVec[2];  // y 最小的点
+
+		if (ptMax.m_y == ptMid.m_y)
+		{
+			drawTriangleFlat(ptMax, ptMid, ptMin);
+			return;
+		}
+
+		if (ptMin.m_y == ptMid.m_y)
+		{
+			drawTriangleFlat(ptMin, ptMid, ptMax);
+			return;
+		}
+
+		float k = 0.0;
+
+		if (ptMax.m_x != ptMin.m_x)
+		{
+			k = (float)(ptMax.m_y - ptMin.m_y) / (float)(ptMax.m_x - ptMin.m_x);
+		}
+		float b = (float)ptMax.m_y - (float)ptMax.m_x * k;
+
+		Point npt(0, 0, RGBA(255, 0, 0));
+		npt.m_y = ptMid.m_y;
+		if (k == 0)
+		{
+			npt.m_x = ptMax.m_x;
+		}
+		else
+		{
+			npt.m_x = ((float)npt.m_y - b) / k;
+		}
+		float s = (float)(npt.m_y - ptMin.m_y) / (float)(ptMax.m_y - ptMin.m_y);
+		npt.m_color = colorLerp(ptMin.m_color, ptMax.m_color, s);
+
+		drawTriangleFlat(ptMid, npt, ptMax);
+		drawTriangleFlat(ptMid, npt, ptMin);
+
+		return;
+	}
+
+	void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt)
+	{
+		float k1 = 0.0f;
+		float k2 = 0.0f;
+
+		if (pt.m_x != pt1.m_x) {
+			k1 = (pt1.m_y - pt.m_y) * 1.0f / (pt1.m_x - pt.m_x);
+		}
+		if (pt.m_x != pt2.m_x) {
+			k2 = (pt2.m_y - pt.m_y) * 1.0f / (pt2.m_x - pt.m_x);
+		}
+
+		bool upToDown = pt.m_y > pt1.m_y;
+		int stepValue = upToDown ? -1 : 1;
+		int startX = pt.m_x;
+		int totalStemp = abs(pt.m_y - pt1.m_y) + 1;
+		for (int posY = pt.m_y, step = 0; step < totalStemp; posY += stepValue, ++step) {
+			int l1x = startX + 1 / k1 * stepValue * step;
+			RGBA color1 = colorLerp(pt.m_color, pt1.m_color, step * 1.0 / totalStemp);
+			int l2x = startX + 1 / k2 * stepValue * step;
+			RGBA color2 = colorLerp(pt.m_color, pt2.m_color, step * 1.0 / totalStemp);
+			Point p1 = Point(l1x, posY, color1);
+			Point p2 = Point(l2x, posY, color2);
+			drawLine(p1, p2);
+		}
 	}
 
 	// 扫描线算法绘制三角形
