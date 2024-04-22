@@ -95,4 +95,41 @@ namespace GT
 
 		}
 	};
+
+	struct Vec2 {
+	public:
+		float x = 0;
+		float y = 0;
+
+		Vec2(float inX = 0, float inY = 0) {
+			x = inX;
+			y = inY;
+		}
+
+		Vec2 operator - (const Vec2& _Other) {
+			return Vec2(x - _Other.x, y - _Other.y);
+		}
+
+		Vec2 operator + (const Vec2& _Other) {
+			return Vec2(x + _Other.x, y + _Other.y);
+		}
+
+		float operator * (const Vec2& _Other) {
+			return x * _Other.x + y * _Other.y;
+		}
+
+		float cross(const Vec2& other) const {
+			return x * other.y - y * other.x;
+		}
+	};
+
+	struct Vec3
+	{
+	public:
+		float x = 0;
+		float y = 0;
+		float z = 0;
+	};
+
+	const float eps = 1e-6f;
 }

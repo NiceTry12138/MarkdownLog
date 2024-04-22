@@ -38,15 +38,18 @@ void Render() {
 	//}
 
     // 测试直线 极坐标绘制一圈线
-    GT::RGBA Color1 = GT::RGBA(255, 0, 0, 0);
-    GT::RGBA Color2 = GT::RGBA(0, 255, 0, 0);
-    for (int i = 0; i < 360; i += 10) {
-        float angle = i * PI / 180 ;
-        int x = cos(angle) * 300 + wWidth / 2;
-        int y = sin(angle) * 300 + wHeight / 2;
-        //GT::UTool::DebugPrint(L"angle = %d\n", angle);
-        _canvas->drawLine(GT::Point(wWidth / 2, wHeight / 2, Color1), GT::Point(x, y, Color2));
-    }
+    //GT::RGBA Color1 = GT::RGBA(255, 0, 0, 0);
+    //GT::RGBA Color2 = GT::RGBA(0, 255, 0, 0);
+    //for (int i = 0; i < 360; i += 10) {
+    //    float angle = i * PI / 180 ;
+    //    int x = cos(angle) * 300 + wWidth / 2;
+    //    int y = sin(angle) * 300 + wHeight / 2;
+    //    //GT::UTool::DebugPrint(L"angle = %d\n", angle);
+    //    _canvas->drawLine(GT::Point(wWidth / 2, wHeight / 2, Color1), GT::Point(x, y, Color2));
+    //}
+
+    // 测试三角形
+    _canvas->drawTriangle(GT::Point(10, 10, GT::RGBA(255, 0, 0, 0)), GT::Point(10, wHeight, GT::RGBA(255, 0, 0, 0)), GT::Point(wWidth, 10, GT::RGBA(255, 0, 0, 0)));
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);

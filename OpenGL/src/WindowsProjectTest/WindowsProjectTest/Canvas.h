@@ -1,6 +1,7 @@
 #pragma once
 #include "GTMATH.hpp"
 #include <string.h>
+#include <vector>
 
 namespace GT {
 	// 操作画布的类
@@ -31,6 +32,8 @@ namespace GT {
 		void drawLine(const Point &pt1, const Point &pt2);
 
 		void drawTriangle(const Point &pt1, const Point &pt2, const Point &pt3);
+
+		bool judgeInTriangle(const Point& pt, const std::vector<Point> &_ptArray);
 
 		// 画点操作
 		void drawPoint(const Point &_pt) {

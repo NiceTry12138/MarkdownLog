@@ -1,8 +1,10 @@
-#include "Canvas.h"
 #include <cmath>
+#include <string>
 
 #include <Windows.h>
-#include <string>
+
+#include "Canvas.h"
+#include "Tool.h"
 
 namespace GT {
 	void Canvas::drawLine(const Point& pt1, const Point& pt2) {
@@ -76,7 +78,50 @@ namespace GT {
 	}
 	void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
 	{
+		// 获取包围盒
+		int left = MIN(pt3.m_x, MIN(pt2.m_x, pt1.m_x));
+		int bottom = MIN(pt3.m_y, MIN(pt2.m_y, pt1.m_y));
+		int right = MAX(pt3.m_x, MAX(pt2.m_x, pt1.m_x));
+		int top = MAX(pt3.m_y, MAX(pt2.m_y, pt1.m_y));
 		
+		// 剪裁屏幕
+		left = MAX(left, 0);
+		bottom = MAX(bottom, 0);
+		right = MIN(right, m_Width);
+		top = MIN(top, m_Height);
+
+		std::vector<Point> points = { pt1, pt2, pt3 };
+
+		for (int x = left; x <= right; ++x) {
+			for (int y = bottom; y <= top; ++y) {
+				if (judgeInTriangle(GT::Point(x, y), points)) {
+					drawPoint(Point(x, y, RGBA(255, 0, 0)));
+				}
+			}
+		}
+	}
+
+	bool Canvas::judgeInTriangle(const Point& pt, const std::vector<Point>& _ptArray)
+	{
+		bool flag = false; //相当于计数
+		Point P1, P2; //多边形一条边的两个顶点
+		int num = _ptArray.size() - 1;
+		for (int i = 0, j = num; i <= num; j = i++)
+		{
+			//polygon[]是给出多边形的顶点
+			P1 = _ptArray[i];
+			P2 = _ptArray[j];
+			
+			// 点在多边形一条边上
+			if (GT::UTool::onSegment(P1, P2, pt)) {
+				return true; 
+			}
+			// (dcmp(P1.y-P.y)>0 != dcmp(P2.y-P.y)>0)，它判断点 P 的纵坐标是否在线段 P1P2 的纵坐标范围内
+			// (P.y-P1.y)*(P1.x-P2.x)/(P1.y-P2.y) 得到交点的横坐标，再与点 P 的横坐标 P.x 进行比较，判断交点是否在点 P 的左侧
+			if ((GT::UTool::dcmp(P1.m_y - pt.m_y) > 0 != GT::UTool::dcmp(P2.m_y - pt.m_y) > 0) && GT::UTool::dcmp(pt.m_x - (pt.m_y - P1.m_y) * (P1.m_x - P2.m_x) / (P1.m_y - P2.m_y) - P1.m_x) < 0)
+				flag = !flag;
+		}
+		return flag;
 	}
 
 	inline RGBA Canvas::colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale)
