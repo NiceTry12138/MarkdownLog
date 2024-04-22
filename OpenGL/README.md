@@ -599,8 +599,58 @@ bool InPolygon(Point P)
 - **并行或共线**（Collinear）：向量 A 和 B 指向完全相同或相反的方向，即一个向量可以通过乘以一个标量来表达另一个向量。例如，如果 A = 2B 或 A = -B。
 - **零向量**：如果其中一个或两个向量是零向量（即其大小为0），那么它们的叉乘结果也将为0
 
+扫描线算法简单实现
+
+```cpp
+void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
+{
+    // 获取包围盒
+    int left = MIN(pt3.m_x, MIN(pt2.m_x, pt1.m_x));
+    int bottom = MIN(pt3.m_y, MIN(pt2.m_y, pt1.m_y));
+    int right = MAX(pt3.m_x, MAX(pt2.m_x, pt1.m_x));
+    int top = MAX(pt3.m_y, MAX(pt2.m_y, pt1.m_y));
+    
+    // 剪裁屏幕
+    left = MAX(left, 0);
+    bottom = MAX(bottom, 0);
+    right = MIN(right, m_Width);
+    top = MIN(top, m_Height);
+
+    std::vector<Point> points = { pt1, pt2, pt3 };
+
+    for (int x = left; x <= right; ++x) {
+        for (int y = bottom; y <= top; ++y) {
+            if (judgeInTriangle(GT::Point(x, y), points)) {
+                drawPoint(Point(x, y, RGBA(255, 0, 0)));
+            }
+        }
+    }
+}
+```
+
 ### 三角形效率绘制-平底平顶三角形绘制
 
+如果一个三角形既不是平底也不是平顶，它可以被分割成一个平底和一个平顶三角形
+
+- 平底三角形：三角形的底部两个顶点在同一水平线上
+- 平顶三角形：三角形的顶部两个顶点在同一水平线上
+
+对于绘制这两种三角形，我们可以使用**线性插值**的方法来高效地计算每一水平线（scanline）上的交点，并填充这些像素。具体步骤如下：
+
+1. 排序顶点：根据 y 坐标对三角形的三个顶点进行排序，确定三角形是平顶还是平底。如果不是这两种类型，则需要分割
+2. 计算斜率：对于平底或平顶三角形，计算两侧边的斜率（dx/dy），以确定每增加一行 y，x 应该增加多少
+3. 扫描填充：
+    - 对于平底三角形，从顶点向下扫描到底边
+    - 对于平顶三角形，从底边向上扫描到顶点
+    - 在每个 y 级别，根据斜率更新 x 的位置，填充从左到右的像素
+
+对于一般的三角形，可以按照 y 值排序顶点后，找到中间点，将三角形分为一个平底和一个平顶三角形，然后分别使用上述方法渲染
+
+这种方法的优势在于它简化了扫描过程，减少了计算量，使得三角形的填充效率更高
+
+```cpp
+
+```
 
 ### 三角形效率绘制-绘制任意三角形
 

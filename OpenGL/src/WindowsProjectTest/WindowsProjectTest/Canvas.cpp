@@ -76,7 +76,14 @@ namespace GT {
 			}
 		}
 	}
-	void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
+
+	void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt3)
+	{
+
+	}
+
+	// 扫描线算法绘制三角形
+	void Canvas::drawTriangle_scan(const Point& pt1, const Point& pt2, const Point& pt3)
 	{
 		// 获取包围盒
 		int left = MIN(pt3.m_x, MIN(pt2.m_x, pt1.m_x));

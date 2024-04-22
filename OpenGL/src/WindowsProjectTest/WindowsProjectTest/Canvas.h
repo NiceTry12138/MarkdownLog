@@ -31,7 +31,11 @@ namespace GT {
 		// 画线
 		void drawLine(const Point &pt1, const Point &pt2);
 
-		void drawTriangle(const Point &pt1, const Point &pt2, const Point &pt3);
+		// 平底平顶三角形绘制
+		void drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt3);
+
+		// 扫描线算法实现三角形绘制
+		void drawTriangle_scan(const Point &pt1, const Point &pt2, const Point &pt3);
 
 		bool judgeInTriangle(const Point& pt, const std::vector<Point> &_ptArray);
 
