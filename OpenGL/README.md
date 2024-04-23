@@ -799,4 +799,166 @@ Point p2 = Point(edgeX2, posY, edgeColor2);
 
 ## 图形处理及纹理系统
 
+### 图片读取及绘制
+
+关注一下我们的 `RGBA` 结构体
+
+```cpp
+struct RGBA
+{
+	byte m_b;
+	byte m_g;
+	byte m_r;
+	byte m_a;
+
+	RGBA(byte _r = 255,
+		byte _g = 255,
+		byte _b = 255,
+		byte _a = 255)
+	{
+		m_r = _r;
+		m_g = _g;
+		m_b = _b;
+		m_a = _a;
+	}
+};
+```
+
+其属性从上往下是 **b**、**g**、**r**、**a** ，而不是正常的 **r**、**g**、**b**、**a** ，这是因为直接我们直接将 buffer 连接到 hdc，而 HDC 的读取内存后解析的顺序是 **b**、**g**、**r**、**a**
+
+![](Image/016.png)
+
+如果我们修改 RGBA 结构体
+
+```cpp
+struct RGBA
+{
+    byte m_r;
+    byte m_b;
+    byte m_g;
+    byte m_a;
+}
+```
+
+![](Image/017.png)
+
+所以后面如果出现图片显示时，颜色不对可能就需要考虑结构体这方面的问题了
+
+这里直接使用  `stb_image` 进行图片操作
+
+```cpp
+// 需要定义 STB_IMAGE_IMPLEMENTATION 来开启 stb_image 的功能
+#define STB_IMAGE_IMPLEMENTATION
+#include"stb_image.h"
+
+//stbimage读入的图片是反过来的
+stbi_set_flip_vertically_on_load(true);
+
+unsigned char* bits = stbi_load(_fileName, &_width, &_height, &_picType, STBI_rgb_alpha);
+
+stbi_image_free(bits);
+
+```
+
+简单操作如上代码，加载图片得到宽、高、颜色信息，释放读取数据
+
+为了方便图片操作，封装 `Image` 类
+
+```cpp
+class Image
+{
+private:
+    int m_Width = 0;	// 图片宽度
+    int m_Height = 0;	// 图片高度
+    RGBA* m_Data = nullptr;	// 图片颜色数据
+
+    
+	public:
+		int GetWidth();
+		int GetHeight();
+
+		RGBA GetColor(int x, int y);
+
+		Image(int _width, int _height, byte* _data) {
+			m_Width = _width;
+			m_Height = _height;
+			if (_data) {
+				m_Data = new RGBA[m_Width * m_Height];
+				memcpy(m_Data, _data, sizeof(RGBA) * m_Width * m_Height);
+			}
+		}
+
+		~Image() {
+			if (m_Data)
+			{
+				delete[] m_Data;
+				m_Data = nullptr;
+			}
+		}
+
+	public:
+		static Image* readFromFile(const char* _fileName);
+}
+```
+
+对外统一使用 `readFromFile` 来创建 `Image` 对象 
+
+```cpp
+Image* Image::readFromFile(const char* _fileName)
+{
+    int			_picType = 0;
+    int			_width = 0;
+    int			_height = 0;
+
+    //stbimage读入的图片是反过来的
+    stbi_set_flip_vertically_on_load(true);
+
+    unsigned char* bits = stbi_load(_fileName, &_width, &_height, &_picType, STBI_rgb_alpha);
+    Image* _image = new Image(_width, _height, bits);
+
+    stbi_image_free(bits);
+    return _image;
+}
+```
+
+随后在 `Canvas` 中添加 `drawImage` 接口
+
+```cpp
+void Canvas::drawImage(int inX, int inY, GT::Image* inImage)
+{
+    for (int u = 0; u < inImage->GetWidth(); ++u) {
+        for (int v = 0; v < inImage->GetHeight(); ++v) {
+            RGBA color = inImage->GetColor(u, v);
+            drawPoint(Point(inX + u, inY + v, color));
+        }
+    }
+}
+```
+
+先简单的将图片指定位置的颜色直接绘制到 `Canvas` 上
+
+很明显颜色错了，也就是说使用 `stb_image` 读出来图片的颜色数据与 `Canvas` 颜色数据位并不相同，所以需要将颜色 `stb_image` 读出来的数据转换一下
+
+```cpp
+unsigned char* bits = stbi_load(_fileName, &_width, &_height, &_picType, STBI_rgb_alpha);
+
+for (int i = 0; i < _width * _height * 4; i += 4)
+{
+    byte tmp = bits[i];
+    bits[i] = bits[i + 2];
+    bits[i + 2] = tmp;
+}
+
+Image* _image = new Image(_width, _height, bits);
+
+stbi_image_free(bits);
+```
+
+| 原图 | 转换之前绘制图 | 转换之后的绘制图 |
+| --- | --- | --- | 
+| ![](Image/019.jpg) | ![](Image/018.png) | ![](Image/020.png) |
+
+
+
 ## 图形学状态机接口封装
+

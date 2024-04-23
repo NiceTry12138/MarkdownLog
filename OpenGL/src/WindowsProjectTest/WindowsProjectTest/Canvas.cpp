@@ -6,6 +6,7 @@
 
 #include "Canvas.h"
 #include "Tool.h"
+#include "Image.h"
 
 namespace GT {
 	void Canvas::drawLine(const Point& pt1, const Point& pt2) {
@@ -280,5 +281,14 @@ namespace GT {
 		result.m_a = _color1.m_a + (float)(_color2.m_a - _color1.m_a) * _scale;
 
 		return result;
+	}
+	void Canvas::drawImage(int inX, int inY, GT::Image* inImage)
+	{
+		for (int u = 0; u < inImage->GetWidth(); ++u) {
+			for (int v = 0; v < inImage->GetHeight(); ++v) {
+				RGBA color = inImage->GetColor(u, v);
+				drawPoint(Point(inX + u, inY + v, color));
+			}
+		}
 	}
 }

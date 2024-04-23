@@ -4,6 +4,8 @@
 #include <vector>
 
 namespace GT {
+	class Image;
+
 	// 操作画布的类
 	class Canvas
 	{
@@ -40,8 +42,11 @@ namespace GT {
 		// 颜色线性插值
 		inline RGBA colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale);
 
+		// 
+		void drawImage(int inX, int inY, GT::Image* inImage);
+
 		// 清理操作
-		void clear() {
+		inline void clear() {
 			if (m_Buffer != nullptr) {
 				memset(m_Buffer, 0, sizeof(RGBA) * m_Width * m_Height);
 			}

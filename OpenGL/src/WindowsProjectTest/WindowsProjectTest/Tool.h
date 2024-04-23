@@ -10,8 +10,7 @@ namespace GT {
 	public:
 
 	public:
-		static void DebugPrint(const wchar_t* format, ...)
-		{
+		static void DebugPrint(const wchar_t* format, ...) {
 			wchar_t buffer[256];
 
 			va_list args;
@@ -35,9 +34,9 @@ namespace GT {
 		}
 
 		//判断点Q是否在P1和P2的线段上
-		static bool onSegment(Point P1, Point P2, Point Q)
-		{
-			Vec2 vecp1q = Vec2(P1.m_x - Q.m_x, P1.m_y - Q.m_y);			Vec2 vecp2q = Vec2(P2.m_x - Q.m_x, P2.m_y - Q.m_y);
+		static bool onSegment(Point P1, Point P2, Point Q) {
+			Vec2 vecp1q = Vec2(P1.m_x - Q.m_x, P1.m_y - Q.m_y);			
+			Vec2 vecp2q = Vec2(P2.m_x - Q.m_x, P2.m_y - Q.m_y);
 			// 这个函数用于判断点 Q 是否在线段 P1P2 上
 			// 它先计算向量 (P1-Q)^(P2-Q) 的叉积是否为 0（判断点 Q 是否在直线 P1P2 上）
 			// 然后再判断点 Q 是否在线段 P1P2 的范围内（计算 (P1-Q)*(P2-Q) 的点积是否小于等于 0）
