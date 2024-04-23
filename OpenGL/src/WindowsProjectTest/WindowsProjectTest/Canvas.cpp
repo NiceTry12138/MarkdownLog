@@ -98,6 +98,9 @@ namespace GT {
 		//是否双方相交
 		while (true)
 		{
+			// TODO 这里判断是有问题的
+			// 如果三角形三个顶点不在矩形范围内，矩形的四个顶点也不在三角形范围内，依旧有可能三角形和矩形相交
+			// 三角形三个顶点坐标 (50, 110) (-10, 50) (110, 50), 矩形四个顶点坐标 (0, 0) (0, 100) (100, 0) (100, 100) 
 			if (judgeInRect(pt1, _rect) || judgeInRect(pt2, _rect) || judgeInRect(pt3, _rect))
 			{
 				break;
@@ -179,24 +182,34 @@ namespace GT {
 		bool upToDown = pt.m_y > pt1.m_y;
 		int stepValue = upToDown ? -1 : 1;
 		int startX = pt.m_x;
-		int totalStemp = abs(pt.m_y - pt1.m_y) + 1;
+		int totalStemp = abs(pt.m_y - pt1.m_y);
 
 		int step = 0;
 		int posY = pt.m_y;
 
-		// TODO 限制绘制区域 计算 posY 和 step 的值
+		// 限制绘制区域 计算 posY 和 step 的值 防止出现 y = 1000000 或者 y = -1000000
+		if (!GT::UTool::inRange(pt.m_y, 0, m_Height) || !GT::UTool::inRange(pt1.m_y, 0, m_Height)) {
+			int pos1Y = GT::UTool::clamp(pt1.m_y, 0, m_Height);
+			posY = GT::UTool::clamp(pt.m_y, 0, m_Height);
+			step = abs(posY - pt.m_y);
+			totalStemp = abs(pt.m_y - pt1.m_y) - abs(pt1.m_y - pos1Y);
+		}
 
-		for (; step < totalStemp; posY += stepValue, ++step) {
-			// 超出边界 不做处理
-			if (!GT::UTool::inRange(posY, 0, m_Height)) {
-				break;
-			}
+		for (; step <= totalStemp; posY += stepValue, ++step) {
 			int l1x = startX + 1 / k1 * stepValue * step;
 			RGBA color1 = colorLerp(pt.m_color, pt1.m_color, step * 1.0 / totalStemp);
 			int l2x = startX + 1 / k2 * stepValue * step;
 			RGBA color2 = colorLerp(pt.m_color, pt2.m_color, step * 1.0 / totalStemp);
-			Point p1 = Point(l1x, posY, color1);
-			Point p2 = Point(l2x, posY, color2);
+
+			int edgeX1 = UTool::clamp(l1x, 0, m_Width);	// 将边界限制在画布左右两边 避免出现 x = -100000 或者 x = 100000 的情况
+			int edgeX2 = UTool::clamp(l2x, 0, m_Width);
+
+			RGBA edgeColor1 = colorLerp(color1, color2, abs(edgeX1 - l1x) * 1.0f / abs(l2x - l1x));	// 根据端点颜色 重新计算直线两端颜色
+			RGBA edgeColor2 = colorLerp(color1, color2, abs(edgeX2 - l1x) * 1.0f / abs(l2x - l1x));
+
+			Point p1 = Point(edgeX1, posY, edgeColor1);
+			Point p2 = Point(edgeX2, posY, edgeColor2);
+
 			drawLine(p1, p2);
 		}
 	}

@@ -757,48 +757,45 @@ void Canvas::drawTriangle(const Point& pt1, const Point& pt2, const Point& pt3)
 
 首先就是判断三角形与绘制矩形是否有交点
 
-如果三角形的某个点在矩形范围内，并且矩形的某个点在三角形范围内，那么三角形和矩形相交，那么这个三角形就是要绘制的
+1. 如果三角形在矩形内部, 则三角形和矩形相交
+2. 如果矩形在三角形内部, 则三角形和矩形相交
+3. 如果三角形至少有一条边(线段)和矩形的至少一条边(线段)相交
 
-| 情况一 | 情况二 |
-| --- | --- | 
-| ![](Image/011.png) | ![](Image/012.png) |
-
-```cpp
-std::vector<Point> pVec;
-pVec.push_back(pt1);
-pVec.push_back(pt2);
-pVec.push_back(pt3);
-
-GT_RECT _rect(0, m_Width, m_Height, 0);
-//是否双方相交
-while (true)
-{
-    if (judgeInRect(pt1, _rect) || judgeInRect(pt2, _rect) || judgeInRect(pt3, _rect))
-    {
-        break;
-    }
-    Point rpt1(0, 0, RGBA());
-    Point rpt2(0, m_Width, RGBA());
-    Point rpt3(0, m_Height, RGBA());
-    Point rpt4(m_Width, m_Height,RGBA());
-
-    if (judgeInTriangle(rpt1, pVec) ||
-        judgeInTriangle(rpt2, pVec) ||
-        judgeInTriangle(rpt3, pVec) ||
-        judgeInTriangle(rpt4, pVec))
-    {
-        break;
-    }
-
-    return;
-}
-```
+| 情况一 | 情况二 | 情况三 | 情况四 | 情况五 |
+| --- | --- | --- | --- | --- |
+| ![](Image/011.png) | ![](Image/012.png) | ![](Image/013.png) | ![](Image/014.png) | ![](Image/015.png) |
 
 在绘制之前先判断是否需要绘制，只有需要绘制的三角形才会进入后续流程
 
 在绘制三角形时，为了避免超大三角形导致计算量爆炸，所以绘制之前先计算起点 Y 和终点 Y，起点 X 和终点 X 的值，剔除无效区域的绘制
 
+```cpp
+// 限制绘制区域 计算 posY 和 step 的值 防止出现 y = 1000000 或者 y = -1000000
+if (!GT::UTool::inRange(pt.m_y, 0, m_Height) || !GT::UTool::inRange(pt1.m_y, 0, m_Height)) {
+    int pos1Y = GT::UTool::clamp(pt1.m_y, 0, m_Height);
+    posY = GT::UTool::clamp(pt.m_y, 0, m_Height);
+    step = abs(posY - pt.m_y);
+    totalStemp = abs(pt.m_y - pt1.m_y) - abs(pt1.m_y - pos1Y);
+}
 
+/**
+ * 其他计算代码
+ */
+
+int l1x = startX + 1 / k1 * stepValue * step;
+RGBA color1 = colorLerp(pt.m_color, pt1.m_color, step * 1.0 / totalStemp);
+int l2x = startX + 1 / k2 * stepValue * step;
+RGBA color2 = colorLerp(pt.m_color, pt2.m_color, step * 1.0 / totalStemp);
+
+int edgeX1 = UTool::clamp(l1x, 0, m_Width);	// 将边界限制在画布左右两边 避免出现 x = -100000 或者 x = 100000 的情况
+int edgeX2 = UTool::clamp(l2x, 0, m_Width);
+
+RGBA edgeColor1 = colorLerp(color1, color2, abs(edgeX1 - l1x) * 1.0f / abs(l2x - l1x));	// 根据端点颜色 重新计算直线两端颜色
+RGBA edgeColor2 = colorLerp(color1, color2, abs(edgeX2 - l1x) * 1.0f / abs(l2x - l1x));
+
+Point p1 = Point(edgeX1, posY, edgeColor1);
+Point p2 = Point(edgeX2, posY, edgeColor2);
+```
 
 ## 图形处理及纹理系统
 
