@@ -14,6 +14,8 @@ namespace GT {
 		int m_Height{ -1 };
 		RGBA* m_Buffer{ nullptr };
 
+		byte m_alphaLimit{ 0 }; // 大于此值的像素才可以进行绘制
+		bool m_UseBlend = true; // 是否进行颜色混合
 
 	public: 
 		Canvas(int _width, int _height, void* _buffer) {
@@ -51,6 +53,14 @@ namespace GT {
 				memset(m_Buffer, 0, sizeof(RGBA) * m_Width * m_Height);
 			}
 		}
+
+		void setAlphaLimit(byte inLimit) {
+			m_alphaLimit = inLimit;
+		}
+
+		RGBA getColor(int inX, int inY);
+
+		void setBlend(bool inUseBlend);
 
 	protected:
 		// 平底平顶三角形绘制 pt1 和 pt2 是平底或平顶的两点，pt 是单独的一个顶点

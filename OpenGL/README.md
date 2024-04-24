@@ -958,7 +958,54 @@ stbi_image_free(bits);
 | --- | --- | --- | 
 | ![](Image/019.jpg) | ![](Image/018.png) | ![](Image/020.png) |
 
+### alpha 测试绘制
 
+`A` 通道是一个 `0~255` 的值，表示 `alpha` 的值，表示像素的透明值
+
+- 如果 `alpha` 为 0，表示该像素不应该被显示
+- 如果 `alpha` 为 255， 表示该像素正常显示
+- 如果 `alpha` 为 125， 表示该像素 RGB 颜色显示程度
+
+![](Image/021.png)
+
+最简单粗暴解决方案就是设置设置一个 limit 值，当像素的 alpha 通道大于指定值时才能够进行绘制
+
+```cpp
+void Canvas::setAlphaLimit(byte inLimit) {
+    m_alphaLimit = inLimit;
+}
+
+void Canvas::drawImage(int inX, int inY, GT::Image* inImage)
+{
+    for (int u = 0; u < inImage->GetWidth(); ++u) {
+        for (int v = 0; v < inImage->GetHeight(); ++v) {
+            RGBA color = inImage->GetColor(u, v);
+            if (color.m_a > m_alphaLimit) {
+                drawPoint(Point(inX + u, inY + v, color));
+            }
+        }
+    }
+}
+```
+
+通过上面粗暴的设置绘制或者不绘制，能够等到一个还可以的效果
+
+![](Image/022.png)
+
+但是观察任务边缘可以发现，边缘过度极其僵硬，这是因为是直接设置像素的显隐性。一般来说为了过度平滑，没有这么明显的毛刺，会设置边缘像素的透明度，让其平滑过渡
+
+这里就涉及到 **带 alpha 颜色混合**
+
+```cpp
+RGBA srcColor = inImage->GetColor(u, v);
+RGBA dstColor = getColor(inX + u, inY + v);
+RGBA finalColor = colorLerp(dstColor, srcColor, srcColor.m_a / 255.0f);
+drawPoint(Point(inX + u, inY + v, finalColor));
+```
+
+| 未开启 alpha 混合 | 开启了 alpha 混合 |
+| --- | --- |
+| ![](Image/022.png) | ![](Image/023.png) |
 
 ## 图形学状态机接口封装
 

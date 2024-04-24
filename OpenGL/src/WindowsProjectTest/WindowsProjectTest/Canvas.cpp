@@ -168,6 +168,21 @@ namespace GT {
 		return;
 	}
 
+	RGBA Canvas::getColor(int inX, int inY)
+	{
+		if (inX < 0 || inX >= m_Width || inY < 0 || inY >= m_Height)
+		{
+			return RGBA(0, 0, 0, 0);
+		}
+
+		return m_Buffer[inY * m_Width + inX];
+	}
+
+	void Canvas::setBlend(bool inUseBlend)
+	{
+		m_UseBlend = inUseBlend;
+	}
+
 	void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt)
 	{
 		float k1 = 0.0f;
@@ -286,8 +301,15 @@ namespace GT {
 	{
 		for (int u = 0; u < inImage->GetWidth(); ++u) {
 			for (int v = 0; v < inImage->GetHeight(); ++v) {
-				RGBA color = inImage->GetColor(u, v);
-				drawPoint(Point(inX + u, inY + v, color));
+				RGBA srcColor = inImage->GetColor(u, v);
+				if (!m_UseBlend) {
+					drawPoint(Point(inX + u, inY + v, srcColor));
+				}
+				else {
+					RGBA dstColor = getColor(inX + u, inY + v);
+					RGBA finalColor = colorLerp(dstColor, srcColor, srcColor.m_a / 255.0f);
+					drawPoint(Point(inX + u, inY + v, finalColor));
+				}
 			}
 		}
 	}
