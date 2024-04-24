@@ -114,8 +114,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	/*===========创建绘图用的位图========*/
 
 	_canvas = new GT::Canvas(wWidth, wHeight, buffer);
-    _canvas->setAlphaLimit(0);
 	_image = GT::Image::readFromFile("res/carma.png");
+    _image->setAlpha(.3f);
     _bgImage = GT::Image::readFromFile("res/bk.jpg");
 	//_zoomImage = GT::Image::zoomImage(_image, 3, 3);
 	//_zoomImageSimple = GT::Image::zoomImageSimple(_image, 3, 3);

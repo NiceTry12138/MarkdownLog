@@ -307,7 +307,8 @@ namespace GT {
 				}
 				else {
 					RGBA dstColor = getColor(inX + u, inY + v);
-					RGBA finalColor = colorLerp(dstColor, srcColor, srcColor.m_a / 255.0f);
+					float alpha = (float)srcColor.m_a / 255.0f * inImage->getAlpha();
+					RGBA finalColor = colorLerp(dstColor, srcColor, alpha);
 					drawPoint(Point(inX + u, inY + v, finalColor));
 				}
 			}

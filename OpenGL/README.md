@@ -1007,5 +1007,22 @@ drawPoint(Point(inX + u, inY + v, finalColor));
 | --- | --- |
 | ![](Image/022.png) | ![](Image/023.png) |
 
+可以发现衣服边缘锯齿突刺明显减少，边缘过度更加平滑
+
+### 图片透明度和玻璃效果
+
+一般来说不会直接设置图片的透明度，而是设置一个 `Sprite` 的透明度，在计算的时候会根据 `Sprite` 的透明度和像素的透明度算出真正的透明度，不过这里不封装 `Sprite` 了，简单粗暴将图片的透明度放在 `Image` 中
+
+```cpp
+float alpha = (float)srcColor.m_a / 255.0f * inImage->getAlpha();
+RGBA finalColor = colorLerp(dstColor, srcColor, alpha);
+```
+
+只需要在绘制的时候，将图片的 alpha 值乘以像素的 alpha 值即可
+
+$\alpha_{\text{final}} = \alpha_{\text{global}} \times \alpha_{\text{pixel}}$
+
+![](Image/024.png)
+
 ## 图形学状态机接口封装
 
