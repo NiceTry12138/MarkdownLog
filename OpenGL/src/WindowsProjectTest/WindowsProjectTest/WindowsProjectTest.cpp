@@ -24,6 +24,7 @@ HDC     hMem;
 
 GT::Canvas* _canvas = nullptr;
 GT::Image* _image = nullptr;
+GT::Image* _bgImage = nullptr;
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -56,7 +57,8 @@ void Render() {
     //    GT::Point(wWidth, 0, GT::RGBA(0, 255, 0, 0)), 
     //    GT::Point(wWidth / 2, wHeight, GT::RGBA(0, 0, 255, 0)));
 
-    _canvas->drawImage(10, 10, _image);
+    _canvas->drawImage(100, 100, _bgImage);
+    _canvas->drawImage(100, 100, _image);
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);
@@ -114,6 +116,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_canvas = new GT::Canvas(wWidth, wHeight, buffer);
     _canvas->setAlphaLimit(0);
 	_image = GT::Image::readFromFile("res/carma.png");
+    _bgImage = GT::Image::readFromFile("res/bk.jpg");
 	//_zoomImage = GT::Image::zoomImage(_image, 3, 3);
 	//_zoomImageSimple = GT::Image::zoomImageSimple(_image, 3, 3);
 	//// _image->setAlpha(0.5);
