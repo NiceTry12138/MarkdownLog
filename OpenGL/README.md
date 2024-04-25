@@ -1063,7 +1063,40 @@ $\alpha_{\text{final}} = \alpha_{\text{global}} \times \alpha_{\text{pixel}}$
 
 ![](Image/025.png)
 
-如上图所示，蓝色为原始像素，绿色为计算后的像素。也就是说这里是一个缩小图片的计算过程，
+如上图所示，蓝色为原始像素，绿色为计算后的像素。也就是说这里是一个缩小图片的计算过程。
+
+```cpp
+Image* Image::zoomImage(const Image* inImage, float inZoomX, float inZoomY)
+{
+    int width = inImage->GetWidth() * inZoomX;
+    int height = inImage->GetHeight() * inZoomY;
+    byte* data = new byte[width * height * sizeof(RGBA)];
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
+            int imageX = (float)x / inZoomX;
+            int imageY = (float)y / inZoomY;
+            imageX = imageX < inImage->GetWidth() ? imageX : inImage->GetWidth() - 1;
+            imageY = imageY < inImage->GetHeight() ? imageY : inImage->GetHeight() - 1;
+            RGBA color = inImage->GetColor(imageX, imageY);
+            memcpy(data + (x + y * width) * sizeof(RGBA), &color, sizeof(RGBA));
+        }
+    }
+
+    Image* newImage = new Image(width, height, data);
+    delete[] data;
+    data = nullptr;
+    newImage->setAlpha(inImage->getAlpha());
+    return newImage;
+}
+```
+
+最近邻插值其实就是很简单的坐标映射，根据坐标计算将缩放后的图片像素映射到源图片上
+
+![](Image/026.png)
+
+上图中左下角为原图片，右上角为放大后的图片，很明显发现锯齿感，放大后图片失真严重，有明显像素块的感觉
+
+
 
 ## 图形学状态机接口封装
 

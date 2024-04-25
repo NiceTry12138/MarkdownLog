@@ -57,8 +57,8 @@ void Render() {
     //    GT::Point(wWidth, 0, GT::RGBA(0, 255, 0, 0)), 
     //    GT::Point(wWidth / 2, wHeight, GT::RGBA(0, 0, 255, 0)));
 
-    _canvas->drawImage(100, 100, _bgImage);
-    _canvas->drawImage(100, 100, _image);
+    _canvas->drawImage(0, 0, _bgImage);
+    _canvas->drawImage(200, 200, _image);
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);
@@ -115,8 +115,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	_canvas = new GT::Canvas(wWidth, wHeight, buffer);
 	_image = GT::Image::readFromFile("res/carma.png");
-    _image->setAlpha(.3f);
-    _bgImage = GT::Image::readFromFile("res/bk.jpg");
+    //_image->setAlpha(.9f);
+
+	GT::Image* zoomImage = GT::Image::zoomImage(_image, 2, 2);
+	//GT::Image* zoomImage = GT::Image::zoomImage(_image, .5f, .5f);
+    delete _image;
+    _image = zoomImage;
+
+    _bgImage = GT::Image::readFromFile("res/carma.png");
 	//_zoomImage = GT::Image::zoomImage(_image, 3, 3);
 	//_zoomImageSimple = GT::Image::zoomImageSimple(_image, 3, 3);
 	//// _image->setAlpha(0.5);

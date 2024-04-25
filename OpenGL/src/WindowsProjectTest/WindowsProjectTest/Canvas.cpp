@@ -301,7 +301,7 @@ namespace GT {
 	{
 		for (int u = 0; u < inImage->GetWidth(); ++u) {
 			for (int v = 0; v < inImage->GetHeight(); ++v) {
-				RGBA srcColor = inImage->GetColor(u, v);
+				const RGBA srcColor = inImage->GetColor(u, v);
 				if (!m_UseBlend) {
 					drawPoint(Point(inX + u, inY + v, srcColor));
 				}
