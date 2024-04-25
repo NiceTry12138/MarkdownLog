@@ -1096,7 +1096,86 @@ Image* Image::zoomImage(const Image* inImage, float inZoomX, float inZoomY)
 
 上图中左下角为原图片，右上角为放大后的图片，很明显发现锯齿感，放大后图片失真严重，有明显像素块的感觉
 
+### 双线性插值处理图片缩放
 
+![](Image/027.png)
+
+以上图为例，`(x1, y1)`、`(x2, y1)`、`(x1, y2)`、`(x2, y2)` 为原图像素点的坐标，红色为缩放后的图片坐标通过计算映射的点，很可能是 `float`
+
+根据 `disX1`、`disX2` 和 `(x1, y1)` 、`(x2, y1)` 插值计算出**红点**上下两点的值；根据 `disY1`、`disY2` 和 **红点**上下两点的值插值计算出**红点**的值
+
+需要注意一点，对于 `(x1, y1)` 和 `(x2, y1)` 来说， `(x1, y1)` 的权重是 `disX2`， `(x2, y1)` 的权重是 `disX1`，因为离目标点越近，权重越高，对颜色影响程度越深
+
+1. $\text{Color}_{x, y1} = f(x1, y1) \times (1 - dx) + f(x2, y1) \times dx$
+2. $\text{Color}_{x, y2} = f(x1, y2) \times (1 - dx) + f(x2, y2) \times dx$
+3. $\text{Color}_{x, y} = \text{Color}_{x, y1} \times (1 - dy) + \text{Color}_{x, y2} \times dy$
+
+```cpp
+for (int i = 0;i < _width;i++)
+{
+    coordX = (float)i / _zoomX;
+    x1 = (int)coordX;
+    if (x1 >= _image->getWidth() - 1)
+    {
+        x1 = _image->getWidth() - 1;
+        x2 = x1;
+    }
+    else
+    {
+        x2 = x1 + 1;
+    }
+    disX1 = coordX - x1;
+    disX2 = 1.0 - disX1;
+    for (int j = 0; j < _height; j++)
+    {
+        coordY = (float)j / _zoomY;
+        y1 = (int)coordY;
+        if (y1 >= _image->getHeight() - 1)
+        {
+            y1 = _image->getHeight() - 1;
+            y2 = y1;
+        }
+        else
+        {
+            y2 = y1 + 1;
+        }
+        disY1 = coordY - y1;
+        disY2 = 1.0 - disY1;
+
+        RGBA _color11 = _image->getColor(x1, y1);
+        RGBA _color12 = _image->getColor(x1, y2);
+        RGBA _color21 = _image->getColor(x2, y1);
+        RGBA _color22 = _image->getColor(x2, y2);
+
+        RGBA _targetColor;
+        _targetColor.m_r = (float)_color11.m_r * disX2 * disY2 +
+                            (float)_color12.m_r * disX2 * disY1 +
+                            (float)_color21.m_r * disX1 * disY2 +
+                            (float)_color22.m_r * disX1 * disY1;
+
+        _targetColor.m_g = (float)_color11.m_g * disX2 * disY2 +
+                            (float)_color12.m_g * disX2 * disY1 +
+                            (float)_color21.m_g * disX1 * disY2 +
+                            (float)_color22.m_g * disX1 * disY1;
+
+        _targetColor.m_b = (float)_color11.m_b * disX2 * disY2 +
+                            (float)_color12.m_b * disX2 * disY1 +
+                            (float)_color21.m_b * disX1 * disY2 +
+                            (float)_color22.m_b * disX1 * disY1;
+
+        _targetColor.m_a = (float)_color11.m_a * disX2 * disY2 +
+                            (float)_color12.m_a * disX2 * disY1 +
+                            (float)_color21.m_a * disX1 * disY2 +
+                            (float)_color22.m_a * disX1 * disY1;
+
+        memcpy(_data + (j * _width + i) * sizeof(RGBA), &_targetColor, sizeof(RGBA));
+    }
+}
+```
+
+![](Image/028.png)
+
+对比普通的最近邻插值计算效果，使用双线性插值的图片效果更好，但是相对的计算量也更大
 
 ## 图形学状态机接口封装
 

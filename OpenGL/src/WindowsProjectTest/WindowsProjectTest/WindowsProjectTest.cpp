@@ -117,7 +117,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_image = GT::Image::readFromFile("res/carma.png");
     //_image->setAlpha(.9f);
 
-	GT::Image* zoomImage = GT::Image::zoomImage(_image, 2, 2);
+	GT::Image* zoomImage = GT::Image::zoomImageBilinearInerp(_image, 2, 2);
 	//GT::Image* zoomImage = GT::Image::zoomImage(_image, .5f, .5f);
     delete _image;
     _image = zoomImage;
