@@ -105,33 +105,33 @@ namespace GT {
 				disY1 = coordY - y1;
 				disY2 = 1.0 - disY1;
 
-				RGBA _color11 = inImage->GetColor(x1, y1);
-				RGBA _color12 = inImage->GetColor(x1, y2);
-				RGBA _color21 = inImage->GetColor(x2, y1);
-				RGBA _color22 = inImage->GetColor(x2, y2);
+				RGBA color11 = inImage->GetColor(x1, y1);
+				RGBA color12 = inImage->GetColor(x1, y2);
+				RGBA color21 = inImage->GetColor(x2, y1);
+				RGBA color22 = inImage->GetColor(x2, y2);
 
-				RGBA _targetColor;
-				_targetColor.m_r = (float)_color11.m_r * disX2 * disY2 +
-					(float)_color12.m_r * disX2 * disY1 +
-					(float)_color21.m_r * disX1 * disY2 +
-					(float)_color22.m_r * disX1 * disY1;
+				RGBA targetColor;
+				targetColor.m_r = (float)color11.m_r * disX2 * disY2 +
+					(float)color12.m_r * disX2 * disY1 +
+					(float)color21.m_r * disX1 * disY2 +
+					(float)color22.m_r * disX1 * disY1;
 
-				_targetColor.m_g = (float)_color11.m_g * disX2 * disY2 +
-					(float)_color12.m_g * disX2 * disY1 +
-					(float)_color21.m_g * disX1 * disY2 +
-					(float)_color22.m_g * disX1 * disY1;
+				targetColor.m_g = (float)color11.m_g * disX2 * disY2 +
+					(float)color12.m_g * disX2 * disY1 +
+					(float)color21.m_g * disX1 * disY2 +
+					(float)color22.m_g * disX1 * disY1;
 
-				_targetColor.m_b = (float)_color11.m_b * disX2 * disY2 +
-					(float)_color12.m_b * disX2 * disY1 +
-					(float)_color21.m_b * disX1 * disY2 +
-					(float)_color22.m_b * disX1 * disY1;
+				targetColor.m_b = (float)color11.m_b * disX2 * disY2 +
+					(float)color12.m_b * disX2 * disY1 +
+					(float)color21.m_b * disX1 * disY2 +
+					(float)color22.m_b * disX1 * disY1;
 
-				_targetColor.m_a = (float)_color11.m_a * disX2 * disY2 +
-					(float)_color12.m_a * disX2 * disY1 +
-					(float)_color21.m_a * disX1 * disY2 +
-					(float)_color22.m_a * disX1 * disY1;
+				targetColor.m_a = (float)color11.m_a * disX2 * disY2 +
+					(float)color12.m_a * disX2 * disY1 +
+					(float)color21.m_a * disX1 * disY2 +
+					(float)color22.m_a * disX1 * disY1;
 
-				memcpy(data + (j * width + i) * sizeof(RGBA), &_targetColor, sizeof(RGBA));
+				memcpy(data + (j * width + i) * sizeof(RGBA), &targetColor, sizeof(RGBA));
 			}
 		}
 
