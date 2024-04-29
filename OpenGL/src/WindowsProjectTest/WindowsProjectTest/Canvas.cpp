@@ -54,10 +54,10 @@ namespace GT {
 
 			RGBA pointColor;
 
-			if (m_enableTexture && m_texture != nullptr) {
+			if (m_State.m_enableTexture && m_State.m_texture != nullptr) {
 				// 开启贴图 并且贴图有效 使用贴图颜色
 				floatV2 uv = uvLerp(pt1.m_uv, pt2.m_uv, (float)index / sumStep);
-				pointColor = m_texture->GetColorByUV(uv, m_textureType);
+				pointColor = m_State.m_texture->GetColorByUV(uv, m_State.m_textureType);
 			}
 			else {
 				pointColor = colorLerp(pt1.m_color, pt2.m_color, (float)index / sumStep);
@@ -190,22 +190,71 @@ namespace GT {
 
 	void Canvas::setBlend(bool inUseBlend)
 	{
-		m_UseBlend = inUseBlend;
+		m_State.m_UseBlend = inUseBlend;
 	}
 
 	void Canvas::enableTexture(bool inEnable)
 	{
-		m_enableTexture = inEnable;
+		m_State.m_enableTexture = inEnable;
 	}
 
 	void Canvas::bindTexture(Image* inImage)
 	{
-		m_texture = inImage;
+		m_State.m_texture = inImage;
 	}
 
 	void Canvas::setTextureType(Image::TEXTURE_TYPE inType)
 	{
-		m_textureType = inType;
+		m_State.m_textureType = inType;
+	}
+
+	void Canvas::gtVertexPointer(int inSize, DATA_TYPE inType, int inStride, byte* inData)
+	{
+		m_State.m_vertextData.m_size = inSize;
+		m_State.m_vertextData.m_type = inType;
+		m_State.m_vertextData.m_stride = inStride;
+		m_State.m_vertextData.m_data = inData;
+	}
+
+	void Canvas::gtColorPointer(int inSize, DATA_TYPE inType, int inStride, byte* inData)
+	{
+		m_State.m_colorData.m_size = inSize;
+		m_State.m_colorData.m_type = inType;
+		m_State.m_colorData.m_stride = inStride;
+		m_State.m_colorData.m_data = inData;
+	}
+
+	void Canvas::gtTexCoordPointer(int inSize, DATA_TYPE inType, int inStride, byte* inData)
+	{
+		m_State.m_texCoordData.m_size = inSize;
+		m_State.m_texCoordData.m_type = inType;
+		m_State.m_texCoordData.m_stride = inStride;
+		m_State.m_texCoordData.m_data = inData;
+	}
+
+	void Canvas::gtDrawArray(DRAW_MODE inMode, int inFirstIndex, int inCount)
+	{
+		switch (inMode)
+		{
+		case GT::GT_LINE: {
+			Point pt1, pt2;
+			byte* vertexData = m_State.m_vertextData.m_data;
+			byte* colorData = m_State.m_colorData.m_data;
+			byte* texCoordData = m_State.m_texCoordData.m_data;
+			for (int i = 0; i < inCount; i += 2) {
+				float* vertexDataFloat = (float*)vertexData;
+				pt1.m_x = vertexDataFloat[0];
+				pt1.m_y = vertexDataFloat[1];
+			}
+			break;
+		}
+		case GT::GT_TRIANGLE: {
+
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 	void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt)
@@ -229,9 +278,9 @@ namespace GT {
 		int posY = pt.m_y;
 
 		// 限制绘制区域 计算 posY 和 step 的值 防止出现 y = 1000000 或者 y = -1000000
-		if (!GT::UTool::inRange(pt.m_y, 0, m_Height) || !GT::UTool::inRange(pt1.m_y, 0, m_Height)) {
-			int pos1Y = GT::UTool::clamp(pt1.m_y, 0, m_Height);
-			posY = GT::UTool::clamp(pt.m_y, 0, m_Height);
+		if (!GT::UTool::inRange(pt.m_y, 0.0f, m_Height * 1.0f) || !GT::UTool::inRange(pt1.m_y, 0.0f, m_Height * 1.0f)) {
+			int pos1Y = GT::UTool::clamp(pt1.m_y, 0.0f, m_Height * 1.0f);
+			posY = GT::UTool::clamp(pt.m_y, 0.0f, m_Height * 1.0f);
 			step = abs(posY - pt.m_y);
 			totalStemp = abs(pt.m_y - pt1.m_y) - abs(pt1.m_y - pos1Y);
 		}
@@ -346,7 +395,7 @@ namespace GT {
 		for (int u = 0; u < inImage->GetWidth(); ++u) {
 			for (int v = 0; v < inImage->GetHeight(); ++v) {
 				const RGBA srcColor = inImage->GetColor(u, v);
-				if (!m_UseBlend) {
+				if (!m_State.m_UseBlend) {
 					drawPoint(Point(inX + u, inY + v, srcColor));
 				}
 				else {

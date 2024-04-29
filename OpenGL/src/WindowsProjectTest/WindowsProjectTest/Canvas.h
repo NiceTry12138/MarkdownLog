@@ -6,6 +6,49 @@
 #include "Image.h"
 
 namespace GT {
+	enum DATA_TYPE {
+		GT_FLOAT = 0,
+		GT_INT = 1,
+	};
+
+	enum DRAW_MODE {
+		GT_LINE = 0,
+		GT_TRIANGLE = 1
+	};
+
+	struct DataElement
+	{
+		int			m_size = 0;			// 数据长度
+		DATA_TYPE	m_type;				// 数据类型
+		int			m_stride;			// 步长
+		byte*		m_data{nullptr};	// 数据
+
+		DataElement() {
+			m_size = 0;
+			m_type = DATA_TYPE::GT_FLOAT;
+			m_data = nullptr;
+			m_stride = 0;
+		}
+	};
+
+	// 状态相关
+	struct Statement {
+		bool					m_UseBlend = true; // 是否进行颜色混合
+		bool					m_enableTexture = true;	// 是否启用纹理贴图
+		Image*					m_texture{ nullptr };	// 绘制剩下顶点的时候 使用那种图片
+		Image::TEXTURE_TYPE		m_textureType = Image::TEXTURE_TYPE::TX_REPEAT;	// 纹理绘制
+
+		DataElement				m_vertextData;		// 顶点信息
+		DataElement				m_colorData;		// 颜色信息
+		DataElement				m_texCoordData;		// 贴图信息
+
+		Statement() {
+			m_UseBlend = true;
+			m_enableTexture = false;
+			m_textureType = Image::TEXTURE_TYPE::TX_REPEAT;
+			m_texture = nullptr;
+		}
+	};
 
 	// 操作画布的类
 	class Canvas
@@ -16,11 +59,8 @@ namespace GT {
 		RGBA* m_Buffer{ nullptr };
 
 		byte m_alphaLimit{ 0 }; // 大于此值的像素才可以进行绘制
-		bool m_UseBlend = true; // 是否进行颜色混合
 
-		bool m_enableTexture = true;	// 是否启用纹理贴图
-		Image* m_texture{ nullptr };	// 绘制剩下顶点的时候 使用那种图片
-		Image::TEXTURE_TYPE m_textureType = Image::TEXTURE_TYPE::TX_REPEAT;	// 纹理绘制
+		Statement m_State;
 	public: 
 		Canvas(int _width, int _height, void* _buffer) {
 			if (_width <= 0 || _height <= 0) {
@@ -74,6 +114,15 @@ namespace GT {
 		void bindTexture(Image* inImage);
 
 		void setTextureType(Image::TEXTURE_TYPE inType);
+
+		// 模拟 glVertexPointer
+		void gtVertexPointer(int inSize, DATA_TYPE inType, int inStride, byte* inData);
+		// 模拟 gtColorPointer
+		void gtColorPointer(int inSize, DATA_TYPE inType, int inStride, byte* inData);
+		// 模拟 gtTexCoordPointer
+		void gtTexCoordPointer(int inSize, DATA_TYPE inType, int inStride, byte* inData);
+
+		void gtDrawArray(DRAW_MODE inMode, int inFirstIndex, int inCount);
 
 	protected:
 		// 平底平顶三角形绘制 pt1 和 pt2 是平底或平顶的两点，pt 是单独的一个顶点

@@ -81,11 +81,11 @@ namespace GT
 	struct Point
 	{
 	public:
-		int m_x;
-		int m_y;
+		float m_x;
+		float m_y;
 		RGBA m_color;
 		floatV2 m_uv;
-		Point(int _x = 0, int _y = 0, RGBA _color = RGBA(0, 0, 0, 0), floatV2 _uv = floatV2(0.0f, 0.0f))
+		Point(float _x = 0.0f, float _y = 0.0f, RGBA _color = RGBA(0, 0, 0, 0), floatV2 _uv = floatV2(0.0f, 0.0f))
 		{
 			m_x = _x;
 			m_y = _y;
