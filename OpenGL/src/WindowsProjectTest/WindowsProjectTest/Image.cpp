@@ -17,6 +17,13 @@ namespace GT {
 		return m_Data[y * m_Width + x];
 	}
 
+	RGBA Image::GetColorByUV(floatV2 inUV) const
+	{
+		int x = inUV.x * GetWidth();
+		int y = inUV.y * GetHeight();
+		return GetColor(x, y);
+	}
+
 	Image* Image::readFromFile(const char* _fileName)
 	{
 		int			_picType = 0;

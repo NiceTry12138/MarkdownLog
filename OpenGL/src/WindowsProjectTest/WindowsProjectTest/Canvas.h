@@ -17,6 +17,8 @@ namespace GT {
 		byte m_alphaLimit{ 0 }; // 大于此值的像素才可以进行绘制
 		bool m_UseBlend = true; // 是否进行颜色混合
 
+		bool m_enableTexture = true;	// 是否启用纹理贴图
+		Image* m_texture{ nullptr };	// 绘制剩下顶点的时候 使用那种图片
 	public: 
 		Canvas(int _width, int _height, void* _buffer) {
 			if (_width <= 0 || _height <= 0) {
@@ -44,6 +46,9 @@ namespace GT {
 		// 颜色线性插值
 		inline RGBA colorLerp(const RGBA& _color1, const RGBA& _color2, float _scale);
 
+		// uv 插值
+		inline floatV2 uvLerp(const floatV2 inUV1, floatV2 inUV2, float inScale);
+
 		// 
 		void drawImage(int inX, int inY, GT::Image* inImage);
 
@@ -61,6 +66,10 @@ namespace GT {
 		RGBA getColor(int inX, int inY);
 
 		void setBlend(bool inUseBlend);
+
+		void enableTexture(bool inEnable);
+
+		void bindTexture(Image* inImage);
 
 	protected:
 		// 平底平顶三角形绘制 pt1 和 pt2 是平底或平顶的两点，pt 是单独的一个顶点

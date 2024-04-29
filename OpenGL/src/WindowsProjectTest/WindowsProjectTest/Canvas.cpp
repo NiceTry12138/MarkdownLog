@@ -52,7 +52,16 @@ namespace GT {
 			//std::wstring str = L"index = " + std::to_wstring(index) + L" xNow = " + std::to_wstring(xNow) + L", yNow = " + std::to_wstring(yNow) + L"\n";
 			//OutputDebugString(str.c_str());
 
-			auto pointColor = colorLerp(pt1.m_color, pt2.m_color, (float)index / sumStep);
+			RGBA pointColor;
+
+			if (m_enableTexture && m_texture != nullptr) {
+				// 开启贴图 并且贴图有效 使用贴图颜色
+				floatV2 uv = uvLerp(pt1.m_uv, pt2.m_uv, (float)index / sumStep);
+				pointColor = m_texture->GetColorByUV(uv);
+			}
+			else {
+				pointColor = colorLerp(pt1.m_color, pt2.m_color, (float)index / sumStep);
+			}
 			drawPoint(Point(xNow, yNow, pointColor));
 			if (p >= 0) {
 				if (useXStep) {
@@ -161,6 +170,7 @@ namespace GT {
 		}
 		float s = (float)(npt.m_y - ptMin.m_y) / (float)(ptMax.m_y - ptMin.m_y);
 		npt.m_color = colorLerp(ptMin.m_color, ptMax.m_color, s);
+		npt.m_uv = uvLerp(ptMin.m_uv, ptMax.m_uv, s);
 
 		drawTriangleFlat(ptMid, npt, ptMax);
 		drawTriangleFlat(ptMid, npt, ptMin);
@@ -181,6 +191,16 @@ namespace GT {
 	void Canvas::setBlend(bool inUseBlend)
 	{
 		m_UseBlend = inUseBlend;
+	}
+
+	void Canvas::enableTexture(bool inEnable)
+	{
+		m_enableTexture = inEnable;
+	}
+
+	void Canvas::bindTexture(Image* inImage)
+	{
+		m_texture = inImage;
 	}
 
 	void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt)
@@ -213,18 +233,27 @@ namespace GT {
 
 		for (; step <= totalStemp; posY += stepValue, ++step) {
 			int l1x = startX + 1 / k1 * stepValue * step;
-			RGBA color1 = colorLerp(pt.m_color, pt1.m_color, step * 1.0 / totalStemp);
+			float scale = step * 1.0f / totalStemp;
+			RGBA color1 = colorLerp(pt.m_color, pt1.m_color, scale);
+			floatV2 uv1 = uvLerp(pt.m_uv, pt1.m_uv, scale);
 			int l2x = startX + 1 / k2 * stepValue * step;
-			RGBA color2 = colorLerp(pt.m_color, pt2.m_color, step * 1.0 / totalStemp);
+			RGBA color2 = colorLerp(pt.m_color, pt2.m_color, scale);
+			floatV2 uv2 = uvLerp(pt.m_uv, pt2.m_uv, scale);
 
 			int edgeX1 = UTool::clamp(l1x, 0, m_Width);	// 将边界限制在画布左右两边 避免出现 x = -100000 或者 x = 100000 的情况
 			int edgeX2 = UTool::clamp(l2x, 0, m_Width);
 
-			RGBA edgeColor1 = colorLerp(color1, color2, abs(edgeX1 - l1x) * 1.0f / abs(l2x - l1x));	// 根据端点颜色 重新计算直线两端颜色
-			RGBA edgeColor2 = colorLerp(color1, color2, abs(edgeX2 - l1x) * 1.0f / abs(l2x - l1x));
+			float pointScale1 = abs(edgeX1 - l1x) * 1.0f / abs(l2x - l1x);	// 插值计算 X1 端点的颜色
+			float pointScale2 = abs(edgeX2 - l1x) * 1.0f / abs(l2x - l1x);	// 插值计算 X2 端点的颜色
 
-			Point p1 = Point(edgeX1, posY, edgeColor1);
-			Point p2 = Point(edgeX2, posY, edgeColor2);
+			RGBA edgeColor1 = colorLerp(color1, color2, pointScale1);	// 根据端点颜色 重新计算直线两端颜色
+			floatV2 edgeUV1 = uvLerp(uv1, uv2, pointScale1);
+
+			RGBA edgeColor2 = colorLerp(color1, color2, pointScale2);
+			floatV2 edgeUV2 = uvLerp(uv1, uv2, pointScale2);
+
+			Point p1 = Point(edgeX1, posY, edgeColor1, edgeUV1);
+			Point p2 = Point(edgeX2, posY, edgeColor2, edgeUV2);
 
 			drawLine(p1, p2);
 		}
@@ -297,6 +326,15 @@ namespace GT {
 
 		return result;
 	}
+	
+	inline floatV2 Canvas::uvLerp(const floatV2 inUV1, floatV2 inUV2, float inScale)
+	{
+		floatV2 result;
+		result.x = inUV1.x + (inUV2.x - inUV1.x) * inScale;
+		result.y = inUV1.y + (inUV2.y - inUV1.y) * inScale;
+		return result;
+	}
+
 	void Canvas::drawImage(int inX, int inY, GT::Image* inImage)
 	{
 		for (int u = 0; u < inImage->GetWidth(); ++u) {

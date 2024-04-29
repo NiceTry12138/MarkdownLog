@@ -1194,7 +1194,82 @@ UV坐标系是在计算机图形学中用于纹理映射的二维坐标系统。
 
 以上顶点为例，该点的颜色就是贴图中 $X = U*Width_{image}, Y = V*Height_{image}$ 像素点的颜色
 
+于是我们给点增加新的属性 `m_uv` 用与标记该点在贴图中的 UV 坐标
 
+```cpp
+struct Point
+{
+public:
+    int m_x;
+    int m_y;
+    RGBA m_color;
+    floatV2 m_uv;
+}
+```
+
+同时还要给图片提供一个新的接口 `GetColorByUV` 用与通过 `UV` 坐标获得对应的颜色
+
+```cpp
+RGBA Image::GetColorByUV(floatV2 inUV) const
+{
+    int x = inUV.x * GetWidth();
+    int y = inUV.y * GetHeight();
+    return GetColor(x, y);
+}
+```
+
+然后添加在 `Canvas` 添加一个标记位用与标记是否启用贴图
+
+```cpp
+bool m_enableTexture = true;	// 是否启用纹理贴图
+Image* m_texture{ nullptr };	// 绘制剩下顶点的时候 使用那种图片
+```
+
+在绘制多边形的时候可以通过设置顶点的 `UV` 坐标，进而知道绘制的颜色，三角形内像素的 `UV` 通过顶点的 `UV` 插值可以计算，与三角形内像素的颜色可以通过三顶点颜色插值计算出来一样
+
+```cpp
+// UV 插值
+inline floatV2 Canvas::uvLerp(const floatV2 inUV1, floatV2 inUV2, float inScale)
+{
+    floatV2 result;
+    result.x = inUV1.x + (inUV2.x - inUV1.x) * inScale;
+    result.y = inUV1.y + (inUV2.y - inUV1.y) * inScale;
+    return result;
+}
+```
+
+通过 `UV` 插值计算得到三角形内像素的 `UV`，就可以通过 `UV` 获得贴图的颜色，进而设置到像素上
+
+```cpp
+RGBA pointColor;
+
+if (m_enableTexture && m_texture != nullptr) {
+    // 开启贴图 并且贴图有效 使用贴图颜色
+    floatV2 uv = uvLerp(pt1.m_uv, pt2.m_uv, (float)index / sumStep);
+    pointColor = m_texture->GetColorByUV(uv);
+}
+else {
+    pointColor = colorLerp(pt1.m_color, pt2.m_color, (float)index / sumStep);
+}
+drawPoint(Point(xNow, yNow, pointColor));
+```
+
+设置顶点信息，设置贴图后，绘制三角形
+
+```cpp
+_canvas->bindTexture(_bgImage);
+_canvas->enableTexture(true);
+
+_canvas->drawTriangle(
+    GT::Point(0, wHeight / 2, GT::RGBA(), GT::floatV2(0, 0)),
+    GT::Point(wWidth, 0, GT::RGBA(), GT::floatV2(1, 0)),
+    GT::Point(wWidth / 2, wHeight, GT::RGBA(), GT::floatV2(0.5, 1))
+);
+```
+
+| 原图 | 贴图 |
+| --- | --- | 
+| ![](Image/031.png) | ![](Image/030.png) |
 
 ## 图形学状态机接口封装
 

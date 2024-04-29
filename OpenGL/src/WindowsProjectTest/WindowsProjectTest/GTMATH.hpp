@@ -84,11 +84,13 @@ namespace GT
 		int m_x;
 		int m_y;
 		RGBA m_color;
-		Point(int _x = 0, int _y = 0, RGBA _color = RGBA(0, 0, 0, 0))
+		floatV2 m_uv;
+		Point(int _x = 0, int _y = 0, RGBA _color = RGBA(0, 0, 0, 0), floatV2 _uv = floatV2(0.0f, 0.0f))
 		{
 			m_x = _x;
 			m_y = _y;
 			m_color = _color;
+			m_uv = _uv;
 		}
 		~Point()
 		{
