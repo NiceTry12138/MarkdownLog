@@ -48,7 +48,7 @@ namespace GT {
 		// 初始化 p 值 也就是公式推导时最开始的值 (2dy - dx)
 		int p = 2 * disY - disX;
 
-		for (int index = 0; index < sumStep; ++ index) {
+		for (int index = 0; index <= sumStep; ++ index) {
 			//std::wstring str = L"index = " + std::to_wstring(index) + L" xNow = " + std::to_wstring(xNow) + L", yNow = " + std::to_wstring(yNow) + L"\n";
 			//OutputDebugString(str.c_str());
 
@@ -243,8 +243,9 @@ namespace GT {
 			int edgeX1 = UTool::clamp(l1x, 0, m_Width);	// 将边界限制在画布左右两边 避免出现 x = -100000 或者 x = 100000 的情况
 			int edgeX2 = UTool::clamp(l2x, 0, m_Width);
 
-			float pointScale1 = abs(edgeX1 - l1x) * 1.0f / abs(l2x - l1x);	// 插值计算 X1 端点的颜色
-			float pointScale2 = abs(edgeX2 - l1x) * 1.0f / abs(l2x - l1x);	// 插值计算 X2 端点的颜色
+			// 下面使用 dcmp 是为了防止 l2x == l1x 导致除零错误
+			float pointScale1 = UTool::dcmp(l2x - l1x) == 0 ? 0 : abs(edgeX1 - l1x) * 1.0f / abs(l2x - l1x);	// 插值计算 X1 端点的颜色
+			float pointScale2 = UTool::dcmp(l2x - l1x) == 0 ? 0 : abs(edgeX2 - l1x) * 1.0f / abs(l2x - l1x);	// 插值计算 X2 端点的颜色
 
 			RGBA edgeColor1 = colorLerp(color1, color2, pointScale1);	// 根据端点颜色 重新计算直线两端颜色
 			floatV2 edgeUV1 = uvLerp(uv1, uv2, pointScale1);
