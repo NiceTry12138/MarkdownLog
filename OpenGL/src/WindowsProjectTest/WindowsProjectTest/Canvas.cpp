@@ -57,7 +57,7 @@ namespace GT {
 			if (m_enableTexture && m_texture != nullptr) {
 				// 开启贴图 并且贴图有效 使用贴图颜色
 				floatV2 uv = uvLerp(pt1.m_uv, pt2.m_uv, (float)index / sumStep);
-				pointColor = m_texture->GetColorByUV(uv);
+				pointColor = m_texture->GetColorByUV(uv, m_textureType);
 			}
 			else {
 				pointColor = colorLerp(pt1.m_color, pt2.m_color, (float)index / sumStep);
@@ -201,6 +201,11 @@ namespace GT {
 	void Canvas::bindTexture(Image* inImage)
 	{
 		m_texture = inImage;
+	}
+
+	void Canvas::setTextureType(Image::TEXTURE_TYPE inType)
+	{
+		m_textureType = inType;
 	}
 
 	void Canvas::drawTriangleFlat(const Point& pt1, const Point& pt2, const Point& pt)

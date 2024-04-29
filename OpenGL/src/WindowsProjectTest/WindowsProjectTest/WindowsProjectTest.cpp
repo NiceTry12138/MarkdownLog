@@ -64,11 +64,12 @@ void Render() {
     // 测试贴图
     _canvas->bindTexture(_bgImage);
     _canvas->enableTexture(true);
+    _canvas->setTextureType(GT::Image::TX_CLAMP_TO_EDGE);
 
 	_canvas->drawTriangle(
 		GT::Point(0, wHeight / 2, GT::RGBA(), GT::floatV2(0, 0)),
-		GT::Point(wWidth, 0, GT::RGBA(), GT::floatV2(1, 0)),
-		GT::Point(wWidth / 2, wHeight, GT::RGBA(), GT::floatV2(0.5, 1))
+		GT::Point(wWidth, 0, GT::RGBA(), GT::floatV2(2, 0)),
+		GT::Point(wWidth / 2, wHeight, GT::RGBA(), GT::floatV2(1, 2))
     );
 
 	// 将 hMem 的数据一次写入到 hDC 中

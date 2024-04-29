@@ -3,8 +3,9 @@
 #include <string.h>
 #include <vector>
 
+#include "Image.h"
+
 namespace GT {
-	class Image;
 
 	// 操作画布的类
 	class Canvas
@@ -19,6 +20,7 @@ namespace GT {
 
 		bool m_enableTexture = true;	// 是否启用纹理贴图
 		Image* m_texture{ nullptr };	// 绘制剩下顶点的时候 使用那种图片
+		Image::TEXTURE_TYPE m_textureType = Image::TEXTURE_TYPE::TX_REPEAT;	// 纹理绘制
 	public: 
 		Canvas(int _width, int _height, void* _buffer) {
 			if (_width <= 0 || _height <= 0) {
@@ -70,6 +72,8 @@ namespace GT {
 		void enableTexture(bool inEnable);
 
 		void bindTexture(Image* inImage);
+
+		void setTextureType(Image::TEXTURE_TYPE inType);
 
 	protected:
 		// 平底平顶三角形绘制 pt1 和 pt2 是平底或平顶的两点，pt 是单独的一个顶点

@@ -17,10 +17,25 @@ namespace GT {
 		return m_Data[y * m_Width + x];
 	}
 
-	RGBA Image::GetColorByUV(floatV2 inUV) const
+	RGBA Image::GetColorByUV(floatV2 inUV, TEXTURE_TYPE inType) const
 	{
-		int x = inUV.x * GetWidth();
-		int y = inUV.y * GetHeight();
+		int x = inUV.x * m_Width;
+		int y = inUV.y * m_Height;
+
+		switch (inType)
+		{
+		case GT::Image::TX_CLAMP_TO_EDGE: 
+			x = GT::UTool::clamp(x, 0, m_Width - 1);
+			y = GT::UTool::clamp(y, 0, m_Height - 1);
+			break;
+		case GT::Image::TX_REPEAT:
+			x %= m_Width;
+			y %= m_Height;
+			break;
+		default:
+			break;
+		}
+
 		return GetColor(x, y);
 	}
 
