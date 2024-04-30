@@ -1374,3 +1374,74 @@ glIsEnabled(GL_TEXTURE_2D);
 4. 减少状态改变的开销
    - 在图形渲染过程中，频繁地改变状态是一项耗费性能的操作。通过维护一个持续的状态环境，可以最小化状态变化的次数，从而减少 `CPU` 和 `GPU` 之间的通信开销，提高整体性能
 
+```cpp
+GT::Point ptArray[] =
+{
+    {0.0f,0.0f,       GT::RGBA(255,0,0) , GT::floatV2(0,0)},
+    {300.0f,0.0f,    GT::RGBA(0,255,0) , GT::floatV2(1.0,0)},
+    {300.0f,300.0f,   GT::RGBA(0,0,255) , GT::floatV2(1.0,1.0)},
+
+    {300.0f,0.0f,       GT::RGBA(255,0,0) , GT::floatV2(1.0f,.0f)},
+    {300.0f,300.0f,    GT::RGBA(0,255,0) , GT::floatV2(.0f,.0f)},
+    {600.0f,500.0f,   GT::RGBA(0,0,255) , GT::floatV2(.0f,1.0f)},
+};
+
+//_canvas->drawTriangle(ptArray[3], ptArray[4], ptArray[5]);
+
+_canvas->gtVertexPointer(2, GT::GT_FLOAT, sizeof(GT::Point), (GT::byte*)ptArray);
+_canvas->gtColorPointer(1, GT::GT_FLOAT, sizeof(GT::Point), (GT::byte*)&ptArray[0].m_color);
+_canvas->gtTexCoordPointer(1, GT::GT_FLOAT, sizeof(GT::Point), (GT::byte*)&ptArray[0].m_uv);
+
+_canvas->enableTexture(true);
+_canvas->setTextureType(GT::Image::TX_REPEAT);
+_canvas->bindTexture(_bgImage);
+
+_canvas->gtDrawArray(GT::GT_TRIANGLE, 0, 6);
+```
+
+![](Image/034.png)
+
+参考上面的图片，结合前面新封装接口的代码，理解对 `ptArray` 操作的原理
+
+对于 `Point` 对象来说，它的大小是 `sizeof(Point)` 字节
+
+- 让 `ptArray + sizeof(Point)` 就指向了数组中下个 `Point` 对象
+- 让 `colorStart + sizeof(Point)` 就直接指向了数组中下一个 `Point` 对象的 `RGBA color` 数据
+- 让 `uvStart + sizeof(Point)` 就直接指向了数组中下一格 `Point` 对象的 `floatV2 uv` 数据 
+
+> 对于 `char* ptr` 来说， `ptr + 1` 就是指针向后位移一个 `char` 大小，也就是一个字节    
+> 对于 `int* ptr` 来说， `ptr + 1` 就是指针向后位移一个 `int` 大小的，可能是四个字节
+
+所以，程序中想要获取 `ptArray` 中所有的数据，可以直接
+
+```cpp
+for (int i = 0; i < inCount; i++)
+{
+	float* vertexDataFloat = (float*)vertexData;
+	pt0.m_x = vertexDataFloat[0];
+	pt0.m_y = vertexDataFloat[1];
+	vertexData += m_State.m_vertextData.m_stride;
+
+	vertexDataFloat = (float*)vertexData;
+	pt1.m_x = vertexDataFloat[0];
+	pt1.m_y = vertexDataFloat[1];
+	vertexData += m_State.m_vertextData.m_stride;
+
+	//取颜色坐标
+	RGBA* colorDataRGBA = (RGBA*)colorData;
+	pt0.m_color = colorDataRGBA[0];
+
+	colorData += m_State.m_colorData.m_stride;
+
+	colorDataRGBA = (RGBA*)colorData;
+	pt1.m_color = colorDataRGBA[0];
+	colorData += m_State.m_colorData.m_stride;
+
+	drawLine(pt0, pt1);
+}
+```
+
+就顶点信息来说，由于数据类型是 `float`，所以将源数据强制装换成 `vertexDataFloat = (float*)vertexData`，那么 `vertexDataFloat[0]` 对应的就是 `m_x`, `vertexDataFloat[1]` 对应的就是 `m_y`，那么下一个 `Point` 的 `m_x`、`m_y` 对应的起始坐标就是 `vertexData += m_State.m_vertextData.m_stride`，这里 `m_State.m_vertextData.m_stride` 就是 `sizeof(Point)
+
+至于颜色信息和 `UV` 信息同理，都是通过起始地址和地址偏移直接计算的
+

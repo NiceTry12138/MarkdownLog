@@ -234,21 +234,90 @@ namespace GT {
 
 	void Canvas::gtDrawArray(DRAW_MODE inMode, int inFirstIndex, int inCount)
 	{
+		Point pt0, pt1, pt2;
+		byte* vertexData = m_State.m_vertextData.m_data + inFirstIndex * m_State.m_vertextData.m_stride;
+		byte* colorData = m_State.m_colorData.m_data + inFirstIndex * m_State.m_colorData.m_stride;
+		byte* texCoordData = m_State.m_texCoordData.m_data + inFirstIndex * m_State.m_texCoordData.m_stride;
 		switch (inMode)
 		{
 		case GT::GT_LINE: {
-			Point pt1, pt2;
-			byte* vertexData = m_State.m_vertextData.m_data;
-			byte* colorData = m_State.m_colorData.m_data;
-			byte* texCoordData = m_State.m_texCoordData.m_data;
-			for (int i = 0; i < inCount; i += 2) {
+			inCount = inCount / 2;
+			for (int i = 0; i < inCount; i++)
+			{
 				float* vertexDataFloat = (float*)vertexData;
+				pt0.m_x = vertexDataFloat[0];
+				pt0.m_y = vertexDataFloat[1];
+				vertexData += m_State.m_vertextData.m_stride;
+
+				vertexDataFloat = (float*)vertexData;
 				pt1.m_x = vertexDataFloat[0];
 				pt1.m_y = vertexDataFloat[1];
+				vertexData += m_State.m_vertextData.m_stride;
+
+				//取颜色坐标
+
+				RGBA* colorDataRGBA = (RGBA*)colorData;
+				pt0.m_color = colorDataRGBA[0];
+
+				colorData += m_State.m_colorData.m_stride;
+
+				colorDataRGBA = (RGBA*)colorData;
+				pt1.m_color = colorDataRGBA[0];
+				colorData += m_State.m_colorData.m_stride;
+
+				drawLine(pt0, pt1);
 			}
 			break;
 		}
 		case GT::GT_TRIANGLE: {
+
+			inCount = inCount / 3;
+			for (int i = 0; i < inCount; i++)
+			{
+				float* _vertexDataFloat = (float*)vertexData;
+				pt0.m_x = _vertexDataFloat[0];
+				pt0.m_y = _vertexDataFloat[1];
+				vertexData += m_State.m_vertextData.m_stride;
+
+				_vertexDataFloat = (float*)vertexData;
+				pt1.m_x = _vertexDataFloat[0];
+				pt1.m_y = _vertexDataFloat[1];
+				vertexData += m_State.m_vertextData.m_stride;
+
+				_vertexDataFloat = (float*)vertexData;
+				pt2.m_x = _vertexDataFloat[0];
+				pt2.m_y = _vertexDataFloat[1];
+				vertexData += m_State.m_vertextData.m_stride;
+
+
+				//取颜色坐标
+				RGBA* colorDataRGBA = (RGBA*)colorData;
+				pt0.m_color = colorDataRGBA[0];
+				colorData += m_State.m_colorData.m_stride;
+
+				colorDataRGBA = (RGBA*)colorData;
+				pt1.m_color = colorDataRGBA[0];
+				colorData += m_State.m_colorData.m_stride;
+
+				colorDataRGBA = (RGBA*)colorData;
+				pt2.m_color = colorDataRGBA[0];
+				colorData += m_State.m_colorData.m_stride;
+
+				//取uv坐标
+				floatV2* _uvData = (floatV2*)texCoordData;
+				pt0.m_uv = _uvData[0];
+				texCoordData += m_State.m_texCoordData.m_stride;
+
+				_uvData = (floatV2*)texCoordData;
+				pt1.m_uv = _uvData[0];
+				texCoordData += m_State.m_texCoordData.m_stride;
+
+				_uvData = (floatV2*)texCoordData;
+				pt2.m_uv = _uvData[0];
+				texCoordData += m_State.m_texCoordData.m_stride;
+
+				drawTriangle(pt0, pt1, pt2);
+			}
 
 			break;
 		}
@@ -286,11 +355,12 @@ namespace GT {
 		}
 
 		for (; step <= totalStemp; posY += stepValue, ++step) {
-			int l1x = startX + 1 / k1 * stepValue * step;
+			// 如果 k1 或者 k2 为0 则 X 无变化，这里添加判断防止出现除0错误
+			int l1x = GT::UTool::dcmp(k1) == 0 ? startX : startX + 1 / k1 * stepValue * step;
 			float scale = step * 1.0f / totalStemp;
 			RGBA color1 = colorLerp(pt.m_color, pt1.m_color, scale);
 			floatV2 uv1 = uvLerp(pt.m_uv, pt1.m_uv, scale);
-			int l2x = startX + 1 / k2 * stepValue * step;
+			int l2x = GT::UTool::dcmp(k2) == 0 ? startX : startX + 1 / k2 * stepValue * step;
 			RGBA color2 = colorLerp(pt.m_color, pt2.m_color, scale);
 			floatV2 uv2 = uvLerp(pt.m_uv, pt2.m_uv, scale);
 

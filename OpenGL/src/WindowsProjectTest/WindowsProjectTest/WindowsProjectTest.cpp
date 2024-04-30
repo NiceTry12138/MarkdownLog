@@ -62,15 +62,40 @@ void Render() {
     //_canvas->drawImage(200, 200, _image);
 
     // 测试贴图
-    _canvas->bindTexture(_bgImage);
-    _canvas->enableTexture(true);
-    _canvas->setTextureType(GT::Image::TX_CLAMP_TO_EDGE);
+	//_canvas->bindTexture(_bgImage);
+	//_canvas->enableTexture(true);
+	//_canvas->setTextureType(GT::Image::TX_CLAMP_TO_EDGE);
 
-	_canvas->drawTriangle(
-		GT::Point(0, wHeight / 2, GT::RGBA(), GT::floatV2(0, 0)),
-		GT::Point(wWidth, 0, GT::RGBA(), GT::floatV2(2, 0)),
-		GT::Point(wWidth / 2, wHeight, GT::RGBA(), GT::floatV2(1, 2))
-    );
+	//_canvas->drawTriangle(
+	//	GT::Point(0, wHeight / 2, GT::RGBA(), GT::floatV2(0, 0)),
+	//	GT::Point(wWidth, 0, GT::RGBA(), GT::floatV2(2, 0)),
+	//	GT::Point(wWidth / 2, wHeight, GT::RGBA(), GT::floatV2(1, 2))
+	//);
+
+    // 测试状态机
+
+    GT::Point ptArray[] =
+    {
+        {0.0f,0.0f,       GT::RGBA(255,0,0) , GT::floatV2(0,0)},
+        {300.0f,0.0f,    GT::RGBA(0,255,0) , GT::floatV2(1.0,0)},
+        {300.0f,300.0f,   GT::RGBA(0,0,255) , GT::floatV2(1.0,1.0)},
+
+        {300.0f,0.0f,       GT::RGBA(255,0,0) , GT::floatV2(1.0f,.0f)},
+        {300.0f,300.0f,    GT::RGBA(0,255,0) , GT::floatV2(.0f,.0f)},
+        {600.0f,500.0f,   GT::RGBA(0,0,255) , GT::floatV2(.0f,1.0f)},
+    };
+
+    //_canvas->drawTriangle(ptArray[3], ptArray[4], ptArray[5]);
+
+	_canvas->gtVertexPointer(2, GT::GT_FLOAT, sizeof(GT::Point), (GT::byte*)ptArray);
+	_canvas->gtColorPointer(1, GT::GT_FLOAT, sizeof(GT::Point), (GT::byte*)&ptArray[0].m_color);
+	_canvas->gtTexCoordPointer(1, GT::GT_FLOAT, sizeof(GT::Point), (GT::byte*)&ptArray[0].m_uv);
+
+	_canvas->enableTexture(true);
+    _canvas->setTextureType(GT::Image::TX_REPEAT);
+	_canvas->bindTexture(_bgImage);
+
+	_canvas->gtDrawArray(GT::GT_TRIANGLE, 0, 6);
 
 	// 将 hMem 的数据一次写入到 hDC 中
 	BitBlt(hDC, 0, 0, wWidth, wHeight, hMem, 0, 0, SRCCOPY);
