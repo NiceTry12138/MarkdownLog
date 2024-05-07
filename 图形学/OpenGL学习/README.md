@@ -2,6 +2,8 @@
 
 OpenGL（Open Graphics Library）是一个用于渲染2D和3D矢量图形的跨语言、跨平台的应用程序编程接口（API）。这个API由近350个不同的函数调用组成，可以用来绘制从简单的图形到复杂的三维景象。OpenGL不仅是一个规范，它定义了一系列操作图形和图像的函数，但本身并不提供API的实现。这些实现通常被称为“驱动”，由GPU的硬件开发商提供，负责将OpenGL定义的API命令翻译为GPU指令
 
+`OpenGL` 函数功能、参数查询网站 [docs.gl](https://docs.gl/)
+
 ## 创建窗口
 
 ### GLFW
@@ -284,4 +286,81 @@ while (!glfwWindowShouldClose(window))
 **顶点** 并不代表坐标，坐标信息只是顶点的一部分，除此之外顶点还可以有其他信息，比如：颜色、法线、纹理等。所以顶点指的是一整个构成顶点的数据集合
 
 由于 OpenGL 是一个很大的状态机，所以要做的就是设置一系列状态和信息，然后告诉 GPU 绘制
+
+```cpp
+float positions[6] = {
+  -0.5f, -0.5f,
+    0.0f,  0.5f,
+    0.5f, -0.5f
+};
+unsigned int buffer;
+glGenBuffers(1, &buffer);
+glBindBuffer(GL_ARRAY_BUFFER, buffer);
+glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+
+glEnableVertexAttribArray(0);
+glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+glBindBuffer(GL_ARRAY_BUFFER, 0);
+```
+
+大概介绍一下上述代码的功能
+
+1. `glGenBuffers(1, &buffer)` 创建了一个缓冲区对象。这个缓冲区对象可以用来存储顶点数据、颜色数据等
+2. `glBindBuffer(GL_ARRAY_BUFFER, buffer)` 将缓冲区对象绑定到 GL_ARRAY_BUFFER 目标上。这意味着我们将要操作的是一个顶点数组缓冲区
+3. 使用 `glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW)`，我们将数据从 `positions` 数组传递到缓冲区中
+4. 启用了顶点属性数组，使用 `glEnableVertexAttribArray(0)`
+5. 使用 `glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0)` 设置了顶点属性指针。这告诉 OpenGL 如何解释缓冲区中的数据
+6. 使用 `glBindBuffer(GL_ARRAY_BUFFER, 0)` 解绑了缓冲区对象，确保不再对其进行操作
+
+`glGenBuffers` 函数的作用是为 **OpenGL 缓冲区对象** 分配一个**唯一**的名字（或称为标识符）
+
+在 OpenGL 中，缓冲区对象用于存储图形数据，例如顶点坐标、颜色、法线等
+
+缓冲区对象可以被访问和使用，既可以由应用程序读取，也可以由 GPU 访问
+
+缓冲区对象需要一个唯一的名字来标识它们。这样，OpenGL 可以根据名字找到正确的缓冲区对象
+
+`glGenBuffers` 正是用于生成这些唯一的名字。每次调用 glGenBuffers 都会分配一个新的名字，确保不会与其他缓冲区对象的名字重复
+
+--------------
+
+`glBufferData` 将 `positions` 的数据传递到 `GL_ARRAY_BUFFER` 中，复制了 `sizeof(float) * 6` 个字节的大小数据
+
+| 名称 | 含义 |
+| --- | --- |
+| STREAM | 这个参数表示数据每帧都不同，即数据会频繁变化。适用于那些每帧都需要更新的缓冲区，例如存储粒子系统的顶点数据 |
+| STATIC | 这个参数表示数据不会或几乎不会改变，即一次修改，多次使用。适用于那些在创建后不会频繁修改的缓冲区，例如存储顶点位置、法线等静态数据 |
+| DYNAMIC | 这个参数表示数据会被频繁地改变，即多次修改，多次使用。适用于那些需要经常更新的缓冲区，例如存储动态模型的顶点数据 |
+| DRAW | 这个参数表示数据将会被送往 GPU 进行绘制。用于指定缓冲区的用途，例如存储顶点数据供渲染使用 |
+| READ | 这个参数表示数据会被用户的应用读取。用于指定缓冲区的用途，例如存储纹理数据供 CPU 访问 |
+| COPY | 这个参数表示数据会被用于绘制和读取。用于指定缓冲区的用途，例如在数据传输时进行拷贝操作 |
+
+> 这些参数是对缓冲区数据使用模式的提示，帮助 OpenGL 在内部做出更智能的决策，以优化性能
+
+--------------
+
+`glVertexAttribPointer` 则用于告诉 `OpenGL` 如何理解传入的数据。根据 [docs.gl](https://docs.gl/gl4/glVertexAttribPointer) 的解释
+
+```cpp
+void glVertexAttribPointer(	GLuint index,
+                            GLint size,
+                            GLenum type,
+                            GLboolean normalized,
+                            GLsizei stride,
+                            const GLvoid * pointer);
+```
+
+- `index`: 起始索引序号，如果数组长度为4，希望从第二个顶点开始绘制，则传入1
+- `size`: 表示每个顶点属性的组件数量，如果是一个 Vector3，那么应该设置3
+- `type`: 数据类型，比如 `GL_FLOAT` 和 `GL_INT` 等
+- `normalized`: 归一化，是否需要将数据归一化到 0~1 的范围内，比如颜色；如果参数是 `GL_FALSE` 则不用归一化
+- `stride`: 步长，通过步长计算地址内存偏移，实现数组索引
+- `pointer`: 表示顶点属性数据在缓冲区中的起始位置，如果你的数据存储在缓冲区的起始位置，可以将 `pointer` 设置为 0；如果数据存储在缓冲区的其他位置，你需要计算正确的偏移量并设置 `pointer`
+
+![](Image/007.png)
+
+如上图类似，通过 `index` 知道启示遍历序号，通过 `size` 知道顶点属性的数量，通过 `type` 知道顶点属性的数据类型，通过 `stride` 知道地址需要偏移多少
+
+通过上面传入的数据，就可以完全遍历一块内存了。我们知道区域的数据类型，但是 `OpenGL` 不知道，所以这个函数就是告诉 `OpenGL` 如何解析一块内存区域
 

@@ -49,7 +49,22 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
 
-	glVertexAttribIPointer(0, 3, GL_FLOAT, sizeof(float) * 2, positions);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+	float positions1[6] = {
+		-0.5f,  0.5f,
+		 0.0f, -0.5f,
+		 0.5f,  0.5f
+	};
+	unsigned int buffer1;
+	glGenBuffers(1, &buffer1);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer1);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions1, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -59,6 +74,14 @@ int main(void)
 
 		//render();
 
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, buffer1);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		/* Swap front and back buffers */
