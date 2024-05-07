@@ -4,6 +4,8 @@ OpenGL（Open Graphics Library）是一个用于渲染2D和3D矢量图形的跨�
 
 ## 创建窗口
 
+### GLFW
+
 使用 `glfw` 来学习 `OpenGL` 的 API， 网址 [www.flgw.org](https://www.glfw.org)，以及[示例代码](https://www.glfw.org/documentation.html)
 
 GLFW 和 OpenGL 之间的关系是密切且互补的。GLFW 是一个专门为 OpenGL 设计的库，它提供了创建窗口、处理输入和事件的简单API，而 OpenGL 负责通过这些窗口进行 2D 和 3D 图形的渲染
@@ -55,4 +57,231 @@ glVertex2f(0.0f, 0.5f);
 glVertex2f(0.5f, -0.5f);
 glEnd();
 ```
+
+### GLEW
+
+除了 GLFW 之外， OpenGL 还有一些其他的辅助库
+
+| 库名称 | 功能 |
+| --- | --- |
+| GLEW (OpenGL Extension Wrangler Library) | GLEW 是用于管理OpenGL扩展的库，它能自动识别并加载当前平台所支持的全部OpenGL高级扩展函数。适用于需要使用OpenGL 2.0及以上版本的高级特性的场景 |
+| GLAD | GLAD是GLEW的现代替代品，也是一个OpenGL扩展加载库。它允许开发者指定需要的OpenGL版本，并根据这个版本加载所有相关的OpenGL函数。适用于需要跨平台支持和使用最新OpenGL特性的项目 |
+| GLUT (OpenGL Utility Toolkit) | GLUT是一个较老的工具库，用于创建窗口、处理输入和事件。由于其年代久远且不再维护，通常不推荐用于新项目 |
+| FreeGLUT | FreeGLUT是GLUT的开源替代品，完全兼容GLUT。它提供了GLUT缺少的一些功能和修复了一些已知的bug。适用于需要GLUT功能但希望有更好支持和更新的项目 |
+| GLFW | GLFW是一个用于创建窗口、读取输入、处理事件的多平台库，支持OpenGL、OpenGL ES和Vulkan。它是GLUT和FreeGLUT的现代替代品，提供了更简洁的API和更好的性能。适用于需要轻量级窗口和事件管理的现代OpenGL应用程序 |
+
+因为只是学习使用 OpenGL，所以直接用 `GLEW` 就行了，[官网下载即可](https://glew.sourceforge.net/)，下载当然是下载 `Binaries`，如果是正规项目最好是下载 `Source` 源码版，源码版断点调试更方便
+
+使用 `GLEW` 的原因是，`Windows` 默认只支持到 **OpenGL 1.1** 的函数，而现代 `OpenGL` 已经发展到更高的版本。为了使用这些高级特性，就必须通过扩展来获取新的功能。GLEW库就是为了解决这个问题而设计的。它允许开发者在不同的平台上使用高版本的 `OpenGL` 功能，而无需担心具体的扩展加载细节。在不使用 `GLEW` 的情况下，开发者需要手动加载每个扩展函数的地址，这是一个繁琐且容易出错的过程。`GLEW` 自动处理这一过程，简化了开发工作。
+
+与之前导入 `GLFW` 库一样，将 `GLEW` 的头文件和链接库导入并且配置到项目中
+
+动态链接库使用 `lib\Release\Win32\glew32s.lib` 文件
+
+| 文件名 | 作用 |
+| --- | --- |
+| glew32s.lib | 静态链接库的版本，其中的 `s` 表示静态（`static`）。使用这个版本的库时，GLEW的代码会被直接链接到最终的应用程序中，因此不需要在运行时提供 glew32.dll 文件。这可以使得应用程序的分发更加简单，因为不需要额外的DLL文件 |
+| glew32.lib | 用于动态链接的导入库。当你使用这个库时，你的应用程序在运行时会依赖 glew32.dll 动态链接库。这意味着，glew32.dll 必须在应用程序运行时可用，通常是放在应用程序的同一目录或系统路径中 |
+
+- 如果希望应用程序能够通过替换DLL来更新GLEW版本，或者减小最终可执行文件的大小，选择动态链接的 `glew32.lib`
+- 如果希望简化应用程序的部署，并且不介意增加可执行文件的大小，那么静态链接的 `glew32s.lib` 可能是更好的选择
+
+> 方便使用，直接用 `glew32.lib` 文件
+
+关于 `GLEW` 的使用可以查看它的[文档](https://glew.sourceforge.net/basic.html)
+
+**启动 GLEW**
+
+1. 首先，需要创建一个有效的OpenGL渲染上下文，并调用glewInit()来初始化扩展入口点
+2. 如果glewInit()返回GLEW_OK，那么初始化成功，可以使用可用的扩展以及核心OpenGL功能
+
+```cpp
+#include <GL/glew.h>
+#include <GL/glut.h>
+// ...
+glutInit(&argc, argv);
+glutCreateWindow("GLEW Test");
+GLenum err = glewInit();
+if (GLEW_OK != err)
+{
+  /* Problem: glewInit failed, something is seriously wrong. */
+  fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+  // ...
+}
+fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+```
+
+------------------
+
+**检查扩展**
+
+从GLEW 1.1.0开始，你可以通过查询全局定义的变量 `GLEW_{extension_name}` 来找出特定扩展是否在你的平台上可用
+
+```cpp
+// 在这里使用ARB_vertex_program扩展是安全的。
+if (GLEW_ARB_vertex_program)
+{
+  glGenProgramsARB(...);
+}
+```
+
+可以检查核心OpenGL功能。例如，要看 `OpenGL 1.3` 是否支持
+
+```cpp
+if (GLEW_VERSION_1_3)
+{
+  // OpenGL 1.3被支持！
+}
+```
+
+也可以从字符串输入执行扩展检查。从 **1.3.0** 版本开始，使用 `glewIsSupported` 来检查所需的核心或扩展功能是否可用
+
+```cpp
+if (glewIsSupported("GL_VERSION_1_4  GL_ARB_point_sprite"))
+{
+  // 有OpenGL 1.4 + 点精灵
+}
+```
+
+对于仅限扩展的情况，`glewGetExtension` 提供了一个较慢的替代方法（GLEW 1.0.x-1.2.x）。请注意，在 **1.3.0** 版本中 `glewGetExtension` 被 `glewIsSupported` 替代
+
+```cpp
+if (glewGetExtension("GL_ARB_fragment_program"))
+{
+  // ARB_fragment_program是被支持的
+}
+```
+
+------------------
+
+**实验性驱动程序**
+
+`GLEW` 从图形驱动程序获取支持的扩展信息。然而，实验性或预发布的驱动程序可能不会通过标准机制报告每个可用的扩展，在这种情况下，`GLEW` 会报告它不支持。为了规避这种情况，可以在调用 `glewInit()` 之前将 `glewExperimental` 全局开关设置为 `GL_TRUE` ，这确保所有具有有效入口点的扩展都会被暴露
+
+------------------
+
+**平台特定扩展**
+
+平台特定扩展被分离到两个头文件中：`wglew.h` 和 `glxew.h`，它们定义了可用的 `WGL` 和 `GLX` 扩展。要确定某个扩展是否被支持，查询 `WGLEW_{extension name}` 或 `GLXEW_{extension_name}`
+
+```cpp
+#include <GL/wglew.h>
+
+if (WGLEW_ARB_pbuffer)
+{
+  // 好的，可以使用 pbuffers
+}
+else
+{
+  // 抱歉，pbuffers 在这个平台上不会工作。
+}
+
+// 或者，使用 wglewIsSupported 或 glxewIsSupported 从字符串检查扩展：
+if (wglewIsSupported("WGL_ARB_pbuffer"))
+{
+  // 好的，我们可以使用pbuffers。
+}
+```
+
+------------------
+
+**工具**
+
+GLEW提供了两个命令行工具：一个用于创建可用扩展和视觉效果的列表；另一个用于验证扩展入口点
+
+| 工具 | 作用 | 解释 | 使用 |
+| --- | --- | --- | --- |
+| `visualinfo` | 扩展和视觉效果 | `visualinfo` 是 `glxinfo` `的扩展版本。Windows` 版本创建了一个名为 `visualinfo.txt` 的文件，其中包含了可用的 `OpenGL`、`WGL` 和 `GLU` 扩展列表以及视觉效果（又称像素格式）的表格。也包括了支持 `Pbuffer` 和 `MRT` 的视觉效果 | `visualinfo -h` |
+| `glewinfo` | 扩展验证工具 | `glewinfo` 允许你验证平台上支持的扩展的入口点。`Windows` 版本将结果报告到一个名为 `glewinfo.txt` 的文本文件中。`Unix` 版本将结果打印到 `stdout` | `glewinfo [-pf <id>]` |
+
+那么根据文档所说，我们要在项目中使用 `glewInit()` 函数来初始化 `GLEW`
+
+```cpp
+int main(void)
+{
+	GLFWwindow* window;
+
+	/* Initialize the library */
+	if (!glfwInit())
+		return -1;
+
+	if (GLEW_OK != glewInit()) {
+		std::cout << "Error: glewInit Faild" << std::endl;
+	}
+
+    // ....
+}
+```
+
+上面的代码直接运行会出现 `glewInit` 的链接错误
+
+```cpp
+GLEWAPI GLenum GLEWAPIENTRY glewInit (void);
+```
+
+关注点在上面的 `GLEWAPI` 宏定义中
+
+```cpp
+/*
+ * GLEW_STATIC is defined for static library.
+ * GLEW_BUILD  is defined for building the DLL library.
+ */
+
+#ifdef GLEW_STATIC
+#  define GLEWAPI extern
+#else
+#  ifdef GLEW_BUILD
+#    define GLEWAPI extern __declspec(dllexport)
+#  else
+#    define GLEWAPI extern __declspec(dllimport)
+#  endif
+#endif
+```
+
+由于项目中什么宏都没有额外定义，所以会执行 `define GLEWAPI extern __declspec(dllimport)`
+
+根据代码上面的注释，结合项目中使用的是 `glew32s.lib` 静态库，所以需要定义 `GLEW_STATIC` 宏
+
+![](Image/005.png)
+
+在定义宏之后，项目可以正常运行，但是 `glewInit` 返回的却不是 `GLEW_OK`，也就是说 `GLEW` 初始化失败，原因是没有**OpenGL渲染上下文**，这个是文档中说明过的
+
+解决方案很简单，在 `GLFW` 提供的代码 `glfwMakeContextCurrent` 其实已经创建了 OpenGL 上下文，所以只需要在 `glfwMakeContextCurrent` 函数之后 `glewInit` 就行了
+
+```cpp
+/* Make the window's context current */
+glfwMakeContextCurrent(window);
+
+if (GLEW_OK != glewInit()) {
+    std::cout << "Error: glewInit Faild" << std::endl;
+
+}
+
+/* Loop until the user closes the window */
+while (!glfwWindowShouldClose(window))
+{
+    /* Render here */
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    render();
+
+    /* Swap front and back buffers */
+    glfwSwapBuffers(window);
+
+    /* Poll for and process events */
+    glfwPollEvents();
+}
+```
+
+如果成功，那么可以通过 `std::cout << glGetString(GL_VERSION) << std::endl;` 来输出当前 `OpenGL` 版本
+
+![](Image/006.png)
+
+## 顶点缓冲
+
+顶点缓冲区本质上还是一个**缓冲区**，是一个内存缓冲区，也就是一个数组。也就是定义一组数据来表示三角形，并且将其放到 `GPU` 的 `VRAM` 中，在绘制时 告诉 `GPU` 如何从 `VRAM` 读取并且解释数据信息，以及如何绘制到屏幕上
+
+**顶点** 并不代表坐标，坐标信息只是顶点的一部分，除此之外顶点还可以有其他信息，比如：颜色、法线、纹理等。所以顶点指的是一整个构成顶点的数据集合
+
+由于 OpenGL 是一个很大的状态机，所以要做的就是设置一系列状态和信息，然后告诉 GPU 绘制
 
