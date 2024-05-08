@@ -13,6 +13,47 @@ void render() {
 	glEnd();
 }
 
+static GLuint CompiledShader(const std::string& source, GLenum inType) {
+	GLuint id = glCreateShader(inType);
+	const char* src = source.c_str();
+	glShaderSource(id, 1, &src, nullptr);
+	glCompileShader(id);
+
+	// Shader 错误处理
+	GLint result;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+	if (result == GL_FALSE) {
+		int length;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		// alloca 在栈上申请内存，不需要 free ，在作用域结束后自动释放
+		char* msg = (char*)alloca(length * sizeof(char));
+		glGetShaderInfoLog(id, length, &length, msg);
+		std::cout << "Sharder Compile " << (inType == GL_VERTEX_SHADER ? "vertex sharder" : "fragment sharder") << " Faild" << std::endl;
+		std::cout << msg << std::endl;
+		
+		glDeleteShader(id);
+		return GL_ZERO;
+	}
+
+	return id;
+}
+
+static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader) {
+	GLuint program = glCreateProgram();
+	GLuint vs = CompiledShader(vertexShader, GL_VERTEX_SHADER);
+	GLuint fs = CompiledShader(fragmentShader, GL_FRAGMENT_SHADER);
+
+	glAttachShader(program, vs);
+	glAttachShader(program, fs);
+	glLinkProgram(program);
+	glValidateProgram(program);
+
+	glDeleteShader(fs);
+	glDeleteShader(vs);
+
+	return program;
+}
+
 int main(void)
 {
 	GLFWwindow* window;

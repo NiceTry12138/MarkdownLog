@@ -22,4 +22,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Vertex.vert">
+      <Filter>src</Filter>
+    </None>
+    <None Include="src\Fragment.frag">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
 </Project>
