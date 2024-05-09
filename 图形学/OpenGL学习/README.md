@@ -439,3 +439,67 @@ float positions[6] = {
 
 然后将数据传递给片段着色器，为每个像素运行一次片段着色器程序，片段着色器的基本目的就是决定像素的颜色
 
+1. 在 OpenGL 中使用 `glCreateShader` 来创建一个 `Shader`
+2. 使用 `glShaderSource` 传入指定的 `Shader` 源码
+3. 使用 `glCompileShader` 编译指定的 `Shader` 源码
+
+```cpp
+static GLuint CompiledShader(const std::string& source, GLenum inType) {
+	GLuint id = glCreateShader(inType);
+	const char* src = source.c_str();
+	glShaderSource(id, 1, &src, nullptr);
+	glCompileShader(id);
+
+	// Shader 错误处理
+	GLint result;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+	if (result == GL_FALSE) {
+		int length;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		// alloca 在栈上申请内存，不需要 free ，在作用域结束后自动释放
+		char* msg = (char*)alloca(length * sizeof(char));
+		glGetShaderInfoLog(id, length, &length, msg);
+		std::cout << "Sharder Compile " << (inType == GL_VERTEX_SHADER ? "vertex sharder" : "fragment sharder") << " Faild" << std::endl;
+		std::cout << msg << std::endl;
+		
+		glDeleteShader(id);
+		return GL_ZERO;
+	}
+
+	return id;
+}
+```
+
+一般来说会指定顶点着色器和片段着色器，所以统一封装一个函数用与创建一个程序并将两个着色器绑定到程序中
+
+1. `glCreateProgram` 创建一个程序对象
+2. `glAttachShader` 将编译好的着色器附加到程序对象上
+3. `glLinkProgram` 链接程序，将所有着色器合并为一个可执行的程序
+4. `glValidateProgram` 验证程序对象是否可以在当前的 OpenGL 状态下执行
+
+```cpp
+static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader) {
+	GLuint program = glCreateProgram();
+	GLuint vs = CompiledShader(vertexShader, GL_VERTEX_SHADER);
+	GLuint fs = CompiledShader(fragmentShader, GL_FRAGMENT_SHADER);
+
+	glAttachShader(program, vs);
+	glAttachShader(program, fs);
+	glLinkProgram(program);
+	glValidateProgram(program);
+
+	glDeleteShader(fs);
+	glDeleteShader(vs);
+
+	return program;
+}
+```
+
+`glDeleteShader` 表示删除着色器对象，在着色器附加到程序对象并链接之后被调用。这是因为一旦着色器被链接到程序对象，它们就不再需要了，删除它们可以释放资源。着色器的代码已经被链接到程序中，所以可以安全地删除着色器对象
+
+最后只需要调用代码即可创建着色器程序，并通过 `glUseProgram` 来使用它
+
+```cpp
+GLuint shader = CreateShaderWithFile("src/Vertex.vert", "src/Fragment.frag");
+glUseProgram(shader);
+```

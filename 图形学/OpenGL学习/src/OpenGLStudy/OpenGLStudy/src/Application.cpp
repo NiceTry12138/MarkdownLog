@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <fstream>
 
 const int gWidth = 640;
 const int gHeight = 480;
@@ -43,15 +44,38 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 	GLuint vs = CompiledShader(vertexShader, GL_VERTEX_SHADER);
 	GLuint fs = CompiledShader(fragmentShader, GL_FRAGMENT_SHADER);
 
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
-	glValidateProgram(program);
+	glAttachShader(program, vs);	// 绑定顶点着色器
+	glAttachShader(program, fs);	// 绑定片段着色器
+	glLinkProgram(program);			// 链接程序，将所有着色器合并为一个可执行的程序
+	glValidateProgram(program);		// 验证程序对象是否可以在当前的 OpenGL 状态下执行
 
-	glDeleteShader(fs);
+	glDeleteShader(fs);				// 删除着色器对象 因为一旦着色器被链接到程序对象，着色器的代码已经被链接到程序中，所以可以安全地删除着色器对象
 	glDeleteShader(vs);
 
 	return program;
+}
+
+static GLuint CreateShaderWithFile(const std::string& vertexShaderFilePath, const std::string& fragmentShaderFilePath) {
+	std::ifstream ifs;
+	ifs.open(vertexShaderFilePath, std::ios::in);
+	if (!ifs.is_open()) {
+		std::cout << "Compile Shader Faild: Can't Open File" << std::endl;
+		return GL_ZERO;
+	}
+
+	std::string vertextShaderSrouce((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	ifs.close();
+
+	ifs.open(fragmentShaderFilePath, std::ios::in);
+	if (!ifs.is_open()) {
+		std::cout << "Compile Shader Faild: Can't Open File" << std::endl;
+		return GL_ZERO;
+	}
+
+	std::string fragmentShaderSource((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	ifs.close();
+
+	return CreateShader(vertextShaderSrouce, fragmentShaderSource);
 }
 
 int main(void)
@@ -106,6 +130,9 @@ int main(void)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	GLuint shader = CreateShaderWithFile("src/Vertex.vert", "src/Fragment.frag");
+	glUseProgram(shader);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
