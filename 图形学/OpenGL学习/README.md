@@ -497,9 +497,39 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 
 `glDeleteShader` 表示删除着色器对象，在着色器附加到程序对象并链接之后被调用。这是因为一旦着色器被链接到程序对象，它们就不再需要了，删除它们可以释放资源。着色器的代码已经被链接到程序中，所以可以安全地删除着色器对象
 
-最后只需要调用代码即可创建着色器程序，并通过 `glUseProgram` 来使用它
+- 片段着色器，文件名 `Fragment.frag`
+
+```glsl
+#version 330 core
+
+layout(location = 0) out vec4 color;
+
+void main() {
+	color = vec4(1.0, 0.0, 0.0, 1.0);
+}
+```
+
+- 顶点着色器，文件名 `Vertex.vert`
+
+
+```glsl
+#version 330 core
+
+layout(location = 0) in vec4 position;
+
+void main() {
+	gl_Position = position;
+}
+```
+
+读取文件，最后只需要调用代码即可创建着色器程序，并通过 `glUseProgram` 来使用它
 
 ```cpp
 GLuint shader = CreateShaderWithFile("src/Vertex.vert", "src/Fragment.frag");
 glUseProgram(shader);
 ```
+
+![](Image/009.png)
+
+最后如片段着色器中所写 `color = vec4(1.0, 0.0, 0.0, 1.0)` 输出了红色
+
