@@ -3,6 +3,15 @@
 #include <iostream>
 #include <fstream>
 
+#define GL_CHECK_ERROR do { LogError(__LINE__); }while(0);
+#define GL_CLEAR_ERROR do { GLClearError(); } while(0);
+
+#define GL_CALL(x) do {			\
+	GLClearError();				\
+	x;							\
+	LogError(__LINE__, #x);		\
+} while (0);					\
+
 const int gWidth = 640;
 const int gHeight = 480;
 
@@ -12,6 +21,45 @@ void render() {
 	glVertex2f(0.0f, 0.5f);
 	glVertex2f(0.5f, -0.5f);
 	glEnd();
+}
+
+static void GLClearError() {
+	while (glGetError() != GL_NO_ERROR);
+}
+
+static void LogError(unsigned int Line, const char* functionName = nullptr) {
+	GLuint errorType = glGetError();
+	while (errorType != GL_NO_ERROR){
+		std::cout << __FILE__ << " Line: " << Line << " Function Name: " << functionName << " ";
+		switch (errorType)
+		{
+		case GL_INVALID_ENUM:
+			std::cout << "LogError: " << "GL_INVALID_ENUM" << std::endl;
+			break;
+		case GL_INVALID_VALUE:
+			std::cout << "LogError: " << "GL_INVALID_VALUE" << std::endl;
+			break;
+		case GL_INVALID_OPERATION:
+			std::cout << "LogError: " << "GL_INVALID_OPERATION" << std::endl;
+			break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+			std::cout << "LogError: " << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
+			break;
+		case GL_OUT_OF_MEMORY:
+			std::cout << "LogError: " << "GL_OUT_OF_MEMORY" << std::endl;
+			break;
+		case GL_STACK_UNDERFLOW:
+			std::cout << "LogError: " << "GL_STACK_UNDERFLOW" << std::endl;
+			break;
+		case GL_STACK_OVERFLOW:
+			std::cout << "LogError: " << "GL_STACK_OVERFLOW" << std::endl;
+			break;
+		}
+
+		__debugbreak();	// 中断函数 编译器强相关函数，gcc 没有
+
+		errorType = glGetError();
+	} 
 }
 
 static GLuint CompiledShader(const std::string& source, GLenum inType) {
@@ -103,33 +151,31 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-	float positions[6] = {
+	float positions[] = {
 		-0.5f, -0.5f,
-		 0.0f,  0.5f,
-		 0.5f, -0.5f
+		 0.5f, -0.5f,
+		 0.5f, 0.5f,
+		-0.5f,  0.5f,
+	};
+
+	GLuint indeices[] = {
+		0, 1, 2,
+		2, 3, 0
 	};
 
 	unsigned int buffer;
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-	float positions1[6] = {
-		-0.5f,  0.5f,
-		 0.0f, -0.5f,
-		 0.5f,  0.5f
-	};
-	unsigned int buffer1;
-	glGenBuffers(1, &buffer1);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer1);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions1, GL_STATIC_DRAW);
-
+	glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glEnableVertexAttribArray(0);
+
+	GLuint ibo;	// index buffer object
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), indeices, GL_STATIC_DRAW);
 
 	GLuint shader = CreateShaderWithFile("src/Vertex.vert", "src/Fragment.frag");
 	glUseProgram(shader);
@@ -142,15 +188,11 @@ int main(void)
 
 		//render();
 
-		glEnableVertexAttribArray(0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, buffer1);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		//GL_CLEAR_ERROR;
+		//glDrawElements(GL_TRIANGLES, 6, GL_INT, 0);
+		//GL_CHECK_ERROR; 
+		GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_INT, 0));
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);

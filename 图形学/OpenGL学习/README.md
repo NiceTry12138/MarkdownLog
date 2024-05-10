@@ -533,3 +533,218 @@ glUseProgram(shader);
 
 最后如片段着色器中所写 `color = vec4(1.0, 0.0, 0.0, 1.0)` 输出了红色
 
+### 索引缓冲区
+
+事实上**三角形**是图形渲染的基本元素
+
+1. 数学上的简单性：三角形是最简单的多边形，任意三个非共线的点都能确定一个平面上的三角形。这意味着三角形总是平面的，不会出现扭曲或弯曲，这在计算上非常重要
+2. 效率：三角形的边界与扫描线的相交非常容易计算，这使得基于扫描线的渲染算法更加高效
+3. 硬件优化：几乎所有的商用图形加速硬件都是为三角形光栅化而设计的。这种设计允许硬件更有效地处理三角形，从而提高渲染性能
+4. 灵活性：三角形可以组合成任何复杂的形状。通过增加三角形的数量，可以逼近任何曲面的形状，从而实现复杂模型的精确渲染
+5. 并行处理：三角形允许 GPU 在渲染过程中进行高度并行的处理。每个三角形可以独立地进行变换、光栅化和着色，这对于现代 GPU 的架构来说非常适合
+
+所以说当我们绘制一个正方形的时候，其实是绘制两个三角形
+
+```cpp
+float positions[] = {
+    -0.5f, -0.5f,
+    -0.5f,  0.5f,
+     0.5f, -0.5f,
+
+     0.5f,  0.5f,
+    -0.5f,  0.5f,
+     0.5f, -0.5f
+};
+
+unsigned int buffer;
+glGenBuffers(1, &buffer);
+glBindBuffer(GL_ARRAY_BUFFER, buffer);
+glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+glBindBuffer(GL_ARRAY_BUFFER, 0);
+glEnableVertexAttribArray(0);
+
+GLuint shader = CreateShaderWithFile("src/Vertex.vert", "src/Fragment.frag");
+glUseProgram(shader);
+
+while (!glfwWindowShouldClose(window))
+{
+    /* Render here */
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    /* Swap front and back buffers */
+    glfwSwapBuffers(window);
+
+    /* Poll for and process events */
+    glfwPollEvents();
+}
+```
+
+![](Image/010.png)
+
+如此我们就得到了一个红色的矩形，为什么是长方形而不是正方形是因为我们窗口大小是长方形的
+
+```cpp
+float positions[] = {
+    -0.5f, -0.5f,
+    -0.5f,  0.5f,
+     0.5f, -0.5f,
+
+     0.5f,  0.5f,
+    -0.5f,  0.5f,
+     0.5f, -0.5f
+};
+```
+
+观察数据，可以发现两个三角形存在两个重复的数据：点 `-0.5f,  0.5f` 和 `0.5f, -0.5f`，数据冗余了，纯在实在浪费内存
+
+在游戏中对于一个复杂模型，三角形数量成千上万，每个三角形都连接到另一个三角形，也就是意味着至少重复了两个顶点。那么对于复杂模型来说，重复顶点数量是巨大的
+
+在 `OpenGL` 中可以使用 **索引缓冲区** `index buffers` 来重用现有顶点
+
+索引缓冲区的主要作用是优化图形数据的存储和渲染过程。它允许重用顶点数据来绘制多个图元，而不需要在内存中重复相同的顶点信息。这样可以减少内存的使用，同时减少 `CPU` 到 `GPU` 的数据传输量，提高渲染效率
+
+```cpp
+float positions[] = {
+    -0.5f, -0.5f,
+     0.5f, -0.5f,
+     0.5f,  0.5f,
+    -0.5f,  0.5f,
+};
+```
+
+对于上面的数组来说，序号 0、1、2 三个点构成一个三角形，序号 2、3、0 构成另一个三角形
+
+| 三角形 | 三角形 |
+| --- | --- |
+| ![](Image/011.png) | ![](Image/012.png) |
+
+```cpp
+GLuint =
+```
+
+一般来说
+
+1. 创建索引缓冲区：首先，你需要使用 `glGenBuffers` 创建一个缓冲区对象
+2. 绑定索引缓冲区：然后，使用 `glBindBuffer` 将缓冲区对象绑定到 `GL_ELEMENT_ARRAY_BUFFER` 目标
+3. 填充索引缓冲区：使用 `glBufferData` 将索引数据传输到 GPU
+4. 绘制命令：最后，使用 `glDrawElements` 而不是 `glDrawArrays` 来绘制图元，指定索引缓冲区中的索引来引用顶点数据
+
+```cpp
+GLuint ibo;	// index buffer object
+glGenBuffers(1, &ibo);
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), indeices, GL_STATIC_DRAW);
+
+// something else
+while (!glfwWindowShouldClose(window))
+{
+    // something else 
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // something else
+}
+```
+
+### OpenGL 的错误信息
+
+```cpp
+void glDrawElements(GLenum mode,
+                    GLsizei count,
+                    GLenum type,
+                    const GLvoid * indices);
+```
+
+`glDrawElements` 中 `type` 参数用与表示数据类型，必须是 `GL_UNSIGNED_BYTE`， `GL_UNSIGNED_SHORT`、`GL_UNSIGNED_INT` 中的一个
+
+那么如果传递 `GL_INT` 会怎么样呢？
+
+![](Image/013.png)
+
+如上图所示，没有绘制红色长方形、没有报错信息、也没有崩溃
+
+那么问题来了，如果代码中出现了一些错误，如何找出是这些错误？
+
+使用 `glGetError` 函数，该函数会返回一个 `GLenum` 值用与表示错误类型，这意味着在每次调用 `OpenGL` 函数之后都要通过 `while` 调用 `glGetError` 的方式获取到所有错误（因为 `glGetError` 每次调用只会返回一个错误信息），这样我们就可以得到之前调用函数的是否产生了错误
+
+```cpp
+#define GL_CHECK_ERROR do { LogError(__LINE__); }while(0);
+#define GL_CLEAR_ERROR do { GLClearError(); } while(0);
+
+#define GL_CALL(x) do {			\
+	GLClearError();				\
+	x;							\
+	LogError(__LINE__, #x);		\
+} while (0);		
+
+static void GLClearError() {
+    while(glGetError() != GL_NO_ERROR);
+}
+
+static void LogError(unsigned int Line, const char* functionName = nullptr) {
+	GLuint errorType = glGetError();
+	while (errorType != GL_NO_ERROR){
+		std::cout << __FILE__ << " Line: " << Line << " Function Name: " << functionName << " ";
+		switch (errorType)
+		{
+		case GL_INVALID_ENUM:
+			std::cout << "LogError: " << "GL_INVALID_ENUM" << std::endl;
+			break;
+		case GL_INVALID_VALUE:
+			std::cout << "LogError: " << "GL_INVALID_VALUE" << std::endl;
+			break;
+		case GL_INVALID_OPERATION:
+			std::cout << "LogError: " << "GL_INVALID_OPERATION" << std::endl;
+			break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+			std::cout << "LogError: " << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
+			break;
+		case GL_OUT_OF_MEMORY:
+			std::cout << "LogError: " << "GL_OUT_OF_MEMORY" << std::endl;
+			break;
+		case GL_STACK_UNDERFLOW:
+			std::cout << "LogError: " << "GL_STACK_UNDERFLOW" << std::endl;
+			break;
+		case GL_STACK_OVERFLOW:
+			std::cout << "LogError: " << "GL_STACK_OVERFLOW" << std::endl;
+			break;
+		}
+
+		__debugbreak();	// 中断函数 编译器强相关函数，gcc 没有
+
+		errorType = glGetError();
+	} 
+}
+
+// SOMETHING ELSE 
+    // GLClearError(); // 清除所有错误 避免影响后续的错误判断
+    // glDrawElements(GL_TRIANGLES, 6, GL_INT, 0);
+	// GL_CHECK_ERROR;
+	GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_INT, 0));
+// SOMETHING ELSE
+```
+
+![](iMAGE/014.png)
+
+配合宏定义成功将错误原因、文件、行数、调用函数全部输出出来，帮助快速定位。同时宏定义也可以让我们写更少的侵入式代码
+
+```cpp
+GLClearError(); // 清除所有错误 避免影响后续的错误判断
+glDrawElements(GL_TRIANGLES, 6, GL_INT, 0);
+LogError(__LINE__, "glDrawElements");
+```
+
+如果不用宏，那么我们就要在所有调用 OpenGL 函数的地方像上面一样在上下加上 `GLClearError` 和 `LogError` 函数
+
+在 `OpenGL` **4.3** 中新出了一个函数 `glDebugMessageCallback`
+
+![](Image/015.png)
+
+这个函数允许指定一个指向 OpenGL 的函数指针，当发生错误的时候，OpenGL 会调用这个回调函数
+
+这样做的好处就是不用像 `glGetError` 一样不断的 `OpenGL` 程序中调用，不停的检查错误。而是可以在错误发生使主动上报，并且会提供更详细的错误信息，不会像 `glGetError` 一样只是提供一个错误类型
+
