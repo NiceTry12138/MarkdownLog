@@ -144,6 +144,7 @@ int main(void)
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 
 	if (GLEW_OK != glewInit()) {
 		std::cout << "Error: glewInit Faild" << std::endl;
@@ -180,19 +181,31 @@ int main(void)
 	GLuint shader = CreateShaderWithFile("src/Vertex.vert", "src/Fragment.frag");
 	glUseProgram(shader);
 
+	GLint location = -1;
+	GL_CALL(location = glGetUniformLocation(shader, "u_Color"));
+	GL_CALL(glUniform4f(location, 1, 1, 0, 0));
+
+	GLfloat r = 0.0f;
+	GLfloat increment = 0.05f;
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
 		/* Render here */
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);  
 
 		//render();
+		r += increment;
+		GL_CALL(glUniform4f(location, r, .5f, .5f, 1.0f));
+
+		if (r > 1.0f || r < 0.0f) {
+			increment *= -1;
+		}
 
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		//GL_CLEAR_ERROR;
-		//glDrawElements(GL_TRIANGLES, 6, GL_INT, 0);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNIFORM, 0);
 		//GL_CHECK_ERROR; 
-		GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_INT, 0));
+		GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);

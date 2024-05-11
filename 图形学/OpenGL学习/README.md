@@ -366,7 +366,7 @@ void glVertexAttribPointer(	GLuint index,
 
 通过上面传入的数据，就可以完全遍历一块内存了。我们知道区域的数据类型，但是 `OpenGL` 不知道，所以这个函数就是告诉 `OpenGL` 如何解析一块内存区域
 
-### 着色器
+## 着色器
 
 前面的代码只是提供了顶点坐标，并没有提供颜色，为什么会绘制出白色的三角形呢？
 
@@ -408,18 +408,19 @@ void glVertexAttribPointer(	GLuint index,
    - 描述顶点的属性，如位置、纹理坐标、颜色等
    - 将3D空间中的顶点坐标变换为屏幕上的2D坐标
    - 无法生成新的顶点，但输出传递到流水线的下一步
-2. 像素着色器（Pixel Shader）
-   - 也称为片段着色器，用于计算像素的颜色和其他属性
-   - 处理单独的像素，通常指单独的屏幕像素
-   - 可以实现光照、凹凸贴图、阴影、半透明等效果
+2. 曲面细分着色器（Tessellation Shader）
+   - 分为 **曲面控制着色器** 和 **曲面求值着色器** 两个阶段
+   - 引入于OpenGL 4.0和Direct3D 11
+   - 可以将简单网格细分为更复杂的网格，根据特定函数计算
+   - 可以根据视点距离等变量动态调整细节层次
 3. 几何着色器（Geometry Shader）
    - 可以生成新的图形基元，如点、线和三角形
    - 可以在图形处理器内修改场景中的几何结构
    - 用于增加模型细节和执行对CPU来说过于繁重的几何操作
-4. 曲面细分着色器（Tessellation Shader）
-   - 引入于OpenGL 4.0和Direct3D 11
-   - 可以将简单网格细分为更复杂的网格，根据特定函数计算
-   - 可以根据视点距离等变量动态调整细节层次
+4. 像素着色器（Pixel Shader）
+   - 也称为片段着色器，用于计算像素的颜色和其他属性
+   - 处理单独的像素，通常指单独的屏幕像素
+   - 可以实现光照、凹凸贴图、阴影、半透明等效果
 
 ![](Image/008.png)
 
@@ -533,7 +534,7 @@ glUseProgram(shader);
 
 最后如片段着色器中所写 `color = vec4(1.0, 0.0, 0.0, 1.0)` 输出了红色
 
-### 索引缓冲区
+## 索引缓冲区
 
 事实上**三角形**是图形渲染的基本元素
 
@@ -650,7 +651,7 @@ while (!glfwWindowShouldClose(window))
 }
 ```
 
-### OpenGL 的错误信息
+## OpenGL 的错误信息
 
 ```cpp
 void glDrawElements(GLenum mode,
@@ -728,7 +729,7 @@ static void LogError(unsigned int Line, const char* functionName = nullptr) {
 // SOMETHING ELSE
 ```
 
-![](iMAGE/014.png)
+![](Image/014.png)
 
 配合宏定义成功将错误原因、文件、行数、调用函数全部输出出来，帮助快速定位。同时宏定义也可以让我们写更少的侵入式代码
 
@@ -747,4 +748,109 @@ LogError(__LINE__, "glDrawElements");
 这个函数允许指定一个指向 OpenGL 的函数指针，当发生错误的时候，OpenGL 会调用这个回调函数
 
 这样做的好处就是不用像 `glGetError` 一样不断的 `OpenGL` 程序中调用，不停的检查错误。而是可以在错误发生使主动上报，并且会提供更详细的错误信息，不会像 `glGetError` 一样只是提供一个错误类型
+
+## Uniforms
+
+在OpenGL中，`uniforms` 是一种特殊类型的变量，用于在应用程序和着色器（如顶点着色器或片段着色器）之间传递数据。`Uniforms` 对于所有的着色器调用都保持不变，即它们在渲染过程的一次绘制调用中是全局常量。这使得它们非常适合用于传递诸如变换矩阵、材质属性、光照参数或任何其他不会在单个渲染调用中改变的数据。
+
+- Uniforms 的主要特点和用途：
+  - 全局常量：`Uniforms` 在着色器执行过程中不会改变，对所有处理的顶点和片段都是相同的
+  - 从CPU到GPU：`Uniforms` 通常在应用程序（CPU）中设置，并传输到着色器（GPU）中。这种机制提供了一个高效的方式来传递少量重要的数据到着色器
+  - 类型灵活：`Uniforms` 可以是浮点数、向量、矩阵或采样器等类型
+  - 易于使用：在 `GLSL`（`OpenGL Shading Language`）中，`uniforms` 通过在着色器代码中声明 `uniform` 类型的变量来使用
+
+根据之前写的着色器代码
+
+```cpp
+#version 330 core
+
+layout(location = 0) out vec4 color;
+
+void main() {
+	color = vec4(1.0, 0.0, 0.0, 1.0);
+}
+```
+
+着色器指定了颜色为红色，如果通过配置计算得到的一个应该如何设置到着色器中呢？
+
+首先自然是声明 `uniform vec4 u_Color` 属性用与赋值
+
+```cpp
+#version 330 core
+
+layout(location = 0) out vec4 color;
+
+uniform vec4 u_Color;
+
+void main() {
+	color = u_Color;
+}
+```
+然后使用 `glUniform4f` 对 `u_Color` 进行赋值，但是 `glUniform4f` 需要获得 `uniform` 属性的 `location`，于是通过 `glGetUniformLocation` 函数可以通过属性的名称获得其 `location` 
+
+```cpp
+GLuint shader = CreateShaderWithFile("src/Vertex.vert", "src/Fragment.frag");
+glUseProgram(shader);
+
+GLint location = -1;
+GL_CALL(location = glGetUniformLocation(shader, "u_Color"));
+GL_CALL(glUniform4f(location, 1, 1, 0, 0));
+```
+
+通过上面操作可以得到一个外界指定颜色的着色器
+
+对应了可以做一些动态效果，比如动态的修改颜色
+
+```cpp
+glfwSwapInterval(1);
+
+GLfloat r = 0.0f;
+GLfloat increment = 0.05f;
+while (!glfwWindowShouldClose(window))
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    r += increment;
+    GL_CALL(glUniform4f(location, r, .5f, .5f, 1.0f));
+
+    if (r > 1.0f || r < 0.0f) {
+        increment *= -1;
+    }
+
+    GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+
+    glfwSwapBuffers(window);
+
+    glfwPollEvents();
+}
+```
+
+这里使用了 `glfwSwapInterval` 函数，用与设置双缓冲的交换间隔，也称为垂直同步（`Vertical Synchronization`，简称 `V-Sync`）。这个函数的主要作用是控制缓冲区交换的速率，以同步到显示器的垂直刷新率。这是在使用双缓冲渲染策略时用来防止画面撕裂的一种常用技术
+
+如果 `interval` 为 1，则启用 `V-Sync`，确保每次缓冲区交换都在显示器完成一个垂直刷新周期后进行，这通常用于将渲染帧率锁定在显示器的刷新率
+
+如果设置为 0，则关闭 `V-Sync`，允许交换操作尽可能快地进行，不等待垂直刷新。这可能导致较高的帧率，但也可能出现画面撕裂
+
+对于高于 1 的值，它指示交换操作应该等待多个垂直刷新周期，这在某些特殊情况下可能有用
+
+> 可以分别测试设置 `glfwSwapInterval` 为 0 或者 1 时画面表现
+
+**游戏帧率**、**渲染帧率**和**显示器帧率**是密切相关却又有所不同的概念，它们共同影响着游戏和应用程序的视觉体验
+
+1. 游戏帧率（`Game Frame Rate`）
+游戏帧率通常指的是游戏逻辑更新的频率。这包括物理计算、用户输入处理、游戏状态更新等。游戏帧率的单位是 FPS（Frames Per Second，每秒帧数），它表示游戏逻辑每秒可以更新多少次。在许多游戏中，尤其是需要快速响应的游戏（如第一人称射击游戏），高游戏帧率是必要的，以保证流畅的游戏体验和精准的输入响应
+
+2. 渲染帧率（`Rendering Frame Rate`）
+渲染帧率是指图形引擎渲染图像的速率。这包括场景渲染、光影处理、粒子效果等图形输出的处理。渲染帧率同样以 FPS 表示，它指的是每秒内能够生成多少帧图像。渲染帧率受到GPU性能的影响较大，当场景复杂或图形设置较高时，渲染帧率可能会下降，导致画面卡顿
+
+3. 显示器帧率（`Monitor Frame Rate`）
+显示器帧率，通常称为刷新率，是指显示器每秒能够刷新多少次的能力。这个频率是固定的，常见的刷新率有60Hz、144Hz、240Hz等。显示器帧率决定了最高的视觉输出频率，即无论GPU渲染得多快，显示器只能按其固定的刷新率来更新图像
+
+它们之间的关系：
+
+- 同步问题：当渲染帧率和显示器帧率不匹配时，可能会出现画面撕裂现象。例如，如果GPU渲染速度快于显示器的刷新速度，一个显示周期中可能会显示两个不同帧的图像的部分，导致画面上下不一致。使用垂直同步（V-Sync）可以解决这个问题，它通过限制GPU输出以匹配显示器的刷新率来同步图像
+
+- 性能限制：如果GPU不能足够快地渲染图像以匹配显示器的刷新率，用户将体验到卡顿，即使显示器的刷新率很高。反之，如果GPU渲染非常快，超出了显示器的刷新能力，超出的帧将不会显示，这可能导致资源的浪费
+
+- 理想情况：理想的情况是游戏帧率、渲染帧率和显示器帧率三者之间保持同步。这意味着游戏逻辑顺畅运行，渲染帧率足够支持流畅的视觉输出，且显示器能够及时更新每一帧图像
 
