@@ -134,6 +134,10 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);					// 设置 OpenGL 主版本为 3
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);					// 设置 OpenGL 主版本为 3
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);	// 设置 OpenGL 为 核心
+
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(gWidth, gHeight, "Hello World", NULL, NULL);
 	if (!window)
@@ -152,6 +156,10 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
 	float positions[] = {
 		-0.5f, -0.5f,
 		 0.5f, -0.5f,
@@ -168,10 +176,11 @@ int main(void)
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
+	GL_CALL(glEnableVertexAttribArray(0));
+	GL_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glEnableVertexAttribArray(0);
 
 	GLuint ibo;	// index buffer object
 	glGenBuffers(1, &ibo);
@@ -185,6 +194,13 @@ int main(void)
 	GL_CALL(location = glGetUniformLocation(shader, "u_Color"));
 	GL_CALL(glUniform4f(location, 1, 1, 0, 0));
 
+	// 清除所有绑定关系
+	glBindVertexArray(0);
+	glUseProgram(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
+
 	GLfloat r = 0.0f;
 	GLfloat increment = 0.05f;
 	/* Loop until the user closes the window */
@@ -194,17 +210,23 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT);  
 
 		//render();
+
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		//GL_CLEAR_ERROR;
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNIFORM, 0);
+		//GL_CHECK_ERROR; 
+
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
 		r += increment;
+		GL_CALL(glUseProgram(shader));
 		GL_CALL(glUniform4f(location, r, .5f, .5f, 1.0f));
 
 		if (r > 1.0f || r < 0.0f) {
 			increment *= -1;
 		}
 
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		//GL_CLEAR_ERROR;
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNIFORM, 0);
-		//GL_CHECK_ERROR; 
 		GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
 
 		/* Swap front and back buffers */

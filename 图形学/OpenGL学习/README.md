@@ -281,8 +281,6 @@ while (!glfwWindowShouldClose(window))
 
 ## 顶点缓冲
 
-### 顶点
-
 顶点缓冲区本质上还是一个**缓冲区**，是一个内存缓冲区，也就是一个数组。也就是定义一组数据来表示三角形，并且将其放到 `GPU` 的 `VRAM` 中，在绘制时 告诉 `GPU` 如何从 `VRAM` 读取并且解释数据信息，以及如何绘制到屏幕上
 
 **顶点** 并不代表坐标，坐标信息只是顶点的一部分，除此之外顶点还可以有其他信息，比如：颜色、法线、纹理等。所以顶点指的是一整个构成顶点的数据集合
@@ -854,3 +852,75 @@ while (!glfwWindowShouldClose(window))
 
 - 理想情况：理想的情况是游戏帧率、渲染帧率和显示器帧率三者之间保持同步。这意味着游戏逻辑顺畅运行，渲染帧率足够支持流畅的视觉输出，且显示器能够及时更新每一帧图像
 
+## 顶点数组
+
+**顶点缓冲**（`Vertex Buffer Objects`, VBOs）和**顶点数组**（`Vertex Array Objects`, VAOs）是用于高效管理和渲染顶点数据的关键技术。它们通常一起使用以优化图形渲染流程，但它们的功能和角色是不同的
+
+> 后面大多数情况会用 `VAO` 表示**顶点数组对象，**用 `VBO` 表示**顶点缓冲对象**
+
+| | 顶点缓冲 | 顶点数组 |
+| --- | --- | --- |
+| 解释 | 顶点缓冲对象是一种用于存储顶点数据的GPU内存缓冲区。这些数据包括顶点的位置、颜色、法线、纹理坐标等。使用VBO的优点是可以将数据存储在GPU内存中，这样在渲染过程中可以快速访问，提高渲染效率 | 顶点数组对象是一个可以保存一组顶点缓冲状态（即VBOs的状态）的对象。VAO存储了顶点数据的格式和源信息，这包括数据如何从缓冲区解读、每个顶点属性的数据类型及位置等 |
+| 功能 | 存储顶点数据（如位置、颜色、纹理坐标等）。将数据从CPU传输到GPU，减少每次绘制调用时的数据传输开销 | 记录顶点属性配置的状态（例如哪个VBO被使用，数据如何解析）。简化绘图命令，通过绑定一个VAO即可自动设置所有顶点属性指针 |
+
+- 在不使用 `VAO` 的情况下，每次渲染前都需要手动指定如何解释 `VBO` 中的顶点数据（通过`glVertexAttribPointer` 等函数）。使用 `VAO` 后，这些配置只需设置一次，之后通过绑定相应的VAO即可自动应用所有配置
+
+- `VBO` 和 `VAO` 的结合使用可以显著提高渲染效率。`VBO` 为顶点数据提供高效的存储和访问，而 `VAO` 存储如何使用这些顶点数据的信息。当执行绘制命令时，只需绑定必要的 `VAO`，`OpenGL` 便知道如何从当前绑定的 `VBO`中获取和使用数据
+
+- 使用 `VAO` 可以使 `OpenGL` 调用代码更加整洁和模块化。设置顶点属性的代码可以集中管理，减少重复和错误
+
+如果只是使用 `VBO` 想要绘制多个三角形，那么每绘制一个三角形就需要将数据**重新绑定**数据到 `GL_ARRAY_BUFFER` 对象上，然后再通过 `glVertexAttribPointer` 来解释这块内存的解析方式，每个三角形都要这么做
+
+这时就需要**顶点数组**，`VAO` 是一个可以保存一组顶点缓冲状态的对象。这种状态包括了如何解释从 `VBO` 读取的数据。`VAO`保存的是关于顶点属性的配置信息
+
+- 哪个VBO包含了所需的顶点数据
+- 数据如何从这个VBO中获取（例如，跳过起始的多少字节、每个顶点数据的步长是多少）
+- 数据的类型（例如，GL_FLOAT）
+- 数据应如何被顶点着色器接收（例如，位置数据应该链接到顶点着色器中的哪个属性）
+
+之前的流程是，绑定顶点缓冲区，设置布局，绑定索引缓冲区。现在是，绑定顶点数组，绑定索引缓冲区
+
+其实之前的代码中即使没有使用 `VAO`， `OpenGL` 兼容版仍然创建了 `VAO object 0` 为默认对象，如果将 `OpenGL` 设置为核心版就不一样了
+
+```cpp
+// 设置 OpenGL 为 3.3 版，并且使用核心配置
+glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+// DO SOMETHING
+
+float positions[] = {
+    -0.5f, -0.5f,
+        0.5f, -0.5f,
+        0.5f, 0.5f,
+    -0.5f,  0.5f,
+};
+
+GLuint indeices[] = {
+    0, 1, 2,
+    2, 3, 0
+};
+
+unsigned int buffer;
+glGenBuffers(1, &buffer);
+glBindBuffer(GL_ARRAY_BUFFER, buffer);
+glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+
+GL_CALL(glEnableVertexAttribArray(0));
+GL_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+```
+
+与之前一样的代码，但是在 `glEnableVertexAttribArray` 却发生了报错
+
+此时只要在创建 `VBO` 之前，创建并绑定 `VAO` 即可
+
+```cpp
+GLuint vao;
+glGenVertexArrays(1, &vao);
+glBindVertexArray(vao);
+```
+
+可以选择使用默认的 VAO 对象，不停的绑定、解绑不同的顶点数据，以此来绘制多个几何图形
+
+也可以选择为每个几何图形
