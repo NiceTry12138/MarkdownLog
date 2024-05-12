@@ -5,6 +5,8 @@ class VertexBufferLayout;
 
 class VertexArray
 {
+private:
+
 public:
 	VertexArray();
 	~VertexArray();
