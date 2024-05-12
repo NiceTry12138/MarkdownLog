@@ -923,4 +923,58 @@ glBindVertexArray(vao);
 
 可以选择使用默认的 VAO 对象，不停的绑定、解绑不同的顶点数据，以此来绘制多个几何图形
 
-也可以选择为每个几何图形
+也可以选择为每个几何图形创建一个 `VAO` 分别绑定不同的顶点数据
+
+如果需要注重开发效率，那么建议每个图元一个 `VAO`；如果每一字节的显存都需要非常小心使用，那么建议全局一个 `VAO`
+
+## 简单封装抽象类
+
+对于一个复杂的模型，会有一个顶点缓冲区，包括模型的每个顶点；可能会有多个索引缓冲区来绘制飞船的部分，因为不同部分可能会是不同材质，比如飞船的舱门可能是金属和玻璃两种材质
+
+```cpp
+// 顶点缓冲区
+class VertexBuffer
+{
+private:
+	GLuint m_RendererID;
+
+public:
+	VertexBuffer(const void* data, GLuint size) {
+    glGenBuffers(1, &m_RendererID);
+    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+  }
+	~VertexBuffer();
+
+	void Bind() const;
+	void UnBind() const;
+};
+
+
+// 索引缓冲区
+class IndexBuffer
+{
+private:
+	GLuint m_RendererID;
+	GLuint m_Count;
+
+public:
+	IndexBuffer(const GLuint* data, GLuint count) {
+    GL_CALL(glGenBuffers(1, &m_RendererID));
+    GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID));
+    GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, GL_STATIC_DRAW));
+    m_Count = count;
+  }
+	~IndexBuffer();
+
+	void Bind() const;
+	void Unbind() const;
+
+	inline GLuint GetCount() const { return m_Count; }
+};
+```
+
+然后替换掉 `Application.cpp` 中对应的部分，就算初步完成了顶点、索引缓冲区的抽象
+
+接下来就是抽象顶点数组 `VAO` ，一个顶点数组需要做的就是将一个顶点缓冲区与某种布局绑定在一起
+
