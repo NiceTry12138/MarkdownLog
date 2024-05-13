@@ -978,3 +978,93 @@ public:
 
 接下来就是抽象顶点数组 `VAO` ，一个顶点数组需要做的就是将一个顶点缓冲区与某种布局绑定在一起
 
+因为一个 `VertexBuffer` 的 `data` 数组中的一个元素可能存在多种布局 （比如 `RGBA` 是 4 个 `unsigned int`、 `Position` 是 3 个 `float`），所以需要一个布局数组来表示这个关系
+
+```cpp
+struct VertexBufferElement
+{
+	unsigned int type;
+	unsigned int count;
+	unsigned int normalized;
+};
+
+typedef std::vector<VertexBufferElement> VBElemnts;
+
+class VertexBufferLayout
+{
+private:
+	VBElemnts m_Elements;
+	GLuint m_Stride{ 0 };
+
+public:
+
+	template<typename T>
+	void Push(unsigned int count) {
+		//static_assert(false);
+	}
+
+	template<>
+	void Push<GLfloat>(unsigned int count) {
+		m_Elements.push_back({ GL_FLOAT, count, GL_FALSE });
+		m_Stride += sizeof(GLfloat);
+	}
+
+	template<>
+	void Push<GLuint>(unsigned int count) {
+		m_Elements.push_back({ GL_UNSIGNED_INT, count, GL_FALSE });
+		m_Stride += sizeof(GLuint);
+	}
+
+	template<>
+	void Push<GLubyte>(unsigned int count) {
+		m_Elements.push_back({ GL_UNSIGNED_BYTE, count, GL_FALSE });
+		m_Stride += sizeof(GLubyte);
+	}
+
+	inline const VBElemnts GetElements() const { return m_Elements; }
+
+	inline GLuint GetStride() const { return m_Stride; }
+};
+```
+
+使用 `VertexBufferElement` 来表示一个布局。如果表示 `RGBA` 的话，那么 `type` 就是 `GL_UNSIGNED_CHAR`, `count` 就是 4， `normalized` 可以是 `GL_FALSE`；如果表示 `Position2D` 的话，那么 `type` 就是 `GL_FLOAT`，`count` 就是 2，`normalized` 就是 `GL_FALSE`
+
+总之，使用 `VertexBufferElement` 可以表示一种数据布局
+
+使用 `VertexBufferLayout` 来维护一个 `VertexBufferElement` 数组。如前面所说，一个顶点可以有多种数据，包括颜色、坐标、法线等，那么就需要多个 `VertexBufferElement` 来表示这些数据，所以一个顶点布局 `VertexBufferLayout` 本质就是维护 `VertexBufferElement` 数组
+
+![](Image/016.png)
+
+大致如上图所示， `data` 是一块内存区域，如何解析这块区域就得靠布局来解释，假设地址的起始指针为 `data`
+
+| 元素 | 起始地址 |
+| --- | --- |
+| vertex[0].RGBA | data |
+| vertex[0].Vec2 | data + sizeof(RGBA) |
+| vertex[1].RGBA | data + sizeof(Vertex) |
+| vertex[1].Vec2 | data + sizeof(Vertex) + sizeof(RGBA) |
+
+假设 RGBA 是 4 个 `unsigned char` 组成，那么 `sizeof(RGBA)` 大小就是 `4 * sizeof(unsigned char)`，这个大小就是 `offset` 地址偏移
+
+所以之前一直说，知道了**布局**、**起始地址**、**数组长度**就知道了怎么遍历这个 `Vertex` 数组
+
+那么在 `VertexArray` 中要做的就是将其对应的 `VertexBuffer` 通过 `VertexBufferLayout` 进行解释说明
+
+```cpp
+void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout)
+{
+	Bind();
+	vb.Bind();
+
+	const auto& elements = layout.GetElements();
+	unsigned int offset = 0;
+
+	for (unsigned int index = 0; index < elements.size(); ++index) {
+		const auto& element = elements[index];
+		GL_CALL(glEnableVertexAttribArray(0));
+		GL_CALL(glVertexAttribPointer(index, element.count, element.type, element.normalized, layout.GetStride(), (const void*)offset));
+		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
+	}
+}
+```
+

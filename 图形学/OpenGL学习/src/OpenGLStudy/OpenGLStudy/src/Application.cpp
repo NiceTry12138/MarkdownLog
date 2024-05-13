@@ -6,6 +6,8 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "VertexBufferLayout.h"
 
 static GLuint CompiledShader(const std::string& source, GLenum inType) {
 	GLuint id = glCreateShader(inType);
@@ -101,9 +103,6 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
 	{
 		float positions[] = {
 			-0.5f, -0.5f,
@@ -117,10 +116,14 @@ int main(void)
 			2, 3, 0
 		};
 
+		VertexArray va;
+
 		VertexBuffer vb(positions, sizeof(float) * 2 * 4);
 
-		GL_CALL(glEnableVertexAttribArray(0));
-		GL_CALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+		VertexBufferLayout layout;
+		layout.Push<float>(2);
+
+		va.AddBuffer(vb, layout);
 
 		IndexBuffer ibo(indeices, 6);
 
@@ -151,7 +154,7 @@ int main(void)
 			//glDrawElements(GL_TRIANGLES, 6, GL_UNIFORM, 0);
 			//GL_CHECK_ERROR; 
 
-			glBindVertexArray(vao);
+			va.Bind();
 			ibo.Bind();
 
 			r += increment;
