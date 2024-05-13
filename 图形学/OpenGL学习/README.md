@@ -929,6 +929,8 @@ glBindVertexArray(vao);
 
 ## 简单封装抽象类
 
+### 抽象顶点缓冲和索引缓冲
+
 对于一个复杂的模型，会有一个顶点缓冲区，包括模型的每个顶点；可能会有多个索引缓冲区来绘制飞船的部分，因为不同部分可能会是不同材质，比如飞船的舱门可能是金属和玻璃两种材质
 
 ```cpp
@@ -975,6 +977,8 @@ public:
 ```
 
 然后替换掉 `Application.cpp` 中对应的部分，就算初步完成了顶点、索引缓冲区的抽象
+
+### 抽象顶点数组
 
 接下来就是抽象顶点数组 `VAO` ，一个顶点数组需要做的就是将一个顶点缓冲区与某种布局绑定在一起
 
@@ -1069,3 +1073,46 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 ```
 
 > offset 就是一个属性 (例：RGBA) 的大小，通过 offset 计算属性的地址偏移
+
+### 抽象 Shader
+
+抽象 Shader 目前只用做三件事情：
+
+1. 提供文件路径或者源码，将其编译成着色器
+2. 绑定和解绑着色器
+3. 为着色器设置所有不同的 `uniform`
+
+其实就是把之前写过的 `CreateShaderWithFile` 等一系列函数封装到同一个类中
+
+```cpp
+class Shader
+{
+private:
+	std::string m_VertexFilePath;
+	std::string m_FragmentFilePath;
+	GLuint m_ShaderId;
+
+	// 缓存 uniform 的 Location
+	std::unordered_map<std::string, GLint> m_Locations;
+
+public:
+	Shader(const std::string& vertexFile, const std::string& fragmentFile);
+	~Shader();
+
+	void Bind() const;
+	void Unbind() const;
+
+	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
+
+private:
+	GLuint GetUniformLocation(const std::string& name);
+	GLuint CreateShaderWithFile();
+	GLuint CreateShader(const std::string& vertexSource, const std::string& fragmentSource);
+	GLuint CompileShader(const std::string& source, GLenum inType);
+};
+```
+
+这里使用 `m_Locations` 来缓存 `uniform` 的 `Location`，防止重复寻找
+
+> 后续可以扩展 `SetUniform` 一系列函数，比如 `1f`、`2f`、`3f` 等
+
