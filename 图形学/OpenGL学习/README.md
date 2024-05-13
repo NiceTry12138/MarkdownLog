@@ -1068,3 +1068,4 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 }
 ```
 
+> offset 就是一个属性 (例：RGBA) 的大小，通过 offset 计算属性的地址偏移
