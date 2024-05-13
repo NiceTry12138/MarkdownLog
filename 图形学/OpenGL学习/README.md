@@ -1116,3 +1116,7 @@ private:
 
 > 后续可以扩展 `SetUniform` 一系列函数，比如 `1f`、`2f`、`3f` 等
 
+### 简单封装渲染器
+
+什么时候清理调用 `glClear`、`glDrawElements` 等函数，这些其实都是渲染器来处理的
+

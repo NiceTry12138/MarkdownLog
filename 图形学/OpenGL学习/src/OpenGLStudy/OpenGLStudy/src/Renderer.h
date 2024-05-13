@@ -1,20 +1,15 @@
 #pragma once
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
-#define GL_CHECK_ERROR do { LogError(__LINE__); }while(0);
-#define GL_CLEAR_ERROR do { GLClearError(); } while(0);
+class VertexArray;
+class IndexBuffer;
+class Shader;
 
-#define GL_CALL(x) do {			\
-	GLClearError();				\
-	x;							\
-	LogError(__LINE__, #x);		\
-} while (0);					\
+class Renderer
+{
+public:
+	void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+	void Clear() const;
+private:
 
-const int gWidth = 640;
-const int gHeight = 480;
+};
 
-// 清除所有错误
-void GLClearError();
-// 输出当前错误
-void LogError(unsigned int Line, const char* functionName = nullptr);

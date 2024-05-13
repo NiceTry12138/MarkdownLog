@@ -3,12 +3,13 @@
 #include <iostream>
 #include <fstream>
 
-#include "Renderer.h"
+#include "Util.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Shader.h"
+#include "Renderer.h"
 
 int main(void)
 {
@@ -72,13 +73,16 @@ int main(void)
 		vb.UnBind();
 		ibo.Unbind();
 
+		Renderer render;
+
 		GLfloat r = 0.0f;
 		GLfloat increment = 0.05f;
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
-			glClear(GL_COLOR_BUFFER_BIT);
+			//glClear(GL_COLOR_BUFFER_BIT);
+			render.Clear();
 
 			va.Bind();
 			ibo.Bind();
@@ -91,7 +95,8 @@ int main(void)
 				increment *= -1;
 			}
 
-			GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+			//GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+			render.Draw(va, ibo, shader);
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
