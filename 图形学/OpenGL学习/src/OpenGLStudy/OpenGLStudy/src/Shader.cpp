@@ -17,12 +17,12 @@ Shader::~Shader()
 
 void Shader::Bind() const
 {
-	glUseProgram(m_ShaderId);
+	GL_CALL(glUseProgram(m_ShaderId));
 }
 
 void Shader::Unbind() const
 {
-	glUseProgram(0);
+	GL_CALL(glUseProgram(0));
 }
 
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
@@ -49,7 +49,7 @@ GLint Shader::GetUniformLocation(const std::string& name)
 		std::cout << "Warning: uniform " << name << " doesn't exist" << std::endl;
 	}
 
-	m_Locations[name] = location;	// Èç¹ûÃ»ÕÒµ½ »áÒ»Ö±ÕÒ²»µ½ ËùÒÔ²»ÓÃ else ÅÐ¶Ï
+	m_Locations[name] = location;	// å¦‚æžœæ²¡æ‰¾åˆ° ä¼šä¸€ç›´æ‰¾ä¸åˆ° æ‰€ä»¥ä¸ç”¨ else åˆ¤æ–­
 	return location;
 }
 
@@ -82,13 +82,13 @@ GLuint Shader::CreateShader(const std::string& vertexSource, const std::string& 
 	GLuint vs = CompileShader(vertexSource, GL_VERTEX_SHADER);
 	GLuint fs = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
 
-	glAttachShader(program, vs);	// °ó¶¨¶¥µã×ÅÉ«Æ÷
-	glAttachShader(program, fs);	// °ó¶¨Æ¬¶Î×ÅÉ«Æ÷
-	glLinkProgram(program);			// Á´½Ó³ÌÐò£¬½«ËùÓÐ×ÅÉ«Æ÷ºÏ²¢ÎªÒ»¸ö¿ÉÖ´ÐÐµÄ³ÌÐò
-	glValidateProgram(program);		// ÑéÖ¤³ÌÐò¶ÔÏóÊÇ·ñ¿ÉÒÔÔÚµ±Ç°µÄ OpenGL ×´Ì¬ÏÂÖ´ÐÐ
+	GL_CALL(glAttachShader(program, vs));	// ç»‘å®šé¡¶ç‚¹ç€è‰²å™¨
+	GL_CALL(glAttachShader(program, fs));	// ç»‘å®šç‰‡æ®µç€è‰²å™¨
+	GL_CALL(glLinkProgram(program));			// é“¾æŽ¥ç¨‹åºï¼Œå°†æ‰€æœ‰ç€è‰²å™¨åˆå¹¶ä¸ºä¸€ä¸ªå¯æ‰§è¡Œçš„ç¨‹åº
+	GL_CALL(glValidateProgram(program));		// éªŒè¯ç¨‹åºå¯¹è±¡æ˜¯å¦å¯ä»¥åœ¨å½“å‰çš„ OpenGL çŠ¶æ€ä¸‹æ‰§è¡Œ
 
-	glDeleteShader(fs);				// É¾³ý×ÅÉ«Æ÷¶ÔÏó ÒòÎªÒ»µ©×ÅÉ«Æ÷±»Á´½Óµ½³ÌÐò¶ÔÏó£¬×ÅÉ«Æ÷µÄ´úÂëÒÑ¾­±»Á´½Óµ½³ÌÐòÖÐ£¬ËùÒÔ¿ÉÒÔ°²È«µØÉ¾³ý×ÅÉ«Æ÷¶ÔÏó
-	glDeleteShader(vs);
+	GL_CALL(glDeleteShader(fs));				// åˆ é™¤ç€è‰²å™¨å¯¹è±¡ å› ä¸ºä¸€æ—¦ç€è‰²å™¨è¢«é“¾æŽ¥åˆ°ç¨‹åºå¯¹è±¡ï¼Œç€è‰²å™¨çš„ä»£ç å·²ç»è¢«é“¾æŽ¥åˆ°ç¨‹åºä¸­ï¼Œæ‰€ä»¥å¯ä»¥å®‰å…¨åœ°åˆ é™¤ç€è‰²å™¨å¯¹è±¡
+	GL_CALL(glDeleteShader(vs));
 
 	return program;
 }
@@ -100,13 +100,13 @@ GLuint Shader::CompileShader(const std::string& source, GLenum inType)
 	glShaderSource(id, 1, &src, nullptr);
 	glCompileShader(id);
 
-	// Shader ´íÎó´¦Àí
+	// Shader é”™è¯¯å¤„ç†
 	GLint result;
 	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE) {
 		int length;
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-		// alloca ÔÚÕ»ÉÏÉêÇëÄÚ´æ£¬²»ÐèÒª free £¬ÔÚ×÷ÓÃÓò½áÊøºó×Ô¶¯ÊÍ·Å
+		// alloca åœ¨æ ˆä¸Šç”³è¯·å†…å­˜ï¼Œä¸éœ€è¦ free ï¼Œåœ¨ä½œç”¨åŸŸç»“æŸåŽè‡ªåŠ¨é‡Šæ”¾
 		char* msg = (char*)alloca(length * sizeof(char));
 		glGetShaderInfoLog(id, length, &length, msg);
 		std::cout << "Shader Compile " << (inType == GL_VERTEX_SHADER ? "vertex shader" : "fragment shader") << " Fail" << std::endl;

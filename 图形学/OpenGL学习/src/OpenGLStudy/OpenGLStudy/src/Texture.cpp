@@ -12,13 +12,13 @@ Texture::Texture(const std::string& filePath)
 	GL_CALL(glGenTextures(1, &m_RenderID));
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_RenderID));
 
-	// Ò»¶¨ÒªÉèÖÃµÄÎÆÀí ·ñÔòÖ»ÄÜµÃµ½ºÚÉ«ÎÆÀí
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));	// Ö¸¶¨ËõĞ¡Æ÷
-	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));	// Ö¸¶¨·Å´óÆ÷
+	// ä¸€å®šè¦è®¾ç½®çš„çº¹ç† å¦åˆ™åªèƒ½å¾—åˆ°é»‘è‰²çº¹ç†
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));	// æŒ‡å®šç¼©å°å™¨
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));	// æŒ‡å®šæ”¾å¤§å™¨
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-	// ´«µİÊı¾İ GL_RGBA8 ºóÃæ¼Ó8 ÓÃÓë±íÊ¾Ã¿¸öÍ¨µÀÕ¾¶àÉÙÎ»
+	// ä¼ é€’æ•°æ® GL_RGBA8 åé¢åŠ 8 ç”¨ä¸è¡¨ç¤ºæ¯ä¸ªé€šé“ç«™å¤šå°‘ä½
 	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
 
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
@@ -35,17 +35,17 @@ Texture::~Texture()
 		stbi_image_free(m_LocalBuffer);
 	}
 
-	glDeleteTextures(1, &m_RenderID);
+	GL_CALL(glDeleteTextures(1, &m_RenderID));
 }
 
 void Texture::Bind(unsigned int slot) const
 {
-	// ¼¤»î²å²Û ½«ÌùÍ¼°ó¶¨µ½¶ÔÓ¦²å²ÛÖĞ
-	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, m_RenderID);
+	// æ¿€æ´»æ’æ§½ å°†è´´å›¾ç»‘å®šåˆ°å¯¹åº”æ’æ§½ä¸­
+	GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_RenderID));
 }
 
 void Texture::Unbind() const
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }
