@@ -3,6 +3,8 @@
 #include "IndexBuffer.h"
 #include "VertexBufferLayout.h"
 
+#include <iostream>
+
 VertexArray::VertexArray()
 {
 	GL_CALL(glGenVertexArrays(1, &m_RendererId));

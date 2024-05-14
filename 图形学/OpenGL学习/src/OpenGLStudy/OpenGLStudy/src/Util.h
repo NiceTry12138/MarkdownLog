@@ -1,6 +1,7 @@
 #pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <string>
 
 #define GL_CHECK_ERROR do { LogError(__LINE__); }while(0);
 #define GL_CLEAR_ERROR do { GLClearError(); } while(0);

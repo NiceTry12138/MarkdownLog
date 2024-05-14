@@ -21,9 +21,10 @@ public:
 	void Unbind() const;
 
 	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
-
+	void SetUniform1i(const std::string& name, int v0);
+		
 private:
-	GLuint GetUniformLocation(const std::string& name);
+	GLint GetUniformLocation(const std::string& name);
 	GLuint CreateShaderWithFile();
 	GLuint CreateShader(const std::string& vertexSource, const std::string& fragmentSource);
 	GLuint CompileShader(const std::string& source, GLenum inType);

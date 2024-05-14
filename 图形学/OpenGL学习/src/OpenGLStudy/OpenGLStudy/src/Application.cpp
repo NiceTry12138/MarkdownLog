@@ -10,6 +10,7 @@
 #include "VertexBufferLayout.h"
 #include "Shader.h"
 #include "Renderer.h"
+#include "Texture.h"
 
 int main(void)
 {
@@ -43,10 +44,10 @@ int main(void)
 
 	{
 		float positions[] = {
-			-0.5f, -0.5f,
-			 0.5f, -0.5f,
-			 0.5f, 0.5f,
-			-0.5f,  0.5f,
+			-0.5f, -0.5f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 1.0f,
 		};
 
 		GLuint indeices[] = {
@@ -56,22 +57,28 @@ int main(void)
 
 		VertexArray va;
 
-		VertexBuffer vb(positions, sizeof(float) * 2 * 4);
+		VertexBuffer vb(positions, sizeof(float) * 4 * 4);
 
 		VertexBufferLayout layout;
-		layout.Push<float>(2);
+		layout.Push<float>(2);	// 前两个是 顶点
+		layout.Push<float>(2);	// 后两个是 UV 坐标
 
 		va.AddBuffer(vb, layout);
 
 		IndexBuffer ibo(indeices, 6);
 
-		auto shader = Shader("src/Vertex.vert", "src/Fragment.frag");
+		Texture texture("res/textures/ChernoLogo.png");
+		texture.Bind(0);
+
+		auto shader = Shader("res/shader/Vertex.vert", "res/shader/Fragment.frag");
+		shader.Bind();
+		shader.SetUniform1i("u_Texture", 0);
 
 		// 清除所有绑定关系
 		va.Unbind();
-		shader.Unbind();
 		vb.UnBind();
 		ibo.Unbind();
+		shader.Unbind();
 
 		Renderer render;
 
@@ -88,8 +95,8 @@ int main(void)
 			ibo.Bind();
 
 			r += increment;
-			shader.Bind();
-			shader.SetUniform4f("u_Color", r, .5f, .5f, 1.0f);
+			//shader.Bind();
+			//shader.SetUniform4f("u_Color", r, .5f, .5f, 1.0f);
 
 			if (r > 1.0f || r < 0.0f) {
 				increment *= -1;

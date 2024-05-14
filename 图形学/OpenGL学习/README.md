@@ -1146,3 +1146,121 @@ private:
 
 };
 ```
+
+## 纹理
+
+需要从电脑上读取 PNG 文件给着色器采样，然后绘制到屏幕上
+
+这里使用[stb库](https://github.com/nothings/stb)来读取图片，主要使用里面的 `stb_image` 来读取文件
+
+```cpp
+/* stb_image - v2.27 - public domain image loader - http://nothings.org/stb
+                                  no warranty implied; use at your own risk
+
+   Do this:
+      #define STB_IMAGE_IMPLEMENTATION
+   before you include this file in *one* C or C++ file to create the implementation.
+
+   // i.e. it should look like this:
+   #include ...
+   #include ...
+   #include ...
+   #define STB_IMAGE_IMPLEMENTATION
+   #include "stb_image.h"
+```
+
+根据 `stb_image.h` 文件最开始的注释内容，在 `include` 该文件之前需要先定义 `STB_IMAGE_IMPLEMENTATION`
+
+为了偷懒，直接建一个 `stb_image.cpp` 然后再里面定义
+
+```cpp
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+```
+
+这里提前说明一下 `BPP` 也就是 `Bit Per Pixel` 的简称，表示每个像素的位数，这个值决定了像素包含的颜色信息量。更高的 `BPP` 意味着表示**更多的颜色**和**更精细的图片细节**
+
+常见的 `BPP` 值有 **24-bit-color** 和 **32-bit-color**
+
+- `24-bit-color`: 每个像素由三个通道组成(RGB)，每个通道 8 位，共 24 位
+- `32-bit-color`: 每个像素由四个通道组成(RGBA)，每个通道 8 位，共 32 位
+
+在 `stb_image` 中可以在 `stbi_load` 加载图片时通过指定参数获得图片的 `BPP` 信息
+
+另外，对于 `stb_image` 或者说大多数图片格式来说，**图像的原点通常位于左上角**；对于 `OpenGL` 坐标系来说，原点在**左下角**。这就导致图片的坐标系与 `OpenGL` 坐标系是上下相反的，因此需要使用  `stbi_set_flip_vertically_on_load(1)` 来在垂直方向上翻转
+
+> 具体情况具体分析，不是所有的图片原点都是左上角
+
+-----------------
+
+关于贴图， `OpenGL` 提供多种**插槽**来绑定纹理，**插槽**通常称为**纹理单元**，是一个可以用来绑定一个或者多个纹理的文职。每个纹理单元可以绑定一个纹理，以供着色器程序使用。这种设计允许着色器同时访问多个纹理
+
+例如在复杂的渲染任务中，纹理混合、阴影映射、环境光遮罩等
+
+所谓的**插槽**实际上就是一种允许着色器访问多个纹理的机制。通过将不同的纹理绑定到不同的纹理单元，然后在着色器中通过采样器来访问它们，OpenGL 实现了高效的图像和纹理处理。这种机制极大地增强了渲染效果的灵活性和动态性
+
+但是 OpenGL 的纹理单元(插槽)也不是无线的，这个根据硬件支持相关，可以通过 OpenGL 接口查询硬件数量支持
+
+- GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS: 顶点着色器中可用的纹理图像单元数
+- GL_MAX_TEXTURE_IMAGE_UNITS: 片段着色器中可用的纹理图像单元数
+- GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: 顶点着色器和片段着色器合计可用的纹理图像单元数
+
+```cpp
+GLint maxVertexTextureUnits, maxFragmentTextureUnits, maxCombinedTextureUnits;
+glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &maxVertexTextureUnits);
+glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxFragmentTextureUnits);
+glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxCombinedTextureUnits);
+
+printf("Maximum vertex shader texture units: %d\n", maxVertexTextureUnits);
+printf("Maximum fragment shader texture units: %d\n", maxFragmentTextureUnits);
+printf("Maximum combined texture units: %d\n", maxCombinedTextureUnits);
+```
+
+过多的纹理单元使用不仅会占用更多的资源，还可能降低渲染的性能。所以一定要根据目标平台的能力来设计程序
+
+使用纹理单元时还要注意 `GLSL` 着色器中采样器的数量，因为它们也受到硬件限制。如果你的程序需要在多个平台上运行，最好检查并适应那些具有较低纹理单元限制的设备。这样可以保证程序的广泛兼容性和最佳性能
+
+![](Image/017.png)
+
+那么一般来说，贴图需要存储的信息就是图片的宽、高、BPP和路径
+
+```cpp
+class Texture
+{
+private:
+	GLuint m_RenderID = 0;
+	std::string m_FilePath;
+	GLubyte* m_LocalBuffer{ nullptr };
+	// BPP Bit Per Pixel 表示每个像素的位数， 24bit-color 通常由三通道颜色组成；32bit-color 通常由四通道颜色组成
+	int m_Width = 0, m_Height = 0, m_BPP = 0;
+
+public:
+	Texture(const std::string& filePath);
+	~Texture();
+	
+	// slot 用与绑定插槽
+	void Bind(unsigned int slot = 0) const;
+	void Unbind() const;
+
+	inline int GetWidth() const { return m_Width; }
+	inline int GetHeight() const { return m_Height; }
+};
+
+void Texture::Bind(unsigned int slot) const
+{
+	// 激活插槽 将贴图绑定到对应插槽中
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(GL_TEXTURE_2D, m_RenderID);
+}
+```
+
+通过 `Texture::Bind` 能够将贴图绑定到指定的插槽上，但是 `Shader` 如何知道从那个插槽中获取贴图呢？这就要通过 `uniform` 来设置了
+
+```cpp
+void Shader::SetUniform1i(const std::string& name, int v0)
+{
+	GLint location = GetUniformLocation(name);
+	GL_CALL(glUniform1i(location, v0));
+}
+```
+

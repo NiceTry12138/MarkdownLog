@@ -31,14 +31,20 @@ void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2,
 	GL_CALL(glUniform4f(location, v0, v1, v2, v3));
 }
 
-GLuint Shader::GetUniformLocation(const std::string& name)
+void Shader::SetUniform1i(const std::string& name, int v0)
+{
+	GLint location = GetUniformLocation(name);
+	GL_CALL(glUniform1i(location, v0));
+}
+
+GLint Shader::GetUniformLocation(const std::string& name)
 {
 	if (m_Locations.find(name) != m_Locations.end()) {
 		return m_Locations[name];
 	}
 
 	GLint location = -1;
-	GL_CALL(location = glGetUniformLocation(m_ShaderId, "u_Color"));
+	GL_CALL(location = glGetUniformLocation(m_ShaderId, name.c_str()));
 	if (location == -1) {
 		std::cout << "Warning: uniform " << name << " doesn't exist" << std::endl;
 	}

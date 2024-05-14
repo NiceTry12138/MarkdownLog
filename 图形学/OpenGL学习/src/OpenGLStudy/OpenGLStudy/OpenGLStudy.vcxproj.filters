@@ -36,12 +36,21 @@
     <ClCompile Include="src\VertexBufferLayout.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Vertex.vert">
+    <None Include="res\shader\Vertex.vert">
       <Filter>src</Filter>
     </None>
-    <None Include="src\Fragment.frag">
+    <None Include="res\shader\Fragment.frag">
       <Filter>src</Filter>
     </None>
   </ItemGroup>
@@ -59,6 +68,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\VertexBufferLayout.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
