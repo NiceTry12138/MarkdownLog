@@ -1264,3 +1264,80 @@ void Shader::SetUniform1i(const std::string& name, int v0)
 }
 ```
 
+绘制图片传递给了 `Shader` 那么如何将各顶点关联的定点信息传递给 `Shader` 呢？
+
+```cpp
+float positions[] = {
+	-0.5f, -0.5f, 0.0f, 0.0f,
+	0.5f, -0.5f, 1.0f, 0.0f,
+	0.5f,  0.5f, 1.0f, 1.0f,
+	-0.5f,  0.5f, 0.0f, 1.0f,
+};
+
+VertexBuffer vb(positions, sizeof(float) * 4 * 4);
+
+VertexBufferLayout layout;
+layout.Push<float>(2);	// 前两个是 顶点
+layout.Push<float>(2);	// 后两个是 UV 坐标
+```
+
+添加顶点缓冲数据，将 `UV` 添加到顶点缓冲区中
+
+对应了，关于信息注册的地方也要修改一点
+
+```cpp
+void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout)
+{
+	Bind();
+	vb.Bind();
+
+	const auto& elements = layout.GetElements();
+	unsigned int offset = 0;
+
+	for (unsigned int index = 0; index < elements.size(); ++index) {
+		const auto& element = elements[index];
+		GL_CALL(glEnableVertexAttribArray(index));	// 激活第 Index 个布局
+		GL_CALL(glVertexAttribPointer(index, element.count, element.type, element.normalized, layout.GetStride(), (const void*)offset));
+		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
+	}
+}
+```
+
+`glEnableVertexAttribArray(index)` 索引 `index` 应与着色器中定义的顶点属性位置匹配
+
+```glsl
+#version 330 core
+
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec2 texCoord;
+```
+
+上面顶点着色器的 `location` 对应就是前面的索引 `index`
+
+使用完属性数组后，应调用 `glDisableVertexAttribArray` 来禁用它，特别是在使用多个顶点属性的情况下，以避免渲染错误
+
+由于接下来要做的是混合
+
+```cpp
+glEnable(GL_BLEND);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+```
+
+`glEnable(GL_BLEND)` 启用混合后，绘制到帧缓冲区的每个像素都会通过一个混合函数来计算，这个函数可以定义新像素如何与背景色混合
+
+`glBlendFunc` 函数设置混合函数的具体参数，决定源像素和目标像素如何相互影响。该函数接受两个参数，分别指定源因子和目标因子
+
+- `GL_SRC_ALPHA`：指定源颜色的alpha值作为源因子。这意味着源像素的透明度将影响到最终的颜色混合结果
+
+- `GL_ONE_MINUS_SRC_ALPHA`：指定目标颜色的因子为 1 减去源颜色的 alpha 值。这意味着目标像素的颜色会根据源像素的透明度被保留或减弱
+
+假设源像素颜色为 (Rs, Gs, Bs, As)，其中 As 是源像素的 Alpha 值，目标像素颜色为 (Rd, Gd, Bd, Ad)
+
+- 最终像素的红色分量 = Rs * As + Rd * (1 - As)
+- 最终像素的绿色分量 = Gs * As + Gd * (1 - As)
+- 最终像素的蓝色分量 = Bs * As + Bd * (1 - As)
+
+| 开启混合 | 未开启混合 |
+| --- | --- |
+| ![](Image/018.png) | ![](Image/019.png) |
+
