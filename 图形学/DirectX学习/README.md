@@ -2,7 +2,7 @@
 
 [教程地址](https://www.bilibili.com/video/BV1KC4y1Y7tc)
 
-## 创建项目
+## 创建窗口项目
 
 直接使用 `visual studio` 创建空白项目，并创建 `WinMain.cpp` 作为程序入口
 
@@ -280,3 +280,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 ![](Image/004.png)
 
 > 输出为 69 结果生效
+
+这里使用 `PostQuitMessage(69)` 没有任何含义，单纯就是为了测试输出结果是否生效
+
+
+消息循环的类型有很多
+
+[list of windows Message](https://wiki.winehq.org/List_Of_Windows_Messages)
+
+大概四百种类型，每种消息的触发条件可能需要自行测试
+
+当然官网上也有一些消息类型的解释
+
+除了官网和谷歌之外，还可以通过运行代码测试，何种情况触发何种宏来确定宏的触发条件
+
+项目中使用 `WIndowsMessageMap` 来测试宏的触发，[代码地址](https://github.com/planetchili/hw3d/blob/master/hw3d/WindowsMessageMap.cpp)
+
+以键盘按键为例
+
+![](Image/005.png)
+
+一次键盘的按下和松开会触发三个消息：`WM_KEYDOWN`、`WM_CHAR` 和 `WM_KEYUP`。当按下 `D` 键时，`WM_KEYDOWN` 的 `wParam` 输出为 **0x0000044** ；当按下 `F` 键时，`wParam` 输出为 **0x0000046**，所以 `wParam` 可能存储了按下按钮相关信息
+
+- 关于 `WM_CHAR` 具体内容可以查[官方文档](https://learn.microsoft.com/zh-cn/windows/win32/inputdev/wm-char)
+- 关于 `lParam` 表示的虚拟按键，可以通过[官方文档](https://learn.microsoft.com/zh-cn/windows/win32/inputdev/virtual-key-codes) 获取更多信息
+
+以鼠标点击为例
+
+![](Image/006.png)
+
+主要的消息触发就是：`WM_LBUTTONDOWN` 和 `WM_LBUTOTNUP` 来表示鼠标左键的点击和松开，对应的鼠标右键点击就是 `WM_RBUTTONDOWN` 和 `WM_RBUTTONUP`，鼠标移动有 `WM_MOUSEMOVE`
+
+ 

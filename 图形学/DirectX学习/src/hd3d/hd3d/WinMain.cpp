@@ -1,10 +1,29 @@
 #include <Windows.h>
+#include <cstdlib>
+#include "Test/WindowsMessageMap.h"
+
+inline std::wstring to_wide_string(const std::string& input) //string to wstring
+{
+	std::wstring wide(input.size(), L'\0');
+	mbstowcs(&wide[0], input.c_str(), input.size());
+	return wide;
+}
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	static WindowsMessageMap mm;
+
+	OutputDebugString(to_wide_string(mm(msg, lParam, wParam)).c_str());
+
 	switch (msg)
 	{
 	case WM_CLOSE:
 		PostQuitMessage(69);
+		break;
+	case WM_KEYDOWN:
+		if (wParam == 'F') {
+			// å½“ F é”®æŒ‰ä¸‹ï¼Œä¿®æ”¹çª—å£çš„ Title
+			SetWindowText(hWnd, L"Reset Title");
+		}
 		break;
 	default:
 		break;
@@ -19,7 +38,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	const wchar_t* pClassName = L"hw3dbutts";
 
-	// ×¢²áÀà
+	// æ³¨å†Œç±»
 	WNDCLASSEX wc = { 0 };
 	wc.cbSize = sizeof(wc);
 	wc.style = CS_OWNDC;
@@ -35,7 +54,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	wc.hIconSm = nullptr;
 	RegisterClassEx(&wc);
 
-	// ´´½¨´°¿Ú
+	// åˆ›å»ºçª—å£
 	HWND hWnd = CreateWindowEx(
 		WS_EX_RIGHTSCROLLBAR,
 		pClassName,
@@ -45,10 +64,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		nullptr, nullptr, hInstance, nullptr
 	);
 
-	// Õ¹Ê¾´°¿Ú
+	// å±•ç¤ºçª—å£
 	ShowWindow(hWnd, SW_SHOW);
 
-	// ÏûÏ¢´¦Àí
+	// æ¶ˆæ¯å¤„ç†
 	MSG msg;
 	BOOL gResult;
 
@@ -59,7 +78,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	}
 
 	if (gResult < 0) {
-		return -1;	// ±íÊ¾³ÌĞò´íÎó
+		return -1;	// è¡¨ç¤ºç¨‹åºé”™è¯¯
 	}
-	return msg.wParam;	// ·ñÔòÊä³öÎÒÃÇÆÚÍûµÄÖµ Ò²¾ÍÊÇ PostQuitMessage ´«ÈëµÄ²ÎÊıÖµ
+	return msg.wParam;	// å¦åˆ™è¾“å‡ºæˆ‘ä»¬æœŸæœ›çš„å€¼ ä¹Ÿå°±æ˜¯ PostQuitMessage ä¼ å…¥çš„å‚æ•°å€¼
 }
