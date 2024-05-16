@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <cstdlib>
+#include <sstream>
 #include "Test/WindowsMessageMap.h"
 
 inline std::wstring to_wide_string(const std::string& input) //string to wstring
@@ -25,6 +26,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			SetWindowText(hWnd, L"Reset Title");
 		}
 		break;
+	case WM_CHAR:
+	{
+		static std::string title;
+		title.push_back((char)wParam);
+		SetWindowText(hWnd, to_wide_string(title).c_str());
+		break;
+	}
+	case WM_LBUTTONDOWN:
+	{
+		POINTS pt = MAKEPOINTS(lParam);
+		std::ostringstream oss;
+		oss << "(" << pt.x << ", " << pt.y << ")";
+		SetWindowText(hWnd, to_wide_string(oss.str()).c_str());
+		break;
+	}
 	default:
 		break;
 	}

@@ -283,8 +283,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 这里使用 `PostQuitMessage(69)` 没有任何含义，单纯就是为了测试输出结果是否生效
 
+### 窗口消息
 
-消息循环的类型有很多
+消息的类型有很多
 
 [list of windows Message](https://wiki.winehq.org/List_Of_Windows_Messages)
 
@@ -307,10 +308,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 `WM_CHAR` 是用于文本输入的信息，所以一些按键按下之后不会触发 `WM_CHAR`，比如 `F1`、`F2`，并且 `WM_CHAR` 是大小写敏感的，`WM_KEYDOWN` 则大小写不敏感
 
+同样按下 `F` 键，`WM_KEYDOWN` 的 `wParam` 是 **0x0000046**，表示大写的 `F`；而 `WM_CHAR` 的 `wParam` 是 **0x0000066** 表示小写的 `f`
+
+```cpp
+case WM_CHAR:
+{
+	static std::string title;
+	title.push_back((char)wParam);
+	SetWindowText(hWnd, to_wide_string(title).c_str());
+	break;
+}
+```
+
+![](Image/007.png)
+
 以鼠标点击为例
 
 ![](Image/006.png)
 
 主要的消息触发就是：`WM_LBUTTONDOWN` 和 `WM_LBUTOTNUP` 来表示鼠标左键的点击和松开，对应的鼠标右键点击就是 `WM_RBUTTONDOWN` 和 `WM_RBUTTONUP`，鼠标移动有 `WM_MOUSEMOVE`
 
- 
+[LBUTTONDOWN](https://learn.microsoft.com/zh-cn/windows/win32/inputdev/wm-lbuttondown) 更多参数信息官方文档有说明
+
+```cpp
+POINT pt;
+pt.x = GET_X_LPARAM(lParam);
+pt.y = GET_Y_LPARAM(lParam);
+
+pt = MAKEPOINTS(lParam);
+```
+
+通过上面俩种方法可以获得鼠标相对工作区左上角的坐标
+
+```cpp
+case WM_LBUTTONDOWN:
+{
+	POINTS pt = MAKEPOINTS(lParam);
+	std::ostringstream oss;
+	oss << "(" << pt.x << ", " << pt.y << ")";
+	SetWindowText(hWnd, to_wide_string(oss.str()).c_str());
+	break;
+}
+```
+
+![](Image/008.png)
+
