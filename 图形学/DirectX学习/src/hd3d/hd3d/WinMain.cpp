@@ -1,6 +1,8 @@
-#include <Windows.h>
+//#include <Windows.h>
+#include "ChiliWin.h"
 #include <cstdlib>
 #include <sstream>
+#include "Window.h"
 #include "Test/WindowsMessageMap.h"
 
 inline std::wstring to_wide_string(const std::string& input) //string to wstring
@@ -10,78 +12,51 @@ inline std::wstring to_wide_string(const std::string& input) //string to wstring
 	return wide;
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	static WindowsMessageMap mm;
-
-	OutputDebugString(to_wide_string(mm(msg, lParam, wParam)).c_str());
-
-	switch (msg)
-	{
-	case WM_CLOSE:
-		PostQuitMessage(69);
-		break;
-	case WM_KEYDOWN:
-		if (wParam == 'F') {
-			// 当 F 键按下，修改窗口的 Title
-			SetWindowText(hWnd, L"Reset Title");
-		}
-		break;
-	case WM_CHAR:
-	{
-		static std::string title;
-		title.push_back((char)wParam);
-		SetWindowText(hWnd, to_wide_string(title).c_str());
-		break;
-	}
-	case WM_LBUTTONDOWN:
-	{
-		POINTS pt = MAKEPOINTS(lParam);
-		std::ostringstream oss;
-		oss << "(" << pt.x << ", " << pt.y << ")";
-		SetWindowText(hWnd, to_wide_string(oss.str()).c_str());
-		break;
-	}
-	default:
-		break;
-	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
-}
+//LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+//	static WindowsMessageMap mm;
+//
+//	OutputDebugString(to_wide_string(mm(msg, lParam, wParam)).c_str());
+//
+//	switch (msg)
+//	{
+//	case WM_CLOSE:
+//		PostQuitMessage(69);
+//		break;
+//	case WM_KEYDOWN:
+//		if (wParam == 'F') {
+//			// 当 F 键按下，修改窗口的 Title
+//			SetWindowText(hWnd, L"Reset Title");
+//		}
+//		break;
+//	case WM_CHAR:
+//	{
+//		static std::string title;
+//		title.push_back((char)wParam);
+//		SetWindowText(hWnd, to_wide_string(title).c_str());
+//		break;
+//	}
+//	case WM_LBUTTONDOWN:
+//	{
+//		POINTS pt = MAKEPOINTS(lParam);
+//		std::ostringstream oss;
+//		oss << "(" << pt.x << ", " << pt.y << ")";
+//		SetWindowText(hWnd, to_wide_string(oss.str()).c_str());
+//		break;
+//	}
+//	default:
+//		break;
+//	}
+//	return DefWindowProc(hWnd, msg, wParam, lParam);
+//}
 
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine,
 	int nCmdSHow) {
 
-	const wchar_t* pClassName = L"hw3dbutts";
 
-	// 注册类
-	WNDCLASSEX wc = { 0 };
-	wc.cbSize = sizeof(wc);
-	wc.style = CS_OWNDC;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInstance;
-	wc.hIcon = nullptr;
-	wc.hCursor = nullptr;
-	wc.hbrBackground = nullptr;
-	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = pClassName;
-	wc.hIconSm = nullptr;
-	RegisterClassEx(&wc);
-
-	// 创建窗口
-	HWND hWnd = CreateWindowEx(
-		WS_EX_RIGHTSCROLLBAR,
-		pClassName,
-		L"Hello World",
-		WS_SYSMENU | WS_CAPTION | WS_MAXIMIZEBOX,
-		200, 200, 640, 480,
-		nullptr, nullptr, hInstance, nullptr
-	);
-
-	// 展示窗口
-	ShowWindow(hWnd, SW_SHOW);
+	Window wnd(800, 300, L"Donkey Fart Box");
+	//Window wnd2(300, 800, L"Donkey Fart Box");	// 直接通过构造函数创建第二个窗口
 
 	// 消息处理
 	MSG msg;

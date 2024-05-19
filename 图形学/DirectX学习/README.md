@@ -353,3 +353,116 @@ case WM_LBUTTONDOWN:
 
 ![](Image/008.png)
 
+### 封装Window
+
+由于该项目只有一个窗口，所以直接做成一个单例类
+
+```cpp
+class Window
+{
+private:
+	// singleton manages registration/cleanup of window class
+	class WindowClass;
+
+	
+private:
+	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+}
+```
+
+`WindowClass` 是窗口的实例类，由 `Window` 来管理
+
+`WindowClass` 是单例类，所以会在获取 `GetInstance` 时构建和注册一个窗口
+
+```cpp
+Window::WindowClass::WindowClass() noexcept : hInst(GetModuleHandle(nullptr))
+{
+	WNDCLASSEX wc = { 0 };
+	wc.cbSize = sizeof(wc);
+	wc.style = CS_OWNDC;
+	wc.lpfnWndProc = HandleMsgSetup;
+	// ... 其他注册内容
+	RegisterClassEx(&wc);
+}
+```
+
+在 `Window` 类创建的时候会通过 `WindowClass` 构建和注册一个窗口，再由 `Window` 来创建出窗口
+
+```cpp
+Window::Window(int InWidth, int InHeight, const wchar_t* InName) noexcept
+{
+	RECT Wr;
+	Wr.left = 100;
+	Wr.right = InWidth + Wr.left;
+	Wr.top = 100;
+	Wr.bottom = InHeight + 100;
+
+	// AdjustWindowRect 会根据样式重新计算 RECT 中各个参数的值
+	AdjustWindowRect(&Wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+
+	// 重新设置过 RECT 参数，所以这里不能直接使用 InWidth 和 InHeight
+	hWnd = CreateWindow(
+		WindowClass::GetName(), InName,
+		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
+		CW_USEDEFAULT, CW_USEDEFAULT, Wr.right - Wr.left, Wr.bottom - Wr.top,
+		nullptr, nullptr, WindowClass::GetInstance(), this
+	);
+
+	ShowWindow(hWnd, SW_SHOWDEFAULT);
+}
+```
+
+这里需要注意的是 `wc.lpfnWndProc = HandleMsgSetup` 绑定的窗口信息函数
+
+```cpp
+LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+{
+	if (msg == WM_NCCREATE)
+	{
+		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
+		Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
+		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgThunk));
+		return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
+	}
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+```
+
+当 `WM_NCCREATE` 被触发的时候，重新设置 `GWLP_USERDATA` 和 `GWLP_WNDPROC`，也就将消息的回调函数设置成了 `Window::HandleMsgThunk`
+
+为什么要切换信息回调函数呢？
+
+1. 组织性：`HandleMsgSetup` 专注于窗口创建时的设置工作，而 `HandleMsgThunk` 用于处理窗口的常规消息。这种分离使得代码更加清晰和易于管理
+2. 安全性：在窗口创建期间，可能会收到各种消息，但在窗口类与窗口句柄关联之前，这些消息不应该被传递到窗口类的实例。`HandleMsgSetup` 确保只有在关联建立之后，消息才会被转发到窗口类的实例
+3. 效率：一旦窗口创建完成并且关联建立，`HandleMsgThunk` 将直接转发消息到窗口类的实例，无需每次都检查 `WM_NCCREATE` 消息。这提高了消息处理的效率
+4. 灵活性：如果将来需要在窗口创建过程中添加更多的初始化代码，只需修改 `HandleMsgSetup` 函数即可，而不会影响到常规消息处理的代码
+
+这里不得不提到 `WM_NCCREATE` ，这个宏的 `NCCREATE` 可以拆分成 `NC` 和 `CREATE`，后者 `CREATE` 就是创建的意思；前者 `NC` 表示的是 `No-Client`
+
+![](Image/009.png)
+
+以上图为例，图中标题栏的边框，最大化最小化按钮，以及其他UI元素，这个边框称为 `Window`的 `no-client` 区域。
+
+`WM_NCCREATE` 在 `WM_CREATE` 之前发送
+
+在这之前的消息都会被 `HandleMsgSetup` 吃掉，因为客户端一般不用处理这之前的消息
+
+通过 `SetWindowLongPtr` 就设定了 `GWLP_USERDATA` 用户自定义数据中存储的 `Window` 对象指针
+
+```cpp
+LRESULT Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+{
+	Window* const pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
+}
+```
+
+在 `HandleMsgThunk` 函数中，通过 `GetWindowLongPtr` 的方式将 `Window` 对象的指针从 `GWLP_USERDATA` 中取出，并将消息转发到 `HandleMsg` 中
+
+由于 `WINAPI` 回调函数需要符合特定的签名，并且必须能够通过全局访问，因此它们不能直接绑定到类的非静态成员函数，这个函数必须是一个全局函数或静态成员函数
+
+所以通过上面的方法，将全局事件分发到成员函数 `Window::HandleMsg` 中
+
