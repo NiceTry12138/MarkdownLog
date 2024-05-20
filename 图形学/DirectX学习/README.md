@@ -597,19 +597,7 @@ D3D 除了创建交换链、设备外还会创建上下文(`Context`)，用于�
 
 ### 初始化项目
 
-需要**初始化窗口**和 **D3D 程序**
-
-初始化窗口其实就是前面封装的 `Window`，而 `DX12` 中初始化 `D3D` 需要依次创建 
-
-1. `DXGI` 工厂，用于创建设备和交换链，以及查询显卡（适配器）信息。
-2. `Device` 设备，图形驱动程序的接口。它用于创建所有的D3D资源，如纹理、缓冲区和命令列表
-3. `Command Queue`，命令队列，用于与设备通信的接口，用于提交执行命令列表
-4. `Swap Chain` 交换链，用于管理渲染数据缓冲区
-5. `Descriptor Heaps` 描述符堆，用于春初资源描述符的几何
-6. `Command Alloctor` 命令分配器，每个命令列表需要一个命令分配器用于管理内存
-7. `Command List` 命令列表，用于记录所以的渲染命令
-8. `Fence` 用于 CPU 和 GPU 之间的同步
-9. 资源和视图
+封装报错宏
 
 ```cpp
 #ifndef ThrowIfFailed
@@ -620,16 +608,118 @@ D3D 除了创建交换链、设备外还会创建上下文(`Context`)，用于�
     if(FAILED(hr__)) { throw DxException(hr__, L#x, wfn, __LINE__); } \
 }
 #endif
+```
 
+需要**初始化窗口**和 **D3D 程序**
+
+初始化窗口其实就是前面封装的 `Window`，而 `DX12` 中初始化 `D3D` 需要依次创建 
+
+1. `DXGI` 工厂，用于创建设备和交换链，以及查询显卡（适配器）信息
+
+```cpp
 // 创建 DXGI 工厂
 ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
+```
 
-// 创建 Device
+2. `Device` 设备，图形驱动程序的接口。它用于创建所有的D3D资源，如纹理、缓冲区和命令列表
+
+```cpp
+// 创建硬件 Device
 HRESULT hardwareResult = D3D12CreateDevice(
-	nullptr,             // default adapter
+	nullptr,             // nullptr 表示默认显卡适配器
 	D3D_FEATURE_LEVEL_11_0,
 	IID_PPV_ARGS(&md3dDevice));
 
-
-
+// 如果硬件 Device 无法创建
+if(FAILED(hardwareResult))
+{
+	// 通过 EnumWarpAdapter 获取 WARP 软件光栅器
+	ComPtr<IDXGIAdapter> pWarpAdapter;
+	ThrowIfFailed(mdxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pWarpAdapter)));
+	ThrowIfFailed(D3D12CreateDevice(pWarpAdapter.Get(),  D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&md3dDevice)));
+}
 ```
+
+> `WARP` （`Windows Advanced Rasterization Platform`），高性能的软件光栅器
+
+3. `Command Queue`，命令队列，用于与设备通信的接口，用于提交执行命令列表，GPU 执行命令的调度基础
+
+```cpp
+void D3DApp::CreateCommandObjects()
+{
+	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
+
+	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf())));
+
+	ThrowIfFailed(md3dDevice->CreateCommandList(
+		0,							// 0 表示节点掩码，用于单 GPU 系统
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		mDirectCmdListAlloc.Get(), // Associated command allocator
+		nullptr,                   // 表示初始状态下没有绑定任何管线状态对象（PSO）
+		IID_PPV_ARGS(mCommandList.GetAddressOf())));
+
+	// 创建后，默认命令列表是开放状态，可以记录命令。调用 Close 方法将其关闭，这是提交之前的必要步骤
+	mCommandList->Close();
+}
+```
+
+4. `Swap Chain` 交换链，用于管理渲染数据缓冲区
+
+```cpp
+void D3DApp::CreateSwapChain()
+{
+    // Release the previous swapchain we will be recreating.
+    mSwapChain.Reset();
+
+    DXGI_SWAP_CHAIN_DESC sd;
+    sd.BufferDesc.Width = mClientWidth;
+    sd.BufferDesc.Height = mClientHeight;
+    sd.BufferDesc.RefreshRate.Numerator = 60;
+    sd.BufferDesc.RefreshRate.Denominator = 1;
+    sd.BufferDesc.Format = mBackBufferFormat;
+    sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    sd.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+    sd.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    sd.BufferCount = SwapChainBufferCount;
+    sd.OutputWindow = mhMainWnd;
+    sd.Windowed = true;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	// 使用 DXGI 工厂对象 (mdxgiFactory) 创建交换链，传入先前配置的描述符 sd 和使用的命令队列（mCommandQueue）
+    ThrowIfFailed(mdxgiFactory->CreateSwapChain(
+		mCommandQueue.Get(),
+		&sd, 
+		mSwapChain.GetAddressOf()));
+}
+```
+- 参数说明 
+  - `BufferDesc`: 描述了交换链中各缓冲区（后台缓冲区）的属性，包括分辨率、刷新率、像素格式等
+  - `SampleDesc`: 设置多重采样的属性，用于抗锯齿
+  - `BufferUsage`: 指定缓冲区的用途，这里设置为渲染目标输出
+  - `BufferCount`: 设置后台缓冲区的数量
+  - `OutputWindow`: 指定渲染输出的窗口句柄
+  - `Windowed`: 指定交换链是窗口模式还是全屏模式，这里设置为窗口模式
+  - `SwapEffect`: 设置交换效果，这里使用 `DXGI_SWAP_EFFECT_FLIP_DISCARD`，这意味着使用翻转模型并且在显示后丢弃旧内容，这种方式可以提高性能并减少延迟。
+  - `Flags`: 设置其他标志，如允许模式切换，这对于全屏应用很有用
+
+5. `Descriptor Heaps` 描述符堆，用于春初资源描述符的几何
+6. `Command Alloctor` 命令分配器，每个命令列表需要一个命令分配器用于管理内存
+7. `Command List` 命令列表，用于记录所以的渲染命令
+8. `Fence` 用于 CPU 和 GPU 之间的同步
+
+```cpp
+ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
+```
+
+> 围栏是一种同步机制，用于协调 CPU 和 GPU 之间的操作顺序。通过围栏，开发者可以控制资源的使用时机，确保在资源被 GPU 更新或读取前，CPU 上的操作已经完成，从而避免竞态条件和数据损坏
+
+9.  资源和视图
+
