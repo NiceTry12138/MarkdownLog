@@ -466,3 +466,113 @@ LRESULT Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 所以通过上面的方法，将全局事件分发到成员函数 `Window::HandleMsg` 中
 
+### 异常处理
+
+```cpp
+// 异常基类
+class ChiliException: public std::exception
+{
+public:
+	ChiliException(int line, const char* file) noexcept;
+	const char* what() const noexcept override;
+	virtual const char* GetType() const noexcept;
+	int GetLine() const noexcept;
+	const std::string& GetFile() const noexcept;
+	std::string GetOriginString() const noexcept;
+
+private:
+	int line;				// 错误出现的行
+	std::string file;		// 错误出现的文件
+
+protected:
+	mutable std::string whatBuffer;
+};
+
+// Window 异常类
+class Exception : public ChiliException {
+public:
+	Exception(int line, const char* file, HRESULT InHr);
+	const char* what() const noexcept override;
+	virtual const char* GetType() const noexcept;
+	static std::string TranslateErrorCode(HRESULT InHr);
+	HRESULT GetErrorCode() const noexcept;
+	std::string GetErrorString() const noexcept;
+private:
+	HRESULT hr;
+};
+
+#define CHWND_EXCEPT(hr) Window::Exception(__LINE__, __FILE__, hr)
+```
+
+所以的异常都基于 `ChiliException` 扩展即可，重写 `GetType` 和 `what` 函数，即可将错误分类
+
+那么，在日常使用的时候，如果 `Window` 需要抛出异常，直接使用 `CHWND_EXCEPT` 即可
+
+常见的 `system error code` 在 [官方文档](https://learn.microsoft.com/zh-cn/windows/win32/debug/system-error-codes) 中有比较详细的介绍
+
+![](Image/010.png)
+
+```cpp
+throw CHWND_EXCEPT(ERROR_ARENA_TRASHED)
+```
+
+## D3D
+
+[官方文档](https://learn.microsoft.com/zh-cn/windows/win32/direct3d12/direct3d-12-graphics)
+
+### 架构/交换链
+
+#### 架构
+
+D3D: DirectX 3D
+
+D3D 是面向对象对象的架构，建立在 `COM`(`Component Object Moduel`, **组件对象模型**) 对象上，这些对象表示着 D3D 中的实体(例如：着色器、纹理、状态等)，这些物体的父类都是 `Device`
+
+`COM` 是 `D3D` 中使用的软件架构，旨在突进软件组件之间的交互。`COM` 是一个面向接口的系统，它定义了对象如何通过一组明确的接口与外部世界通信。所有 `COM` 对象都继承自 `IUnknow` 接口，这是 `COM` 规范中的基础接口，提供了对象**生命周期管理**(引用计数)和**接口查询功能**
+
+在 `Direct3D` 中，几乎所有的对象（如设备、纹理、缓冲区等）都是以 `COM` 接口的形式实现的。这些对象实现 `COM` 接口，确保了它们可以在多种编程环境中以一致的方式使用，并且能够在不同版本的 `Direct3D` 间提供一定程度的向后兼容性
+
+1. 接口查询(`Query Interface`)：每个 COM 对象都可以通过 `QueryInterface` 来查询是否支持特定的接口，这运行开发者根据运行时可以同的功能动态访问不同的接口
+2. 引用计数：通过 `AddRef` 和 `Release` 来增减引用计数
+3. 版本控制和兼容性，在不破坏现有程序的情况下引入新的接口和功能
+
+`Device` 在 `Direct3D` 中扮演中心角色，是进行所有渲染操作和资源管理的核心接口。它是由 Direct3D 创建并返回给应用程序的一个 `COM` 接口，允许应用程序通过调用此接口的方法来执行图形和计算任务
+
+- 纹理：通过 `ID3D11Device::CreateTexture2D` 等方法创建
+- 着色器：通过 `ID3D11Device::CreateVertexShader`、`ID3D11Device::CreatePixelShader` 等方法创建
+- 状态对象：如通过 `ID3D11Device::CreateBlendState`、`ID3D11Device::CreateRasterizerState` 等方法创建
+
+在 Direct3D 中，Device 和其他资源如着色器、纹理、状态等之间的关系可以总结如下：
+
+- **创建者与被创建者**：`Device` 是创建和管理所有其他图形资源的中心。所有这些资源（着色器、纹理、状态等）都由 `Device` 接口创建
+- **COM 对象**：`Device` 以及它创建的所有其他资源都是 `COM` 对象，遵守 `COM` 接口和引用计数的规则
+- **接口和实现解耦**：作为 `COM` `对象，Device` 和其他资源的实现被抽象和封装，开发者主要通过接口与这些资源交互。这允许 Direct3D 在不影响已有应用的情况下进行更新和改进
+
+#### 交换链
+
+如果显存中只存在一块区域用与显示，每次显卡都会将这块区域的数据发送到显示器中绘制。当我们更新数据时，可能只绘制了一部分就被显卡发送到显示进行绘制了，这样会出现屏幕的撕裂
+
+所以一般使用俩块**缓冲区**，一块专门用于提供给显示器进行渲染，称为**前缓冲区**；一块专门用于实际绘制，称为**后缓冲区**
+
+当后缓冲区绘制完毕之后，会使用 `Present` 的方法，将后缓冲区非常快的复制到前缓冲上；或者使用 `Flip` 的方法，直接将后缓冲重命名为前缓冲，前缓冲重命名为后缓冲
+
+这里必须提到 `DXGI`(`DirectX Graphics Infrastructure`) 是一个低级的 API，用于抽象和管理图形硬件资源。它是 DirectX 家族的一部分，主要负责处理图形设备的枚举、显示监控的管理、交换链（用于图像呈现的缓冲区管理）以及帧的呈现
+
+DXGI 为 DirectX 提供核心功能，特别是与显示设备和屏幕缓冲区的交互
+
+![](Image/011.png)
+
+[DXGI官方文档](https://learn.microsoft.com/zh-cn/windows/win32/direct3ddxgi/d3d10-graphics-programming-guide-dxgi)
+
+`DXGI` 的目的是与内核模式驱动程序和系统硬件通信
+
+应用程序可以直接访问 `DXGI`，也可以调用 `Direct3D API`，以处理与 `DXGI` 的通信。 如果应用程序需要枚举设备或控制如何将数据呈现给输出，则可能需要直接使用 `DXGI`
+
+#### 上下文
+
+D3D 除了创建交换链、设备外还会创建上下文(`Context`)，用于发出渲染你命令平配置渲染管道
+
+一般来说 设备(`Device`) 用于创建物体，上下文(`Context`) 用于绘制
+
+上下文分为即时和延迟俩种，当调用即时上下文时，会让硬件马上执行渲染工作；延迟上下文会建立指令集，然后将指令发布到即时上下文中，所以延迟上下文在多线程中表现良好
+

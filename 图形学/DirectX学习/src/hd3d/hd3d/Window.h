@@ -5,8 +5,23 @@
 #include <string>
 #include <vector>
 
+#include "ChiliException.h"
+
 class Window
 {
+public:
+	class Exception : public ChiliException {
+	public:
+		Exception(int line, const char* file, HRESULT InHr);
+		const char* what() const noexcept override;
+		virtual const char* GetType() const noexcept;
+		static std::string TranslateErrorCode(HRESULT InHr);
+		HRESULT GetErrorCode() const noexcept;
+		std::string GetErrorString() const noexcept;
+	private:
+		HRESULT hr;
+	};
+
 private:
 	// singleton manages registration/cleanup of window class
 	class WindowClass
@@ -49,3 +64,4 @@ private:
 	std::string commandLine;
 };
 
+#define CHWND_EXCEPT(hr) Window::Exception(__LINE__, __FILE__, hr)
