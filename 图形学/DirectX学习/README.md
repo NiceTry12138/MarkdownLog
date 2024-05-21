@@ -667,6 +667,23 @@ HRESULT CreateFence(
 
 使用描述符来表示资源是因为 GPU 资源实际上都是一些普通的内存块，很多时候只希望将部分数据绑定到渲染流水线，那么从整个资源中将其选出？或者内存块如何使用？这些都是记录在描述符中的
 
+#### 资源转换
+
+为了实现常见的渲染效果，经常会通过 GPU 对某个资源 R 按顺序进行先写后读两种操作
+
+当 GPU 的写操作还没完成或者甚至没开始的时候，却开始读取资源，便会导致**资源冒险**
+
+`Direct3D` 专门针对资源提供了一组相关状态，资源最开始处于默认状态，该状态会一直持续到应用程序通过 `Direct3D` 将其转换(`transition`)为另一中状态为止
+
+比如如果要对某个纹理资源执行写操作，需要先将其设置为渲染目标状态；如果对纹理进行读操作，需要将其转换为着色器资源状态
+
+通过命令列表设置**转换资源屏障**数组，即可执行资源的转换
+
+```cpp
+mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
+		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+```
+
 #### 资源驻留
 
 对于复杂场景，一些资源并不需要一开始就加载在显存中
@@ -678,6 +695,7 @@ HRESULT ID3D12Device::MakeResident
 
 HRESULT ID3D12Device::Evict
 ```
+
 
 ### 初始化项目
 
