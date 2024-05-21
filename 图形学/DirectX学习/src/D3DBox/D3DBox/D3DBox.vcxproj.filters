@@ -33,13 +33,13 @@
     <ClInclude Include="DDSTextureLoader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="D3DUtil.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MathHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="d3dx12.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,6 +48,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="D3dApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

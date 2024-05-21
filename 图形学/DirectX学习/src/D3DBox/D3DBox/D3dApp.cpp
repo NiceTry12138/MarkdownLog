@@ -7,7 +7,7 @@ using namespace DirectX;
 
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    // ×ª·¢´°¿ÚÏûÏ¢
+    // è½¬å‘çª—å£æ¶ˆæ¯
 	return D3DApp::GetApp()->MsgProc(hwnd, msg, wParam, lParam);
 }
 
@@ -17,7 +17,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 {
 	mhAppInst = hInstance;
 
-    // µ¥ÀıÄ£Ê½ ½ûÖ¹¸÷ÖÖ·½Ê½´´½¨µÚ¶ş¸ö
+    // å•ä¾‹æ¨¡å¼ ç¦æ­¢å„ç§æ–¹å¼åˆ›å»ºç¬¬äºŒä¸ª
 	assert(mApp == nullptr);
     mApp = this;
 }
@@ -25,7 +25,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 D3DApp::~D3DApp()
 {
     if (md3dDevice != nullptr) {
-        FlushCommandQueue();    // Çå¿Õ GPU ÃüÁî
+        FlushCommandQueue();    // æ¸…ç©º GPU å‘½ä»¤
     }
 }
 
@@ -87,11 +87,11 @@ bool D3DApp::Initialize()
 
 LRESULT D3DApp::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch (msg)
-    {
-    default:
-        break;
-    }
+	switch (msg)
+	{
+	default:
+		break;
+	}
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
@@ -119,7 +119,7 @@ void D3DApp::OnResize()
 {
 }
 
-// »ù±¾Á÷³Ì£º ×¢²á¡¢´´½¨¡¢Õ¹Ê¾¡¢¸üĞÂ
+// åŸºæœ¬æµç¨‹ï¼š æ³¨å†Œã€åˆ›å»ºã€å±•ç¤ºã€æ›´æ–°
 bool D3DApp::InitMainWindow()
 {
 	WNDCLASS wc;
@@ -154,7 +154,7 @@ bool D3DApp::InitMainWindow()
 	}
 
 	ShowWindow(mhMainWnd, SW_SHOW);
-	UpdateWindow(mhMainWnd);	// ÆÈÊ¹ÏµÍ³Á¢¼´´¦ÀíÄÇĞ©ÒÑ¾­ÔÚÏûÏ¢¶ÓÁĞÖĞµÄ»æÖÆÏûÏ¢£¬È·±£´°¿ÚÊ×´Î´´½¨Ö®ºó£¬»á±»Á¢¼´ÕıÈ·»æÖÆ
+	UpdateWindow(mhMainWnd);	// è¿«ä½¿ç³»ç»Ÿç«‹å³å¤„ç†é‚£äº›å·²ç»åœ¨æ¶ˆæ¯é˜Ÿåˆ—ä¸­çš„ç»˜åˆ¶æ¶ˆæ¯ï¼Œç¡®ä¿çª—å£é¦–æ¬¡åˆ›å»ºä¹‹åï¼Œä¼šè¢«ç«‹å³æ­£ç¡®ç»˜åˆ¶
 
     return true;
 }
@@ -169,10 +169,10 @@ bool D3DApp::InitDirect3D()
 	}
 #endif
 
-	// ´´½¨ DXGI 
+	// åˆ›å»º DXGI 
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
 
-	// »ñµÃ¹âÕ¤Æ÷
+	// è·å¾—å…‰æ …å™¨
 	HRESULT hardwareResult = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&md3dDevice));
 	if (FAILED(hardwareResult)) {
 		ComPtr<IDXGIAdapter> pWarpAdapter;
@@ -180,15 +180,15 @@ bool D3DApp::InitDirect3D()
 		ThrowIfFailed(D3D12CreateDevice(pWarpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&md3dDevice)));
 	}
 
-	// ´´½¨Î§À¸
+	// åˆ›å»ºå›´æ 
 	ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
 
-	// ´æ´¢ÃèÊö·û´óĞ¡
+	// å­˜å‚¨æè¿°ç¬¦å¤§å°
 	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	// ÉèÖÃ 4x ¶àÖØ²ÉÑù 
+	// è®¾ç½® 4x å¤šé‡é‡‡æ · 
 	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msQualityLevels;
 	msQualityLevels.Format = mBackBufferFormat;
 	msQualityLevels.SampleCount = 4;
@@ -253,21 +253,21 @@ void D3DApp::FlushCommandQueue()
 {
 	mCurrentFence++;
 
-	// ·¢ËÍÒ»¸öĞÅºÅµ½ÃüÁî¶ÓÁĞ¡£µ±GPU´¦Àíµ½ÕâÒ»µãÊ±£¬Ëü»á½«Î§À¸¶ÔÏó mFence µÄÖµÉèÖÃÎª mCurrentFence¡£ÕâÑù¿ÉÒÔÈ·±£ËùÓĞÏÈÇ°Ìá½»µÄÃüÁî¶¼ÒÑ¾­±»GPU´¦ÀíÍê±Ï
+	// å‘é€ä¸€ä¸ªä¿¡å·åˆ°å‘½ä»¤é˜Ÿåˆ—ã€‚å½“GPUå¤„ç†åˆ°è¿™ä¸€ç‚¹æ—¶ï¼Œå®ƒä¼šå°†å›´æ å¯¹è±¡ mFence çš„å€¼è®¾ç½®ä¸º mCurrentFenceã€‚è¿™æ ·å¯ä»¥ç¡®ä¿æ‰€æœ‰å…ˆå‰æäº¤çš„å‘½ä»¤éƒ½å·²ç»è¢«GPUå¤„ç†å®Œæ¯•
 	mCommandQueue->Signal(mFence.Get(), mCurrentFence);
 
 	if (mFence->GetCompletedValue() < mCurrentFence) {
-		// ´´½¨Ò»¸öÊÂ¼ş¶ÔÏó£¬Õâ¸öÊÂ¼şÓÃÓÚµÈ´ıÎ§À¸ĞÅºÅµÄÍê³É
-		HANDLE eventHandl = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		// åˆ›å»ºä¸€ä¸ªäº‹ä»¶å¯¹è±¡ï¼Œè¿™ä¸ªäº‹ä»¶ç”¨äºç­‰å¾…å›´æ ä¿¡å·çš„å®Œæˆ
+		HANDLE eventHandle = CreateEventEx(nullptr, NULL, false, EVENT_ALL_ACCESS);
 
-		// ÎªÎ§À¸ÉèÖÃÒ»¸öÍê³ÉÊÂ¼ş¡£µ±Î§À¸´ïµ½Ö¸¶¨µÄ mCurrentFence ÖµÊ±£¬eventHandl ÊÂ¼ş»á±»ÉèÖÃÎªĞÅºÅ×´Ì¬
-		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandl));
+		// ä¸ºå›´æ è®¾ç½®ä¸€ä¸ªå®Œæˆäº‹ä»¶ã€‚å½“å›´æ è¾¾åˆ°æŒ‡å®šçš„ mCurrentFence å€¼æ—¶ï¼ŒeventHandl äº‹ä»¶ä¼šè¢«è®¾ç½®ä¸ºä¿¡å·çŠ¶æ€
+		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
 
-		// µÈ´ıÊÂ¼ş¶ÔÏó±äÎªĞÅºÅ×´Ì¬
-		WaitForSingleObject(eventHandl, INFINITE);
+		// ç­‰å¾…äº‹ä»¶å¯¹è±¡å˜ä¸ºä¿¡å·çŠ¶æ€
+		WaitForSingleObject(eventHandle, INFINITE);
 
-		// ¹Ø±ÕÊÂ¼ş¾ä±ú£¬ÊÍ·ÅÏµÍ³×ÊÔ´
-		CloseHandle(eventHandl);
+		// å…³é—­äº‹ä»¶å¥æŸ„ï¼Œé‡Šæ”¾ç³»ç»Ÿèµ„æº
+		CloseHandle(eventHandle);
 	}
 }
 
