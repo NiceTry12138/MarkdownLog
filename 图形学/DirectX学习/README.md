@@ -1003,3 +1003,48 @@ void InitDirect3DApp::Draw(const GameTimer& gt)
 
 `mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount` 用于获取当前能够使用的后台缓冲区，当前缓冲区正在使用，所以下一帧只能用另一个，避免使用同一个缓冲区
 
+### 基本运行框架
+
+基本按照之前的 Windows 窗口程序来运行
+
+如果存在消息，则优先处理窗口信息；如果信息都处理完了，则开始更新数据和绘制画面
+
+如果 `mAppPaused`，一般是处在后台，那么直接粗暴的 `Sleep`
+
+```cpp
+int D3DApp::Run()
+{
+	MSG msg = {0};
+ 
+	mTimer.Reset();
+
+	while(msg.message != WM_QUIT)
+	{
+		// If there are Window messages then process them.
+		if(PeekMessage( &msg, 0, 0, 0, PM_REMOVE ))
+		{
+            TranslateMessage( &msg );
+            DispatchMessage( &msg );
+		}
+		// Otherwise, do animation/game stuff.
+		else
+        {	
+			mTimer.Tick();
+
+			if( !mAppPaused )
+			{
+				CalculateFrameStats();
+				Update(mTimer);	
+                Draw(mTimer);
+			}
+			else
+			{
+				Sleep(100);
+			}
+        }
+    }
+
+	return (int)msg.wParam;
+}
+```
+
