@@ -723,3 +723,58 @@ ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mF
 
 9.  资源和视图
 
+```cpp
+void D3DApp::CreateRtvAndDsvDescriptorHeaps()
+{
+    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
+    rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
+    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	rtvHeapDesc.NodeMask = 0;
+    ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
+        &rtvHeapDesc, IID_PPV_ARGS(mRtvHeap.GetAddressOf())));
+
+
+    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
+    dsvHeapDesc.NumDescriptors = 1;
+    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	dsvHeapDesc.NodeMask = 0;
+    ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
+        &dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
+}
+```
+
+以 `RTV`（`Render Target View`，**渲染目标视图**） 和 `DSV`（`Depth Stencil View`，**深度模板视图**） 为例
+
+这里通过 `D3D12_DESCRIPTOR_HEAP_DESC` 堆描述结构体，来描述一个堆，然后通过 `device` 来创建这个描述符堆，例如：`rtvHeapDesc` 和 `dsvHeapDesc`
+
+常用的描述符有：
+
+- `CBV`(constant buffer view）：常量缓冲区视图
+- `SRV`(shader resource view)：着色器资源视图
+- `UAV`(unorder access view)：无序访问视图
+- `Sampler`：采样器，用于采样纹理资源
+- `RTV`(render target view)：渲染目标视图
+- `DSV`(depth/stencil view)：深度/模板视图
+
+描述符堆（Descriptor Heap）是一种关键的资源管理工具，用于存储和组织资源描述符。资源描述符是指向资源（如纹理、缓冲区、采样器等）的句柄或指针，它提供了 GPU 所需的足够信息来访问这些资源
+
+描述符堆实际上就是存放描述符的数组，本质上是存放特定类型描述符的一块内存
+
+关于[D3D12_DESCRIPTOR_HEAP_DESC](https://learn.microsoft.com/zh-cn/windows/win32/api/d3d12/ns-d3d12-d3d12_descriptor_heap_desc)的各个属性文档中有比较的说明
+
+描述符堆具体是存储什么描述符是通过 `D3D12_DESCRIPTOR_HEAP_DESC` 的 `Type` 属性来决定的
+
+- `D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV`: 可以存放CBV, SRV和UAV
+- `D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER`: 存放sampler
+- `D3D12_DESCRIPTOR_HEAP_TYPE_RTV`: 存放RTV
+- `D3D12_DESCRIPTOR_HEAP_TYPE_DSV`: 存放DSV
+
+描述符堆的 `Flag` 属性用来指定描述符堆的可见性，即可以被哪些管线阶段访问
+
+- `D3D12_DESCRIPTOR_HEAP_FLAG_NONE`: 创建只由 CPU 访问的描述符堆，例如专门用于渲染目标视图（RTV）或深度模板视图（DSV）的描述符堆
+- `D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE`: 述符堆可以被着色器程序直接访问
+
+> RTVs 和 DSVs 在常规渲染流程中不需要由着色器直接访问，因为它们通常是由输出合并阶段使用
+
