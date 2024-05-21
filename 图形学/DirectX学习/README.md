@@ -848,4 +848,158 @@ mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPT
 mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 ```
 
+### Resize
+
+在所有数据都初始化完毕之后，就可以根据窗口大小和视口大小来设置数据
+
+由于这些操作在屏幕大小更改之后也要进行，所以直接一起封装到 `OnResize` 函数中
+
+1. 检查关键对象存在，并清空命令队列
+
+```cpp
+assert(md3dDevice);
+assert(mSwapChain);
+assert(mDirectCmdListAlloc);
+
+// Flush before changing any resources.
+FlushCommandQueue();
+```
+
+2. 重置命令列表
+
+```cpp
+ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+```
+
+3. 释放旧资源
+
+释放所有交换链缓冲区和深度模板缓冲区的引用，准备重新创建它们
+
+```cpp
+for (int i = 0; i < SwapChainBufferCount; ++i)
+    mSwapChainBuffer[i].Reset();
+mDepthStencilBuffer.Reset();
+```
+
+4. 调整交换链大小
+
+使用新的窗口 dimensions 调整交换链缓冲区的大小。mClientWidth 和 mClientHeight 为新的尺寸
+
+```cpp
+ThrowIfFailed(mSwapChain->ResizeBuffers(SwapChainBufferCount, mClientWidth, mClientHeight, mBackBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+```
+
+5. 重新创建和绑定 RTV
+
+重新获取每个交换链缓冲区的引用，并为每个缓冲区创建新的 RTV
+
+```cpp
+CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart());
+for (UINT i = 0; i < SwapChainBufferCount; i++)
+{
+    ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
+    md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+    rtvHeapHandle.Offset(1, mRtvDescriptorSize);
+}
+
+```
+
+6. 创建新的深度/模板缓冲区
+
+配置并创建新的深度/模板缓冲区以匹配新的窗口尺寸
+
+设置资源的类型、宽度、高度和格式等属性
+
+创建深度模板视图 (DSV)
+
+```cpp
+// Various settings for the depth/stencil buffer are defined here.
+D3D12_RESOURCE_DESC depthStencilDesc;
+...
+ThrowIfFailed(md3dDevice->CreateCommittedResource(...));
+
+D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+...
+md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), &dsvDesc, DepthStencilView());
+```
+
+7. 设置资源状态和执行命令
+
+之前创建的深度模板视图是一个 `Texture2D` 的资源，资源需要设置状态才能给对应部分使用，所以使用 `CD3DX12_RESOURCE_BARRIER::Transition` 设置资源状态
+
+```cpp
+// Transition the resource from its initial state to be used as a depth buffer.
+mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
+	D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
+// Execute the resize commands.
+ThrowIfFailed(mCommandList->Close());
+ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
+mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+```
+
+8. 等待命令执行完毕，更新视口大小
+
+```cpp
+// Wait until resize is complete.
+FlushCommandQueue();
+
+// Update the viewport transform to cover the client area.
+mScreenViewport.TopLeftX = 0;
+mScreenViewport.TopLeftY = 0;
+mScreenViewport.Width    = static_cast<float>(mClientWidth);
+mScreenViewport.Height   = static_cast<float>(mClientHeight);
+mScreenViewport.MinDepth = 0.0f;
+mScreenViewport.MaxDepth = 1.0f;
+
+mScissorRect = { 0, 0, mClientWidth, mClientHeight };
+```
+
+### Draw
+
+通过 `OnResize` 创建/更新了所有数据，然后通过 `Draw` 就可以根据已有数据进行绘制
+
+```cpp
+void InitDirect3DApp::Draw(const GameTimer& gt)
+{
+	// 重置命令分配器和命令列表
+	ThrowIfFailed(mDirectCmdListAlloc->Reset());
+    ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+
+	// 设置资源状态转换
+	// 这行代码指示 GPU 将当前后台缓冲区的状态从 PRESENT（表示缓冲区已准备好显示）转换为 RENDER_TARGET（表示缓冲区准备接受渲染命令）
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	// 设置视口和剪裁矩形
+    mCommandList->RSSetViewports(1, &mScreenViewport);
+    mCommandList->RSSetScissorRects(1, &mScissorRect);
+
+	// 清除后台缓冲区和深度缓冲区 
+	// 使用 Colors::LightSteelBlue 来填充后台缓冲区颜色
+	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	
+	// 指定 GPU 在渲染过程中使用的渲染目标（后台缓冲区）和深度模板视图
+	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+	
+	// 在渲染命令完成后，将后台缓冲区的状态从 RENDER_TARGET 转换回 PRESENT，准备显示
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	// 提交命令列表，执行和呈现
+	ThrowIfFailed(mCommandList->Close());
+ 
+	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+	
+	ThrowIfFailed(mSwapChain->Present(0, 0));
+	mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
+
+	//  后台缓冲区序号更新和命令队列清空
+	FlushCommandQueue();
+}
+```
+
+`mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount` 用于获取当前能够使用的后台缓冲区，当前缓冲区正在使用，所以下一帧只能用另一个，避免使用同一个缓冲区
 
