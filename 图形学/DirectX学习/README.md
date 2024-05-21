@@ -677,21 +677,21 @@ void D3DApp::CreateSwapChain()
     mSwapChain.Reset();
 
     DXGI_SWAP_CHAIN_DESC sd;
-    sd.BufferDesc.Width = mClientWidth;
-    sd.BufferDesc.Height = mClientHeight;
-    sd.BufferDesc.RefreshRate.Numerator = 60;
+    sd.BufferDesc.Width = mClientWidth;				// 缓冲区分辨率的宽度
+    sd.BufferDesc.Height = mClientHeight;			// 缓冲区分辨率的高度
+    sd.BufferDesc.RefreshRate.Numerator = 60; 		// 刷新率
     sd.BufferDesc.RefreshRate.Denominator = 1;
-    sd.BufferDesc.Format = mBackBufferFormat;
-    sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-    sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-    sd.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-    sd.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.BufferCount = SwapChainBufferCount;
-    sd.OutputWindow = mhMainWnd;
-    sd.Windowed = true;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    sd.BufferDesc.Format = mBackBufferFormat;		// 缓冲区的显示格式
+    sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;	// 逐行扫描 / 隔行扫描
+    sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;	// 图像如何对屏幕进行拉伸
+    sd.SampleDesc.Count = m4xMsaaState ? 4 : 1;				// 每个像素的多样本数
+    sd.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;	// 图像质量级别。 质量越高，性能越低
+    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	// 
+    sd.BufferCount = SwapChainBufferCount;				// 交换链中所用的缓冲区数量
+    sd.OutputWindow = mhMainWnd;						// 渲染窗口的句柄
+    sd.Windowed = true;									// true 窗口模式 / false 全屏模式
+	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;		// 设置交换效果，这里使用 `DXGI_SWAP_EFFECT_FLIP_DISCARD`，这意味着使用翻转模型并且在显示后丢弃旧内容，这种方式可以提高性能并减少延迟
+    sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;	// 
 
 	// 使用 DXGI 工厂对象 (mdxgiFactory) 创建交换链，传入先前配置的描述符 sd 和使用的命令队列（mCommandQueue）
     ThrowIfFailed(mdxgiFactory->CreateSwapChain(
@@ -700,15 +700,6 @@ void D3DApp::CreateSwapChain()
 		mSwapChain.GetAddressOf()));
 }
 ```
-- 参数说明 
-  - `BufferDesc`: 描述了交换链中各缓冲区（后台缓冲区）的属性，包括分辨率、刷新率、像素格式等
-  - `SampleDesc`: 设置多重采样的属性，用于抗锯齿
-  - `BufferUsage`: 指定缓冲区的用途，这里设置为渲染目标输出
-  - `BufferCount`: 设置后台缓冲区的数量
-  - `OutputWindow`: 指定渲染输出的窗口句柄
-  - `Windowed`: 指定交换链是窗口模式还是全屏模式，这里设置为窗口模式
-  - `SwapEffect`: 设置交换效果，这里使用 `DXGI_SWAP_EFFECT_FLIP_DISCARD`，这意味着使用翻转模型并且在显示后丢弃旧内容，这种方式可以提高性能并减少延迟。
-  - `Flags`: 设置其他标志，如允许模式切换，这对于全屏应用很有用
 
 5. `Descriptor Heaps` 描述符堆，用于春初资源描述符的几何
 6. `Command Alloctor` 命令分配器，每个命令列表需要一个命令分配器用于管理内存
