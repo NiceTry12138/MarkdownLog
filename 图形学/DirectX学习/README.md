@@ -1181,3 +1181,234 @@ pixel shader PS 是一个中由 GPU 来执行的程序。它会针对每一个�
 
 ### 绘制几何体
 
+#### 顶点与输入布局
+
+绘制几何体，首先就是要定义顶点，顶点不止存储位置信息，还有其他属性数据，所以定义一个结构体来表示顶点
+
+```cpp
+struct Vertex1 {
+	XMFLOAT3 Pos;		// 位置
+	XMFLOAT4 Color;		// 颜色
+}
+
+struct Vertex2 {
+	XMFLOAT3 Pos;		// 位置
+	XMFLOAT3 Normal;	// 法线
+	XMFLOAT2 Tex0;		// 纹理坐标
+	XMFLOAT2 Tex1;		// 纹理坐标
+}
+```
+
+使用 `Vertex1[]` 数组来存储顶点数据，那么 `DirectX` 如何这个数组应该如何解析呢？这个时候就需要使用**输入布局描述**
+
+```cpp
+typedef struct D3D12_INPUT_ELEMENT_DESC
+{
+    LPCSTR SemanticName;		// 与元素相关联的特定字符串，传达了元素的预期用途
+    UINT SemanticIndex;			// 附加到语义的索引 
+    DXGI_FORMAT Format;			// 指定元素格式 FLOAT、INT、UINT 等
+    UINT InputSlot;				// 传递元素所用的输入槽
+    UINT AlignedByteOffset;		// 某元素起始地址偏移
+    D3D12_INPUT_CLASSIFICATION InputSlotClass;
+    UINT InstanceDataStepRate;	
+} 	D3D12_INPUT_ELEMENT_DESC;
+```
+
+<!-- ![](Image/023.png) -->
+
+![](Image/024.png)
+
+| 属性名 | SemanticName | SemanticIndex | Format | AlignedByteOffset |
+| --- | --- | --- | --- |--- |
+| Pos | "Position" | 0 | DXGI_FORMAT_R32G32B32_FLOAT | 0 |
+| Normal | "Normal" | 0 | DXGI_FORMAT_R32G32B32_FLOAT | 12 |
+| Tex0 | "TEXCOORD" | 0 | DXGI_FORMAT_R32G32_FLOAT | 24 |
+| Tex1 | "TEXCOORD" | 1 | DXGI_FORMAT_R32G32_FLOAT | 32 |
+
+- `SemanticName` 主要用于表示用途，称之为**语义**
+- `SemanticIndex` **语义索引**，故名思意与**语义**有关，当存在多个相同语义的属性时通过**语义索引**进行区分，所以 `Tex1` 的语义索引是 1
+- `Format` 表示数据类型，比如这里的 `DXGI_FORMAT_R32G32B32_FLOAT` 表示由三个32位浮点组成，`DXGI_FORMAT_R32G32_FLOAT` 表示由两个32位浮点组成
+- `AlignedByteOffset` 表示地址偏移，如下图解释
+
+![](Image/025.png)
+
+`Pos` 和 `Normal` 分别由三个 32 位浮点组成，`Tex0` 和 `Tex1` 分别由两个 `32` 位浮点组成，所以 `Vertex` 总共由 10 个 32 位浮点组成
+
+- `Pos` 属性相对 `Vertex` 首地址的内存偏移是0
+- `Normal` 属性相对 `Vertex` 首地址的内存偏移的一个 Pos 大小，也就是 3 个 32 位浮点，12 个字节
+- `Tex0` 属性相对 `Vertex` 首地址的内存偏移是 6 个 32 位浮点，也就是 24 字节
+- `Tex1` 属性相对 `Vertex` 首地址的内存偏移是 8 个 32 位浮点，也就是 32 字节
+
+通过上述计算，可以得到 `AlignedByteOffset` 就是属性相对内存的偏移字节数
+
+当得到一块 `Vertex` 的内存，通过 `AlignedByteOffset` 可以得到每个属性的起始地址，再通过 `Format` 可以得到每个属性的值
+
+为了使 GPU 能够访问顶点数组，一般将顶点数据放在 GPU 资源的 **缓冲区** 里，一般称存放顶点的缓冲区域称为 **顶点缓冲区** （`Vertex Buffer`）
+
+与创建 **深度缓冲区** 类似，通过 `D3D12_RESOURCE_DESC` 来描述缓冲区资源，再通过 `ID3D12Device::CreateCommitedResource` 创建资源对象
+
+对于静态几何体 (也就是每一帧都不会改变的几何体) 来说，会将其顶点缓冲区设置到 `D3D12_HEAP_TYPE_DEFAULT` 中来优化性能。对于这些静态物体，再顶点缓冲区初始化完毕之后，只有 `GPU` 需要从其中读取数据来绘制集合图
+
+如果只有 GPU 能够读取数据，那么如何用 CPU 中的数据来初始化 GPU 中的顶点缓冲区呢？
+
+这时会用到 `D3D12_HEAP_TYPE_UPLOAD` 堆类型来创建一个中介位置的**上传缓冲区**，这里的数据可以从 CPU 复制到 GPU 显存中，再通过**上传缓冲区**将数据复制到**真正的顶点缓冲**区中
+
+**上传堆**在 CPU 管理的**内存**中，**默认堆**在 GPU 管理的**显存**中
+
+```cpp
+Microsoft::WRL::ComPtr<ID3D12Resource> d3dUtil::CreateDefaultBuffer(
+    ID3D12Device* device,
+    ID3D12GraphicsCommandList* cmdList,
+    const void* initData,
+    UINT64 byteSize,
+    Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer)
+{
+    ComPtr<ID3D12Resource> defaultBuffer;
+
+	// 创建 D3D12_HEAP_TYPE_DEFAULT 默认堆资源
+    ThrowIfFailed(device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &CD3DX12_RESOURCE_DESC::Buffer(byteSize),
+		D3D12_RESOURCE_STATE_COMMON,
+        nullptr,
+        IID_PPV_ARGS(defaultBuffer.GetAddressOf())));
+
+	// 创建 D3D12_HEAP_TYPE_UPLOAD 上传堆资源
+    ThrowIfFailed(device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+        &CD3DX12_RESOURCE_DESC::Buffer(byteSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(uploadBuffer.GetAddressOf())));
+
+
+    D3D12_SUBRESOURCE_DATA subResourceData = {};
+    subResourceData.pData = initData;
+    subResourceData.RowPitch = byteSize;
+    subResourceData.SlicePitch = subResourceData.RowPitch;
+
+	// 设置 默认堆 资源转换屏障，表明资源将被用作拷贝目标
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(defaultBuffer.Get(), 
+		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
+    // 将数据从 initData 先复制到 CPU 的上传堆，再通过上传堆复制到 GPU 可见的 默认堆 中
+	UpdateSubresources<1>(cmdList, defaultBuffer.Get(), uploadBuffer.Get(), 0, 0, 1, &subResourceData);
+	// 设置 默认堆 资源转换评传，表明资源可以用于读取操作
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(defaultBuffer.Get(),
+		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+
+    return defaultBuffer;
+}
+```
+
+> 为了不用每次数据上传到 GPU 都要写，于是封装了一层函数
+
+通过上面的操作，成功将数据复制到 GPU 的默认堆中，并且通过输入布局告诉 D3D 如何解析数据
+
+但是这些数据并没有绑定到渲染流水线上，渲染流水线与资源的绑定需要通过资源描述符，所以接下来需要创建顶点缓冲区视图(Vertex Buffer View)
+
+> 我还是觉得一般来说视图（View）通常指的是描述符（Descriptor）
+
+```cpp
+typedef struct D3D12_VERTEX_BUFFER_VIEW
+{
+    D3D12_GPU_VIRTUAL_ADDRESS BufferLocation;	// 待创建视图的顶点缓冲区资源虚拟地址，一般通过 ID3D12Resource::GetGPUVirtualAddress 获取
+    UINT SizeInBytes;			// 顶点缓冲区大小 单位字节
+    UINT StrideInBytes;			// 每个元素所占用的字节数 sizeof(Vertex)
+} 	D3D12_VERTEX_BUFFER_VIEW;
+```
+
+通过 `ID3D12GraphicsCommandList::IASetVertexBuffers` 来绑定资源和输入槽
+
+使用 `ID3D12GraphicsCommandList::DrawInstanced` 进行绘制
+
+#### 索引和索引缓冲区
+
+如前面所说，为了防止顶点数据冗余，一般会设置顶点数组和索引数组，存储索引数组的缓冲区称为**索引缓冲区**
+
+为了将索引缓冲区与渲染流水线绑定，所以要创建一个**索引缓冲区视图**
+
+```cpp
+typedef struct D3D12_INDEX_BUFFER_VIEW
+{
+    D3D12_GPU_VIRTUAL_ADDRESS BufferLocation;	// 资源虚拟地址 
+    UINT SizeInBytes;			// 待创建的索引缓冲区大小 单位字节
+    DXGI_FORMAT Format;			// 必须是 DXGI_FORMAT_R16_UINT 或者 DXGI_FORM_R32_UINT 根据索引数量决定
+} 	D3D12_INDEX_BUFFER_VIEW;
+```
+
+与顶点缓冲区类似，需要将其绑定到渲染流水线上 `ID3D12GraphicsCommandList::IASetIndexBuffer`
+
+然后使用 `ID3D12GraphicsCommandList::DrawIndexedInstanced` 进行绘制
+
+```cpp
+virtual void STDMETHODCALLTYPE DrawIndexedInstanced( 
+	_In_  UINT IndexCountPerInstance,			// 将要绘制的索引数量
+	_In_  UINT InstanceCount,					// 
+	_In_  UINT StartIndexLocation,				// 指向所以缓冲区中的某个元素，作为起始索引
+	_In_  INT BaseVertexLocation,				// 在本次绘制调用读取顶点之前，要为每个索引都加上此值
+	_In_  UINT StartInstanceLocation) = 0;		
+```
+
+为什么需要一个 `StartIndexLocation` 和 `BaseVertexLocation` 呢？
+
+当前存在一个立方体、球体、圆柱体三种物体，处于性能问题，可以将零散顶点缓冲区和索引缓冲区进行合并
+
+合并之后得到如下图所示的一块连续的顶点缓冲区 和 一块连续的顶点索引缓冲区
+
+![](Image/026.png)
+
+> firstCylVertexPos 是圆柱体顶点缓冲区的起始序号
+> firstBoxVertexPos 是立方体顶点缓冲区的起始序号
+
+![](Image/027.png)
+
+> numSphereIndices 是球形索引缓冲区中索引个数
+> numCylIndices 是圆柱体索引缓冲区中索引个数
+> numBoxIndices 是立方体索引缓冲区中索引个数
+
+对于绘制球型来说
+
+```cpp
+mCmdList->DrawIndexedInstanced(numSphereIndices, 1, 0, 0, 0);
+```
+
+对于绘制圆柱体来说
+
+```cpp
+mCmdList->DrawIndexedInstanced(numCylIndices, 1, numSphereIndices, firstCylVertexPos, 0);
+```
+
+对于绘制立方体来说
+
+```cpp
+mCmdList->DrawIndexedInstanced(numBoxIndices, 1, numCylIndices + numSphereIndices, firstCylVertexPos, 0);
+```
+
+#### 顶点着色器
+
+在 D3D 中，编写着色器的语言为**高级着色器语言** (`High Level Shading Language`, `HLSL`)
+
+```cpp
+// 顶点结构体
+struct Vertex{
+	XMFLOAT3 Pos;
+	XMFLOAT4 Color;
+}
+
+// 输入结构描述符
+D3D12_INPUT_ELEMENT_DESC inputLayout[] =
+{
+    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+};
+
+// HLSL 中顶点着色器 VS 部分
+void VS(float3 iPosL: POSITION, float4 iColor: COLOR, out float4 oPosH: SV_POSITION, out float4 oColor: COLOR) {
+	// 
+	oPosH = mul(float4(iPosL, 1.0f), gWorldViewProj);
+	oColor = iColor;
+}
+```
+

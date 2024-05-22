@@ -33,7 +33,6 @@ void D3DBox::Update(const GameTimer& gt)
 
 void D3DBox::Draw(const GameTimer& gt)
 {
-
 }
 
 
