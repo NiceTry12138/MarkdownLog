@@ -6,14 +6,12 @@
 #endif
 
 #include "d3dUtil.h"
-//#include "GameTimer.h"
+#include "GameTimer.h"
 
 // Link necessary d3d12 libraries.
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
-
-class GameTimer;
 
 class D3DApp
 {
@@ -82,7 +80,7 @@ protected:
 	bool		m4xMsaaState = false;	// 是否开启4x多重采样
 	UINT		m4xMsaaQuality = 0;		// 多重采样质量
 
-	//GameTimer	mTimer;					// 时间计时器
+	GameTimer	mTimer;					// 时间计时器
 
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;	// DXGI 工厂
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;	// 交换链
