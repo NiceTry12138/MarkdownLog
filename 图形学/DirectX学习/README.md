@@ -1404,11 +1404,83 @@ D3D12_INPUT_ELEMENT_DESC inputLayout[] =
     { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 };
 
-// HLSL 中顶点着色器 VS 部分
+// HLSL 中顶点着色器(Vertex Shader)部分
 void VS(float3 iPosL: POSITION, float4 iColor: COLOR, out float4 oPosH: SV_POSITION, out float4 oColor: COLOR) {
 	// 
 	oPosH = mul(float4(iPosL, 1.0f), gWorldViewProj);
 	oColor = iColor;
 }
 ```
+
+`Vertex` 结构体中的 `Pos` 属性通过输入布局描述符中的 `"POSITION"` 与 `HLSL` 顶点着色器中的 `float3 iPosL: POSITION` `进行绑定的。同样，Vertex` 结构体中的 `Color` 属性也是通过 `"COLOR"` 与 `float4 iColor: COLOR` 进行绑定的
+
+> 注意 `float3 iPosL: POSITION` 中的 `POSITION`
+
+这种绑定是通过输入布局描述符中的**语义名称**（如 `"POSITION"` 和 `"COLOR"`）来实现的，它们与顶点着色器的输入参数中的语义标签相匹配。这样，当顶点缓冲区被送入 GPU 时，顶点着色器就能够根据这些语义名称接收到正确的数据
+
+事实上，顶点数据与输入签名不需要完全匹配，前提是一定要向顶点着色器提供其输入签名所定义的顶点数据。也就是顶点着色器需要的数据必须提供
+
+`gWorldViewProj` 存与常量缓冲区 (`constant buffer`) 中，内置函数 `mul` 用于计算矩阵长发
+
+`SV_POSITION` 装饰的顶点着色器输出元素存有齐次裁剪空间中的顶点位置信息，因此必须要为输出位置信息的参数附上 `SV_POSITION` 语义，使得 GPU 可以在进行例如裁剪、深度测试和光栅化时，借此实现其他属性所无法接入的有关运算
+
+> `SV_POSITION` 前面的 `SV` 表示 `System-Value` 即系统值
+
+前面的 HLSL 代码可以改写成封装结构体的形式
+
+```cpp
+cbuffer cbPerObject : register(b0)
+{
+	float4x4 gWorldViewProj; 
+};
+
+struct VertexIn
+{
+	float3 PosL  : POSITION;
+    float4 Color : COLOR;
+};
+
+struct VertexOut
+{
+	float4 PosH  : SV_POSITION;
+    float4 Color : COLOR;
+};
+
+VertexOut VS(VertexIn vin)
+{
+	VertexOut vout;
+	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
+    vout.Color = vin.Color;
+    return vout;
+}
+```
+
+关于 `cbPerObject` ，`cbuffer` 是 `HLSL`中的一个关键字，用于定义常量缓冲区（`Constant Buffer`）。常量缓冲区是一种特殊的资源，可以存储着色器中使用的常量数据，如变换矩阵、光照参数等。这些数据在渲染过程中不会改变，或者在多个渲染调用之间保持不变
+
+使用 `register(b0)` 是为了指定常量缓冲区绑定到哪个寄存器。 b0 表示绑定到常量缓冲区寄存器槽 0。你可以使用其他寄存器，如 b1、b2 等，只要它们在你的着色器资源绑定计划中是可用的
+
+定义 `cbPerObject` 是为了给常量缓冲区命名，并且在着色器代码中创建一个逻辑容器，这样可以更方便地组织和访问其中的常量数据。即使你可以直接使用 `gWorldViewProj`，但没有 `cbuffer` 的封装，你就无法将它作为一个**整体**传递到 `GPU`，也无法利用 `HLSL` 和图形 API 提供的常量缓冲区的**优化**
+
+#### 像素着色器
+
+为了计算图元中每个像素的属性，会在光栅化处理期间堆顶点着色器输出的顶点属性进行插值。随后，再将这些插值数据传至像素着色器中，作为输入
+
+在光栅化阶段，图元（如三角形）被转换成像素片段，每个片段对应屏幕上的一个像素。这时，像素着色器会为每个片段运行一次，以确定最终的像素颜色。如果多个图元覆盖同一个像素点，那么像素着色器可能会为该像素点运行多次，每次处理一个不同的片段
+
+#### 常量缓冲区
+
+常量缓冲区（Constant Buffer）也是一种 GPU 资源，其数据内容可供着色器程序所引用
+
+```cpp
+cbuffer cbPerObject : register(b0)
+{
+	float4x4 gWorldViewProj; 
+};
+```
+
+就是定义了一个名为 `cbPerObject` 的 `cbuffer` 常量缓冲区对象
+
+与顶点缓冲区和索引缓冲区不同的是，常量缓冲区通常由 CPU 每帧更新。例如相机每帧都在不停的移动，那么常量缓冲区也需要在每一帧都随之以新的视图矩阵而更新。所以，一般把常量缓冲区创建到一个**上传堆**而非默认堆中，这样使得能从 CPU 端更新常量
+
+常量缓冲区堆硬件也有特别的要求，即常量缓冲区的大小必为**硬件最小分配空间(256B)的整数倍**
 
