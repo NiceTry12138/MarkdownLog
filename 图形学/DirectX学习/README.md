@@ -1784,3 +1784,31 @@ ComPtr<ID3DBlob> d3dUtil::LoadBinary(const std::wstring& filename)
 }
 ```
 
+#### 光栅器状态
+
+渲染流水线中大多阶段是可编程的，但是一些阶段只能接受配置
+
+用来配置渲染流水线中光栅化阶段的光栅器状态组由结构体 `D3D12_RASTERIZER_DESC` 来表示
+
+```cpp
+typedef struct D3D12_RASTERIZER_DESC {
+  D3D12_FILL_MODE                       FillMode;				// 实体模式或线框模式渲染
+  D3D12_CULL_MODE                       CullMode;				// 不绘制指定朝向的三角形，比如正面、背面、或者都渲染
+  BOOL                                  FrontCounterClockwise;	// true 表示顶点逆时针构成的三角形为证明；false 则相反
+  INT                                   DepthBias;				// 
+  FLOAT                                 DepthBiasClamp;			// 
+  FLOAT                                 SlopeScaledDepthBias;	// 
+  BOOL                                  DepthClipEnable;		// 
+  BOOL                                  MultisampleEnable;		// 
+  BOOL                                  AntialiasedLineEnable;	// 
+  UINT                                  ForcedSampleCount;		// 
+  D3D12_CONSERVATIVE_RASTERIZATION_MODE ConservativeRaster;		// 
+} D3D12_RASTERIZER_DESC;
+```
+
+[D3D12_RASTERIZER_DESC的官方文档](https://learn.microsoft.com/zh-cn/windows/win32/api/d3d12/ns-d3d12-d3d12_rasterizer_desc)
+
+#### 流水线状态对象
+
+前面创建了输入布局描述、顶点着色器、像素着色器，配置了光栅器状态组，那么现在问题来了，怎么将这些对象绑定到图形流水线上，用以实际绘制图形
+
