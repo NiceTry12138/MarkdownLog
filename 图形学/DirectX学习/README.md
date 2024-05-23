@@ -1716,15 +1716,71 @@ Direct3D 中，着色器程序必须先被**编译为**一种可移植的**字�
 
 ```cpp
 HRESULT D3DCompileFromFile(
-  [in]            LPCWSTR                pFileName,
-  [in, optional]  const D3D_SHADER_MACRO *pDefines,
-  [in, optional]  ID3DInclude            *pInclude,
-  [in]            LPCSTR                 pEntrypoint,
-  [in]            LPCSTR                 pTarget,
-  [in]            UINT                   Flags1,
-  [in]            UINT                   Flags2,
-  [out]           ID3DBlob               **ppCode,
-  [out, optional] ID3DBlob               **ppErrorMsgs
+  [in]            LPCWSTR                pFileName,		// 希望编译的以 .hlsl 作为扩展名的 HLSL 源码文件
+  [in, optional]  const D3D_SHADER_MACRO *pDefines,		// 高级选项，不使用时填写 nullptr
+  [in, optional]  ID3DInclude            *pInclude,		// 高级选项，不使用时填写 nullptr
+  [in]            LPCSTR                 pEntrypoint,	// 着色器函数的入口点函数名
+  [in]            LPCSTR                 pTarget,		// 指定着色器类型和版本
+  [in]            UINT                   Flags1,		// 如何编译的标志
+  [in]            UINT                   Flags2,		// 高级编译选项
+  [out]           ID3DBlob               **ppCode,		// 指向 ID3DBlob 数据结构的指针，存储编译好的字节码
+  [out, optional] ID3DBlob               **ppErrorMsgs	// 指向 ID3DBlob 数据结构的指针，如果发生错误会存储报错的字符串
 );
+```
+
+`ID3DBlob` 就是一段普通的字符串，通过 `GetBufferPointer` 可以获得 `void*` 类型的指针，需要自己手动转换；通过 `GetBufferSize` 可以获得缓冲区的字节大小
+
+```cpp
+ComPtr<ID3DBlob> d3dUtil::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
+{
+	UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)  
+	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+	HRESULT hr = S_OK;
+
+	ComPtr<ID3DBlob> byteCode = nullptr;
+	ComPtr<ID3DBlob> errors;
+	hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
+
+	if(errors != nullptr) {
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+	}
+
+	ThrowIfFailed(hr);
+
+	return byteCode;
+}
+```
+
+除了运行时编译着色器，还能够以单独的步骤离线的编译着色器
+
+1. 复杂的着色器编译时间长，离线编译可以缩短程序加载时间
+2. 提前编译可以提前发现错误
+
+通常用 `.cso` (`compiled shader object`) 作为以编译着色器的扩展名
+
+可以使用 `DirectX` 自带的 `FXC` 命令行编译工具来离线的编译着色器
+
+在程序运行时，可以通过标准文件输入机制来将 `cso` 中编译好的字节码加载到应用程序中
+
+```cpp
+ComPtr<ID3DBlob> d3dUtil::LoadBinary(const std::wstring& filename)
+{
+    std::ifstream fin(filename, std::ios::binary);
+
+    fin.seekg(0, std::ios_base::end);
+    std::ifstream::pos_type size = (int)fin.tellg();
+    fin.seekg(0, std::ios_base::beg);
+
+    ComPtr<ID3DBlob> blob;
+    ThrowIfFailed(D3DCreateBlob(size, blob.GetAddressOf()));
+
+    fin.read((char*)blob->GetBufferPointer(), size);
+    fin.close();
+
+    return blob;
+}
 ```
 
