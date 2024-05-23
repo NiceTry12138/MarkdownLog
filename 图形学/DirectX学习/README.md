@@ -1480,7 +1480,251 @@ cbuffer cbPerObject : register(b0)
 
 就是定义了一个名为 `cbPerObject` 的 `cbuffer` 常量缓冲区对象
 
+在 Direct3D 12 中 `HLSL` 中可以通过定义单独的结构体，随后再用此结构体来创建一个常量缓冲区
+
+```cpp
+struct ObjectConstants
+{
+    float4x4 gWorldViewProj;
+    uint matIndex;
+};
+
+ConstantBuffer<ObjectConstants> gObjectConstants : register(b0);
+
+uint index = gObjectConstants.matIndex;
+```
+
 与顶点缓冲区和索引缓冲区不同的是，常量缓冲区通常由 CPU 每帧更新。例如相机每帧都在不停的移动，那么常量缓冲区也需要在每一帧都随之以新的视图矩阵而更新。所以，一般把常量缓冲区创建到一个**上传堆**而非默认堆中，这样使得能从 CPU 端更新常量
 
 常量缓冲区堆硬件也有特别的要求，即常量缓冲区的大小必为**硬件最小分配空间(256B)的整数倍**
+
+```cpp
+static UINT CalcConstantBufferByteSize(UINT byteSize)
+{
+	// ~ 表示取反位运算
+	return (byteSize + 255) & ~255;
+}
+```
+
+绘制多个物体时，可能会需要多个相同类型的常量缓冲区，根据不同的物体而存储不同的数据。所以可以一次性创建多个 `ObjectConstants` 大小的空间，用于存储常量缓冲数组
+
+```cpp
+struct ObjectConstants;
+
+// 将大小变成 256 的倍数
+UINT mElementByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+
+ComPtr<D3D12Resource> mUploadCBuffer;
+device->CreateCommittedResource(
+	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	D3D12_HEAP_FLAG_NONE,
+	&CD3DX12_RESOURCE_DESC::Buffer(mElementByteSize * NumElements),
+	D3D12_RESOURCE_STATE_GENERIC_READ,
+	nullptr,
+	IID_PPV_ARGS(&mUploadCBuffer)
+);
+```
+
+由于是通过 `D3D12_HEAP_TYPE_UPLOAD` 来创建，所以可以通过 CPU 更新数据
+
+首先听过 `D3D12Resource::Map` 获取指向资源中指定子资源的 CPU 指针
+
+```cpp
+ComPtr<D3D12Resource> mUploadBuffer;
+BYTE* mMappedData = nullptr;
+mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedData));
+```
+
+然后可以通过 `memcpy` 将系统数据复制到常量缓冲区中
+
+```cpp
+memcpy(mMappedData, &data, dataSizeInBytes);
+```
+
+设置完毕之后，再通过 `Unmap` 取消映射
+
+如果没有 `Unmap` 那么外界仍然能通过 `mMappedData` 来操作数据，比如绘制到一般时，数据发生了更改，这是很危险的
+
+如果 `Unmap` 之后仍然想通过 `mMappedData` 来操作 `Resource` 也是很危险的，因为 `DirectX` 可能在运行时重新分配了内存
+
+```cpp
+if(mUploadBuffer != nullptr) {
+	mUploadBuffer->Unmap(0, nullptr);
+}
+mMappedData = nullptr;
+```
+
+由于对于 上传堆 资源处理都是类似的，所以封装一个 `UploadBuffer` 类专门封装用于上传的资源
+
+```cpp
+UploadBuffer(ID3D12Device* device, UINT elementCount, bool isConstantBuffer) : 
+	mIsConstantBuffer(isConstantBuffer)
+{
+	mElementByteSize = sizeof(T);
+
+	if(isConstantBuffer) {
+		mElementByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(T));
+	}
+
+	ThrowIfFailed(device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(mElementByteSize*elementCount),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&mUploadBuffer)));
+
+	ThrowIfFailed(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedData)));
+}
+```
+
+然后跟之前的深度模板视图一样，要创建一个对应的堆 `D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV` 
+
+```cpp
+D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
+cbvHeapDesc.NumDescriptors = 1;
+cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+cbvHeapDesc.NodeMask = 0;
+ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&mCbvHeap)));
+```
+
+> 这里将 `Flag` 设置为 `D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE`，因为要给着色器程序访问
+
+创建描述符堆之后，就是创建常量缓冲区描述符
+
+通过填写 `D3D12_Constant_BUFFER_VIEW_DESC` 实例，调用 `ID3D12Device::CreateConstantBufferView` 来创建常量缓冲区
+
+所以，一般流程代码如下
+
+```cpp
+// 定义结构体
+struct ObjectConstant {
+	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
+}
+
+// 定义 n 个常量缓冲区存储常量数据
+std::unique_ptr<UploadBuffer<ObjectConstant>> mObjectCB = nullptr;
+mObjectCB = std::make_unique<UploadBuffer<ObjectConstant>>(md3dDevice.Get(), n, true);
+
+// 得到实际大小 至少得是 256 的倍数
+UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstant));
+
+// 得到缓冲区的起始地址
+D3D12_GPU_VAITUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
+
+// 得到第 i 个缓冲区偏移
+int boxCBufIndex = i;
+cbAddresss += boxCBufIndex * objCBByteSize;
+
+D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+cbvDesc.BufferLocation = cbAddress;
+cbvDesc.SizeInBytes = objCBByteSize;
+
+// 创建资源描述符
+md3dDevice->CreateConstantBufferView(&cbvDesc, mCbvHeap->GetCPUDescriptionHandleForHeapStart());
+```
+
+在绘制开始之前，会将着色器程序所需的各种类型的资源绑定到渲染流水上。实际上，不同的资源会被绑定到特定的寄存器槽(`register slot`) 上，以供着色器访问
+
+```hlsl
+// 纹理寄存器 槽 0
+Texture2D gDiffuseMap : register(t0);
+
+// 采样寄存器 槽 0 ~ 5
+SmaplerState gsamPointWrap : register(s0);
+SmaplerState gsamPointClamp : register(s1);
+SmaplerState gsamLinearWrap : register(s2);
+SmaplerState gsamLinearCalmp : register(s3);
+SmaplerState gsamAnisotropicWrap : register(s4);
+SmaplerState gsamAnisotropicClamp : register(s5);
+
+// 常量缓冲区 槽 0 
+cbuffer cbPerObject : register(b0) {
+	float4x4 gWorld;
+}
+
+// 常量缓冲区 槽 1
+cbuffer cbPass : register(b1) {
+	float4x4 gView;
+}
+```
+
+使用 **根签名* (`root signature`) 来定义着色器程序与应用程序之间的接口。根签名定义了哪些资源(常量缓冲区、纹理、采样器等)可以被绑定，并且指明了如何在着色器程序中访问这些资源
+
+在执行绘制命令之前，那些应用程序将绑定到渲染流水线上的资源，他们会被映射到着色器的对应输入寄存器。所以**根签名**一定要与使用它的着色器相兼容，在创建**流水线状态对象**(Pipeline State Object)时会对此进行验证
+
+不同的绘制调用可能会用到一组不同的着色器程序，这也就意味着要用到不同的**根签名**
+
+**根签名** 由 `ID3D12RootSignature` 表示
+
+根签名由一个或多个根参数（Root Parameters）组成，这些参数可以是以下几种类型之一：
+
+1. 根常量（Root Constants）：
+	- 直接在根签名中包含的少量常量数据（比如一些转换矩阵或光照参数）
+	- 这些常量可以直接由着色器访问，无需通过任何缓冲区
+
+2. 根描述符（Root Descriptors）：
+	- 单个的描述符，可以是常量缓冲区视图（CBV）、着色器资源视图（SRV）或无序访问视图（UAV）
+	- 提供比根常量更大的灵活性，可以直接绑定一个缓冲区或纹理
+
+3. 根描述符表（Root Descriptor Tables）：
+   - 这是一个指向多个描述符的指针数组（例如多个缓冲区或纹理），这些描述符组织在一个或多个描述符堆中
+  - 适用于需要访问大量资源的情况
+
+```cpp
+void BoxApp::BuildRootSignature()
+{
+	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+
+	CD3DX12_DESCRIPTOR_RANGE cbvTable;
+	// D3D12_DESCRIPTOR_RANGE_TYPE_CBV：指定这个描述符范围的类型是CBV。这意味着这个范围内的描述符都是常量缓冲视图。
+	// 1：这个数字表示范围内描述符的数量。这里是1，意味着这个范围包含一个CBV。
+	// 0：这是描述符在根签名中的基础寄存器索引。这里的0表示这个CBV从寄存器 b0 开始。
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+
+	// Something Else
+
+	ThrowIfFailed(md3dDevice->CreateRootSignature(
+		0,
+		serializedRootSig->GetBufferPointer(),
+		serializedRootSig->GetBufferSize(),
+		IID_PPV_ARGS(&mRootSignature)));
+}
+```
+
+创建**根签名**之后，在绘制时通过命令与具体的视图进行绑定
+
+```cpp
+ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap.Get() };
+mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+// 这行代码将描述符堆中的描述符绑定到根签名的一个特定槽位 这里是槽位0
+mCommandList->SetGraphicsRootDescriptorTable(0, mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+```
+
+- `SetDescriptorHeaps`：在这里，mCbvHeap 是用来告诉命令列表，接下来的绘制命令将会使用哪些描述符堆
+- `SetGraphicsRootDescriptorTable`：在这里，使用 `mCbvHeap` 来指定具体的描述符（从堆的起始位置开始）绑定到根签名的哪个槽位
+
+`GetGPUDescriptorHandleForHeapStart` 第一参数 0，表示槽位 0，也就是 `slotRootParameter[0]`
+
+#### 编译着色器
+
+Direct3D 中，着色器程序必须先被**编译为**一种可移植的**字节码**。然后图形驱动程序将获取这些字节码，并将其**重新编译**为针对当前系统 GPU 所优化的**本地指令**
+
+```cpp
+HRESULT D3DCompileFromFile(
+  [in]            LPCWSTR                pFileName,
+  [in, optional]  const D3D_SHADER_MACRO *pDefines,
+  [in, optional]  ID3DInclude            *pInclude,
+  [in]            LPCSTR                 pEntrypoint,
+  [in]            LPCSTR                 pTarget,
+  [in]            UINT                   Flags1,
+  [in]            UINT                   Flags2,
+  [out]           ID3DBlob               **ppCode,
+  [out, optional] ID3DBlob               **ppErrorMsgs
+);
+```
 
