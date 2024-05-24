@@ -1,11 +1,3 @@
-struct ObjectConstants
-{
-    float4x4 gWorldViewProj;
-    uint matIndex;
-};
-
-ConstantBuffer<ObjectConstants> gObjectConstants : register(b0);
-
 cbuffer cbPerObject : register(b0)
 {
     float4x4 gWorldViewProj;
@@ -40,5 +32,3 @@ float4 PS(VertexOut pin) : SV_Target
 {
     return pin.Color;
 }
-
-
