@@ -1812,3 +1812,63 @@ typedef struct D3D12_RASTERIZER_DESC {
 
 前面创建了输入布局描述、顶点着色器、像素着色器，配置了光栅器状态组，那么现在问题来了，怎么将这些对象绑定到图形流水线上，用以实际绘制图形
 
+大多数控制图形流水线状态的对象被统称为**流水线状态对象**(`Pipeline State Object`)
+
+在 D3D 中使用 `ID3D12PipelineState` 接口表示 PSO 对象，要创建 PSO 对象需要填写详细的 `D3D12_GRAPHICS_PIPELINE_STATE_DESC`
+
+```cpp
+typedef struct D3D12_GRAPHICS_PIPELINE_STATE_DESC {
+  ID3D12RootSignature                *pRootSignature;		// 根签名
+  D3D12_SHADER_BYTECODE              VS;					// 顶点着色器字节码
+  D3D12_SHADER_BYTECODE              PS;					// 像素着色器
+  D3D12_SHADER_BYTECODE              DS;					// 域着色器
+  D3D12_SHADER_BYTECODE              HS;					// 外壳着色器
+  D3D12_SHADER_BYTECODE              GS;					// 几何着色器
+  D3D12_STREAM_OUTPUT_DESC           StreamOutput;			// 
+  D3D12_BLEND_DESC                   BlendState;			// 指定混合操作所用的混合状态
+  UINT                               SampleMask;			// 多重采样技术最多可采集32个样本，不想采集某个样本则二进制对应位置为0
+  D3D12_RASTERIZER_DESC              RasterizerState;		// 光栅器的光栅化状态
+  D3D12_DEPTH_STENCIL_DESC           DepthStencilState;		// 深度.模板状态
+  D3D12_INPUT_LAYOUT_DESC            InputLayout;			// 输入布局描述
+  D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBStripCutValue;		// 索引缓冲区的属性
+  D3D12_PRIMITIVE_TOPOLOGY_TYPE      PrimitiveTopologyType;	// 图元拓扑类型
+  UINT                               NumRenderTargets;		// RTVFormats 成员中呈现目标格式的数目
+  DXGI_FORMAT                        RTVFormats[8];			// 渲染目标格式
+  DXGI_FORMAT                        DSVFormat;				// 深度模板缓冲区格式
+  DXGI_SAMPLE_DESC                   SampleDesc;			// 多重采样堆每个像素采样的数量及质量级别
+  UINT                               NodeMask;				// 对于单个 GPU 操作，请将此设置为零
+  D3D12_CACHED_PIPELINE_STATE        CachedPSO;				// 缓存的管道状态对象
+  D3D12_PIPELINE_STATE_FLAGS         Flags;					// 
+} D3D12_GRAPHICS_PIPELINE_STATE_DESC;
+```
+
+`ID3D12PipelineState` 集合了大量流水线状态信息，为了保证性能，将所有这些对象都集中在一起，一并送到渲染流水线
+
+Direct3D 本质上是一种状态机
+
+```cpp
+mCommandList->SetPipllineState(mPso1.Get());
+// 使用 PSO1 绘制物体
+
+mCommandList->SetPipllineState(mPso2.Get());
+// 使用 PSO2 绘制物体
+```
+
+在使用 `PSO2` 修改流水线状态之前，会一直用 `PSO1` 的配置进行渲染流水线
+
+#### 几何图形辅助函数
+
+```cpp
+struct SubmeshGeometry
+{
+	UINT IndexCount = 0;
+	UINT StartIndexLocation = 0;
+	INT BaseVertexLocation = 0;
+
+	DirectX::BoundingBox Bounds;
+};
+```
+
+```cpp
+
+```
