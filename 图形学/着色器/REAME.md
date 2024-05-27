@@ -177,8 +177,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     suv.x *= iResolution.x / iResolution.y;    // 调整x坐标，考虑屏幕的宽高比，确保圆形不会变形
     
     vec2 dir = normalize(uv - vec2(0.0));
-    float noiseValue = noise2(uv + dir * 0.1 + vec2(iTime) * 1.0);
-    noiseValue *= 0.6;
+    float noiseValue = noise2(uv + dir * changeRateFactor + vec2(iTime) * speedFactor);
+    noiseValue *= radiusBuffer;
     
     fragColor = mix(bgColor, circleColor, step(length(suv), radius + noiseValue));
 }
