@@ -1859,16 +1859,37 @@ mCommandList->SetPipllineState(mPso2.Get());
 #### 几何图形辅助函数
 
 ```cpp
+// 结构体定义了一个几何子网格
 struct SubmeshGeometry
 {
-	UINT IndexCount = 0;
-	UINT StartIndexLocation = 0;
-	INT BaseVertexLocation = 0;
+	UINT IndexCount = 0;				// 需要绘制的索引数量
+	UINT StartIndexLocation = 0;		// 在索引缓冲区中，绘制操作应该开始读取索引的起始位置
+	INT BaseVertexLocation = 0;			// 顶点缓冲区中的基础顶点位置
 
-	DirectX::BoundingBox Bounds;
+	DirectX::BoundingBox Bounds;		// 此子网格的边界盒，在进行如视锥裁剪等操作时非常有用
 };
 ```
 
 ```cpp
+// 存储和管理与一组几何数据相关的所有资源和状态的容器
+struct MeshGeometry
+    std::string Name;		// 几何体的名称，用于通过名称索引查找具体的几何体
 
+    Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;				// 顶点和索引数据的系统内存副本，方便CPU访问
+    Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;				// 
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;		// 上传到GPU的顶点和索引缓冲区
+    Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;		// 
+	
+    Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;		// 将数据从CPU传输到GPU的上传缓冲区
+    Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;		// 将数据从CPU传输到GPU的上传缓冲区
+
+    UINT VertexByteStride = 0;													// 缓冲区的布局和格式
+    UINT VertexBufferByteSize = 0;												// 	
+    DXGI_FORMAT IndexFormat = DXGI_FORMAT_R16_UINT;								// 					
+    UINT IndexBufferByteSize = 0;												// 	
+
+    std::unordered_map<std::string, SubmeshGeometry> DrawArgs;					// 按名称访问各个子网格，每个子网格可以单独绘制
+}
 ```
+
