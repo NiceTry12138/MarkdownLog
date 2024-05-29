@@ -1872,7 +1872,7 @@ struct SubmeshGeometry
 
 ```cpp
 // 存储和管理与一组几何数据相关的所有资源和状态的容器
-struct MeshGeometry
+struct MeshGeometry {
     std::string Name;		// 几何体的名称，用于通过名称索引查找具体的几何体
 
     Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;				// 顶点和索引数据的系统内存副本，方便CPU访问
@@ -1891,5 +1891,238 @@ struct MeshGeometry
 
     std::unordered_map<std::string, SubmeshGeometry> DrawArgs;					// 按名称访问各个子网格，每个子网格可以单独绘制
 }
+```
+
+通过上述结构体，可以方便的定义一个具有多个子几何体的几何体，下面以一个立方体为例
+
+```cpp
+std::array<Vertex, 8> vertices =
+{
+	Vertex({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White) }),
+	Vertex({ XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Black) }),
+	Vertex({ XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Red) }),
+	Vertex({ XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green) }),
+	Vertex({ XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Blue) }),
+	Vertex({ XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Yellow) }),
+	Vertex({ XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Cyan) }),
+	Vertex({ XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta) })
+};
+
+std::array<std::uint16_t, 36> indices =
+{
+	// front face
+	0, 1, 2,
+	0, 2, 3,
+
+	// back face
+	4, 6, 5,
+	4, 7, 6,
+
+	// left face
+	4, 5, 1,
+	4, 1, 0,
+
+	// right face
+	3, 2, 6,
+	3, 6, 7,
+
+	// top face
+	1, 5, 6,
+	1, 6, 2,
+
+	// bottom face
+	4, 0, 3,
+	4, 3, 7
+};
+```
+
+`vertices` 定义了立方体的八个顶点， `indices` 定义了立方体的六个面，一个面由两个三角形组成
+
+接下来就是将数据保存到 `MeshGeometry` 对象中
+
+获得几何体内存大小
+
+```cpp
+const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+```
+
+通过几何体大小创建 `CPU` 可访问的 `Buffer`
+
+```cpp
+D3DCreateBlob(vbByteSize, &mBoxGeo->VertexBufferCPU);
+CopyMemory(mBoxGeo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+D3DCreateBlob(ibByteSize, &mBoxGeo->IndexBufferCPU);
+CopyMemory(mBoxGeo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+```
+
+通过 `d3dUtil::CreateDefaultBuffer` 创建 **上传堆** 和 **默认堆**，将数据从内存中通过上传堆转到显存中供 GPU 使用
+
+```cpp
+mBoxGeo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	mCommandList.Get(), vertices.data(), vbByteSize, mBoxGeo->VertexBufferUploader);
+
+mBoxGeo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	mCommandList.Get(), indices.data(), ibByteSize,mBoxGeo->IndexBufferUploader);
+```
+
+定义布局，帮助解释内存布局
+
+```cpp
+mBoxGeo->VertexByteStride = sizeof(Vertex);		// 步长
+mBoxGeo->VertexBufferByteSize = vbByteSize;		// 大小
+mBoxGeo->IndexFormat = DXGI_FORMAT_R16_UINT;	// 结构
+mBoxGeo->IndexBufferByteSize = ibByteSize;		// 大小
+```
+
+定义子模型的大小，由于这里只有一个立方体，所以只有一个子模型
+
+```cpp
+SubmeshGeometry submesh;
+submesh.IndexCount = (UINT)indices.size();	// 子模型索引个数
+submesh.StartIndexLocation = 0;				// 子模型索引起始序号
+submesh.BaseVertexLocation = 0;				// 子模型顶点起始序号
+
+mBoxGeo->DrawArgs["box"] = submesh;
+```
+
+#### 绘制 Box
+
+根据前面的描述，在初始化的还需要
+
+1. 创建常量描述符堆，创建常量描述符
+2. 创建根标签
+3. 编译 Shader 
+4. 设置输入布局
+5. 设置顶点缓冲和索引缓冲
+6. 创建光栅器状态对象，并创建 PSO 流水线状态对象
+
+```cpp
+bool D3DBox::Initialize()
+{
+	if (!D3DApp::Initialize())
+		return false;
+
+	ThrowIfFailed(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
+
+	BuildDescriptorHeaps();				// 创建常量描述符堆
+	BuildConstantBuffers();				// 创建常量缓冲区 			
+	BuildRootSignature();				// 创建根标签			
+	BuildShaderAndInputLayout();		// 编译 Shader 设置输入布局 					
+	BuildBoxGeometry();					// 设置 Box 数据		
+	BuildPSO();							// 创建 光栅化状态对象 和 PSO 对象
+
+	ThrowIfFailed(mCommandList->Close());
+	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	FlushCommandQueue();
+
+	return true;
+}
+```
+
+除了 `D3D` 相关数据初始化之外，相机的坐标、角度等也需要计算
+
+```cpp
+int D3DApp::Run()
+{
+	MSG msg{ 0 };
+	mTimer.Reset();
+
+	while (msg.message != WM_QUIT)
+	{
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else {
+			mTimer.Tick();
+			if (!mAppPaused) {
+				CalculateFrameState();
+				Update(mTimer);
+				Draw(mTimer);
+			}
+			else {
+				Sleep(100);
+			}
+		}
+	}
+
+    return 0;
+}
+```
+
+一般来说系统的运行流程如上所示，有事件(鼠标、键盘输入)处理事件，没事件先执行 `Update` 再执行 `Draw` 
+
+`Update` 中更新数据，`Draw` 中调用命令绘制画面
+
+如果先执行 `Draw`，此时数据都没有初始化或者设置，绘制没有任何意义
+
+所以此时还需要在 Update 中更新一些数据，比如设置相机和对象的变换矩阵
+
+这里相机使用的是**球坐标系**，使用相机距离目标点(原点)的半径、极角和方位角即可定义相机坐标
+
+- **方位角**: 这是一个水平角度，表示从参考方向（通常是x轴正方向）到点在水平平面上投影的线之间的角度。在直角坐标系中，它对应于点在xy平面上的位置
+
+- **极角**: 这是一个垂直角度，表示从正z轴到点的连线与z轴之间的角度。它描述了点相对于水平面的高度
+
+![](Image/028.png)
+
+如上图所示，r 表示半径， $\phi$ 表示**极角**， $\theta$ 表示**方位角**，通过这三个数据可以得到相机在世界坐标系下的坐标
+
+```cpp
+float x = mRadius * sinf(mPhi) * cosf(mTheta);
+float z = mRadius * sinf(mPhi) * sinf(mTheta);
+float y = mRadius * cosf(mPhi);
+```
+
+使用球坐标系有方便计算相机绕点旋转、避免万向锁、方便交互等好处，具体情况可以根据实际开发需求进行变换
+
+知道相机坐标之后定义**视图矩阵**，`pos` 表示相机坐标、`target` 表示目标点向量、`up` 表示相机的上方向向量
+
+```cpp
+XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
+XMVECTOR target = XMVectorZero();
+XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+```
+
+通过 `target` 点和 `pos` 点可以定义相机的朝向也就是 `Pitch` 和 `Yaw`，通过 `up` 向量可以定义相机的 `Roll`
+
+![](Image/029.png)
+
+接下来就是构建世界-视图-投影矩阵，用于计算物体坐标
+
+物体中顶点坐标都是物体坐标系
+
+1. 通过**世界矩阵**将物体从局部坐标系转换到世界坐标系
+2. 通过**视图矩阵**将物体从世界坐标系转换到相机坐标系
+3. 通过**投影矩阵**将物体从相机坐标系转换到裁剪空间
+
+通过 **世界-视图-投影** 矩阵可以将物体从局部坐标转换到最终的 2D 屏幕坐标
+
+$\text{屏幕坐标} = \text{投影矩阵} \times \text{视图矩阵} \times \text{世界矩阵} \times \text{模型坐标}$
+
+```cpp
+XMStoreFloat4x4(&mView, view);
+
+XMMATRIX world = XMLoadFloat4x4(&mWorld);
+XMMATRIX proj = XMLoadFloat4x4(&mProj);
+XMMATRIX worldViewProj = world * view * proj;
+
+ObjectConstants objConstants;
+XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+mObjectCB->CopyData(0, objConstants);
+```
+
+通过上述步骤计算得到一个可以一次将坐标变换到屏幕坐标的矩阵，并将其存储到了 `ConstantBuffer` 中
+
+在顶点着色器中可以直接使用该矩阵进行计算
+
+```cpp
+vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
 ```
 
