@@ -231,3 +231,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 然后在材质中根据贴图采样和原本的扇形进行运算，得到重合区域，将其显示出来
 
 ![](Image/018.png)
+
+如果每个 `Actor` 都挂载 `Plane` 并每帧做射线检测，可能会导致性能问题
+
+对于每个 `Actor` 都挂载的情况，可以不每帧做射线检测，而是是同 `Timer` 的方式定时调用，齐次可以设置射线检测的角度间隔来减少射线检测的数量
+
+又或者，只用一张很大的 `RenderTarget` 贴在地面，然后将所有 `Actor` 的射线检测之后的视线范围都投射到这张大的 `RenderTarget` 中
+
+如此一来只用一张 `RenderTarget` 就可以一次性绘制
