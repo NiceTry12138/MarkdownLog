@@ -114,14 +114,41 @@ void D3DBox::Draw(const GameTimer& gt)
 
 void D3DBox::OnMouseDown(WPARAM btnState, int x, int y)
 {
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
+
+	SetCapture(mhMainWnd);
 }
 
 void D3DBox::OnMouseUp(WPARAM btnState, int x, int y)
 {
+	ReleaseCapture();
 }
 
-void D3DBox::OnMouseMove(WPARAM btnStae, int x, int y)
+void D3DBox::OnMouseMove(WPARAM btnState, int x, int y)
 {
+	if ((btnState & MK_LBUTTON) != 0)
+	{
+		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+
+		mTheta += dx;
+		mPhi += dy;
+
+		mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
+	}
+	else if ((btnState & MK_RBUTTON) != 0)
+	{
+		float dx = 0.005f * static_cast<float>(x - mLastMousePos.x);
+		float dy = 0.005f * static_cast<float>(y - mLastMousePos.y);
+
+		mRadius += dx - dy;
+
+		mRadius = MathHelper::Clamp(mRadius, 3.0f, 15.0f);
+	}
+
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
 }
 
 void D3DBox::BuildDescriptorHeaps()

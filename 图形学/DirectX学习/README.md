@@ -2188,3 +2188,53 @@ void D3DBox::Draw(const GameTimer& gt)
 	FlushCommandQueue();
 }
 ```
+
+当屏幕中绘制玩立方体之后，可以通过鼠标来控制旋转和远近，通过相机的球形坐标系，可以很方便的实现相机绕原点旋转的效果
+
+```cpp
+void D3DBox::OnMouseDown(WPARAM btnState, int x, int y)
+{
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
+
+	SetCapture(mhMainWnd);
+}
+
+void D3DBox::OnMouseUp(WPARAM btnState, int x, int y)
+{
+	ReleaseCapture();
+}
+```
+
+通过 `SetCapture` 可以将所有的鼠标消息发送到这个窗口，`ReleaseCapture` 则释放鼠标捕获
+
+```cpp
+void D3DBox::OnMouseMove(WPARAM btnState, int x, int y)
+{
+	if ((btnState & MK_LBUTTON) != 0)
+	{
+		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+
+		mTheta += dx;
+		mPhi += dy;
+
+		mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
+	}
+	else if ((btnState & MK_RBUTTON) != 0)
+	{
+		float dx = 0.005f * static_cast<float>(x - mLastMousePos.x);
+		float dy = 0.005f * static_cast<float>(y - mLastMousePos.y);
+
+		mRadius += dx - dy;
+
+		mRadius = MathHelper::Clamp(mRadius, 3.0f, 15.0f);
+	}
+
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
+}
+```
+
+在鼠标移动的时候根据是否按下 `MK_LBUTTON` 或 `MK_RBUTTON` 来调整 `mRadius` 值 或者 `mTheta`、`mPhi` 值
+
