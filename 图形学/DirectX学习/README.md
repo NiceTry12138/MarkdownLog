@@ -2126,3 +2126,65 @@ mObjectCB->CopyData(0, objConstants);
 vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
 ```
 
+更新完数据之后，就需要根据已有数据进行渲染
+
+```cpp
+void D3DBox::Draw(const GameTimer& gt)
+{
+	// 重设命令
+	ThrowIfFailed(mCommandAllocator->Reset());
+
+	ThrowIfFailed(mCommandList->Reset(mCommandAllocator.Get(), mPSO.Get()));
+
+	// 设置视口和窗口大小  RS 表示 Rasterizer Stage 光栅化阶段
+	mCommandList->RSSetViewports(1, &mScreenViewport);
+	mCommandList->RSSetScissorRects(1, &mScissorRect);
+
+	// 设置 Buffer 为可以写入 RenderTarget
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	// 清空 RTV
+	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	// 清空 DSV
+	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	// 设置 RT
+	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+	// 设置描述符堆
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap.Get() };
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	// 设置根标签
+	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+
+	// 设置顶点、顶点索引、绘制图形
+	mCommandList->IASetVertexBuffers(0, 1, &mBoxGeo->VertexBufferView());
+	mCommandList->IASetIndexBuffer(&mBoxGeo->IndexBufferView());
+	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// 设置常量缓冲区到根标签表中的第0个
+	mCommandList->SetGraphicsRootDescriptorTable(0, mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+
+	// 绘制 Box
+	mCommandList->DrawIndexedInstanced(mBoxGeo->DrawArgs["box"].IndexCount, 1, 0, 0, 0);
+
+	// 重新设置 Buffer 状态
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	// 关闭命令
+	ThrowIfFailed(mCommandList->Close());
+
+	// 执行命令
+	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	// 将缓冲区显示到屏幕上
+	ThrowIfFailed(mSwapChain->Present(0, 0));
+	// 重新设置后台缓冲区序号，因为当前缓冲区已经由于显示了，所以得换一个缓冲区
+	mCurrentBackBuffer = (mCurrentBackBuffer + 1) % SwapChainBufferCount;
+
+	// 等待命令执行完毕
+	FlushCommandQueue();
+}
+```
