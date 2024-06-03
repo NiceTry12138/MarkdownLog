@@ -2347,3 +2347,173 @@ void ShapesApp::Draw(const GameTimer& gt) {
 
 #### 渲染项
 
+绘制一个物体需要设置多种参数，例如绑定顶点缓冲区、索引缓冲区、常量数据、图元类型等
+
+随着场景中所绘制物体的逐渐增多，使用一个轻量级结构来存储绘制物体所需的数据进行。一般把单词绘制调用过程中，需要向渲染流水线提交的数据集称为**渲染项**
+
+根据不同的应用程序会有所差别
+
+```cpp
+struct RenderItem
+{
+	RenderItem() = default;
+
+	// 局部空间相对世界空间的世界矩阵 定义了物体位于世界空间中的位置、朝向以及大小
+	XMFLOAT4X4 World = MathHelper::Identity4x4();
+
+	// 
+	int NumFramesDirty = gNumFrameResources;
+
+	// 该索引指向的 GPU 常量缓冲区对于当前渲染项中的物体常量缓冲区
+	UINT ObjCBIndex = -1;
+
+	// 此渲染项参与绘制的几何体，绘制一个几何体可能会用到多个渲染项
+	MeshGeometry* Geo = nullptr;
+
+	// 图元拓扑
+	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	// DrawIndexedInstanced 方法的参数
+	UINT IndexCount = 0;
+	UINT StartIndexLocation = 0;
+	int BaseVertexLocation = 0;
+};
+```
+
+#### 渲染过程中所用到的常量数据
+
+```cpp
+struct PassConstants
+{
+	DirectX::XMFLOAT4X4 View = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 InvView = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 Proj = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 InvProj = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 ViewProj = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 InvViewProj = MathHelper::Identity4x4();
+	DirectX::XMFLOAT3 EyePosW = { 0.0f, 0.0f, 0.0f };
+	float cbPerObjectPad1 = 0.0f;
+	DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
+	DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
+	float NearZ = 0.0f;
+	float FarZ = 0.0f;
+	float TotalTime = 0.0f;
+	float DeltaTime = 0.0f;
+};
+```
+
+随着项目复杂度的增加，缓冲区中存储的数据内容会根据特定的渲染过程而确定下来
+
+其中包含了与游戏计时有关的信息，时着色器程序中要访问的极其有用的数据
+
+```hlsl
+cbuffer cbPass : register(b1)
+{
+    float4x4 gView;
+    float4x4 gInvView;
+    float4x4 gProj;
+    float4x4 gInvProj;
+    float4x4 gViewProj;
+    float4x4 gInvViewProj;
+    float3 gEyePosW;
+    float cbPerObjectPad1;
+    float2 gRenderTargetSize;
+    float2 gInvRenderTargetSize;
+    float gNearZ;
+    float gFarZ;
+    float gTotalTime;
+    float gDeltaTime;
+};
+```
+
+此时，为了绘制物体，唯一与之相关的变量就是**世界矩阵**
+
+```hlsl
+cbuffer cbPerObject : register(b0)
+{
+	float4x4 gWorld; 
+};
+```
+
+基于资源的更新频率对常量数据进行分组，每次渲染过程中，只需要将本次所用的常量 `cbPass` 更新一次；当物体的世界矩阵发生改变时，只需要更新该物体的相关常量(`cbPerObject`)即可
+
+由于得到的是世界坐标矩阵和裁剪矩阵两个矩阵，对应的顶点着色器也要做修改
+
+```cpp
+VertexOut VS(VertexIn vin)
+{
+	VertexOut vout;
+	// 变换到齐次世界坐标系
+    float4 posW = mul(float4(vin.PosL, 1.0f), gWorld);
+	// 变换到裁剪坐标系
+    vout.PosH = mul(posW, gViewProj);
+	
+    vout.Color = vin.Color;
+    
+    return vout;
+}
+```
+
+> `D3DBox` 中一步到位是因为存储的的是 世界-视图-矩阵
+
+由于现在需要两个常量缓冲区来存储数据信息，所以根签名也要做出对应的修改
+
+```cpp
+CD3DX12_DESCRIPTOR_RANGE cbvTable0;
+// 存储到 b0 寄存器
+cbvTable0.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+
+CD3DX12_DESCRIPTOR_RANGE cbvTable1;
+// 存储到 b1 寄存器
+cbvTable1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);
+
+CD3DX12_ROOT_PARAMETER slotRootParameter[2];
+
+slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable0);
+slotRootParameter[1].InitAsDescriptorTable(1, &cbvTable1);
+
+CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+```
+
+#### 不同形状的几何体
+
+简单封装一个 `GeometryGenerator` 用于生成一些模型顶点，比如球、圆柱、圆锥、立方体等根据指定的一些参数可以得到对应的顶点坐标
+
+| 球 | 柱 |
+| --- | --- | 
+| ![](Image/030.png) | ![](Image/031.png) |
+
+```cpp
+MeshData CreateBox(float width, float height, float depth, uint32 numSubdivisions);
+MeshData CreateSphere(float radius, uint32 sliceCount, uint32 stackCount);
+MeshData CreateGeosphere(float radius, uint32 numSubdivisions);
+MeshData CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount);
+MeshData CreateGrid(float width, float depth, uint32 m, uint32 n);
+MeshData CreateQuad(float x, float y, float w, float h, float depth);
+```
+
+返回顶点数据结构体
+
+```cpp
+struct MeshData
+{
+	std::vector<Vertex> Vertices;		// 顶点数组
+	std::vector<uint32> Indices32;		// 顶点索引数组
+
+	std::vector<uint16>& GetIndices16()
+	{
+		if(mIndices16.empty())
+		{
+			mIndices16.resize(Indices32.size());
+			for(size_t i = 0; i < Indices32.size(); ++i)
+				mIndices16[i] = static_cast<uint16>(Indices32[i]);
+		}
+
+		return mIndices16;
+	}
+
+private:
+	std::vector<uint16> mIndices16;
+};
+```
+
