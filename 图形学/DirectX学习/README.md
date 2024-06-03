@@ -2238,3 +2238,112 @@ void D3DBox::OnMouseMove(WPARAM btnState, int x, int y)
 
 在鼠标移动的时候根据是否按下 `MK_LBUTTON` 或 `MK_RBUTTON` 来调整 `mRadius` 值 或者 `mTheta`、`mPhi` 值
 
+### 绘制几何体(序)
+
+#### 帧资源
+
+CPU 除了执行必要的工作之外，还要构建并提交命令列表
+
+GPU 负责处理命令队列中的各种命令
+
+`D3DBox` 在绘制每一帧时都会将 CPU 和 GPU 进行一次同步
+
+1. GPU 未结束命令分配器中所有命令的执行之前不能将它重置，如果不同步那么 GPU 命令可能并没有执行完毕，CPU 就已经重置了命令分配器
+2. GPU 未完成与常量缓冲区相关的绘制明林之前，CPU 不可以更新常量缓冲区
+
+所以每次绘制的结尾都要执行 `D3DApp::FlushCommandQueue` 函数来确保 GPU 每帧都能正确完成所有命令，但是这种做法效率低下
+
+1. 每帧的起始阶段， GPU 不会执行任何命令，因为命令队列空空如也
+2. 每帧的结束阶段， CPU 会等到 CPU 执行完毕
+
+所以上述同步的做法 CPU 和 GPU 每一帧存在空闲时间
+
+于是，将 CPU 每帧都需要更新的资源作为基本元素，创建一个环形数组(`circular array`)，成这些资源为**帧资源**(`frame resource`)，这种循环数组通常是由 3 个帧资源元素所构成
+
+处理第 n 帧的时候， CPU 将周而复始的从**帧资源数组**中获取下一个可用的(没被 GPU 使用)**帧资源**。趁着 GPU 处理此前帧的时候， CPU 将为第 n 帧更新资源，并构建和提交对应的命令队列
+
+随后 CPU 继续针对第 n+1 帧执行同样的工作流程，并不断重复下去
+
+如果帧资源数组共有 3 个元素，则令 CPU 比 GPU 提前两帧处理
+
+```cpp
+struct FrameResource
+{
+public:
+    FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount);
+    FrameResource(const FrameResource& rhs) = delete;
+    FrameResource& operator=(const FrameResource& rhs) = delete;
+    ~FrameResource();
+
+	// 在 GPU 处理完与此命令分配器相关的命令之前，不会对其进行重置，所以每一帧都要有自己的命令分配器
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CmdListAlloc;
+
+	// 在 CPU 执行完运用此常量缓冲区的命令之前，不会对其进行更新，所以每一帧都要有自己的常量缓冲区
+    std::unique_ptr<UploadBuffer<PassConstants>> PassCB = nullptr;
+    std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
+
+	// 通过围栏值命令标记到此围栏点，可以检测到 GPU 是否还在使用这些帧资源
+    UINT64 Fence = 0;
+};
+```
+
+定义帧资源数组
+
+```cpp
+FrameResource* mCurrFrameResource = nullptr;
+int mCurrFrameResourceIndex = 0;
+std::vector<std::unique_ptr<FrameResource>> mFrameResources;
+
+void ShapesApp::BuildFrameResources()
+{
+    for(int i = 0; i < gNumFrameResources; ++i)
+    {
+        mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
+            1, (UINT)mAllRitems.size()));
+    }
+}
+```
+
+CPU 使用帧资源数组
+
+```cpp   
+void ShapesApp::Update(const GameTimer& gt) {
+	// 获取帧资源循环数组中的元素
+	mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % gNumFrameResources;
+	mCurrFrameResource = mFrameResources[mCurrFrameResourceIndex].get();
+
+
+	// 判断当前帧资源是否执行完毕，如果没有 CPU 等待 GPU 执行完命令
+	if(mCurrFrameResource->Fence != 0 && mFence->GetCompletedValue() < mCurrFrameResource->Fence)
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrFrameResource->Fence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+
+	// Do Something
+}
+```
+
+GPU 定义新的围栏值
+
+```cpp
+void ShapesApp::Draw(const GameTimer& gt) {
+	// DO Somehting
+
+	// 增加围栏值
+    mCurrFrameResource->Fence = ++mCurrentFence;
+    
+	// 向命令队列增加一条指令来设置新的围栏点
+	// 由于 GPU 正在执行绘制命令，所以在 GPU 执行完 Signal 之前的命令之前不会设置新的围栏点
+    mCommandQueue->Signal(mFence.Get(), mCurrentFence);
+}
+```
+
+虽然使用了帧资源数组，但是该解决方案还是无法避免等待情况的发生，如果两种处理器处理帧的速度过大，则前者终将不得不等待后来者的追上
+
+如果 CPU 处理帧的熟读总是遥遥领先与 GPU，则 CPU 一定存在等待时间，而这个时间可以利用 CPU 运行游戏的其他部分（AI、物理模拟、游戏逻辑业务等）
+
+#### 渲染项
+
