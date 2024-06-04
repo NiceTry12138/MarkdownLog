@@ -1992,7 +1992,7 @@ mBoxGeo->DrawArgs["box"] = submesh;
 根据前面的描述，在初始化的还需要
 
 1. 创建常量描述符堆，创建常量描述符
-2. 创建根标签
+2. 创建根签名
 3. 编译 Shader 
 4. 设置输入布局
 5. 设置顶点缓冲和索引缓冲
@@ -2008,7 +2008,7 @@ bool D3DBox::Initialize()
 
 	BuildDescriptorHeaps();				// 创建常量描述符堆
 	BuildConstantBuffers();				// 创建常量缓冲区 			
-	BuildRootSignature();				// 创建根标签			
+	BuildRootSignature();				// 创建根签名			
 	BuildShaderAndInputLayout();		// 编译 Shader 设置输入布局 					
 	BuildBoxGeometry();					// 设置 Box 数据		
 	BuildPSO();							// 创建 光栅化状态对象 和 PSO 对象
@@ -2155,7 +2155,7 @@ void D3DBox::Draw(const GameTimer& gt)
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	// 设置根标签
+	// 设置根签名
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
 	// 设置顶点、顶点索引、绘制图形
@@ -2163,7 +2163,7 @@ void D3DBox::Draw(const GameTimer& gt)
 	mCommandList->IASetIndexBuffer(&mBoxGeo->IndexBufferView());
 	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// 设置常量缓冲区到根标签表中的第0个
+	// 设置常量缓冲区到根签名表中的第0个
 	mCommandList->SetGraphicsRootDescriptorTable(0, mCbvHeap->GetGPUDescriptorHandleForHeapStart());
 
 	// 绘制 Box
@@ -2515,5 +2515,145 @@ struct MeshData
 private:
 	std::vector<uint16> mIndices16;
 };
+```
+
+#### 细探根签名
+
+**根签名**是由一系列**根参数**定义而成，根参数有三种
+
+1. **描述符表**(descriptor table)：描述符堆的一窥啊连续范围，用于确定要绑定的资源
+2. **根描述符**(root descriptor)，又称内敛描述符(inline descriptor)：通过直接设置根描述符即可指示要绑定的资源，而且无需将它存于描述符堆中。只有 CBV、SRV、UAV 可以绑定，纹理的 SRV 不行
+3. **根常量**(root constant)：可直接绑定一系列 32 位的常量值
+
+由于性能问题，可放入一个根签名的数据以 64 DWORD 为限
+
+1. **描述符表**：每个描述符表占用 1 DWORD
+2. **根描述符**：每个根描述符占用 2 DWORD
+3. **根常量**：每个常量 32 位，占用 1 DWORD
+
+可以创建出任意组合的根签名，只要不超过 64 DWORD 上限即可
+
+如果将 世界-视图-投影 矩阵存储到根常量中，会一次性用到 16 个 跟常量，占总的 1/4。所以由于程序的复杂性，常量缓冲区中的数据也将越来越大，因此不太可能仅使用根常量，而是三种根参数混用
+
+代码中使用 `CD3DX12_ROOT_PARAMETER` 结构体数组来构建根参数，该结构体是对 `D3D12_ROOT_PARAMETER` 的扩展，并增加了一些辅助初始化函数
+
+```cpp
+typedef struct D3D12_ROOT_PARAMETER
+    {
+    D3D12_ROOT_PARAMETER_TYPE ParameterType;
+    union 
+        {
+        D3D12_ROOT_DESCRIPTOR_TABLE DescriptorTable;
+        D3D12_ROOT_CONSTANTS Constants;
+        D3D12_ROOT_DESCRIPTOR Descriptor;
+        } 	;
+    D3D12_SHADER_VISIBILITY ShaderVisibility;
+    } 	D3D12_ROOT_PARAMETER;·
+```
+
+- `ParameterType` 定义根参数的类型（描述符表、根常量、CBV 根描述符、SRV 根描述符、 UAV 根描述符）
+- `DescriptorTable`、`Constants`、`Descriptor` 描述根参数的结构体
+- `ShaderVisibility` 在着色器程序中的可见性。如果某种资源只在像素着色器中使用，可以定义为 `D3D12_SHADER_VISIBILITY_PIXEL`
+
+那么什么是 `DescriptorTable` 描述符表呢?
+
+```cpp
+typedef struct D3D12_ROOT_DESCRIPTOR_TABLE
+    {
+    UINT NumDescriptorRanges;
+    _Field_size_full_(NumDescriptorRanges)  const D3D12_DESCRIPTOR_RANGE *pDescriptorRanges;
+    } 	D3D12_ROOT_DESCRIPTOR_TABLE;
+```
+
+通过 `D3D12_ROOT_DESCRIPTOR_TABLE` 存储一个 `D3D12_DESCRIPTOR_RANGE` 数组
+
+```cpp
+typedef struct D3D12_DESCRIPTOR_RANGE
+    {
+    D3D12_DESCRIPTOR_RANGE_TYPE RangeType;		// 描述符类型 SRV、UAV、CBA、采样器	
+    UINT NumDescriptors;						// 范围内描述符的数量
+    UINT BaseShaderRegister;					// 此描述符将要绑定到的基准着色器寄存器	
+    UINT RegisterSpace;							// 能够在不同的寄存器空间中指定着色器寄存器
+    UINT OffsetInDescriptorsFromTableStart;		// 描述符范围距离描述符表起始地址的偏移量			
+    } 	D3D12_DESCRIPTOR_RANGE;
+```
+
+对于 `BaseShaderRegister` 可以这么理解，如果 `NumDescriptors` 值位 3，`BaseShaderRegister` 值为1，`RangeType` 为 CBV，那么会将数据存储到 `b1`、`b2`、`b3` 三个寄存器中，起始寄存器是 `b1`
+
+> 如果 `BaseShaderRegister` 值为 0，那么起始寄存器为 `b0`，最后数据会存储到 `b0`、`b31`、`b2` 三个寄存器中
+
+对于 `RegisterSpace` 默认值为0，表示使用 `space0` 空间。遂于资源数组来说，使用多重寄存器空间会更加方便
+
+```hlsl
+Texture2D gDiffuseMap : register(t0, space0)
+Texture2D gNormalMap : register(t0, space1)
+```
+
+> `gDiffuseMap` 和 `gNormalMap` 都使用 `t0` 寄存器，但是各自存在不同空间中 `space0` 与 `space1`
+
+对于 `OffsetInDescriptorsFromTableStart` 可以这么理解，如果将 2 个 CBV、3 个 SRV 和 1 个 UAV 共6个描述符按顺序混合放置在一个描述符表中
+
+```cpp
+CD3DX12_DESCRIPTOR_RANGE descRange[3];
+descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 2, 0, 0, 0);
+descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 0, 0, 2);
+descRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, 5);
+```
+
+> 可见看到 0,2,5 分别就是起始地址偏移
+
+虽然 `CBV` 、`SRV`、`UAV` 的 `BaseShaderRegister` 都是 0，但是存储数据并不会冲突，因为类型不同，存储的寄存器也不同
+
+另外 `OffsetInDescriptorsFromTableStart` 可以指定为 `D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND` 来让 D3D 根据表中前一个描述符范围中描述符的数量来计算偏移，同时这个值也是 `Init` 函数 `OffsetInDescriptorsFromTableStart` 参数的默认值
+
+那么什么是 `Descriptor` 根描述符呢?
+
+```cpp
+typedef struct D3D12_ROOT_DESCRIPTOR
+    {
+    UINT ShaderRegister;			// 要绑定的着色器，如果为 2 并且根参数是 CBV，则绑定到 b2 寄存器
+    UINT RegisterSpace;				// 寄存器空间，与 D3D12_DESCRIPTOR_RANGE 中的 RegisterSpace 含义相同
+    } 	D3D12_ROOT_DESCRIPTOR;
+```
+
+使用根描述符可以简单直接的绑定资源的虚拟地址 
+
+```cpp
+D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress();
+cmdList->SetGraphicRootConstantBufferView(0, objCBAddress);
+```
+
+> `SetGraphicRootConstantBufferView` 第一个参数 0 表示根参数的说因，即当前根描述符绑定到此编号的寄存器槽位
+
+那么什么是 `Constants` 根常量呢?
+
+```cpp
+typedef struct D3D12_ROOT_CONSTANTS
+    {
+    UINT ShaderRegister;
+    UINT RegisterSpace;
+    UINT Num32BitValues;			// 此值为根参数所需的 32 位常量的个数
+    } 	D3D12_ROOT_CONSTANTS;
+```
+
+```cpp
+CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+slotRootParameter[0].InitAsConstants(2, 0);	// 表示 2 个根常量，如果要 12 个就填写 12
+
+CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT)
+
+int size = 10;
+float radius = 10.0f;
+cmdList->SetGraphicsRoot32BitConstants(0, 1, &size, 0);
+cmdList->SetGraphicsRoot32BitConstants(0, 1, &radius, 1);
+```
+
+对应的着色器代码 
+
+```hlsl
+cbuffer cbSettings : register(b0) {
+	int gSize;		// 对应 size
+	float w1;		// 对应 radius
+}
 ```
 
