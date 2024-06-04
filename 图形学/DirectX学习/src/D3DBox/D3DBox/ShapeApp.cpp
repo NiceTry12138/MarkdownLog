@@ -123,6 +123,8 @@ void ShapeApp::Draw(const GameTimer& gt)
 
 void ShapeApp::OnMouseDown(WPARAM btnState, int x, int y)
 {
+	mIsWireframe = !mIsWireframe;
+
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 
@@ -206,6 +208,8 @@ void ShapeApp::BuildConstantBuffers()
 			md3dDevice->CreateConstantBufferView(&cbvDesc, handle);
 		}
 	}
+
+	UINT passByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 	// ´´½¨ pre pass CBV
 	for (int frameIndex = 0; frameIndex < gNumFrameResources; ++frameIndex) {
 		auto passCB = mFrameResources[frameIndex]->PassCB->Resource();
@@ -217,7 +221,7 @@ void ShapeApp::BuildConstantBuffers()
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 		cbvDesc.BufferLocation = cbAddress;
-		cbvDesc.SizeInBytes = objCBByteSize;
+		cbvDesc.SizeInBytes = passByteSize;
 
 		md3dDevice->CreateConstantBufferView(&cbvDesc, handle);
 	}
