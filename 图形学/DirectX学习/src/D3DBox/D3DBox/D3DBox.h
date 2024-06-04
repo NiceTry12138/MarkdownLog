@@ -7,13 +7,13 @@ using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
-struct Vertex
+struct BoxVertex
 {
 	XMFLOAT3 Pos;
 	XMFLOAT4 Color;
 };
 
-struct ObjectConstants
+struct BoxObjectConstants
 {
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
 };
@@ -50,7 +50,7 @@ private:
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
 
-	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
+	std::unique_ptr<UploadBuffer<BoxObjectConstants>> mObjectCB = nullptr;
 	
 	std::unique_ptr<MeshGeometry> mBoxGeo = nullptr;	// Box 的几何坐标
 

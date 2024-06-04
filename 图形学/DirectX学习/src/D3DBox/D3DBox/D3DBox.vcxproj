@@ -137,11 +137,14 @@
     <ClInclude Include="D3DUtil.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="res\UploadBuffer.h" />
+    <ClInclude Include="ShapeApp.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
@@ -149,9 +152,12 @@
     <ClCompile Include="D3dApp.cpp" />
     <ClCompile Include="D3DBox.cpp" />
     <ClCompile Include="D3DUtil.cpp" />
+    <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MathHelper.cpp" />
+    <ClCompile Include="ShapeApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="D3DBox.rc" />
@@ -162,6 +168,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\color.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shape.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

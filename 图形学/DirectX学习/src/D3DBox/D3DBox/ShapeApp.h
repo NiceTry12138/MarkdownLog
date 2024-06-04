@@ -6,8 +6,6 @@ using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
-const int gNumFrameResources = 3;
-
 struct RenderItem
 {
 	RenderItem() = default;
@@ -53,7 +51,9 @@ private:
 	void BuildRootSignature();			// 创建 根标签 用于绑定常量缓冲区
 	void BuildShaderAndInputLayout();	// 创建 Shader 和输入布局
 	void BuildPSO();					// 创建 Pipeline State Object 流水线状态对象，绑定流水线资源
-	void BuildBoxGeometry();			// 创建盒子的顶点缓冲和索引缓冲
+	void BuildRenderItems();			// 创建渲染项
+	void BuildShapeGeometry();			// 创建几何体
+	void BuildFrameResource();			// 创建帧资源
 
 protected:
 	std::vector<std::unique_ptr<FrameResource>> mFrameResources;

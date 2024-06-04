@@ -54,6 +54,15 @@
     <ClInclude Include="UploadBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ShapeApp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameResource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryGenerator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D3DBox.cpp">
@@ -74,6 +83,15 @@
     <ClCompile Include="Main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ShapeApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameResource.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryGenerator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="D3DBox.rc">
@@ -90,6 +108,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\color.hlsl">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\shape.hlsl">
       <Filter>res</Filter>
     </None>
   </ItemGroup>

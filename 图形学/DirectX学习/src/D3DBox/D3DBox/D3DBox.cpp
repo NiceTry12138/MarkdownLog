@@ -65,7 +65,7 @@ void D3DBox::Update(const GameTimer& gt)
 	XMMATRIX proj = XMLoadFloat4x4(&mProj);
 	XMMATRIX worldViewProj = world * view * proj;
 
-	ObjectConstants objConstants;
+	BoxObjectConstants objConstants;
 	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 	mObjectCB->CopyData(0, objConstants);
 }
@@ -163,15 +163,15 @@ void D3DBox::BuildDescriptorHeaps()
 
 void D3DBox::BuildConstantBuffers()
 {
-	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), 1, true);
+	mObjectCB = std::make_unique<UploadBuffer<BoxObjectConstants>>(md3dDevice.Get(), 1, true);
 	
 	
-	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));	// 要求大小是硬件最低配置 256b 的整数倍
+	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(BoxObjectConstants));	// 要求大小是硬件最低配置 256b 的整数倍
 	
 	D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
 	
 	int boxCBBufferIndex = 0;
-	cbAddress += boxCBBufferIndex * objCBByteSize;		// 计算地址偏移, 如果缓冲区中存储多个 ObjectConstants 将指定数据创建描述符
+	cbAddress += boxCBBufferIndex * objCBByteSize;		// 计算地址偏移, 如果缓冲区中存储多个 BoxObjectConstants 将指定数据创建描述符
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 	cbvDesc.BufferLocation = cbAddress;
@@ -249,16 +249,16 @@ void D3DBox::BuildPSO()
 
 void D3DBox::BuildBoxGeometry()
 {
-	std::array<Vertex, 8> vertices =
+	std::array<BoxVertex, 8> vertices =
 	{
-		Vertex({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White) }),
-		Vertex({ XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Black) }),
-		Vertex({ XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Red) }),
-		Vertex({ XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green) }),
-		Vertex({ XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Blue) }),
-		Vertex({ XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Yellow) }),
-		Vertex({ XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Cyan) }),
-		Vertex({ XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta) })
+		BoxVertex({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White) }),
+		BoxVertex({ XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Black) }),
+		BoxVertex({ XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Red) }),
+		BoxVertex({ XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green) }),
+		BoxVertex({ XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Blue) }),
+		BoxVertex({ XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Yellow) }),
+		BoxVertex({ XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Cyan) }),
+		BoxVertex({ XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta) })
 	};
 
 	std::array<std::uint16_t, 36> indices =
@@ -288,7 +288,7 @@ void D3DBox::BuildBoxGeometry()
 		4, 3, 7
 	};
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(BoxVertex);
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
 	mBoxGeo = std::make_unique<MeshGeometry>();
@@ -306,7 +306,7 @@ void D3DBox::BuildBoxGeometry()
 	mBoxGeo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, mBoxGeo->IndexBufferUploader);
 
-	mBoxGeo->VertexByteStride = sizeof(Vertex);
+	mBoxGeo->VertexByteStride = sizeof(BoxVertex);
 	mBoxGeo->VertexBufferByteSize = vbByteSize;
 	mBoxGeo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	mBoxGeo->IndexBufferByteSize = ibByteSize;
