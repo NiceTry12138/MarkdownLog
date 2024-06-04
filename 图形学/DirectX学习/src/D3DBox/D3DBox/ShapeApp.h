@@ -54,6 +54,11 @@ private:
 	void BuildRenderItems();			// 创建渲染项
 	void BuildShapeGeometry();			// 创建几何体
 	void BuildFrameResource();			// 创建帧资源
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
+
+	void UpdateCamera();				// 更新相机坐标
+	void UpdateObjectCBs();				// 更新渲染项的 CBV
+	void UpdateMainPassCB(const GameTimer& gt);			// 更新
 
 protected:
 	std::vector<std::unique_ptr<FrameResource>> mFrameResources;
