@@ -2104,6 +2104,8 @@ XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
 
 通过 **世界-视图-投影** 矩阵可以将物体从局部坐标转换到最终的 2D 屏幕坐标
 
+[透视矩阵和齐次裁剪空间的计算](https://goudan-er.github.io/2016/d3d-projection/)
+
 $\text{屏幕坐标} = \text{投影矩阵} \times \text{视图矩阵} \times \text{世界矩阵} \times \text{模型坐标}$
 
 ```cpp
