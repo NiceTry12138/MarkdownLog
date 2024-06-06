@@ -2684,3 +2684,78 @@ cbuffer cbSettings : register(b0) {
 纹理不能同时身兼数职，将数据渲染到一个纹理之后，再用它作为着色器资源，这种方法称为**渲染到纹理**(`render-to-texture`)
 
 要使纹理扮演**渲染目标**与**着色器资源**这两种角色，就需要为此纹理资源创建两个描述符：一个存于渲染目标堆中(`D3D12_DESCRIPTOR_HEAP_TYPE_RTV`)，一个位于着色器资源堆中(`D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV`)
+
+```cpp
+// 绑定为渲染目标
+CD3DX12_CPU_DESCRIPTOR_HANDLE rtv = ...;
+CD3DX12_CPU_DESCRIPTOR_HANDLE dsv = ...;
+
+cmdList->OMSetRenderTargets(1, &rtv, true, &dsv);
+
+// 以着色器输入的名义绑定到根参数
+CD3DX12_GPU_DESCRIPTOR_HANDLE tex = ...;
+cmdList->setGraphicsRootDescriptorTable(rootParamIndex, tex);
+```
+
+以上述代码为例，通过资源描述符通知 `Direct3D` 这些资源将被如何使用
+
+#### 纹理坐标
+
+![](Image/032.png)
+
+Direct3D 所采用的纹理坐标系，是由图片水平正方向的 u 轴与指向图形垂直正方向的 v 轴所组成的
+
+> 取值范围是 **0 << u, v << 1**
+
+无论纹理的大小是 256*256 像素、512*512 像素，或者其他大小，纹理坐标`(0.5, 0.5)` 永远表示图片的正中间
+
+![](Image/033.png)
+
+以上图为例，空间中存在三角形，其三点坐标为 p0, p1, p2，对于三角形中任意一点 P
+
+其空间坐标为： p = p0 + s*(p1 - p0) + t*(p2 - p0)
+
+其 UV 坐标为： q = q0 + s*(q1 - q0) + t*(q2 - q0)
+
+通过上述公式，可以求出三角形中任意一点对应的纹理坐标
+
+那么对应的顶点信息中除了顶点坐标，再就是顶点的 UV 信息了
+
+```cpp
+struct Vertex {
+	DirectX::XMFLOAT3 Pos;			// 世界坐标
+	DirectX::XMFLOAT3 Normal;		// 法线
+	DirectX::XMFLOAT2 TexC;			// 贴图的 UV 坐标
+}
+```
+
+除此之外，还可以将多张贴图合并成一个大的纹理图(**纹理图集**)，再将它应用于若干不同的物体，然后利用纹理坐标来确定使用纹理的哪一部分
+
+![](Image/034.png)
+
+#### 纹理数据源
+
+一般贴图师制作纹理之后会将其保存为 BMP、DDS、TGA 或者 PNG 等格式。游戏应用程序会在加载期间将图像载入 ID3D12Resource 对象
+
+对于实时图形应用程序来说，DDS 图像文件格式(`DirectDraw` 图面格式， `DirectDraw Suface format`, `DDS`) 除了支持 GPU 可原生处理的各种图像格式，还支持一些 GPU 自身就可解压的压缩图片那个是
+
+DDS 对于 3D 图形来说是一种理想的格式，因为它支持一些专用于 3D 图形的特殊格式以及纹理类型
+
+DDS 纹理满足用于 3D 图形开发的以下特征
+
+1. mipmap
+2. GPU 自行解压
+3. 纹理数组
+4. 立方体图(cube map)
+5. 体纹理(volume texture)
+
+随着场景中纹理数量的大幅增长，对于 `GPU` 显存的需求也迅速增加，为了缓解压力， `DirectX3D` 支持一下几种压缩纹理格式
+
+1. `BC1` (`DXGI_FORMAT_BC1_UNORM`): 将图片压缩为支持 3 个颜色通道和仅有 1 位 alpha 分量（表示开/关）
+2. `BC2` (`DXGI_FORMAT_BC2_UNORM`): 将图片压缩为支持 3 个颜色通道和仅有 4 位 alpha 分量
+3. `BC3` (`DXGI_FORMAT_BC3_UNORM`): 将图片压缩为支持 3 个颜色通道和仅有 8 位 alpha 分量
+4. `BC4` (`DXGI_FORMAT_BC4_UNORM`): 将图片压缩为支持 1 个颜色通道的格式，例如灰度图
+5. `BC5` (`DXGI_FORMAT_BC5_UNORM`): 将图片压缩为支持 2 个颜色通道的格式
+6. `BC6` (`DXGI_FORMAT_BC6H_UF16`): 将图片压缩为支持 HDR (高动态范围)图像格式
+6. `BC7` (`DXGI_FORMAT_BC7_UNORM`): 对 RGBA 数据进行高质量的压缩
+
