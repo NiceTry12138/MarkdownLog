@@ -536,3 +536,104 @@ cmake -DCMAKE_C_COMPILER=/path/to/custom/gcc -DCMAKE_CXX_COMPILER=/path/to/custo
 
 ### 流程控制
 
+#### 条件判断
+
+```cmake
+if(<condition>)
+  <commands>
+elseif(<condition>) # 可选块, 可以重复
+  <commands>
+else()              # 可选块
+  <commands>
+endif()
+```
+
+- 基本表达式
+  - 如果是1, ON, YES, TRUE, Y, 非零值，非空字符串时，条件判断返回 True
+  - 如果是 0, OFF, NO, FALSE, N, IGNORE, NOTFOUND，空字符串时，条件判断返回 False
+
+- 逻辑判断
+  - 取反 NOT `if(NOT <condition>)`
+  - 与 AND `if(<condition1> AND <condition2>)`
+  - 或 OR `if(<condition1> OR <condition2>)`
+
+- 比较
+  - 小 LESS `if(<variable|string> LESS <variable|string>)`
+  - 大 GREATER `if(<variable|string> GREATER <variable|string>)`
+  - 相等 EQUAL `if(<variable|string> EQUAL <variable|string>)`
+  - 小于等于 LESS_EQUAL `if(<variable|string> LESS_EQUAL <variable|string>)`
+  - 大于等于 GREATER_EQUAL `if(<variable|string> GREATER_EQUAL <variable|string>)`
+
+- 字符串比较
+  - 小 STRLESS
+  - 大 STRGREATER
+  - 等于 STRQUAL
+  - 小于等于 STRLESS_EQUAL
+  - 大于等于 STRGREATER_EQUAL
+
+- 文件判断
+  - 判断文件或者目录是否存在 `if(EXISTS path-to-file-or-directory)`
+  - 判断是不是目录 `if(IS_DIRECTORY path)`
+  - 判断是不是软链接 `if(IS_SYMLINK file-name)`
+  - 判断是不是绝对路径 `if(IS_ABSOLUTE path)`
+
+> 还有一些其他判断 [cmake if 官网](https://cmake.org/cmake/help/latest/command/if.html)
+
+#### 循环
+
+```cmake
+foreach(<loop_var> <items>)
+    <commands>
+endforeach()
+```
+
+使用 `foreach` 和 `endforeach` 定义循环体
+
+- 遍历 list 
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(ForeachLoopExample)
+
+set(myList "item1" "item2" "item3")
+
+foreach(item IN LISTS myList)
+    message(STATUS "List item: ${item}")
+endforeach()
+```
+
+- 遍历范围 `foreach(<loop_var> RANGE <stop>)`
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(ForeachRangeExample)
+
+foreach(i RANGE 5)
+    message(STATUS "Index: ${i}")
+endforeach()
+```
+
+- 遍历范围，带步长 `foreach(<loop_var> RANGE <start> <stop> [<step>])`
+
+```cmake
+cmake_minimum_required(VERSION 3.2)
+project(test)
+# 创建 list
+set(WORD a b c d)
+set(NAME ace sabo luffy)
+# 遍历 list
+foreach(item IN LISTS WORD NAME)
+    message(STATUS "当前遍历的值为: ${item}" )
+endforeach()
+```
+
+> 同时遍历 `WORD` 和 `NAME` 两个 `list`
+
+`while` 循环
+
+```cmake
+while(<condition>)
+    <commands>
+endwhile()
+```
+
