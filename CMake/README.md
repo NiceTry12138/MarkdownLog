@@ -278,13 +278,261 @@ message([STATUS|WARNING|AUTHOR_WARNING|FATAL_ERROR|SEND_ERROR] "message to displ
 
 ### 变量操作
 
-1. 追加
-
 > Demo5 为例
 
-使用 `set` 进行字符串拼接
+- 使用 `set` 进行字符串拼接
 
 ```cmake
 set(变量名1 ${变量名1}${变量名2}...)
 ```
+
+
+> `list` 不仅可以拼接，还有其他功能
+
+- 使用 `list(APPEND)` 进行字符串拼接
+- 使用 `list(INSERT)` 在指定的位置插入元素到列表
+- 使用 `list(PREPEND)` 在列表的开头添加一个或多个元素
+- 使用 `list(REMOVE_AT)` 移除在指定位置的元素
+- 使用 `list(REMOVE_ITEM)` 移除列表中所有匹配的元素
+- 使用 `list(REMOVE_DUPLICATES)` 移除列表中重复元素
+- 使用 `list(REVERSE)` 将列表元素顺序颠倒
+- 使用 `list(SORT)` 对列表元素进行排序
+- 使用 `list(LENGTH)` 获取列表长度
+- 使用 `list(GET)` 获取列表中指定位置的元素
+- 使用 `list(FIND)` 查找列表中第一个匹配的元素，未找到返回-1
+- 使用 `list(SUBLIST)` 获取列表中的一个子列表
+- 使用 `list(TRANSFORM)` 对列表的每个元素进行转换
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(ListExample)
+
+# 定义一个列表
+set(myList "item1" "item2" "item3")
+
+# APPEND
+list(APPEND myList "item4")
+message(STATUS "After APPEND: ${myList}")
+
+# INSERT
+list(INSERT myList 1 "newItem")
+message(STATUS "After INSERT: ${myList}")
+
+# PREPEND
+list(PREPEND myList "newStartItem")
+message(STATUS "After PREPEND: ${myList}")
+
+# REMOVE_AT
+list(REMOVE_AT myList 2)
+message(STATUS "After REMOVE_AT: ${myList}")
+
+# REMOVE_ITEM
+list(REMOVE_ITEM myList "item3")
+message(STATUS "After REMOVE_ITEM: ${myList}")
+
+# REMOVE_DUPLICATES
+list(APPEND myList "item4")
+list(REMOVE_DUPLICATES myList)
+message(STATUS "After REMOVE_DUPLICATES: ${myList}")
+
+# REVERSE
+list(REVERSE myList)
+message(STATUS "After REVERSE: ${myList}")
+
+# SORT
+list(SORT myList)
+message(STATUS "After SORT: ${myList}")
+
+# LENGTH
+list(LENGTH myList myListLength)
+message(STATUS "List length: ${myListLength}")
+
+# GET
+list(GET myList 0 firstElement)
+message(STATUS "First element: ${firstElement}")
+
+# FIND
+list(FIND myList "item2" index)
+message(STATUS "Index of item2: ${index}")
+
+# SUBLIST
+list(SUBLIST myList 1 2 subList)
+message(STATUS "Sublist: ${subList}")
+
+# TRANSFORM
+list(TRANSFORM myList TOUPPER)
+message(STATUS "After TRANSFORM TOUPPER: ${myList}")
+```
+
+### 宏定义
+
+> demo6 为例
+
+```cpp
+#include <stdio.h>
+#define NUMBER 3
+int main()
+{
+#ifdef DEBUG
+    printf("hello, world...\n");
+#endif
+    printf("hello, GCC!!!\n");
+    return 0;
+}
+```
+
+以上述代码为例，在 C++ 中经常会使用宏定义，可以宏定义值也可以根据宏定义执行不同的代码
+
+用 `gcc` 为例，使用 `gcc test.c -DDEBUG -o app` 来定义宏
+
+在 `cmake` 中可以使用 `add_definitions(-D宏名称)` 定义宏
+
+```cpp
+cmake_minimum_required(VERSION 3.0)
+
+project(CALC)
+
+add_definitions(-DDEBUG)
+
+add_executable(calc ./src/main.c)
+```
+
+### cmake 预定义宏
+
+> demo7 为例
+
+- 路径相关
+
+| 预定义 | 作用 |
+| --- | --- |
+| CMAKE_SOURCE_DIR | 表示顶层 CMakeLists.txt 文件所在的源代码目录 |
+| CMAKE_BINARY_DIR | 表示顶层 CMakeLists.txt 文件所在的构建目录 |
+| CMAKE_CURRENT_SOURCE_DIR | 表示当前处理的 CMakeLists.txt 文件所在的源代码目录 |
+| CMAKE_CURRENT_BINARY_DIR | 表示当前处理的 CMakeLists.txt 文件所在的构建目录 |
+| CMAKE_HOME_DIRECTORY | 表示项目的根目录，通常与 CMAKE_SOURCE_DIR 相同 |
+| PROJECT_SOURCE_DIR | 表示项目的源代码根目录 |
+| PROJECT_BINARY_DIR | 表示项目的构建根目录 |
+
+
+- 项目和版本信息
+
+| 预定义 | 作用 |
+| --- | --- |
+| PROJECT_NAME | 表示项目名称 |
+| PROJECT_VERSION | 表示项目的版本号（如果使用 project() 命令设置了版本） |
+| PROJECT_VERSION_MAJOR | 表示项目的主版本号 |
+| PROJECT_VERSION_MINOR | 表示项目的次版本号 |
+| PROJECT_VERSION_PATCH | 表示项目的补丁版本号 |
+
+- 编译器和操作系统
+
+| 预定义 | 作用 |
+| --- | --- |
+| CMAKE_C_COMPILER | 表示用于编译 C 程序的编译器名称 |
+| CMAKE_CXX_COMPILER | 表示用于编译 C++ 程序的编译器名称 |
+| CMAKE_SYSTEM_NAME | 表示操作系统的名称 |
+| CMAKE_SYSTEM_VERSION | 表示操作系统的版本 |
+| CMAKE_SIZEOF_VOID_P | 表示指针大小（用于判断是 32 位还是 64 位系统） |
+
+- 构建选项
+
+| 预定义 | 作用 |
+| --- | --- |
+| CMAKE_BUILD_TYPE | 表示当前的构建类型（如 Release、Debug） |
+| CMAKE_VERBOSE_MAKEFILE | 如果设置为 ON，会产生更详细的 makefile 输出 |
+| CMAKE_INSTALL_PREFIX | 表示安装路径的前缀 |
+
+- 检测目标系统
+
+
+| 预定义 | 作用 |
+| --- | --- |
+| WIN32 | 如果在 Windows 系统上为 TRUE |
+| UNIX | 如果在 Unix 或类 Unix 系统（包括 Linux 和 macOS）上为 TRUE |
+| APPLE | 如果在 macOS 系统上为 TRUE |
+| MSVC | 如果使用 Microsoft Visual C++ 编译器为 TRUE |
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+
+project(ExampleProject VERSION 1.2.3)
+
+message(STATUS "------------------------------------")
+
+message(STATUS "Project name: ${PROJECT_NAME}")
+message(STATUS "Project version: ${PROJECT_VERSION} (Major: ${PROJECT_VERSION_MAJOR}, Minor: ${PROJECT_VERSION_MINOR}, Patch: ${PROJECT_VERSION_PATCH})")
+
+message(STATUS "Source directory: ${CMAKE_SOURCE_DIR}")
+message(STATUS "Binary directory: ${CMAKE_BINARY_DIR}")
+message(STATUS "Current source directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Current binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
+
+message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER}")
+
+message(STATUS "System name: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "System version: ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "Pointer size: ${CMAKE_SIZEOF_VOID_P}")
+
+if(WIN32)
+    message(STATUS "Building for Windows")
+elseif(UNIX)
+    message(STATUS "Building for Unix or Unix-like OS")
+    if(APPLE)
+        message(STATUS "Building for macOS")
+    endif()
+endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
+
+message(STATUS "------------------------------------")
+```
+
+```bash
+-- ------------------------------------
+-- Project name: ExampleProject
+-- Project version: 1.2.3 (Major: 1, Minor: 2, Patch: 3)
+-- Source directory: F:/2_CustomProject/MarkdownLog/CMake/src/demo7
+-- Binary directory: F:/2_CustomProject/MarkdownLog/CMake/src/demo7/build
+-- Current source directory: F:/2_CustomProject/MarkdownLog/CMake/src/demo7
+-- Current binary directory: F:/2_CustomProject/MarkdownLog/CMake/src/demo7/build
+-- C compiler: C:/MinGW/bin/gcc.exe
+-- C++ compiler: C:/MinGW/bin/c++.exe
+-- System name: Windows
+-- System version: 10.0.19045
+-- Pointer size: 4
+-- Building for Windows
+-- Build type:
+-- Install prefix: C:/Program Files (x86)/ExampleProject
+-- ------------------------------------
+```
+
+如果想要使用其他 gcc.exe 或者 c++.exe，可以通过 `set` 来修改 `CMAKE_C_COMPILER` 或者 `CMAKE_CXX_COMPILER` 的值
+
+这些修改 `cmake` 预定义的变量需要在配置开始时设置，也就是在调用 `project` 或者 `enable_language` 之前
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+
+# 设置自定义编译器路径
+set(CMAKE_C_COMPILER "/path/to/custom/gcc")
+set(CMAKE_CXX_COMPILER "/path/to/custom/g++")
+
+project(CustomCompilerProject C CXX)
+
+message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER}")
+
+# 其他 CMake 配置
+add_executable(myapp main.cpp)
+```
+
+除了在 `CMakeLists.txt` 中设置 `CMAKE_C_COMPILER` 等定义之外，还可以在命令行中设置
+
+```shell
+cmake -DCMAKE_C_COMPILER=/path/to/custom/gcc -DCMAKE_CXX_COMPILER=/path/to/custom/g++ -S . -B build
+```
+
+### 流程控制
 
