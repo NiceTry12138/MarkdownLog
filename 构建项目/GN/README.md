@@ -318,3 +318,8 @@ template("my_executable_with_tests") {
 }
 
 ```
+
+## 交叉编译
+
+[GN如何处理跨平台编译](https://github.com/chinanf-boy/gn-zh/blob/master/docs/cross_compiles.zh.md)
+
