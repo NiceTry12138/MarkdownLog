@@ -1,0 +1,9 @@
+
+static_library("mylib") {
+  configs += [ "//configs:common_config" ]
+
+  sources = [
+    "mylib.cpp",
+  ]
+
+}

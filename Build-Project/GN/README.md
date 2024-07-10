@@ -323,3 +323,6 @@ template("my_executable_with_tests") {
 
 [GN如何处理跨平台编译](https://github.com/chinanf-boy/gn-zh/blob/master/docs/cross_compiles.zh.md)
 
+## 注意
+
+注意路径中不要出现中文，否则可能会出现莫名其妙的错误
