@@ -1,0 +1,12 @@
+# exe/BUILD.gn
+executable("my_app") {
+  sources = [
+    "//src/main.cpp",
+    "//src/app.cpp",
+    "//src/utils/utils.cpp"
+  ]
+
+  deps = [ "//dll:mylib" ]
+
+  configs += [ "//configs:common_config" ]
+}

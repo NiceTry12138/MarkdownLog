@@ -1,0 +1,7 @@
+# BUILD.gn
+group("default") {
+  deps = [
+    "//dll:mylib",
+    # "//exe:my_app"
+  ]
+}

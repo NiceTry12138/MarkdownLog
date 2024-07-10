@@ -1,0 +1,13 @@
+# configs/BUILD.gn
+config("common_config") {
+  include_dirs = [
+    "//src",
+    "//dll"
+  ]
+
+  cflags = [
+    "-std=c++17"
+  ]
+
+  ldflags = []
+}
