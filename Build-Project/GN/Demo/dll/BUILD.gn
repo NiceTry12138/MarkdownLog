@@ -1,5 +1,5 @@
 
-static_library("mylib") {
+shared_library("mylib") {
   configs += [ "//configs:common_config" ]
 
   sources = [

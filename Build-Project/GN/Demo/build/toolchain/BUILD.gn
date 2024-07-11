@@ -74,6 +74,8 @@ toolchain("gcc") {
     default_output_dir = "{{root_out_dir}}"
     rspfile_content = "{{inputs}}"
     outputs = [ outfile ]
+
+    print("link tool")
   }
 
   tool("stamp") {
