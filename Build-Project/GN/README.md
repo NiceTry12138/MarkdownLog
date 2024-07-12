@@ -326,3 +326,82 @@ template("my_executable_with_tests") {
 ## 注意
 
 注意路径中不要出现中文，否则可能会出现莫名其妙的错误
+
+## 样例
+
+[GN实践](https://blog.csdn.net/weixin_44701535/article/details/88355958)
+
+[GN Demo 项目](https://github.com/TechGhostForGithub/source_gn_project)
+
+`BUILD.gn` 一般作为模块的工程入口文件，可以配合 .gni 文件来划分源码或模块
+
+`.gn` 根文件是一个入口设置的文件，是 GN 中的固定规则文件，会自动被 GN 读取
+
+![](Image/001.png)
+
+一般 GN 组织一个跨平台工程分为**三大块**
+
+1. 整体工程入口，一般不经常修改
+2. GN 通用文件，一般不经常修改
+3. GN 源代码工程文件，这部分与平常在继承开发环境中类似，源文件的组织和管理就在这部分
+
+![](Image/002.png)
+
+> 各个 GN 文件的作用
+
+以根目录的 `BUILD.gn` 为例
+
+```gn
+if (!is_test) {
+    group("ccore"){
+        deps = projects
+        deps += [ "//:dispatch_for_ide" ]
+    }
+}
+
+action("dispatch_for_ide") {
+    arg = [
+        "--kernel", rebase_path("//"),
+        "--outpath", rebase_path("//out"),
+        "--cachepath", rebase_path("$root_out_dir"),
+    ]
+
+    if (is_debug) {
+        arg += [ "--buildmode", "Debug" ]
+    } else {
+        arg += [ "--buildmode", "Release" ]
+    }
+
+    arg += ["--targetcpu", "${target_cpu}"]
+    
+    script = "dispatch_for_ide.py"
+    outputs = [ "$root_out_dir/libccore_gn.a" ]
+    args = arg
+    deps = projects
+}
+```
+
+`action` 目标是定义自定义构建步骤的一个机制。它的执行时机和调用方式依赖于它在构建图中的依赖关系
+
+比如上述代码定义了名为 `dispatch_for_ide` 的 `action`，该 action 在 `group("ccore")` 被依赖，所以当 `ccore` 被执行时会执行该 `action`
+
+- `script` 字段指定了要执行脚本为 `dispatch_for_ide.py`
+- `outputs` 字段表明了会输出哪些文件，通过 `outputs` 和 `sources` 可以明确 `action` 之间的依赖关系，从而决定执行顺序
+- `args` 定义了执行脚本时会传入的参数，可以通过 `if-else` 添加不同的命令参数
+- `deps` 该 `action` 的依赖项，会先进行依赖项
+
+```gn
+if (is_win) {
+    set_sources_assignment_filter([ 
+        "*_posix.h", "*_posix.cc",
+        "*_mac.h", "*_mac.cc", "*_mac.mm",
+        "*_android.h", "*_android.cc",
+        "*_jni.h", "*_jni.cc",
+    ])
+}
+```
+
+- `source_set`：编译后的代码集合，它与静态库的唯一区别时灭有链接的符号文件，就是一遍编译后生成的 .i 文件
+- `static_library`：静态库，windows 上是 lib 库，其他平台是 .a 库
+- `shared_library`：动态库，windows 上是 dll 库，Android 平台是 .so 库， mac 和 IOS 是 dylib 库
+
