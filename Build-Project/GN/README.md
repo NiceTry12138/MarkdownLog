@@ -329,6 +329,68 @@ template("my_executable_with_tests") {
 
 ## 样例
 
+
+### 案例1
+
+[示例项目](https://github.com/timniederhausen/gn-build/blob/master/config/BUILDCONFIG.gn)
+
+通常来说
+
+- 项目中会有一个 `.gn` 文件
+
+`.gn` 文件是项目的入口文件，该文件会依赖其他的配置文件， `gn` 会逐级加载这些被依赖的配置文件。依赖项加载完毕之后，再从项目的根目录开始逐级加载所有 `.gn` 结尾的文件
+
+> 根目录中的 `BUILD.gn` 文件所依赖的其他的其他文件会被加载
+
+- 项目中可能存在多个`BUILDCONFIG.gn` 文件
+
+通常来说 `BUILDCONFIG.gn` 是一个特殊文件，通产用于定义全局构建配置、设置默认值、全局变量等，这些配置可以被项目中的其他 `BUILD.gn` 文件引用
+
+| 作用 | 代码 |
+| --- | --- |
+| 定义全局变量 | `declare_args() { is_debug = false }` |
+| 设置默认值 | 定义默认的编译器选项、链接器选项等 |
+| 导入公共配置 | `import("//build/config/compiler.gni")` |
+| 配置工具链 | `toolchain("win") {  }` | 
+| 定义构建逻辑 | `if(is_win) {  }` |
+
+常见变量
+
+| 变量 | 含义 |
+| --- | --- |
+| os | 操作系统 |
+| cpu | 处理器 |
+| host | 编译时的主机 |
+| target | 目标平台 |
+| current | 当前配置 |
+
+常见配置写法
+
+```gn
+if (target_os == "") {
+  target_os = host_os
+}
+
+if (target_cpu == "") {
+  if (target_os == "android") {
+    target_cpu = "arm"
+  } else {
+    target_cpu = host_cpu
+  }
+}
+
+if (current_cpu == "") {
+  current_cpu = target_cpu
+}
+if (current_os == "") {
+  current_os = target_os
+}
+```
+
+- 项目中会有一个 `build\toolchain` 文件夹，里面存放着 `BUILD.gn`
+
+### 案例2
+
 [GN实践](https://blog.csdn.net/weixin_44701535/article/details/88355958)
 
 [GN Demo 项目](https://github.com/TechGhostForGithub/source_gn_project)
