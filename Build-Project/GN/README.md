@@ -329,10 +329,10 @@ template("my_executable_with_tests") {
 
 ## 样例
 
+### Hello-GN
 
-### 案例1
+[Hello-GN](https://github.com/mhf-air/hello-gn)
 
-[示例项目](https://github.com/timniederhausen/gn-build/blob/master/config/BUILDCONFIG.gn)
 
 通常来说
 
@@ -388,6 +388,51 @@ if (current_os == "") {
 ```
 
 - 项目中会有一个 `build\toolchain` 文件夹，里面存放着 `BUILD.gn`
+
+
+构建项目的结构是项目根目录的 `BUILD.gn` 文件
+
+```c
+executable("hello") {
+    ...
+}
+
+shared_library("hello_shared") {
+    ...
+}
+
+static_library("hello_static") {
+    ...
+}
+```
+
+在 `build\toolchain\BUILD.gn` 中定义了工具链
+
+```c
+toolchain("gcc") {
+    tool("cc") { ... }
+    tool("alink") { ... }
+    tool("solink") { ... }
+    tool("link") { ... }
+    tool("stamp") { ... }
+    tool("copy") { ... }
+}
+```
+
+在 `GN` 中，工具链（`toolchain`）和工具（`tools`）的调用是通过目标类型（如 `executable`、`static_library`、`shared_library` 等）和默认配置来自动处理的
+
+编译 C/C++ 源文件时会自动调用 `cc` 工具，链接静态库时会调用 `alink` 工具，链接共享库时会调用 `solink` 工具，生成可执行文件时会调用 `link` 工具
+
+| 命令 | 工具 |
+| --- | --- |
+| `executable` | `cc`、`link` |
+| `static_library` | `alink` |
+| `shared_library` | `solink` |
+| `source_set` 或 `group` | `stamp` |
+
+在 `BUILDCONFIG.gn` 中通过 `set_default_toolchain("//build/toolchain:gcc")` 设置默认工具
+
+
 
 ### 案例2
 
