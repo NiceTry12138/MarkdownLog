@@ -44,9 +44,9 @@
     
     <div id="app2"></div>
     <template id="template2">
-        <!-- <h2 :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</h2> -->
-        <h2 class="abc cba" :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</h2>
-        <h2 class="abc cba" :class="classObj">{{ message }}</h2>
+        <!-- <span :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</span> -->
+        <span class="abc cba" :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</span>
+        <span class="abc cba" :class="classObj">{{ message }}</span>
         <button @click="changeHref">+1</button>
     </template>
     <script>
@@ -72,11 +72,11 @@
     
     <div id="app3"></div>
     <template id="template3">
-        <h2 class="abc cba" :class="['active']">{{ message }}</h2>
-        <h2 class="abc cba" :class="[isValid ? 'active' : 'disable']">{{ message }}</h2>
-        <h2 class="abc cba" :class="['active', { disable: isValid }]">{{ message }}</h2>
-        <h2 class="abc cba" :class="classes">{{ message }}</h2>
-        <h2 class="abc cba" :class="getClasses()">{{ message }}</h2>
+        <span class="abc cba" :class="['active']">{{ message }}</span>
+        <span class="abc cba" :class="[isValid ? 'active' : 'disable']">{{ message }}</span>
+        <span class="abc cba" :class="['active', { disable: isValid }]">{{ message }}</span>
+        <span class="abc cba" :class="classes">{{ message }}</span>
+        <span class="abc cba" :class="getClasses()">{{ message }}</span>
         <button @click="toDisable">+1</button>
     </template>
     <script>
@@ -98,6 +98,83 @@
                 }
             }
         }).mount('#app3');
+    </script>
+    
+    <div id="app4"></div>
+    <template id="template4">
+        <span :style="{'font-size': '10px'}">{{ message }}</span>
+        <span :style="{'font-size': size+'px'}">{{ message }}</span>
+        <span :style="{fontSize: '10px'}">{{ message }}</span>
+        <span :style="styles">{{ message }}</span>
+        <span :style="getStyle()">{{ message }}</span>
+        <button @click="toDisable">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template4',
+            data() {
+                return {
+                    styles: { 'font-size': '10px'},
+                    size: 15,
+                    message: '打开百度',
+                }
+            },
+            methods: {
+                toDisable() {
+                    this.styles = { 'font-size': '20px'};
+                },
+                getStyle() {
+                    return {
+                        'font-size': '30px'
+                    }
+                }
+            }
+        }).mount('#app4');
+    </script>
+    
+    <div id="app5"></div>
+    <template id="template5">
+        <a :[name]="value">{{message}}</a>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template5',
+            data() {
+                return {
+                    name: 'href',
+                    value: 'https://baidu.com',
+                    message: '打开百度', 
+                }
+            },
+            methods: {
+            }
+        }).mount('#app5');
+    </script>
+    
+    <div id="app6"></div>
+    <template id="template6">
+        <div v-bind="divProperty">
+            <span>{{message}}</a>
+        </div>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template6',
+            data() {
+                return {
+                    divProperty: {
+                        name: 'div1',
+                        class: 'disabled',
+                        style: {
+                            'font-size': '30px'
+                        }
+                    },
+                    message: '打开百度',
+                }
+            },
+            methods: {
+            }
+        }).mount('#app6');
     </script>
 </body>
 </html>

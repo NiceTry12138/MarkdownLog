@@ -696,3 +696,114 @@ Vue 也支持 Jsx 的开发模式，但是大多数情况系啊，使用基于 H
 </script>
 ```
 
+#### v-bind 绑定 style
+
+可以使用 `v-bind:style` 来绑定 css 内联样式。因为某些样式需要根据数据动态决定，比如颜色、字体大小等
+
+> CSS Property 名可以用 **驼峰式** 或 **短横线分隔符** 来命名
+
+style 的绑定方法也是两种：**对象语法**和**数组语法**
+
+style 的对象语法与 class 的对象语法相似
+
+```html
+<div id="app4"></div>
+<template id="template4">
+    <span :style="{'font-size': '10px'}">{{ message }}</span>
+    <span :style="{'font-size': size+'px'}">{{ message }}</span>
+    <span :style="{fontSize: '10px'}">{{ message }}</span>
+    <span :style="styles">{{ message }}</span>
+    <span :style="getStyle()">{{ message }}</span>
+    <button @click="toDisable">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template4',
+        data() {
+            return {
+                styles: { 'font-size': '10px'},
+                size: 15,
+                message: '打开百度',
+            }
+        },
+        methods: {
+            toDisable() {
+                this.styles = { 'font-size': '20px'};
+            },
+            getStyle() {
+                return {
+                    'font-size': '30px'
+                }
+            }
+        }
+    }).mount('#app4');
+</script>
+```
+
+![](Image/034.png)
+
+style 的数组语法与 class 的数组语法类型，都支持数组嵌套数组对象
+
+#### v-bind 动态绑定属性
+
+标签的一些属性可能会动态改变，比如 `<hello abc="123">` 修改为 `<hello cba="321">`
+
+```html
+<div id="app5"></div>
+<template id="template5">
+    <a :[name]="value">{{message}}</a>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template5',
+        data() {
+            return {
+                name: 'href',
+                value: 'https://baidu.com',
+                message: '打开百度', 
+            }
+        },
+        methods: {
+        }
+    }).mount('#app5');
+</script>
+```
+
+![](Image/035.png)
+
+#### v-bind 绑定对象
+
+将一个对象的所有属性，绑定到元素上的所有属性
+
+使用方法很简单，直接通过 `v-bind="对象"` 即可
+
+```html
+<div id="app6"></div>
+<template id="template6">
+    <div v-bind="divProperty">
+        <span>{{message}}</a>
+    </div>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template6',
+        data() {
+            return {
+                divProperty: {
+                    name: 'div1',
+                    class: 'disabled',
+                    style: {
+                        'font-size': '30px'
+                    }
+                },
+                message: '打开百度',
+            }
+        },
+        methods: {
+        }
+    }).mount('#app6');
+</script>
+```
+
+![](Image/036.png)
+
