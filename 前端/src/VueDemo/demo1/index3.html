@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+</head>
+<body>
+    <!-- 通过 CDN 导入 vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app1"></div>
+    <template id="template1">
+        <button v-on:click="changeHref">{{message}}</button>
+        <button @click="changeHref">{{message}}</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template1',
+            data() {
+                return {
+                    message: '打开百度', 
+                }
+            },
+            methods: {
+                changeHref() {
+                    console.log(`btn click`);
+                }
+            }
+        }).mount('#app1');
+    </script>
+</body>
+</html>
