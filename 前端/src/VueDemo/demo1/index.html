@@ -111,5 +111,105 @@
             }
         }).mount('#app4');
     </script>
+    
+    <div id="app5"></div>
+    <template id="template5">
+        <div v-once>
+            <h2>{{ count }}</h2>
+            <h2>{{ message }}</h2>
+        </div>
+        <h2>{{ count }}</h2>
+        <h2>{{ message }}</h2>
+        <button @click="addCount">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template5',
+            data() {
+                return {
+                    message: 'Hello  Vue! template2',
+                    count: 100
+                }
+            },
+            methods: {
+                addCount() {
+                    this.count++;
+                    this.message = "update message"
+                }
+            }
+        }).mount('#app5');
+    </script>
+    
+    <div id="app6"></div>
+    <template id="template6">
+        <h2 v-text="count"></h2>
+        <h2>{{ count }}</h2>
+        <h2 v-text="message"></h2>
+        <h2>{{ message }}</h2>
+        <button @click="addCount">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template6',
+            data() {
+                return {
+                    message: 'Hello  Vue! template2',
+                    count: 100
+                }
+            },
+            methods: {
+                addCount() {
+                    this.count++;
+                    this.message = "<b>update message</b>"
+                }
+            }
+        }).mount('#app6');
+    </script>
+    
+    <div id="app7"></div>
+    <template id="template7">
+        <h2 v-html="message"></h2>
+        <h2>{{ message }}</h2>
+        <button @click="addCount">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template7',
+            data() {
+                return {
+                    message: 'Hello  Vue! template2',
+                }
+            },
+            methods: {
+                addCount() {
+                    this.message = "<b>update message</b>"
+                }
+            }
+        }).mount('#app7');
+    </script>
+    
+    <div id="app8"></div>
+    <template id="template8">
+        <h2 v-pre>{{ message }}</h2>
+        <h2>{{ message }}</h2>
+        <button @click="addCount">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template8',
+            data() {
+                return {
+                    message: 'Hello  Vue! template2',
+                }
+            },
+            methods: {
+                addCount() {
+                    this.message = "<b>update message</b>"
+                }
+            }
+        }).mount('#app8');
+    </script>
+
+    </script>
 </body>
 </html>

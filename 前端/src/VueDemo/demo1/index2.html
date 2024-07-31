@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+
+    <style>
+        .active {
+            color: red;
+        }
+        .disabled {
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <!-- 通过 CDN 导入 vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app1"></div>
+    <template id="template1">
+        <a :href="href">{{message}}</a>
+        <button @click="changeHref">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template1',
+            data() {
+                return {
+                    href: 'https://baidu.com',
+                    message: '打开百度', 
+                }
+            },
+            methods: {
+                changeHref() {
+                    this.href = 'https://google.com';
+                    this.message = "打开谷歌";
+                }
+            }
+        }).mount('#app1');
+    </script>
+
+    
+    <div id="app2"></div>
+    <template id="template2">
+        <!-- <h2 :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</h2> -->
+        <h2 class="abc cba" :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</h2>
+        <h2 class="abc cba" :class="classObj">{{ message }}</h2>
+        <button @click="changeHref">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template2',
+            data() {
+                return {
+                    isValid: false,
+                    message: '打开百度', 
+                    classObj: {
+                        active: true,
+                        disabled: false
+                    }
+                }
+            },
+            methods: {
+                changeHref() {
+                    this.isValid = !this.isValid;
+                }
+            }
+        }).mount('#app2');
+    </script>
+    
+    <div id="app3"></div>
+    <template id="template3">
+        <h2 class="abc cba" :class="['active']">{{ message }}</h2>
+        <h2 class="abc cba" :class="[isValid ? 'active' : 'disable']">{{ message }}</h2>
+        <h2 class="abc cba" :class="['active', { disable: isValid }]">{{ message }}</h2>
+        <h2 class="abc cba" :class="classes">{{ message }}</h2>
+        <h2 class="abc cba" :class="getClasses()">{{ message }}</h2>
+        <button @click="toDisable">+1</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template3',
+            data() {
+                return {
+                    classes: ['active'],
+                    message: '打开百度',
+                    isValid: true
+                }
+            },
+            methods: {
+                getClasses() {
+                    return ['active'];
+                },
+                toDisable() {
+                    this.classes = ['disabled'];
+                }
+            }
+        }).mount('#app3');
+    </script>
+</body>
+</html>

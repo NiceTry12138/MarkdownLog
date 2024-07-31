@@ -356,3 +356,343 @@ Vue 也支持 Jsx 的开发模式，但是大多数情况系啊，使用基于 H
 </script>
 ```
 
+注意 `Mustache` 只支持表达式，并不支持语句，下面都是错误写法
+
+```html
+<h2> let name = "abc" </h2>     
+<h2> if(message === undefined) { return "true" }  </h2>
+```
+
+> 赋值语句、条件判断语句
+
+#### v-once 指令
+
+`v-once` 用于指定元素或者组件只渲染一次，当数据发生变化时，元素或者组件以及其所有的子元素将视为静态内容并且跳过，该指令可以用于**性能优化**
+
+```html
+<div id="app5"></div>
+<template id="template5">
+    <div v-once>
+        <h2>{{ count }}</h2>
+        <h2>{{ message }}</h2>
+    </div>
+    <h2>{{ count }}</h2>
+    <h2>{{ message }}</h2>
+    <button @click="addCount">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template5',
+        data() {
+            return {
+                message: 'Hello  Vue! template2',
+                count: 100
+            }
+        },
+        methods: {
+            addCount() {
+                this.count++;
+                this.message = "update message"
+            }
+        }
+    }).mount('#app5');
+</script>
+```
+
+![](Image/028.png)
+
+在 `template` 中使用 `v-once` 标记的 `tag` 只会在一开始计算、渲染，再之后不会更新渲染
+
+`v-once` 标记的 `tag` 及其子 `tag` 都不会更新渲染，从上述代码上看就知道
+
+#### v-text 指令
+
+用于更新元素的 textContent
+
+用 `<h2 v-text="count"></h2>` 和 `<h2>{{ count }}</h2>` 的表现和作用相同都是用来显示内容
+
+```html
+<div id="app6"></div>
+<template id="template6">
+    <h2 v-text="count"></h2>
+    <h2>{{ count }}</h2>
+    <h2 v-text="message"></h2>
+    <h2>{{ message }}</h2>
+    <button @click="addCount">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template6',
+        data() {
+            return {
+                message: 'Hello  Vue! template2',
+                count: 100
+            }
+        },
+        methods: {
+            addCount() {
+                this.count++;
+                this.message = "<b>update message</b>"
+            }
+        }
+    }).mount('#app6');
+</script>
+```
+
+![](Image/029.png)
+
+> 一般来说直接 `{{}}` 就行了
+
+#### v-html 指令
+
+默认情况下，如果展示的内容本身是 html 的， vue 并不会对其进行特殊的解析。如果希望这个内容被解析出来，可以使用 `v-html`
+
+```html
+<div id="app7"></div>
+<template id="template7">
+    <h2 v-html="message"></h2>
+    <h2>{{ message }}</h2>
+    <button @click="addCount">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template7',
+        data() {
+            return {
+                message: 'Hello  Vue! template2',
+            }
+        },
+        methods: {
+            addCount() {
+                this.message = "<b>update message</b>"
+            }
+        }
+    }).mount('#app7');
+</script>
+```
+
+![](Image/030.png)
+
+> `{{}}` 不会解析 html，所以会显示 `<b>`；`v-html` 会解析 html
+
+#### v-pre 指令
+
+`v-pre` 用于跳过元素和它的子元素的编译过程，显示原始的 Mustache 标签
+
+一般用于跳过不需要编译的节点，加快编译的速度
+
+```html
+<div id="app8"></div>
+<template id="template8">
+    <h2 v-pre>{{ message }}</h2>
+    <h2>{{ message }}</h2>
+    <button @click="addCount">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template8',
+        data() {
+            return {
+                message: 'Hello  Vue! template2',
+            }
+        },
+        methods: {
+            addCount() {
+                this.message = "<b>update message</b>"
+            }
+        }
+    }).mount('#app8');
+</script>
+```
+
+![](Image/031.png)
+
+#### v-cloak
+
+这个指令保持在元素上直到关联组件实例结束编译。和 CSS 规则如 `[v-cloak]{ display: none }` 一起用时，这个指令可以隐藏未编译的 `Mustache` 标签直到组件实例准备完毕
+
+```html
+<style>
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+<div id="app8"></div>
+<template id="template8">
+    <h2 v-cloak>{{ message }}</h2>
+</template>
+```
+
+通过 `CSS` 设置，如果存在 `v-cloak` 则不会显示 `h2` 极其内容。当组件实例编译完毕之后，`v-cloak` 标签被删除，`h2` 内容就又会出现
+
+> Vue3 一般用不到
+
+#### v-bind 绑定属性
+
+除了内容需要动态决定外，某些属性也希望动态绑定，比如动态绑定 `<a>` 的 `href` 属性、动态绑定 `<img>` 元素的 `src` 属性
+
+```html
+<div id="app1"></div>
+<template id="template1">
+    <a v-bind:href="href">{{message}}</a>
+    <button @click="changeHref">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template1',
+        data() {
+            return {
+                href: 'https://baidu.com',
+                message: '打开百度',
+            }
+        },
+        methods: {
+            changeHref() {
+                this.href = 'https://google.com';
+                this.message = "打开谷歌";
+            }
+        }
+    }).mount('#app1');
+</script>
+```
+
+在需要使用 `v-bind` 的属性之前，添加 `v-bind:` 然后将属性值设置为 `data` 中的属性名即可
+
+由于 `v-bind` 在开发中经常用到，为了提升编码效率，`vue` 提供了一个语法糖
+
+```html
+<a :href="href">{{message}}</a>
+```
+
+没错，直接省略掉了 `v-bind`，只需要在对应的属性前加上 `:` 即可
+
+#### v-bind 绑定 class
+
+`class` 其实也是一种属性
+
+通常来说 `class` 也是动态的，比如数据为真时文本为红色，否则为黑色
+
+除了常规的 `v-bind` 的绑定方法之外，绑定 `class` 还有两种方法
+
+1. 对象语法
+2. 数组语法
+
+什么是**对象语法**，如题所示，就是 class 属性绑定的其实是一个对象
+
+`<h2 :class="{'active':false, 'disabled': true}">{{ message }}</h2>`
+
+如上述代码所示，绑定了一个对象，其有两个属性：`active` 和 `disabled`，这就是 `class` 的值，通过 `true`、`false` 来决定是否需要启用这个 `class`
+
+```html
+<!-- 对象语法 -->
+<style>
+    .active {
+        color: red;
+    }
+    .disabled {
+        color: gray;
+    }
+</style>
+
+<div id="app2"></div>
+<template id="template2">
+    <h2 :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</h2>
+    <button @click="changeHref">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template2',
+        data() {
+            return {
+                isValid: false,
+                message: '打开百度', 
+            }
+        },
+        methods: {
+            changeHref() {
+                this.isValid = !this.isValid;
+            }
+        }
+    }).mount('#app2');
+</script>
+```
+
+![](Image/032.png)
+
+> 可以看到值为 `false` 的 `class` 不会添加到标签上
+
+通过下面这种写法，可以将确定的 class 和动态的 class 结合起来，前面没有 `v-bind` 就是确定需要的 class
+
+```html
+<h2 class="abc cba" :class="{'active':isValid, 'disabled': !isValid}">{{ message }}</h2>
+```
+
+![](Image/033.png)
+
+除了将对象写在标签的属性上之外，还可以直接绑定 `data` 中的一个对象，或者 `methods` 中方法的返回值
+
+```html
+<h2 class="abc cba" :class="classObj">{{ message }}</h2>
+<h2 class="abc cba" :class="getClassObj()">{{ message }}</h2>
+
+<script>
+    Vue.createApp({
+        template: '#template2',
+        data() {
+            return {
+                message: '打开百度', 
+                classObj: {
+                    active: true,
+                    disabled: false
+                }
+            }
+        },
+        methods: {
+            getClassObj() {
+                return {
+                    active: true,
+                    disabled: false
+                }
+            }
+        }
+    }).mount('#app2');
+</script>
+```
+
+什么是**数组语法**，如题所示，就是 class 属性绑定的其实是一个数组，这个数组中所有的 class 都会被添加
+
+**数组语法**的用法跟对象语法类似，除此之外，**数组语法**的数组中还可以嵌套对象语法和三元运算
+
+```html
+<div id="app3"></div>
+<template id="template3">
+    <h2 class="abc cba" :class="['active']">{{ message }}</h2>
+    <h2 class="abc cba" :class="[isValid ? 'active' : 'disable']">{{ message }}</h2>
+    <h2 class="abc cba" :class="['active', { disable: isValid }]">{{ message }}</h2>
+    <h2 class="abc cba" :class="classes">{{ message }}</h2>
+    <h2 class="abc cba" :class="getClasses()">{{ message }}</h2>
+    <button @click="toDisable">+1</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template3',
+        data() {
+            return {
+                classes: ['active'],
+                message: '打开百度',
+                isValid: true
+            }
+        },
+        methods: {
+            getClasses() {
+                return ['active'];
+            },
+            toDisable() {
+                this.classes = ['disabled'];
+            }
+        }
+    }).mount('#app3');
+</script>
+```
+
