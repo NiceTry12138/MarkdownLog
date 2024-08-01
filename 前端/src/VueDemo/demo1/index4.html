@@ -72,5 +72,23 @@
         }).mount('#app2');
     </script>
 
+    <div id="app3"></div>
+    <template id="template3">
+        <ul>
+            <li v-for="movie in movies" :key="movie">{{ movie }}</li>
+        </ul>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template3',
+            data() {
+                return {
+                    movies: ['The Matrix', 'The Matrix Reloaded', 'The Matrix Revolutions']
+                }
+            },
+            methods: {
+            }
+        }).mount('#app3');
+    </script>
 </body>
 </html>

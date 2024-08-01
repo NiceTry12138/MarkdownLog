@@ -1023,3 +1023,98 @@ Vue.createApp({
 ```
 
 > 这里 ul 中使用了 hr 其实不符合要求，所以理论上这里的 hr 应该也换成 li，然后设置该 li 的 style
+
+Vue 会监听数组的变更方法，当方法被调用时，会更新视图
+
+被监听的数组方法包括：push、pop、shift、unshift、splice、sort、reverse，这些方法会改变源数组的内容
+
+`v-for` 进行列表渲染时，通常要给元素或者组件绑定一个 `key` 属性
+
+```html
+<ul>
+    <li v-for="(movie) in movies" :key="movie">{{movie}}</li>
+</ul>
+```
+
+[v-for中的key](https://cn.vuejs.org/guide/essentials/list.html#maintaining-state-with-key)
+
+按照官方说法：`Vue` 默认按照“就地更新”的策略来更新通过 `v-for` 渲染的元素列表。当数据项的顺序改变时，`Vue` 不会随之移动 `DOM` 元素的顺序，而是就地更新每个元素，确保它们在原本指定的索引位置上渲染
+
+在 Vue 中，浏览器的节点被称为 Dom 节点，也称 Dom 的 Node，真实的 Node；除此之外， Vue 还会生成 VNode，也就是 Virtual-Node，是存在在内存中的 JS 对象
+
+在 Vue 中，组件和元素都表示为一个个 VNode，其本质是 JS 对象，描述标签的内容
+
+```html
+<div class="title" style="font-size: 30px; color: red">3333</div> 
+```
+
+`Vue` 会先将上述 `template` 中 `div` 内容转换成 `VNode` 对象，再转换成真实的 `Dom`
+
+```js
+const vnode = {
+    type: "div",
+    props: {
+        class: "title",
+        style: {
+            "font-size": "30px",
+            color: "red"
+        }
+    },
+    children: "3333"
+}
+```
+
+> 上述 div 会转换为上述的 vnode
+
+使用 `VNode` 可以方便的进行多平台适配，移动端、浏览器等
+
+如果是一大堆元素，最后会形成一个 `VNode Tree`
+
+![](Image/039.png)
+
+```html
+<template id="template3">
+    <ul>
+        <li v-for="movie in movies" :key="movie">{{ movie }}</li>
+    </ul>
+</template>
+```
+
+以上述代码为例，当 `movies` 内容为 `[1, 2, 3, 4]` 时，会生成 4 个 `li`。当在 `movies` 中插入一个 5，变成 `[1, 2, 5, 3, 4]` 时，应该如何更新 `ul` 的内容呢
+
+1. 方法1：完全清空 `ul` 的内容，重新创建 `li` 塞入
+2. 方法2：创建一个 `li` 插入到 `ul`，然后重新设置每个 `li` 的内容
+3. 方法3：创建一个 `li` 内容设置为 5，直接插入到合适的位置中
+
+上述三种解决方案，消耗从大到小
+
+在 `Vue` 中会根据 `v-for` 有没有设置 `key` 走不同的方法 `patchUnkeyedChildren` 和 `patchKeyedChildren`
+
+- `patchUnkeyedChildren` 使用的是上述的方法2，即创建一个新的，比较和更新内容
+- `patchKeyedChildren` 使用的上述的方法3，即创建一个新的，插入到合适的位置
+
+> 如果新的数组比旧的数组短，就走删除逻辑
+
+所以使用 `v-for` 时需要使用 `:key` 来标记每个 `li`，方便 `Vue` 来更新数据，优化性能
+
+### 计算属性
+
+[计算属性](https://cn.vuejs.org/guide/essentials/computed.html)
+
+在 `template` 中可以使用 `{{}}` 来显示 `data` 中的数据
+
+某些情况下，需要对**数据进行一些转换**后再显示，或者将**多个数据结合**起来显示
+
+```html
+<span>{{ author.books.length > 0 ? 'Yes' : 'No' }}</span>
+```
+
+可能需要对多个 `data` 数据进行运算、三元运算符决定结果、数据转化等，在 `template` 中使用表达式可以非常方便的实现一些效果，但是在 `template` 中放入过多的逻辑会导致 `template` 过重和难以维护
+
+> 如果多个地方都要显示相同的计算结果，会导致代码重复
+
+- 一种解决方案是将计算放到 `methods` 里面
+- 一种解决方案是使用计算属性 `computed`
+
+对于任何包含响应式数据的复杂逻辑，都应该使用 **计算属性** 
+
