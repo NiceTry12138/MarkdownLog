@@ -954,3 +954,70 @@ Vue.createApp({
 - v-if 为 false 时，其标签会直接从 dom 树中移除
 - v-show 为 false 时，标签依然存在在 dom 树中，只是不显示
 
+- 如果元素需要在显示和隐藏之间频繁的切换，那么使用 v-show，因为不用操作 dom
+- 如果不会频繁的发生切换，那么使用 v-if
+
+> v-for的优先级是高于v-if的，如果两者同时使用，那么v-if会在每一个v-for循环渲染出来的项上作用，造成性能上的浪费
+
+#### v-for 列表渲染
+
+[vue列表渲染](https://cn.vuejs.org/guide/essentials/list.html)
+
+`v-for` 的基本格式是 `item in Array`，数组通常来自 data 或者 prop，可以是其他方式，item 是给每项元素起的别名
+
+```html
+<div id="app2"></div>
+<template id="template2">
+    <ul>
+        <li v-for="movie in movies">{{ movie }}</li>
+    </ul>
+    <ul>
+        <li v-for="(value, key, index) in info"> {{ index }} : {{ key }} : {{ value }}</li>
+        <li v-for="(value, key) in info">{{ key }}: {{ info[key] }}</li>
+    </ul>
+    <ul>
+        <li v-for="num in 10">{{ num }}</li><!-- 输出 0 1 2 3 4 5 .... -->
+        <li v-for="num in '0qwerqwerq'">{{ num }}</li> <!-- 输出 0 q w e r... -->
+    </ul>
+    <ul>
+        <template v-for="(value, key) in info">
+            <li>{{ key }}</li>
+            <li>{{ value }}</li>
+            <hr>
+        </template>
+    </ul>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template2',
+        data() {
+            return {
+                movies: ['The Matrix', 'The Matrix Reloaded', 'The Matrix Revolutions'],
+                info: {
+                    title: 'The Matrix',
+                    director: 'The Wachowskis',
+                    release: '1999'
+                }
+            }
+        },
+        methods: {
+        }
+    }).mount('#app2');
+</script>
+```
+
+![](Image/038.png)
+
+参考上面的写法，如果想要将几个 `li` 打包成一个组，理论上可以使用 `div` 来包裹多个 `li`，然后在 `div` 中使用 `v-for`，但官方（HTML官方）不建议在 `ul` 中使用 `div`
+
+为了实现打包成组的需求，使用 `template` 不被渲染的特性，实现
+
+```html
+<ul>
+    <template v-for="(value, key) in info">
+        <li>{{ key }}</li>
+        <li>{{ value }}</li>
+        <hr>
+    </template>
+</ul>
+```

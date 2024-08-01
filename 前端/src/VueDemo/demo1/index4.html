@@ -32,5 +32,45 @@
             }
         }).mount('#app1');
     </script>
+    
+    <div id="app2"></div>
+    <template id="template2">
+        <ul>
+            <li v-for="movie in movies">{{ movie }}</li>
+        </ul>
+        <ul>
+            <li v-for="(value, key, index) in info"> {{ index }} : {{ key }} : {{ value }}</li>
+            <li v-for="(value, key) in info">{{ key }}: {{ info[key] }}</li>
+        </ul>
+        <ul>
+            <li v-for="num in 10">{{ num }}</li><!-- 输出 0 1 2 3 4 5 .... -->
+            <li v-for="num in '0qwerqwerq'">{{ num }}</li> <!-- 输出 0 q w e r... -->
+        </ul>
+        <ul>
+            <template v-for="(value, key) in info">
+                <li>{{ key }}</li>
+                <li>{{ value }}</li>
+                <hr>
+            </template>
+        </ul>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template2',
+            data() {
+                return {
+                    movies: ['The Matrix', 'The Matrix Reloaded', 'The Matrix Revolutions'],
+                    info: {
+                        title: 'The Matrix',
+                        director: 'The Wachowskis',
+                        release: '1999'
+                    }
+                }
+            },
+            methods: {
+            }
+        }).mount('#app2');
+    </script>
+
 </body>
 </html>
