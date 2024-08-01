@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+</head>
+<body>
+    <!-- 通过 CDN 导入 vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app1"></div>
+    <template id="template1">
+
+        <button @click="awesome = !awesome">Toggle</button>
+
+        <h1 v-if="awesome">Vue is awesome!</h1>
+        <h1 v-else>Oh no 😢</h1>
+        
+        <h1 v-show="awesome">Vue is awesome!</h1>
+        <h1 v-show="!awesome">Oh no 😢</h1>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template1',
+            data() {
+                return {
+                    awesome: true, 
+                }
+            },
+            methods: {
+            }
+        }).mount('#app1');
+    </script>
+</body>
+</html>

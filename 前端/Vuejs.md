@@ -817,6 +817,83 @@ style 的数组语法与 class 的数组语法类型，都支持数组嵌套数�
 
 `v-on` 的缩写是 `@`，比如之前的 `@click`
 
+```html
+<div id="app1"></div>
+<template id="template1">
+    <button v-on:click="changeHref">{{message}}</button><!-- v-on -->
+    <button @click="changeHref">{{message}}</button><!-- 语法糖 -->
+    <button @click="logParam('hello')">{{message}}</button><!-- 传参 -->
+    <div v-on="{click:changeHref, mousemove: logParam}">{{message}}</div><!-- 对象 -->
+    <div @="{click:changeHref, mousemove: logParam}">{{message}}</div><!-- 对象语法糖 -->
+</template>
+<script>
+    Vue.createApp({
+        template: '#template1',
+        data() {
+            return {
+                message: '打开百度', 
+            }
+        },
+        methods: {
+            changeHref() {
+                console.log(`btn click`);
+            },
+            logParam(param) {
+                console.log(param);
+            }
+        }
+    }).mount('#app1');
+</script>
+```
+
+当鼠标点击、移动、拖拽时，浏览器在触发事件时会携带一个 event 对象，想通过 `v-on` 得到 event 对象有两种方式
+
+1. Vue 会在执行事件触发函数时，自动将 event 传递给绑定的函数
+
+```js
+Vue.createApp({
+    template: '#template1',
+    data() {
+        return {
+            message: '打开百度', 
+        }
+    },
+    methods: {
+        changeHref(event) {
+            console.log(event);
+        }
+    }
+}).mount('#app1');
+```
+
+2. 如果事件绑定函数携带参数，那么不会自动传递 `event`，需要通过 `$event` 获得事件发生时的事件对象，函数的其他参数正常传递即可
+
+```html
+<template id="template1">
+    <button @click="logParam($event, 'hello')">{{message}}</button><!-- 传参 -->
+</template>
+<script>
+    Vue.createApp({
+        template: '#template1',
+        data() {
+            return {
+                message: '打开百度', 
+            }
+        },
+        methods: {
+            changeHref(event, name) {
+                console.log(name);
+                console.log(event);
+            }
+        }
+    }).mount('#app1');
+</script>
+```
+
+#### v-on 修饰符
+
+[v-on事件处理-修饰符](https://cn.vuejs.org/guide/essentials/event-handling.html#event-modifiers)
+
 | 修饰符 | 作用 |
 | --- | --- |
 | .stop | 调用 event.stopPropagation() |
@@ -831,5 +908,49 @@ style 的数组语法与 class 的数组语法类型，都支持数组嵌套数�
 | .passive | {passive: true} 模式添加侦听器 |
 
 ```html
-
+<div @click="divClick">
+    <button @click="btnClick">{{message}}</button>
+</div>
 ```
+
+以上述代码为例，当 `button` 被点击时会触发 `button` 自己的 `btnClick`，也会因为事件冒泡触发 `div` 的 `divClick`
+
+这个时候只需要设置 `button` 为 `@click.stop="btnClick"` 即可，这就是 `.stop` 的作用
+
+#### v-if v-show 条件渲染 
+
+[条件渲染](https://cn.vuejs.org/guide/essentials/conditional.html)
+
+```html
+<div id="app1"></div>
+<template id="template1">
+
+    <button @click="awesome = !awesome">Toggle</button>
+
+    <h1 v-if="awesome">Vue is awesome!</h1>
+    <h1 v-else>Oh no 😢</h1>
+    
+    <h1 v-show="awesome">Vue is awesome!</h1>
+    <h1 v-show="!awesome">Oh no 😢</h1>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template1',
+        data() {
+            return {
+                awesome: true, 
+            }
+        },
+        methods: {
+        }
+    }).mount('#app1');
+</script>
+```
+
+![](Image/037.png)
+
+通过 F12 查看源码
+
+- v-if 为 false 时，其标签会直接从 dom 树中移除
+- v-show 为 false 时，标签依然存在在 dom 树中，只是不显示
+
