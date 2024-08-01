@@ -1021,3 +1021,5 @@ Vue.createApp({
     </template>
 </ul>
 ```
+
+> 这里 ul 中使用了 hr 其实不符合要求，所以理论上这里的 hr 应该也换成 li，然后设置该 li 的 style
