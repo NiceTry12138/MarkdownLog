@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+</head>
+<body>
+    <!-- 通过 CDN 导入 vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app1"></div>
+    <template id="template1">
+
+        <button @click="awesome = !awesome">Toggle</button>
+
+        <h1 v-if="awesome">Vue is awesome!</h1>
+        <h1 v-else>Oh no 😢</h1>
+        
+        <h1 v-show="awesome">Vue is awesome!</h1>
+        <h1 v-show="!awesome">Oh no 😢</h1>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template1',
+            data() {
+                return {
+                    awesome: true, 
+                }
+            },
+            methods: {
+            }
+        }).mount('#app1');
+    </script>
+    
+    <div id="app2"></div>
+    <template id="template2">
+        <ul>
+            <li v-for="movie in movies">{{ movie }}</li>
+        </ul>
+        <ul>
+            <li v-for="(value, key, index) in info"> {{ index }} : {{ key }} : {{ value }}</li>
+            <li v-for="(value, key) in info">{{ key }}: {{ info[key] }}</li>
+        </ul>
+        <ul>
+            <li v-for="num in 10">{{ num }}</li><!-- 输出 0 1 2 3 4 5 .... -->
+            <li v-for="num in '0qwerqwerq'">{{ num }}</li> <!-- 输出 0 q w e r... -->
+        </ul>
+        <ul>
+            <template v-for="(value, key) in info">
+                <li>{{ key }}</li>
+                <li>{{ value }}</li>
+                <hr>
+            </template>
+        </ul>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template2',
+            data() {
+                return {
+                    movies: ['The Matrix', 'The Matrix Reloaded', 'The Matrix Revolutions'],
+                    info: {
+                        title: 'The Matrix',
+                        director: 'The Wachowskis',
+                        release: '1999'
+                    }
+                }
+            },
+            methods: {
+            }
+        }).mount('#app2');
+    </script>
+
+    <div id="app3"></div>
+    <template id="template3">
+        <ul>
+            <li v-for="movie in movies" :key="movie">{{ movie }}</li>
+        </ul>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template3',
+            data() {
+                return {
+                    movies: ['The Matrix', 'The Matrix Reloaded', 'The Matrix Revolutions']
+                }
+            },
+            methods: {
+            }
+        }).mount('#app3');
+    </script>
+</body>
+</html>

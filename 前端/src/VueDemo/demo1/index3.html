@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+</head>
+<body>
+    <!-- 通过 CDN 导入 vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app1"></div>
+    <template id="template1">
+        <button v-on:click="changeHref">{{message}}</button><!-- v-on -->
+        <button @click="changeHref">{{message}}</button><!-- 语法糖 -->
+        <button @click="logParam('hello')">{{message}}</button><!-- 传参 -->
+        <div v-on="{click:changeHref, mousemove: logParam}">{{message}}</div><!-- 对象 -->
+        <div @="{click:changeHref, mousemove: logParam}">{{message}}</div><!-- 对象语法糖 -->
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template1',
+            data() {
+                return {
+                    message: '打开百度', 
+                }
+            },
+            methods: {
+                changeHref() {
+                    console.log(`btn click`);
+                },
+                logParam(param) {
+                    console.log(param);
+                }
+            }
+        }).mount('#app1');
+    </script>
+
+    
+    <div id="app2"></div>
+    <template id="template2">
+        <div @keyup="changeHref">{{message}}</div>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template2',
+            data() {
+                return {
+                    message: '打开百度', 
+                }
+            },
+            methods: {
+                changeHref() {
+                    console.log(`btn click`);
+                }
+            }
+        }).mount('#app2');
+    </script>
+</body>
+</html>
