@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+</head>
+<body>
+    <!-- 通过 CDN 导入 vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app1"></div>
+    <template id="template1">
+
+        <!-- 使用 v-model 绑定数据 -->
+        <input type="text" v-model="message" >
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template1',
+            data() {
+                return {
+                    message: ""
+                }
+            },
+            methods: {
+                
+            },
+            watch: {
+                message(newVal, oldVal) {
+                    console.log(newVal, oldVal);
+                }
+            }
+        }).mount('#app1');
+    </script>
+</body>
+</html>

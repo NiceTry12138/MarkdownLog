@@ -1181,3 +1181,110 @@ const vnode = {
 也就是计算属性有更好的性能表现，对于重复数据减少的计算次数
 
 ### 侦听器 Watch
+
+在 `data` 中定义了数据，数据通过 `{{}}` 语法绑定到 `template` 中，数据变化时更新显示内容。在某些情况下，期望在代码中监听某个数据的变化，这个时候就要使用 `watch` **侦听器**
+
+`watch` 的类型是 `{[key: string]： string | Function | Object | Array}`
+
+```html
+<div id="app1"></div>
+<template id="template1">
+
+    <!-- 使用 v-model 绑定数据 -->
+    <input type="text" v-model="message" >
+</template>
+<script>
+    Vue.createApp({
+        template: '#template1',
+        data() {
+            return {
+                message: ""
+            }
+        },
+        methods: {
+            
+        },
+        watch: {
+            message(newVal, oldVal) {
+                console.log(newVal, oldVal);
+            }
+            // 或者 message: function(newVal, oldVal) {}
+        }
+    }).mount('#app1');
+</script>
+```
+
+当 `data` 的 `message` 数据修改的时候，会触发 `watch` 中的 `message` 函数，将当前 `message` 和之前 `message` 的值传递到函数中
+
+> 比如根据 `message` 的变化，发送网络请求实时查询信息
+
+[官方文档有更为详细的案例介绍](https://cn.vuejs.org/api/options-state.html#watch)
+
+```js
+export default {
+  data() {
+    return {
+      a: 1,
+      b: 2,
+      c: {
+        d: 4
+      },
+      e: 5,
+      f: 6
+    }
+  },
+  watch: {
+    // 侦听根级属性
+    a(val, oldVal) {
+      console.log(`new: ${val}, old: ${oldVal}`)
+    },
+    // 字符串方法名称
+    b: 'someMethod',
+    // 该回调将会在被侦听的对象的属性改变时调动，无论其被嵌套多深
+    c: {
+      handler(val, oldVal) {
+        console.log('c changed')
+      },
+      deep: true
+    },
+    // 侦听单个嵌套属性：
+    'c.d': function (val, oldVal) {
+      // do something
+    },
+    // 该回调将会在侦听开始之后立即调用
+    e: {
+      handler(val, oldVal) {
+        console.log('e changed')
+      },
+      immediate: true
+    },
+    // 你可以传入回调数组，它们将会被逐一调用
+    f: [
+      'handle1',
+      function handle2(val, oldVal) {
+        console.log('handle2 triggered')
+      },
+      {
+        handler: function handle3(val, oldVal) {
+          console.log('handle3 triggered')
+        }
+        /* ... */
+      }
+    ]
+  },
+  methods: {
+    someMethod() {
+      console.log('b changed')
+    },
+    handle1() {
+      console.log('handle 1 triggered')
+    }
+  },
+  created() {
+    this.a = 3 // => new: 3, old: 1
+  }
+}
+```
+
+> `{handler(val, oldVal) {}}` 与 `function(val, oldVal) {}` 效果一样
+
