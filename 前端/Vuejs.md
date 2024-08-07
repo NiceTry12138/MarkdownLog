@@ -1118,3 +1118,66 @@ const vnode = {
 
 对于任何包含响应式数据的复杂逻辑，都应该使用 **计算属性** 
 
+计算属性将被混入到组件实例中，所有的 `getter` 和 `setter` 的 `this` 自动绑定为组件实例
+
+类似 `data` 和 `methods`，传递给 `Vue.createApp` 的对象还有一个属性叫做 `computed`
+
+`computed` 的类型为 `{ [key: string]: Function | { get:Function, setFunction } }`
+
+也就是 computed 中的属性要么是一个函数，要么是一个带有 get、set 函数的修啊ing
+
+```html
+<div id="app4"></div>
+<template id="template4">
+    <h1>{{ fullName }}</h1>
+    <h1>{{ fullName_1 }}</h1>
+    <button @click="updateFullName">{{ fullName_1 }}</button>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template4',
+        data() {
+            return {
+                firstName: "John",
+                lastName: "Doe",
+                score: 80,
+                message: "Hello World",
+            }
+        },
+        methods: {
+            updateFullName() {
+                this.fullName_1 = "xxx yyy";
+            }
+        },
+        computed: {
+            // 一般写法
+            fullName() {
+                return this.firstName + ' ' + this.lastName;
+            },
+            // 完整写法
+            fullName_1: {
+                get: function() {
+                    console.log("get func");
+                    return this.firstName + ' ' + this.lastName;
+                },
+                set: function(newValue) {
+                    console.log("set func");
+                    var names = newValue.split(' ');
+                    this.firstName = names[0];
+                    this.lastName = names[names.length - 1];
+                }
+            }
+        }
+    }).mount('#app4');
+</script>
+```
+
+通过 `{{ fullName_1 }}` 会调用 `fullName_1` 对象的 `get` 方法，通过 `updateFullName` 更新值时会调用 `fullName_1` 的 `set` 方法
+
+> 计算属性大多数情况下，只需要一个 `get` 方法即可
+
+另外计算属性会基于依赖关系进行**缓存**，在数据不发生变化时，计算属性时**不需要重新计算**的，如果依赖的数据发生变化才会重新计算
+
+也就是计算属性有更好的性能表现，对于重复数据减少的计算次数
+
+### 侦听器 Watch

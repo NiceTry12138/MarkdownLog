@@ -90,5 +90,50 @@
             }
         }).mount('#app3');
     </script>
+    
+
+    <div id="app4"></div>
+    <template id="template4">
+        <h1>{{ fullName }}</h1>
+        <h1>{{ fullName_1 }}</h1>
+        <button @click="updateFullName">{{ fullName_1 }}</button>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template4',
+            data() {
+                return {
+                    firstName: "John",
+                    lastName: "Doe",
+                    score: 80,
+                    message: "Hello World",
+                }
+            },
+            methods: {
+                updateFullName() {
+                    this.fullName_1 = "xxx yyy";
+                }
+            },
+            computed: {
+                // 一般写法
+                fullName() {
+                    return this.firstName + ' ' + this.lastName;
+                },
+                // 完整写法
+                fullName_1: {
+                    get: function() {
+                        console.log("get func");
+                        return this.firstName + ' ' + this.lastName;
+                    },
+                    set: function(newValue) {
+                        console.log("set func");
+                        var names = newValue.split(' ');
+                        this.firstName = names[0];
+                        this.lastName = names[names.length - 1];
+                    }
+                }
+            }
+        }).mount('#app4');
+    </script>
 </body>
 </html>
