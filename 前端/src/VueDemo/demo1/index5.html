@@ -33,5 +33,40 @@
             }
         }).mount('#app1');
     </script>
+
+    <div id="app2"></div>
+    <template id="template2">
+        <input type="text" :value="message" @input="inputChange">
+        <span>{{ message }}</span>
+        <input type="text" v-model="message1">
+        <span>{{message1}}</span>
+        <input type="text" v-model.number="age">
+        <span>{{age}}</span>
+        <input type="text" v-model.trim="name">
+        <span>{{name.length}}</span>
+    </template>
+    <script>
+        Vue.createApp({
+            template: '#template2',
+            data() {
+                return {
+                    message: "123",
+                    message1: "456",
+                    age: 18,
+                    name: "Tom"
+                }
+            },
+            methods: {
+                inputChange(event) {
+                    this.message = event.target.value;
+                }
+            },
+            watch: {
+                message(newVal, oldVal) {
+                    console.log(newVal, oldVal);
+                }
+            }
+        }).mount('#app2');
+    </script>
 </body>
 </html>

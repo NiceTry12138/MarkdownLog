@@ -1307,5 +1307,101 @@ unwatch();
 
 > 如果在 `watch` 属性中定义侦听回调，是不能取消的
 
-## 组件化开发
+### 表单提交 v-model 
+
+[v-model](https://cn.vuejs.org/api/built-in-directives.html#v-model)
+[表单](https://cn.vuejs.org/guide/essentials/forms.html)
+
+表单提交时开发中非常常见的功能，也是和用户交互的重要手段
+
+> 比如 注册、登录的账户密码，搜索、创建、更新信息的数据输入
+
+```html
+<input type="text" v-bind:value="message">
+```
+
+以上述代码为例， `input` 就是一个输入表单，其值通过 `input.value` 可以获取，所以通过 `v-bind` 对值进行一个绑定，通过设置 `message` 的值来设置 `input` 中的输入内容
+
+但是，既然用到了 `input` ，那么就要获取 `input` 对应输入的内容的值，也就是当输入内容发生改变的时候，能够将 `message` 的值一同改变
+
+> v-bind 只能实现单项的绑定，即值变化时同步到标签上，不能在标签值变化时同步到 JS 的值中
+
+```html
+<div id="app2"></div>
+<template id="template2">
+    <input type="text" :value="message" @input="inputChange">
+    <span>{{ message }}</span>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template2',
+        data() {
+            return {
+                message: "123"
+            }
+        },
+        methods: {
+            inputChange(event) {
+                this.message = event.target.value;
+            }
+        },
+        watch: {
+            message(newVal, oldVal) {
+                console.log(newVal, oldVal);
+            }
+        }
+    }).mount('#app2');
+</script>
+```
+
+当 `input` 内容发生改变的时，通过 `@input` 绑定回调，通过上述代码的方式实现了 `message` 能够显示到 input 中也可以跟随 `input` 的输入而变化的功能
+
+> 通过 `@change` 也可以绑定回调，但是要在输入回车之后才会触发
+
+但是，通过使用 `v-model` 可以直接避免上述两部绑定过程
+
+```html
+<div id="app1"></div>
+<template id="template1">
+
+    <!-- 使用 v-model 绑定数据 -->
+    <input type="text" v-model="message" >
+    <span>{{ message }}</span>
+</template>
+<script>
+    Vue.createApp({
+        template: '#template1',
+        data() {
+            return {
+                message: "123"
+            }
+        }
+    }).mount('#app1');
+</script>
+```
+
+`v-model` 只能在 `<input>` 、 `<select>`、 `<textarea>` 和组件中使用
+
+另外 `v-model` 还提供三个修饰符
+
+- `.lazy` 监听 `change` 而不是 `input`, 前面有做说明， change 只有在最后按下回车之后才会触发，但是 input 每次修改都会触发
+- `.number` 将输入的合法字符串转为数字
+- `.trim` 清除输入内容两端空格
+
+```html
+<!-- 在 "change" 事件后同步更新而不是 "input" -->
+<input v-model.lazy="msg" />
+<!-- 自动转为数字 -->
+<input v-model.number="age" />
+<!-- 自动去除两端空白字符 -->
+<input v-model.trim="msg" />
+```
+
+其他的例子就在 vue 的表单使用中查看就行，[表单输入绑定](https://cn.vuejs.org/guide/essentials/forms.html)
+
+## 组件
+
+
+
+## webpack
 
