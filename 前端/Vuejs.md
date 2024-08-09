@@ -1288,3 +1288,24 @@ export default {
 
 > `{handler(val, oldVal) {}}` 与 `function(val, oldVal) {}` 效果一样
 
+注意上述案例中，如果 `watch` 传入的是一个 `Object`，会有两个选项 `immediate` 和 `deep`
+
+- `immediate`: 如果希望一开始就执行一次，设置为 `true`
+- `deep`: 对 Object 进行深度侦听，如果为 `false`，那么侦听 `info` 的时候，无法侦听到 `info.name` 的变化
+
+注意上述案例中，如果 `watch` 绑定是一个数组，那么但数据变化时数组中所有绑定的函数都会执行
+
+除了在对象中的 `watch` 属性中定义之外，还可以在**生命周期函数**中使用 `this.$watch` 进行侦听和取消侦听
+
+```ts
+// 监听
+const unwatch = this.$watch('a', (newVal, oldVal) => {})
+
+// 取消监听
+unwatch();
+```
+
+> 如果在 `watch` 属性中定义侦听回调，是不能取消的
+
+## 组件化开发
+
