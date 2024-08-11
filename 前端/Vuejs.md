@@ -1459,6 +1459,8 @@ unwatch();
 
 使用 `rootApp.component` 注册的组件为**全局组件**，意味着在其他组件的 `template` 也可以使用 `comp1` 标签
 
+> 一般不推荐使用全局组件
+
 
 
 ## webpack
