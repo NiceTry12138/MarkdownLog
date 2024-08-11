@@ -1401,6 +1401,64 @@ unwatch();
 
 ## 组件
 
+如果将一个页面中所有的处理逻辑全部放在一起，处理起来会非常复杂，而且不利于后续的管理以及扩展
+
+一般会将一个页面拆分成一个一个小的功能块，每个功能块完成属于自己的独立的功能， 最后搭建起整个项目
+
+这就是组件化
+
+```html
+<div id="app1"></div>
+<template id="template1">
+
+    <!-- 使用 v-model 绑定数据 -->
+    <input type="text" v-model="message" >
+    <span>{{message}}</span>
+    <br>
+    <comp1></comp1>
+    <comp1></comp1>
+    <comp1></comp1>
+</template>
+
+<template id="template2">
+
+    <!-- 使用 v-model 绑定数据 -->
+    <input type="text" v-model="message" >
+    <span>{{ message }}</span>
+</template>
+<script>
+    const AppConfig = {
+        template: '#template1',
+        data() {
+            return {
+                message: "rootApp"
+            }
+        }
+    }
+
+    const rootApp = Vue.createApp(AppConfig);
+
+    const comp1Config = {
+        template: "#template2", 
+        data() {
+            return {
+                message: "comp1"
+            }
+        }
+    }
+    rootApp.component('comp1', comp1Config);
+    rootApp.mount('#app1');
+</script>
+```
+
+如上所示，是一个简单应用组件的例子
+
+使用 `Vue.createApp` 创建一个根组件 `rootApp` 对象，然后通过 `component` 来注册组件，在 `template` 中使用注册组件的名字 `comp1` 作为标签来进行使用
+
+上述代码中使用了三个 `<comp1>`，也就是创建了三个 `comp1` 组件对象，三个对象的数据互相独立，修改任何一个 `comp1` 的 `message` 数据，对其他 `comp1` 都是没有影响的
+
+使用 `rootApp.component` 注册的组件为**全局组件**，意味着在其他组件的 `template` 也可以使用 `comp1` 标签
+
 
 
 ## webpack

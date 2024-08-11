@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+</head>
+<body>
+    <!-- 通过 CDN 导入 vue -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app1"></div>
+    <template id="template1">
+
+        <!-- 使用 v-model 绑定数据 -->
+        <input type="text" v-model="message" >
+        <span>{{message}}</span>
+        <br>
+        <comp1></comp1>
+        <comp1></comp1>
+        <comp1></comp1>
+    </template>
+    
+    <template id="template2">
+
+        <!-- 使用 v-model 绑定数据 -->
+        <input type="text" v-model="message" >
+        <span>{{ message }}</span>
+    </template>
+    <script>
+        const AppConfig = {
+            template: '#template1',
+            data() {
+                return {
+                    message: "rootApp"
+                }
+            }
+        }
+
+        const rootApp = Vue.createApp(AppConfig);
+
+        const comp1Config = {
+            template: "#template2", 
+            data() {
+                return {
+                    message: "comp1"
+                }
+            }
+        }
+        rootApp.component('comp1', comp1Config);
+        rootApp.mount('#app1');
+    </script>
+</body>
+</html>
