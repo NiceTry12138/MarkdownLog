@@ -522,6 +522,8 @@ throw CHWND_EXCEPT(ERROR_ARENA_TRASHED)
 
 ### 架构/交换链
 
+![](Image/001.jpg)
+
 #### 架构
 
 D3D: DirectX 3D
