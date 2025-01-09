@@ -252,7 +252,7 @@ else
 
 所以如果同时设置了 `GoalActor` 和 `GoalLocation`，会使用 `GoalActor` 
 
-在 `AAIController::MoveTo` 中会判断 `GoalActor` 的坐标是否有效
+在 `AAIController::MoveTo` 中会判断 `GoalLocation` 的值是否有效
 
 ```cpp
 if (MoveRequest.GetGoalLocation().ContainsNaN() || FAISystem::IsValidLocation(MoveRequest.GetGoalLocation()) == false)
@@ -262,10 +262,61 @@ if (MoveRequest.GetGoalLocation().ContainsNaN() || FAISystem::IsValidLocation(Mo
 }
 ```
 
-然后会将 `GoalActor` 坐标映射到导航网格上，具体的代码在 `UNavigationSystemV1::ProjectPointToNavigation` 中
+然后会将 `GoalActor` 坐标映射到导航网格上，具体的代码在 `UNavigationSystemV1::ProjectPointToNavigation` 中，以指定坐标点为中心，`DefaultQueryExtent` 为矩形边界，找到该点映射到导航网格的点
 
 ![](Image/003.png)
 
 `DefaultQueryExtent` 的值默认是 `(50, 50, 50)`
 
 ![](Image/002.png)
+
+> `Project Setting` 中 `Navigation System` 的 `Supported Agents` 数组默认为空，上面的图片只是为了演示，也是告诉可以通过添加数组配置来设置 `DefaultQueryExtent`
+
+在实际开发中，如果让 AI 跟随你，你跳到空中，此时你的坐标和 `DefaultQueryExtent` 组成的区域无法映射到导航网格上，此时 AI 是无法 MoveTo 跟随你的
+
+```cpp
+FNavLocation ProjectedLocation;
+
+if (NavSys && !NavSys->ProjectPointToNavigation(MoveRequest.GetGoalLocation(), ProjectedLocation, INVALID_NAVEXTENT, &AgentProps))
+{
+    // ... Log ...
+    bCanRequestMove = false;
+}
+
+MoveRequest.UpdateGoalLocation(ProjectedLocation.Location);
+```
+
+将映射之后的坐标点，重新设置回 `FAIMoveRequest` 中
+
+再通过 `HasReached` 检查当前是否已经到了当前目标点
+
+```cpp
+bAlreadyAtGoal = bCanRequestMove && PathFollowingComponent->HasReached(MoveRequest);
+```
+
+如果能够移动到，并且当前没有到目标点，那么就走正常的流程
+
+```cpp
+FPathFindingQuery PFQuery;
+
+const bool bValidQuery = BuildPathfindingQuery(MoveRequest, PFQuery);
+if (bValidQuery)
+{
+	FNavPathSharedPtr Path;
+	FindPathForMoveRequest(MoveRequest, PFQuery, Path);
+
+	const FAIRequestID RequestID = Path.IsValid() ? RequestMove(MoveRequest, Path) : FAIRequestID::InvalidRequest;
+	if (RequestID.IsValid())
+	{
+		bAllowStrafe = MoveRequest.CanStrafe();
+		ResultData.MoveId = RequestID;
+		ResultData.Code = EPathFollowingRequestResult::RequestSuccessful;
+
+		if (OutPath)
+		{
+			*OutPath = Path;
+		}
+	}
+}
+```
+
