@@ -294,7 +294,44 @@ class thread_pool
 
 那么 `std::enable_if_t` 模板实例化失败，并不会报错，只是不生成，会忽略这个模板实例化
 
+`std::is_invocable_v` 是 C++17 标准中引入的一个类型特性工具，用于检查一个类型是否可以作为函数调用。这在模板编程中非常有用，特别是在需要检查某个对象是否可以用特定的参数进行调用的情况下
 
+- **检查可调用性**：它用于验证一个类型（通常是函数对象、函数指针、lambda 表达式等）是否可以用指定的参数列表进行调用。
+- **类型安全**：帮助确保在模板或泛型编程中，只调用那些确实可以执行的操作。
+- **编译期检查**：在编译期进行检查，以避免运行期错误，提升程序的安全性和健壮性。
+- 使用例子
+  - `std::is_invocable_v<F>`：检查 F 是否是无参数的可调用对象（例如一个 `lambda` 或普通函数 `void init()`）
+  - `std::is_invocable_v<F, std::size_t>`：检查 F 是否是可以接受一个 `std::size_t` 类型参数的可调用对象（例如参数为线程索引的初始化函数 `void init(std::size_t)`）
+
+```cpp
+#include <type_traits>
+#include <iostream>
+#include <functional>
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    auto lambda = [](double x) -> double { return x * x; };
+
+    // 检查普通函数是否可调用
+    bool isAddInvocable = std::is_invocable_v<decltype(add), int, int>;
+    
+    // 检查 lambda 是否可调用
+    bool isLambdaInvocable = std::is_invocable_v<decltype(lambda), double>;
+
+    // 检查带 bind 的函数是否可调用
+    auto boundFunc = std::bind(add, std::placeholders::_1, 5);
+    bool isBoundFuncInvocable = std::is_invocable_v<decltype(boundFunc), int>;
+
+    std::cout << "Add is invocable: " << isAddInvocable << std::endl; // 输出：1 (true)
+    std::cout << "Lambda is invocable: " << isLambdaInvocable << std::endl; // 输出：1 (true)
+    std::cout << "Bound function is invocable: " << isBoundFuncInvocable << std::endl; // 输出：1 (true)
+    
+    return 0;
+}
+```
 
 ## BS_thread_pool
 
