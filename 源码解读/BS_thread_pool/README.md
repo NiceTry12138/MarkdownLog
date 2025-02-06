@@ -108,59 +108,10 @@ int main() {
 
 `condition.notify_one()` 随机唤醒其中一个线程，`condition.notify_all()` 会唤醒所有的线程
 
-## BS_thread_pool
+## 前置知识
 
-在该项目中，线程池的定义为 `thread_pool` 
+### std::future 和 std:promise
 
-```cpp
-template <opt_t OptFlags = tp::none>
-class [[nodiscard]] thread_pool
-{
-    // ...........
-};
-```
-
-这里 `OptFlags` 用于定义线程池的作用
-
-```cpp
-using opt_t = std::uint8_t;
-
-enum tp : opt_t
-{
-    none = 0,
-    priority = 1 << 0,
-    pause = 1 << 2,
-    wait_deadlock_checks = 1 << 3
-};
-```
-
-这些分别对应四种不同功能的线程池
-
-```cpp
-using light_thread_pool = thread_pool<tp::none>;
-using priority_thread_pool = thread_pool<tp::priority>;
-using pause_thread_pool = thread_pool<tp::pause>;
-using wdc_thread_pool = thread_pool<tp::wait_deadlock_checks>;
-```
-
-在 `thread_pool` 模板类中，根据传入模板值进行参数的设置
-
-```cpp
-static constexpr bool priority_enabled = (OptFlags & tp::priority) != 0;
-static constexpr bool pause_enabled = (OptFlags & tp::pause) != 0;
-static constexpr bool wait_deadlock_checks_enabled = (OptFlags & tp::wait_deadlock_checks) != 0;
-```
-
-在定义 `light_thread_pool`、`priority_thread_pool` 等的时候就已经将其属性设置好，在后续类的使用中直接可以通过属性判断进行功能判断
-
-```cpp
-std::conditional_t<priority_enabled, std::priority_queue<pr_task>, std::queue<task_t>> tasks;
-std::conditional_t<pause_enabled, bool, std::monostate> paused = {};
-```
-
-比如上述代码定义 `tasks` 任务列表，根据 `priority_enabled` 是否根据优先级排序来选择定义的 `tasks` 的队列类型是 `priority_queue` 还是 `queue`，这个类型在编译期就确定了
-
-### submit_task 函数
 
 关于 `std::future`
 
@@ -259,8 +210,147 @@ int main() {
 }
 ```
 
-通过上面代码介绍了 `std::future` 和 `std::promise` 的作用，接下来就是 `submit_task` 函数的源代码了
+### std::common_type_t
 
+`std::common_type_t` 是 C++ 标准库中提供的一个类型特性，用于确定一组类型的通用类型。它会尝试通过类型转换规则找到一个能够容纳所有给定类型值的类型
+
+- 如果两个类型都是相同的类型，`std::common_type_t` 就是这个类型本身
+- 如果一个类型是 `int`，另一个是 `double`，`std::common_type_t` 会选择 `double` 作为通用类型，因为 `double` 可以表示所有 `int` 值而不会丢失精度
+
+`std::is_signed_v` 和 `std::is_unsigned_v` 用于判断类型是否 有符合 和 无符号 的，如果是 无符号类型，使用 `std::is_unsigned_v` 返回 `true`，使用 `std::is_signed_v` 返回 `false`，反之亦然
+
+`std::enable_if_t` 是一种用于 `SFINAE`（`Substitution Failure Is Not An Error`）的工具。它允许在模板参数中进行条件编译，如果条件为 `true`，则 `std::enable_if_t` 定义一个类型；如果条件为 `false`，则不定义类型，使模板特化失效
+
+下面是 `BS_thread_pool` 对上述模板的统一使用
+
+```cpp
+// 通用模板
+template <typename T1, typename T2, typename Enable = void>
+struct common_index_type
+{
+    using type = std::common_type_t<T1, T2>;
+};
+
+// 两个有符号整数
+template <typename T1, typename T2>
+struct common_index_type<T1, T2, std::enable_if_t<std::is_signed_v<T1> && std::is_signed_v<T2>>>
+{
+    using type = std::conditional_t<(sizeof(T1) >= sizeof(T2)), T1, T2>;
+};
+
+// 两个无符号整数
+template <typename T1, typename T2>
+struct common_index_type<T1, T2, std::enable_if_t<std::is_unsigned_v<T1> && std::is_unsigned_v<T2>>>
+{
+    using type = std::conditional_t<(sizeof(T1) >= sizeof(T2)), T1, T2>;
+};
+
+// 一个有符号 一个无符号整数
+template <typename T1, typename T2>
+struct common_index_type<T1, T2, std::enable_if_t<(std::is_signed_v<T1> && std::is_unsigned_v<T2>) || (std::is_unsigned_v<T1> && std::is_signed_v<T2>)>>
+{
+    using S = std::conditional_t<std::is_signed_v<T1>, T1, T2>;
+    using U = std::conditional_t<std::is_unsigned_v<T1>, T1, T2>;
+    static constexpr std::size_t larger_size = (sizeof(S) > sizeof(U)) ? sizeof(S) : sizeof(U);
+    using type = std::conditional_t<larger_size <= 4,
+        std::conditional_t<larger_size == 1 || (sizeof(S) == 2 && sizeof(U) == 1), std::int16_t, std::conditional_t<larger_size == 2 || (sizeof(S) == 4 && sizeof(U) < 4), std::int32_t, std::int64_t>>,
+        std::conditional_t<sizeof(U) == 8, std::uint64_t, std::int64_t>>;
+};
+```
+
+使用模板特化的功能，分别定义四种不同的情况下使用的 `common_index_type`
+
+- 对于两个类型都是 **无符号整数** 或者 **有符号整数** 的情况来说，选择 `sizeof(T)` 更大，可以保证不会被截断，进而保证正确性
+- 对于一个类型是 **无符号整数** 另一个却是 **有符号整数** 的情况来说，通过比较尺寸，选择一个合适的类型。对于 32 位及以下的整数，使用 `int16_t`、`int32_t `或 `int64_t`；对于更大的整数，选择 `uint64_t` 或 `int64_t`
+
+### std::enable_if_t 和 std::is_invocable_v
+
+```cpp
+#define BS_THREAD_POOL_IF_PAUSE_ENABLED template <bool P = pause_enabled, typename = std::enable_if_t<P>>
+#define BS_THREAD_POOL_INIT_FUNC_CONCEPT(F) typename F, typename = std::enable_if_t<std::is_invocable_v<F> || std::is_invocable_v<F, std::size_t>> 
+
+class thread_pool
+{
+    // ...
+    BS_THREAD_POOL_IF_PAUSE_ENABLED
+    [[nodiscard]] bool is_paused() const
+    {
+        const std::scoped_lock tasks_lock(tasks_mutex);
+        return paused;
+    }
+    // ...
+};
+```
+
+以上面这段代码为例，结合 `BS_THREAD_POOL_IF_PAUSE_ENABLED` 宏的使用
+
+如果线程池没有启用了暂停功能，则 `pause_enable` = false，那么 P = false，那么 `std::enable_if_t<false>` 会通过 SFINAE 机制，自动忽略使用了该宏的特定成员函数或模板，也就是不会生成 `pause()` 和 `unpause()` 代码，减少了无意义的接口支持
+
+`std::enable_if_t<P>` 是一个条件模板工具
+- 如果 P 为 `true`，`std::enable_if_t<P>` 将生成一个有效的类型（通常为 `void`）
+- 如果 P 为 `false`，`std::enable_if_t<P>` 会导致模板实例化失败
+
+`SFINAE` 全称是 `Substitution Failure Is Not An Error`，替换失败不是错误
+
+那么 `std::enable_if_t` 模板实例化失败，并不会报错，只是不生成，会忽略这个模板实例化
+
+
+
+## BS_thread_pool
+
+在该项目中，线程池的定义为 `thread_pool` 
+
+```cpp
+template <opt_t OptFlags = tp::none>
+class [[nodiscard]] thread_pool
+{
+    // ...........
+};
+```
+
+这里 `OptFlags` 用于定义线程池的作用
+
+```cpp
+using opt_t = std::uint8_t;
+
+enum tp : opt_t
+{
+    none = 0,
+    priority = 1 << 0,
+    pause = 1 << 2,
+    wait_deadlock_checks = 1 << 3
+};
+```
+
+这些分别对应四种不同功能的线程池
+
+```cpp
+using light_thread_pool = thread_pool<tp::none>;
+using priority_thread_pool = thread_pool<tp::priority>;
+using pause_thread_pool = thread_pool<tp::pause>;
+using wdc_thread_pool = thread_pool<tp::wait_deadlock_checks>;
+```
+
+在 `thread_pool` 模板类中，根据传入模板值进行参数的设置
+
+```cpp
+static constexpr bool priority_enabled = (OptFlags & tp::priority) != 0;
+static constexpr bool pause_enabled = (OptFlags & tp::pause) != 0;
+static constexpr bool wait_deadlock_checks_enabled = (OptFlags & tp::wait_deadlock_checks) != 0;
+```
+
+在定义 `light_thread_pool`、`priority_thread_pool` 等的时候就已经将其属性设置好，在后续类的使用中直接可以通过属性判断进行功能判断
+
+```cpp
+std::conditional_t<priority_enabled, std::priority_queue<pr_task>, std::queue<task_t>> tasks;
+std::conditional_t<pause_enabled, bool, std::monostate> paused = {};
+```
+
+比如上述代码定义 `tasks` 任务列表，根据 `priority_enabled` 是否根据优先级排序来选择定义的 `tasks` 的队列类型是 `priority_queue` 还是 `queue`，这个类型在编译期就确定了
+
+### submit_task 函数
+
+上面代码介绍过 `std::future` 和 `std::promise` 的作用，接下来就是 `submit_task` 函数的源代码了
 
 ```cpp
 template <typename F, typename R = std::invoke_result_t<std::decay_t<F>>>
