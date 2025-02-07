@@ -6,6 +6,8 @@
 - `webpack` 可以将打包打包成最终的静态资源，来部署到静态服务器
 - `webpack` 默认支持各种模块化开发， ESModule、CommonJS、AMD等
 
+![](Image/001.png)
+
 ## 介绍
 
 `Webpack` 的运行依赖 `Node` 环境，需要先安装 `Node.js` 
