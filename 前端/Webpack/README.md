@@ -8,8 +8,6 @@
 
 ![](Image/001.png)
 
-## 介绍
-
 `Webpack` 的运行依赖 `Node` 环境，需要先安装 `Node.js` 
 
 `Webpack` 的安装从 4 版本之后，需要安装两个: `Webpack`（核心功能） 和 `Webpack-cli` （脚手架）
@@ -22,7 +20,7 @@
 
 使用命令行 `npm install webpack webpack-cli -D` 直接进行**局部安装**即可
 
-### 第一次使用
+## 第一次使用
 
 正如当前 `src` 目录中的 `01` 项目所示，项目结构简单，一个 `html` 和三个 `js` 文件
 
@@ -73,4 +71,229 @@
 ```
 
 `package.json` 在执行命令的时候会优先查找当前目录中的 `node_modules/bin` 
+
+## 配置选项
+
+### 入口文件
+
+正如前面所讲，直接使用 `webpack` 命令会以 `src/index.js` 为入口(`entry`)，查找依赖图结构
+
+不是所有的项目的入口都是 `src/index.js`，打包之后的路径也不都是 `dist` 文件夹，所以 `webpack` 提供指定入口文件和输出路径的 `option`
+
+```bash
+npx webpack --entry ./src/main.js --output-path ./build
+```
+
+>  以 02 文件夹中的项目为例运行上述命令，会以 `src/main.js` 为入口，并将输出的 `main.js` 打包到 `build` 文件夹中
+
+在 [官方文档](https://webpack.docschina.org/api/cli/) 中也有详细说明
+
+![](Image/002.png)
+
+当然，如果全部使用命令进行 `flag` 配置，会非常麻烦，尤其是配置项目多了之后，会导致配置项难以查找，所以一般都是创建一个 `webpack` 的配置文件 `webpack.config.js`
+
+`webpack` 是通过 `commonjs` 的方式来读取 `webpack.config.js`，所以使用 `module.export = {}` 方式来导出配置
+
+> 毕竟最终 `webpack` 也是依赖 `node` 来运行的，所以会使用 `node` 的模块导入机制
+
+[官网](https://webpack.docschina.org/api/cli/#config)中也有对 `config` 的解释说明
+
+![](Image/003.png)
+
+```js
+const path = require("path")
+
+module.exports = {
+    entry: "./src/main.js",
+    output: {
+        filename: "./bundle.js",
+        path: path.resolve(__dirname, "./build")
+    }
+}
+```
+
+将上述代码写入 `webpack.config.js` 文件中，效果等同于 `--entry ./src/main.js --output-path ./build`
+
+为什么 `output.path` 需要指定为 `path.resolve(__dirname, "./build")` ？
+
+因为 `webpack.config.js` 的 `output.path` 需要指定为绝对路径，这个是 `webpack` 要求的，所以可以用到 `node` 内置的 `path` 模块，来获取当前文件(`webpack.config.js`) 的绝对路径
+
+然后直接执行 `npx webpack`，自动读取当前项目目录中的 `webpack.config.js` 文件来进行操作，从而会生成 `build/bundle.js` 文件
+
+如果当前目录中不存在 `webpack.config.js` 文件，而是 `wp.config.js`，这个时候需要指定配置文件的名称
+
+![](Image/004.png)
+
+```bash
+npx webpack --config ./wp.config.js
+```
+
+### 依赖图
+
+如果有一个 js 文件名为 `test.js`，这个文件没有被其他任何模块 `import`，那么这个文件就不会打包到 `webpack` 的最终产物中去
+
+`webpack` 在处理应用程序时，会根据命令或配置文件找到入口文件(比如 `main.js`)，从入口开始，会生成一个**依赖关系图**，这个**依赖关系图**会包含应用程序所需的所有模块，然后遍历图结构，打包一个个模块（根据文件的不同使用不同的 `loader` 来解析）
+
+> `webpack` 提供 `tree-shaking` 消除无用代码
+
+也就是说，有一个 `test.js` 文件
+
+```js
+console.log(`hello world`);
+
+export function foo()
+{
+    console.log(`test.js foo`);
+}
+```
+
+在 `main.js` 中
+
+如果使用如下代码，则不会引入 `test.js` 
+
+```js
+console.log(`main.js`);
+```
+
+如果使用如下代码，则会引入 `test.js` 但开启 `tree-shaking` 之后会消除 `foo` 函数，因为 `foo` 并没有被使用
+
+```js
+import "./test"
+
+console.log(`main.js`)
+```
+
+如果使用如下代码，则会将 `foo` 函数打包到最终文件中，因为 `foo` 被使用了
+
+```js
+import * as test from "./test"
+
+test.foo();
+console.log(`main.js`)
+```
+
+### loader
+
+前面提到过，不同类型文件需要不同的 loader 进行处理，比如 js、html、css 等
+
+如果不对 `webpack` 做任何处理，运行 `03` 项目
+
+> 官方案例 `https://webpack.docschina.org/guides/asset-management/#loading-css`
+
+在 `component.js` 中通过 `import ../css/index.css` 会出现以下错误
+
+```bash
+ERROR in ./src/css/index.css 1:0
+Module parse failed: Unexpected token (1:0)
+You may need an appropriate loader to handle this file type, currently no loaders are configured to process this file. See https://webpack.js.org/concepts#loaders
+> .content {
+|     color: red;
+| }
+ @ ./src/util/component.js 1:0-25
+ @ ./src/index.js 1:0-25
+```
+
+根据 `You may need an appropriate loader` 你需要一个合适的 `loader` 来处理这个 css 文件
+
+`loader` 可以用于对模块的源代码进行转换，这里将 `index.css` 看作是一个模块，通过 `import ../css/index.css` 来加载这个模块，但是 `webpack` 并不知道如何对这个模块进行加载，所以报错
+
+为了让 `webpack` 知道如何加载，需要指定对应的 `loader` 来完成加载功能
+
+![](Image/005.png)
+
+直接使用 npm 局部安装 `css-loader` 和 `style-loader` 即可安装所需 `loader`
+
+```bash
+npm install css-loader style-loder -D
+```
+
+安装了 `loader` 只是表示你有这工具，但是如何使用这个工具需要通过配置来告诉 `webpack`
+
+官网对 loader 的配置也有[说明](https://webpack.docschina.org/concepts/loaders/#configuration)
+
+- 内联方式 指明 `loader`
+
+```js
+import "style-loader!css-loader!../css/index.css"
+```
+
+- 配置方式
+
+```js
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    {
+                        loader: 'css-loader',
+                    },
+                ],
+            },
+        ],
+    },
+```
+
+`module` 属性可以配置 `rules` 规则数组
+
+`rules` 是一个包含多个 `rule` 的数组
+
+```js
+{
+    test: /\.css$/,
+    use: [
+        {
+            loader: 'css-loader',
+        },
+    ],
+},
+```
+
+`test` 用于正则匹配，对匹配上的资源，使用该规则中配置的 `loader`
+
+> `/\.css$/` 由于 `.` 在正则中是特殊符号，需要用 `\` 转译；`$` 表示匹配末尾
+
+官网中对 `loader` 也有[详细说明](https://webpack.docschina.org/configuration/module/#rule)
+
+
+| 写法一 | 写法二 | 写法三 |
+| --- | --- | --- |
+| `use: [ { loader: "css-loader" } ]` | `loader: "css-loader"` | `use: [ "css-loader" ]` |
+
+> 上述三种写法等价
+
+通过上述修改, 终于能够让 `webpack` 命令正常运行, 得到最后的 `bundle.js` 文件
+
+但是实际运行的时候, `.content` 样式并没有正确显示在页面中, 这是因为 `css-loader` 只是负责解析 css 文件,并不负责插入 css, 所以还需要使用 `style-loader` 插入 style
+
+常见的样式引入有三种方法
+
+1. 行内样式, 即直接写在标签中
+2. 页内样式, 即在 html 文件中通过 `style` 标签进行设置
+3. 外部样式, 即通过外部的 `.css` 文件进入引入
+
+```js
+{
+    test: /\.css$/,
+    use: [
+        { loader: 'style-loader' },
+        { loader: 'css-loader' },
+    ],
+},
+```
+
+**注意**: `webpack` 加载 `loader` 的顺序是数组序号从大到小执行的
+
+也就是根据上述配置, `webpack` 会先执行 `css-loader` 再执行 `style-loader`. 这个顺序就是正确的, 如果反向的话会执行 `style-loader` 再执行 `css-loader`, 但是没有 `css-loader` 解析 `style-loader` 怎么插入呢? 
+
+通过观察生成的 `bundle.js` 可以看到 `webpack` 是如何处理 `css` 的. 它通过创建一个 `style` 的方式将内容通过页内样式插入到 `html` 中
+
+```js
+e.exports = function(e) {
+    var t = document.createElement("style");
+    return e.setAttributes(t, e.attributes), e.insert(t, e.options), t
+}
+```
+
+![](Image/006.png)
 
