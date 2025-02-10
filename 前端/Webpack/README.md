@@ -297,3 +297,152 @@ e.exports = function(e) {
 
 ![](Image/006.png)
 
+可能会用 `less`、`sass`、`stylus` 的预处理器来编写 css 样式，效率更高，那么如何支持呢？
+
+以 `less` 为例，想要将 `less` 转为 `css`，需要使用 less 这个库。想要解析 `less` 需要使用使用 `less-loader` 库
+
+> `less-loader` 的执行需要 `less`, 所以两个库都要安装
+
+所以需要执行以下代码
+
+```bash
+npm install less less-loader -D
+```
+
+那么根据流水线操作，针对 `.less` 结尾的文件，需要首先使用 `less-loader` 将其转为 `css`，然后使用 `css-loader` 解析，最后使用 `style-loader` 插入到界面中
+
+所以最终得到 `less` 的 `rule` 内容如下
+
+```js
+{
+    test: /\.less$/,
+    use: [
+        "style-loader",
+        "css-loader",
+        "less-loader"
+    ]
+}
+```
+
+> 记得 `rule` 不同的等效写法吗
+
+### 浏览器兼容性
+
+针对不同的浏览器支持的特性，比如 css 特性、js 语法等，会导致各种兼容性问题
+
+那么某个功能如果存在兼容性问题，是否需要针对这个功能对不同的浏览器做特殊处理呢？很多情况都是根据浏览器的市场占有率来决定的
+
+[caniuse](https://caniuse.com/usage-table) 是一个判断某些功能能否使用的网站，其在 `usage-table` 界面中提供了市场占有率
+
+![](Image/007.png)
+
+很多项目存在 `.browserslistrc` 文件，内容可能如下
+
+```bash
+> 1%
+last 2 versions
+not dead
+```
+
+这里的 `> 1%` 就是指市场占有率大于 1%，根据当前运行的浏览器的版本，查找 `caniuse` 网站中的占有率，进而判断是否需要支持
+
+通过 `Browserslist` 工具来共享兼容性配置给其他工具(`babel`、`autoprefixer`等)使用
+
+`Browserslist` 是一个在不同的前端工具之间，共项**目标浏览器**和**Node.js**版本的配置
+
+上述例子有一个叫 `not dead` 的配置，译为没有死亡的。 `Browserslist` 对 `dead` 的定义是 24 个月内没有官方支持或更新的浏览器
+
+上述例子有一个叫 `last 2 versions` 的配置，表示每个浏览器的最后 2 个版本。比如 `last 2 Chrome versions` 就是 Chrome 浏览器最近的两个版本
+
+除此之外，还有针对 node 的版本规则、针对指定平台浏览器的规则、支持特定功能浏览器的规则 等
+
+首先通过 `npm` 安装 `browserslist`
+
+```bash
+npm install browserslist -D
+```
+
+然后就可以使用 `browserslist` 查询支持的浏览器了
+
+```bash
+cmd: npx browserslist ">1%, last 2 versions, not dead"
+
+and_chr 132
+and_ff 132
+and_qq 14.9
+and_uc 15.5
+android 132
+chrome 132
+chrome 131
+chrome 109
+edge 132
+edge 131
+firefox 134
+firefox 133
+ios_saf 18.3
+ios_saf 18.2
+ios_saf 18.1
+ios_saf 17.6-17.7
+kaios 3.0-3.1
+kaios 2.5
+op_mini all
+op_mob 80
+opera 114
+opera 113
+safari 18.3
+safari 18.2
+samsung 27
+samsung 26
+```
+
+> 在命令中 `,` 等价于 `or` 也就是只要满足其中一个条件即可
+
+```bash
+cmd: npx browserslist ">1% and last 2 versions and not dead"
+and_chr 132
+chrome 132
+chrome 131
+edge 132
+edge 131
+firefox 134
+ios_saf 18.2
+op_mob 80
+samsung 27
+```
+
+> 在命令中 and 表示所有条件必须全部满足才行
+
+那么如何在项目中进行配置呢？
+
+- 通过在 `package.json` 中新增 `browserslist` 属性进行配置，其他工具会根据该配置自动适配
+
+```json
+{
+  "name": "01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    // ..
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    // ..
+  },
+  "browserslist": [
+    ">1%",
+    "last 2 version",
+    "not dead",
+  ]
+}
+```
+
+- 通过新增 `.browserslistrc` 文件，进行配置
+
+```
+>1%"
+last 2 version"
+not dead"
+```

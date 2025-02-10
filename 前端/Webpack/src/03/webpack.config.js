@@ -1,4 +1,5 @@
 const path = require("path")
+const loader = require("sass-loader")
 
 module.exports = {
     entry: "./src/index.js",
@@ -13,9 +14,17 @@ module.exports = {
                 use: [
                     { loader: 'style-loader' },
                     { loader: 'css-loader' },
-                    // { loader: 'sass-loader' },
+                    { loader: 'sass-loader' },
                 ],
             },
+            {
+                test: /\.less$/,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "less-loader"
+                ]
+            }
         ],
     },
 }
