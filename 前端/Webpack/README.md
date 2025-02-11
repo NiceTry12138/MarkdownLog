@@ -786,9 +786,54 @@ module.exports = {
 
 比如 `name: '[name][hash:6].[ext]'` 表示新的文件名称为 图片原名称 + hash 值的前 6 位 + 图片原后缀
 
+对于一些小的图片，可以使用 `url-loader` 直接将图片转换成 `base64` 嵌入到代码中
+
+```js
+{
+    test: /\.(png|jpg|jpeg|gif|svg)$/,
+    use: [
+        {
+            loader: "url-loader",
+            options: {
+                name: '[name][hash:6].[ext]'
+            }
+        }
+    ]
+}
+```
+
+![](Image/011.png)
+
+在实际开发过程中，更倾向于小的图片使用 base64 跟随网页一同下载显示，大的图片使用使用路径请求
+
+如果大的图片也转换成 base64，会严重影响网页下载速度和渲染速度，进而影响体验
+
+如果全部使用 url 请求，会增加服务器压力
+
+`url-loader` 提供 `limit` 的 `option`，用于限制转换图片的大小
+
+```js
+{
+    test: /\.(png|jpg|jpeg|gif|svg)$/,
+    use: [
+        {
+            loader: "url-loader",
+            options: {
+                name: '[name][hash:6].[ext]',
+                limit: 100 * 1024
+            }
+        }
+    ]
+}
+```
+
+> `limit: 100 * 1024` 表示只有 100kb 以下的图片会转换为 base64
+
 ### 图片处理-新
 
 在 `webpack5` 不需要使用 `file-loader` 来加载图片资源
 
 > 项目 05
+
+使用 **资源模块类型** `asset module type` 的方式来提到之前提到的 `url-loader`、`file-loader` 等
 
