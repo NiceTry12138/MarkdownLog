@@ -596,3 +596,77 @@ npm install postcss-preset-env -D
 
 > `postcss-preset-env` 中集成了 `autoprefixer` 的特性，所以不需要再使用 `autoprefixer` 了
 
+这里不得不提到 `css` 的 `import` 语法，以 `index.css` 为例
+
+```css
+@import "./test.css";
+
+.demo {
+    color: red;
+}
+```
+
+根据 `css` 的处理规则，依次 `postcss-loader`、`css-loader`、`style-loader`，那么 `@import "./test.css"` 的处理时机其实是在 `css-loader` 阶段，进而导致 `test.css` 这个文件没有被 `postcss-loader` 处理，那么浏览器兼容性就会失效
+
+> `index.css` 是在 `js` 文件中 `import` 的，所以走正常处理流程
+> `test.css` 是在 `css` 文件中 `import` 的，所以无法全部流程
+
+为了处理上述问题，需要对 `css` 的 `rule` 做一些修改
+
+```js
+{
+    test: /\.css$/,
+    use: [
+        { loader: 'style-loader' },
+        { 
+            loader: 'css-loader',
+            options: {
+                importLoaders: 1
+            }
+        },
+        {
+            loader: "postcss-loader",
+            options: {
+                postcssOptions: {
+                    plugins: [
+                        require("postcss-preset-env"),
+                    ]
+                }
+            }
+        }
+    ],
+},
+```
+
+添加 `importLoaders: 1` 表示当前 `loader` 的序号后 1 个的 `loader` 开始，这里 `css-loader` 后一个 `loader` 就是 `postcss-loader`
+
+以 `less` 的 `rule` 为例
+
+```js
+{
+    test: /\.less$/,
+    use: [
+        "style-loader",
+        { 
+            loader: 'css-loader',
+            options: {
+                importLoaders: 2
+            }
+        },
+        {
+            loader: "postcss-loader",
+            options: {
+                postcssOptions: {
+                    plugins: [
+                        require("postcss-preset-env"),
+                    ]
+                }
+            }
+        },
+        "less-loader"
+    ]
+}
+```
+
+在 `less` 的 `rule` 中，`css-loader` 后面有 2 个 `loader`，为了让 `css` 中 `import` 的 `css` 能够走完整的流程，所以 `importLoaders = 2`
+
