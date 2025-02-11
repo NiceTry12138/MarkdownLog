@@ -712,7 +712,7 @@ export default __webpack_public_path__ + "c1641b10aa8c32f4ca06c0e618bbb45f.jpg";
 这表示 `e0c798acd7d0b4d488c0.jpg` 是 webpack5 打包生成的多余图片，该图片直接引
 用 `c1641b10aa8c32f4ca06c0e618bbb45f.jpg`
 
-![](Image/010.png\)
+![](Image/010.png)
 
 在 web 界面中可以发现， `style` 中引用了这个多余的图片，所以修改 `css-loader`
 
