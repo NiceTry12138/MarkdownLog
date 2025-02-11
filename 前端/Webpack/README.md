@@ -446,3 +446,153 @@ samsung 27
 last 2 version"
 not dead"
 ```
+
+### CSS 的浏览器适配
+
+在前端开发中，CSS 属性需要加上浏览器前缀（如 `-webkit-`、`-moz-`、`-ms-` 等）的原因主要是为了兼容不同浏览器的实验性功能或尚未成为标准的 CSS 特性
+
+浏览器前缀是为了让浏览器厂商能够在 CSS 标准尚未完全确定或实现时，提前引入实验性功能。不同浏览器可能会以不同的方式实现某些特性，前缀可以确保这些实验性功能不会影响其他浏览器的正常渲染
+
+- `-webkit-`：用于基于 WebKit 内核的浏览器（如 `Chrome`、`Safari`、旧版 `Edge`）
+- `-moz-`：用于基于 Gecko 内核的浏览器（如 `Firefox`）
+- `-ms-`：用于基于 Trident 内核的浏览器（如 `Internet Explorer` 和旧版 `Edge`）
+- `-o-`：用于基于 Presto 内核的浏览器（如旧版 `Opera`）
+
+以 `transition` 为例
+
+```css
+-webkit-transition: all 2s ease; /* 兼容 WebKit 内核浏览器 */
+-moz-transition: all 2s ease;    /* 兼容 Gecko 内核浏览器 */
+-ms-transition: all 2s ease;     /* 兼容 Trident 内核浏览器 */
+-o-transition: all 2s ease;       /* 兼容 Presto 内核浏览器 */
+transition: all 2s ease;         /* 标准写法 */
+```
+
+> `transition` 是为了让 css 属性值发生变化时不会立刻变化，而是线性的过渡变化。比如从红色设置为黑色，会逐渐变化
+
+为了浏览器兼容性，单单 `transition` 这个属性就要添加好几个带浏览器前缀的属性，而且我们不知道那些属性需要添加浏览器属性，所以人工手动添加是费时费力的
+
+为了浏览器兼容性和方便编写，这个时候就需要用到 `autoprefixer`，能够自动为 `css` 添加浏览器前缀
+
+配合 `autoprefixer` 还需要使用一个 `postcss`， `PostCSS` 是一种 `JavaScript` 工具，可将你的 `CSS` 代码转换为抽象语法树 (`AST`)，然后提供 `API`（应用程序编程接口）用于使用 `JavaScript` 插件对其进行分析和修改
+
+基本执行概念就是，先使用 `postcss` 将指定的 `css` 文件转化为抽象语法树，然后使用 `autoprefixer` 来解析这个抽象语法树，并输出为带有浏览器前缀的新 `css` 文件
+
+`autoprefixer` 并不会将所有 `css` 属性都添加上浏览器前缀，而是根据前面所讲的 `browserslist` 配置，将所有需要兼容 `css` 属性添加上浏览器前缀
+
+比如：`transition` 其实现在新的浏览器都已经实现了该功能，不需要添加上浏览器前缀了，那么 `transition` 这个属性就不会特殊处理添加上 浏览器前缀
+
+需要使用 npm 安装 `postcss` 和 `autoprefixer`
+
+```bash
+npm install postcss postcss-cli -D
+npm install autoprefixer -D
+```
+
+然后使用 `postcss` 对 css 文件进行处理
+
+```bash
+npx postcss --use autoprefixer -o nnn.css src/css/prefix.css
+```
+
+原文件如下
+
+```css
+.content {
+    transition: all 2s ease;
+    user-select: none;
+}
+```
+
+转换之后的文件如下
+
+```css
+.content {
+    transition: all 2s ease;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9jc3MvcHJlZml4LmNzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTtJQUNJLHVCQUF1QjtJQUN2Qix5QkFBaUI7T0FBakIsc0JBQWlCO1lBQWpCLGlCQUFpQjtBQUNyQiIsImZpbGUiOiJubm4uY3NzIiwic291cmNlc0NvbnRlbnQiOlsiLmNvbnRlbnQge1xyXG4gICAgdHJhbnNpdGlvbjogYWxsIDJzIGVhc2U7XHJcbiAgICB1c2VyLXNlbGVjdDogbm9uZTtcclxufSJdfQ== */
+```
+
+很明显，根据浏览器兼容性配置，不需要再对 `transition` 属性做特殊处理了，但是针对 `user-select` 还是需要特殊处理的
+
+那么如何在 `webpack` 中使用呢？
+
+根据处理顺序
+
+1. 使用 `postcss` 解析，并交给 `autoprefixer` 插件进行处理得到新的 css
+2. 使用 `css-loader` 进行解析
+3. 使用 `style-loader` 插入到界面样式中
+
+最终得到配置如下
+
+```js
+{
+    test: /\.css$/,
+    use: [
+        { loader: 'style-loader' },
+        { loader: 'css-loader' },
+        {
+            loader: "postcss-loader",
+            options: {
+                postcssOptions: {
+                    plugins: [
+                        require("autoprefixer")
+                    ]
+                }
+            }
+        }
+    ],
+},
+```
+
+记得安装 `postcss-loader`
+
+```bash
+npm install postcss-loader -D
+```
+
+![](Image/008.png)
+
+不过 `autoprefixer` 也是有局限性的，它只会添加浏览器前缀，对于一些写法并不会做优化，比如
+
+```css
+.content {
+    color: #12345678;
+}
+```
+
+上述写法使用了 16 进制表现颜色的 `RGBA`，可惜的是一些旧的浏览器可能并不支持这种十六进制的写法，如果使用 `autoprefixer` 并不会将这些写法进行优化，使其兼容旧浏览器
+
+为了让 css 兼容大部分旧的浏览器，一般不仅仅使用 `autoprefixer`，还要使用 `postcss-preset-env`
+
+```bash
+npm install postcss-preset-env -D
+```
+
+```js
+{
+    test: /\.css$/,
+    use: [
+        { loader: 'style-loader' },
+        { loader: 'css-loader' },
+        {
+            loader: "postcss-loader",
+            options: {
+                postcssOptions: {
+                    plugins: [
+                        require("postcss-preset-env"),
+                    ]
+                }
+            }
+        }
+    ],
+},
+```
+
+![](Image/009.png)
+
+> `postcss-preset-env` 中集成了 `autoprefixer` 的特性，所以不需要再使用 `autoprefixer` 了
+

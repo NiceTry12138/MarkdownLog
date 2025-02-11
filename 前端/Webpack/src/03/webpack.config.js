@@ -14,7 +14,16 @@ module.exports = {
                 use: [
                     { loader: 'style-loader' },
                     { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: [
+                                    require("postcss-preset-env"),
+                                ]
+                            }
+                        }
+                    }
                 ],
             },
             {
