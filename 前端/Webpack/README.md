@@ -670,3 +670,125 @@ npm install postcss-preset-env -D
 
 在 `less` 的 `rule` 中，`css-loader` 后面有 2 个 `loader`，为了让 `css` 中 `import` 的 `css` 能够走完整的流程，所以 `importLoaders = 2`
 
+### 图片处理
+
+> 项目 04
+
+在 css 中使用图片
+
+```css
+.content {
+    color: #12345678;
+    background-image: url('../img/miku.jpg');
+}
+```
+
+在 js 中使用图片
+
+```js
+let img = new Image();
+img.src = require("../img/miku.jpg").default;
+element.appendChild(img);
+
+return element;
+```
+
+老样子，处理图片，需要能够处理图片的 `loader`
+
+```bash
+npm install file-loader -D
+```
+
+直接使用 `npx webpack` 可以发现生成了两个 `jpg` 文件：`c1641b10aa8c32f4ca06c0e618bbb45f.jpg` 和 `e0c798acd7d0b4d488c0.jpg`
+
+其中 `c1641b10aa8c32f4ca06c0e618bbb45f.jpg` 是正常的图片文件，但是 `e0c798acd7d0b4d488c0.jpg` 是一个无法解析的图片
+
+通过文本打开无法解析的图片，得到如下内容
+
+```txt
+export default __webpack_public_path__ + "c1641b10aa8c32f4ca06c0e618bbb45f.jpg";
+```
+
+这表示 `e0c798acd7d0b4d488c0.jpg` 是 webpack5 打包生成的多余图片，该图片直接引
+用 `c1641b10aa8c32f4ca06c0e618bbb45f.jpg`
+
+![](Image/010.png\)
+
+在 web 界面中可以发现， `style` 中引用了这个多余的图片，所以修改 `css-loader`
+
+
+```js
+{
+    test: /\.css$/,
+    use: [
+        { loader: 'style-loader' },
+        { 
+            loader: 'css-loader',
+            options: {
+                importLoaders: 1,
+                esModule: false,
+            }
+        },
+        {
+            loader: "postcss-loader",
+            options: {
+                postcssOptions: {
+                    plugins: [
+                        require("postcss-preset-env"),
+                    ]
+                }
+            }
+        }
+    ],
+},
+```
+
+添加 `esModule: false`
+
+`js` 代码中 `img.src = require("../img/miku.jpg").default` 的写法与 `file-loader` 版本相关
+
+在 4.x 版本的 `file-loader`，使用 `require("file")` 直接得到的就是资源；在 5.x 之后的版本，使用 `require("file")` 得到的是是一个对象，对象中有一个 `default` 属性对应的才是资源
+
+除了 `require` 之外，还可以使用 `import` 来加载图片，这样无需考虑是否要添加 `default` 的问题
+
+```js
+
+
+import miku from "../img/miku.jpg"
+
+let img2 = new Image();
+img2.src = miku;
+element.appendChild(img2);
+```
+
+[官网对 file-loader 有详细说明](https://v4.webpack.js.org/loaders/file-loader/#options)
+
+可以通过如下配置，设置 `file-loader` 处理图片之后，图片的名称
+
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        loader: 'file-loader',
+        options: {
+          name: '[path][name].[ext]',
+          outputPath: 'images', // 指定文件输出路径
+        },
+      },
+    ],
+  },
+};
+```
+
+`file-loader` 使用 `md4` 来处理图片名称
+
+比如 `name: '[name][hash:6].[ext]'` 表示新的文件名称为 图片原名称 + hash 值的前 6 位 + 图片原后缀
+
+### 图片处理-新
+
+在 `webpack5` 不需要使用 `file-loader` 来加载图片资源
+
+> 项目 05
+
