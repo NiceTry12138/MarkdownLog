@@ -909,14 +909,54 @@ module.exports = {
 
 ### Plugin
 
+[官网对 plugin 的解释](https://webpack.docschina.org/concepts/plugins/)
+
 插件目的在于解决 `loader` 无法实现的其他事
 
 `Loader` 用于**特定的模块类型**进行转换
 
 `Plugin` 执行`更加广泛的任务`，比如打包任务、资源管理、环境变量注入等
 
+![](Image/014.png)
+
+以上述图片为例，使用了 `css-loader` 加载了 `css` 文件，也使用了 `csso-loader` 对 css 文件进行了优化，最后使用 `Plugin` 将所有的 `css` 进行封包，抽取到单独的 `css` 文件中
+
 前面的例子遇到问题
 
 1. 每次修改完 `webpack.config.js` 之后，重新打包之前，会把 `build` 文件夹删除掉，这样是最保险的。每次都要删除，而对于这种流程化机械化的东西还是希望能够放在工具中自动处理
 2. `build` 文件夹作为发布文件夹，居然没有 `index.html`(不是每个项目都有，但是前面的例子项目得有)
+
+`Webpack` 提供一个名为 `CleanWebpackPlugin` 的插件，用于清除生成文件夹的内容
+
+```bash
+npm install clean-webpack-plugin -D
+```
+
+在 `webpack.config.js` 文件中，新增 `plugins` 属性，他是一个 `Object` 数组
+
+`Plugin` 都是一个一个的类对象，所以在使用时都是 `new Class` 的方式创建对象来使用
+
+```js
+const path = require("path")
+
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+
+module.exports = {
+    entry: "./src/index.js",
+    output: {
+        filename: "./bundle.js",
+        path: path.resolve(__dirname, "./build")
+    },    
+    module: {
+        rules: [
+            // rules
+        ]
+    },
+    plugins: [
+        new CleanWebpackPlugin(),
+    ]
+}
+```
+
+此时如果在 `build` 文件夹中添加任意个文件，在执行 `npx webpack` 打包之后，`build` 文件夹会被清空，然后再进行打包
 
