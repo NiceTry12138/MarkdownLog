@@ -960,3 +960,121 @@ module.exports = {
 
 此时如果在 `build` 文件夹中添加任意个文件，在执行 `npx webpack` 打包之后，`build` 文件夹会被清空，然后再进行打包
 
+还记得前面例子中，在 `index.html` 中如何引入 `script` 吗？
+
+```js
+<script src="./build/bundle.js" ></script>
+```
+
+这明显是错误的，因为他应该引用的是同级目录的 js 文件，而不应该直接引用发布文件夹的中，也就是应该是下面这样
+
+```js
+<script src="./bundle.js" ></script>
+```
+
+此时可以使用 `html-webpack-plugin` 来实现这个功能
+
+```js
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const HtmlWebpackPlugin = require(`html-webpack-plugin`)
+
+module.exports = {
+    entry: "./src/index.js",
+    output: {
+        filename: "./bundle.js",
+        path: path.resolve(__dirname, "./build")
+    },    
+    module: {
+        rules: [
+            // rules
+        ]
+    },
+    plugins: [
+        new CleanWebpackPlugin(),
+        new HtmlWebpackPlugin(),
+    ]
+}
+```
+
+最后会生成一个 `index.html`
+
+```js
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Webpack App</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<script defer="defer" src="./bundle.js"></script>
+	</head>
+	<body></body>
+</html>
+```
+
+虽然它生成了 `index.html`，但这个不是我想要的 `html`，因为 `html-webpack-plugin` 中内置了一个 ejs 的模板，根据这个模板生成的 `html`
+
+![](Image/015.png)
+
+> `html-webpack-plugin` 中默认的 ejs 的 html 模板
+
+可以通过外部传入配置的方式，修改 html 模板
+
+```js
+plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+        template: "./index.html"
+    }),
+]
+```
+
+如果 你使用了到了全局常量，比如 Vue 中有定义 `BASE_URL` 
+
+```html
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Webpack App</title>
+        <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+	</head>
+	<body></body>
+</html>
+```
+
+如果想要定义**全局常量**，需要使用到另一个插件 `DefinePlugin`，这个插件内置在 webpack 中，无需安装
+
+```js
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const HtmlWebpackPlugin = require(`html-webpack-plugin`)
+const { DefinePlugin } = require('webpack')
+
+module.exports = {
+    entry: "./src/index.js",
+    output: {
+        filename: "./bundle.js",
+        path: path.resolve(__dirname, "./build")
+    },    
+    module: {
+        rules: [
+            // ...
+        ]
+    },
+    plugins: [
+        new CleanWebpackPlugin(),
+        new HtmlWebpackPlugin({
+            template: "./index.html"
+        }),
+        new DefinePlugin({
+            BASE_URL: '"./"'
+        }),
+    ]
+}
+```
+
+注意这里对 `BASE_URL: '"./"'` 的处理
+
+如果直接 `BASE_URL: "./"`，那么在定义的时候是 `const BASE_URL = ./` 这对 js 来说是错误的写法
+
+也可以从这点窥探到，如果 `Define` 的是 `String`，它会直接把字符串的内容定义到值上
+
