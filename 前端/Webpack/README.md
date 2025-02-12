@@ -835,5 +835,88 @@ module.exports = {
 
 > 项目 05
 
-使用 **资源模块类型** `asset module type` 的方式来提到之前提到的 `url-loader`、`file-loader` 等
+使用 **资源模块类型** `asset module type` 的方式来替代提到之前提到的 `url-loader`、`file-loader` 等
+
+- 资源模块类型
+  - `asset/resource` 发送一个单独的文件并导出 `URL`，之前通过 `file-loader` 实现
+  - `asset/inline` 导出一个资源的 `data` `URI`, 之前通过 `url-loader` 实现
+  - `asset/source` 到处资源的源代码，之前通过 `raw-loader` 实现
+  - `asset` 在到处一个 `data` `URI` 和发送一个单独的文件之间自动选择。之前通过使用 `url-loader`，并配置资源体积限制实现
+
+在 rule 中针对图片文件，直接使用 `type: "asset/resource"` 来指定模块类型即可
+
+```js
+{
+    test: /\.(png|jpg|jpeg|gif|svg)$/,
+    type: "asset/resource",
+    generator: {
+        // publicPath: 'assets/',
+        filename: 'img/[name]-[hash][ext]',
+    },
+}
+```
+
+成功在输出目录中看到到处的图片和生成的 `bundle.js`
+
+> 官方文档中对图片资源的加载也有[例子](https://webpack.docschina.org/configuration/module/#rulegeneratorfilename)
+
+- `publicPath` 指的是在引用图片的路径上添加 `assets/`
+- `filename` 指的是导出图片时重新设置图片的名称
+
+![](Image/012.png)
+
+以上述图片为例，最后图片的索引路径就是 `publicPath` + `filename`
+
+所以一般 `publicPath` 可以设置为 CDN 中存放图片或者其他资源的网络路径
+
+官网对 `asset/inline` 也有[比较详细的说明](https://webpack.docschina.org/guides/asset-modules/#inlining-assets)
+
+```js
+{
+    test: /\.(png|jpg|jpeg|gif|svg)$/,
+    // type: "asset/resource",
+    type: "asset/inline",
+}
+```
+
+最后的效果跟 `url-loader` 一样，图片生成了 base64 嵌套进了网页
+
+如果想要根据图片大小，选择 `asset/inline` 或者 `asset/resource` ，可以直接设置 `type = "asset"`，然后专门配置这个 `rule`
+
+```js
+{
+    test: /\.(png|jpg|jpeg|gif|svg)$/,
+    type: "asset",
+    generator: {
+        filename: "image/[name]-[hash:6][ext]"
+    },
+    parser: {
+        dataUrlCondition: {
+            maxSize: 10 * 1024 // 10kb
+        }
+    }
+}
+```
+
+![](Image/013.png)
+
+最后生成出来的界面
+
+- 对于小的 `miku.jpg` 只有 7kb，会直接生成 base64 码
+- 对于大的 `miku2.jpg` 有 180kb，会通过 http 请求图片进行下载显示
+
+> 使用 `asset` 加载图片时，直接使用 `img.src = require("../img/miku.jpg")` 即可，不需要跟之前使用 `file-loader` 一样
+
+### Plugin
+
+插件目的在于解决 `loader` 无法实现的其他事
+
+`Loader` 用于**特定的模块类型**进行转换
+
+`Plugin` 执行`更加广泛的任务`，比如打包任务、资源管理、环境变量注入等
+
+前面的例子遇到问题
+
+1. 每次修改完 `webpack.config.js` 之后，重新打包之前，会把 `build` 文件夹删除掉，这样是最保险的。每次都要删除，而对于这种流程化机械化的东西还是希望能够放在工具中自动处理
+2. `build` 文件夹作为发布文件夹，居然没有 `index.html`(不是每个项目都有，但是前面的例子项目得有)
 

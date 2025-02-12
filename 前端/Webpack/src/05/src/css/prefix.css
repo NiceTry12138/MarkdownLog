@@ -1,0 +1,4 @@
+.content {
+    transition: all 2s ease;
+    user-select: none;
+}
