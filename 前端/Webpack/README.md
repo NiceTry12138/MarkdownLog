@@ -172,7 +172,7 @@ test.foo();
 console.log(`main.js`)
 ```
 
-### loader
+## loader
 
 前面提到过，不同类型文件需要不同的 loader 进行处理，比如 js、html、css 等
 
@@ -907,7 +907,7 @@ module.exports = {
 
 > 使用 `asset` 加载图片时，直接使用 `img.src = require("../img/miku.jpg")` 即可，不需要跟之前使用 `file-loader` 一样
 
-### Plugin
+## Plugin
 
 [官网对 plugin 的解释](https://webpack.docschina.org/concepts/plugins/)
 
