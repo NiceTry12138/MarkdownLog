@@ -133,23 +133,20 @@ var __webpack_exports__ = {};
   !*** ./src/main.js ***!
   \*********************/
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _util_add__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util/add */ "./src/util/add.js");
-/* harmony import */ var _util_data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util/data */ "./src/util/data.js");
-/* harmony import */ var _util_data__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_util_data__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _test__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./test */ "./src/test.js");
+/* harmony import */ var _util_data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util/data */ "./src/util/data.js");
+/* harmony import */ var _util_data__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_util_data__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _test__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./test */ "./src/test.js");
 // import * as add from "./util/add"
 // const data = require("./util/data")
 
 const add = __webpack_require__(/*! ./util/add */ "./src/util/add.js")
 ;
-
 const data1 = __webpack_require__(/*! ./util/data */ "./src/util/data.js")
 
 ;
 
 console.log(add.add(1, 2));
-console.log(_util_add__WEBPACK_IMPORTED_MODULE_0__.add(1, 2));
-console.log(_util_data__WEBPACK_IMPORTED_MODULE_1__.today())
+console.log(_util_data__WEBPACK_IMPORTED_MODULE_0__.today())
 console.log(data1.today())
 
 })();

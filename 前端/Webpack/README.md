@@ -1137,6 +1137,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 ## Webpack 的模块化
 
+### 生成代码解析
+
 `Webpack` 打包的代码，允许使用各种模块化，包括 `CommonJS` 和 `ES Module`
 
 对于 `ES Module` 的模块导入导出写法
@@ -1406,4 +1408,40 @@ module = {
 -----------------------------
 
 说白了就是 `Webpack` 写了一套自己的模块管理，通过上述代码，来兼容 `ESModule` 和 `CommonJS` 不同的导入导出
+
+### source-map
+
+之前提到过，为了生成代码易读，修改 `devtool` 属性为 `source-map`，那么什么是 `devtool` ？
+
+官网中对 `source-map` 也有比较详细的[介绍](https://webpack.docschina.org/configuration/devtool/#root)
+
+`devtool` 专门用于控制是否生成、如何生成 `source-map` 
+
+那么什么是 `source-map` ?
+
+`source-map` 翻译过来就是**源码映射**，是一种用于将压缩、合并或者转译后的代码映射回原始源代码的技术。它的核心目的是解决**代码在构建过程中被转换后难以调试的问题**，让开发者能在浏览器中直接调试原始代码，而不是处理后的代码
+
+以 `webpack` 为例，最终项目执行的是 `bundle.js`，如果代码执行过程中出现错误，在没有 `source-map` 的情况下会报错到 `bundle.js` 中的某一行，这是不利于 debug 的，因为我们最终还是希望能够在源文件也就是 `main.js` 中找到对应错误的行
+
+一个典型的 `source-map` 是一个 `json` 文件，内容大致如下
+
+```json
+{
+  "version": 3,                   // Source Map 版本
+  "sources": ["src/app.ts"],      // 原始文件列表
+  "names": ["functionA", "varX"], // 原始变量名列表
+  "mappings": "AAAA,MAAM...",     // 编码后的映射关系
+  "file": "app.js",               // 转换后的文件名
+  "sourcesContent": ["..."],      // 原始源代码内容（可选）
+  "sourceRoot": "/"               // 原始文件根路径（可选）
+}
+```
+
+> `mappings` 字段是关键，使用 VLQ 编码来表示转后的代码位置与原始代码位置的映射关系
+
+在转换后的代码，这里的例子就是 `webpack` 生成出来的 `bundle.js` 文件的末尾，会有一个注释，用于表明使用哪个 `source-map`
+
+```js
+//# sourceMappingURL=bundle.js.map
+```
 
