@@ -1078,3 +1078,313 @@ module.exports = {
 
 也可以从这点窥探到，如果 `Define` 的是 `String`，它会直接把字符串的内容定义到值上
 
+## Mode 的配置
+
+使用 `webpack` 进行打包的时候会报如下警告
+
+```bash
+WARNING in configuration
+The 'mode' option has not been set, webpack will fallback to 'production' for this value.
+Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+```
+
+根据警告内容可以发现是 `mode` 没有进行配置
+
+[官网配置](https://webpack.docschina.org/guides/production/#specify-the-mode) 和 [官网指南](https://webpack.docschina.org/configuration/mode/) 对 `mode` 的配置有详细讲解
+
+通过配置 `mode` 选项，告知 webpack 使用相应模式的内置优化
+
+| 选项 | 描述 |
+| --- | --- |
+| `development` | 会将 DefinePlugin 中 process.env.NODE_ENV 的值设置为 development. 为模块和 chunk 启用有效的名 |
+| `production` | 会将 DefinePlugin 中 process.env.NODE_ENV 的值设置为 production。为模块和 chunk 启用确定性的混淆名称，FlagDependencyUsagePlugin，FlagIncludedChunksPlugin，ModuleConcatenationPlugin，NoEmitOnErrorsPlugin 和 TerserPlugin  |
+| `none` | 不使用任何默认优化选项 |
+
+> mode 的默认值为 `production`
+
+分别设置 `webpack.config.js` 的 `mode` 属性，来比较不同属性的打包结果
+
+```js
+module.exports = {
+    mode: "development",
+    // mode: "production",
+    entry: "./src/main.js",
+    output: {
+        filename: "./bundle.js",
+        path: path.resolve(__dirname, "./build")
+    },
+    plugins: [
+        // plugins 
+    ]
+}
+```
+
+对比 `development` 和 `production` 可以发现最终的 `bundle.js` 内容完全不同
+
+- 使用 `production` 得到的 js 文件是压缩过的，被明显混淆的
+- 使用 `development` 可以到的条理清晰的 js 内容
+
+除此之外，还有其他内容的优化
+
+由于 `mode` 最终会通过 `DefinePlugin` 设置为**全局常量**，所以在开发中也可以使用读值的方式来判断当前的环境
+
+```js
+if (process.env.NODE_ENV !== 'production') {
+    console.log('Looks like we are in development mode!');
+}
+```
+
+## Webpack 的模块化
+
+`Webpack` 打包的代码，允许使用各种模块化，包括 `CommonJS` 和 `ES Module`
+
+对于 `ES Module` 的模块导入导出写法
+
+```js
+// 导出
+export const sum = function() { return true; }
+
+// 导入
+import { sum } from "math"
+```
+
+对于 `CommonJS` 的模块导入导出写法
+
+```js
+// 导出
+function sum() { return true; }
+module.exports = { sum }
+
+// 导入
+const data = require("./util/data")
+data.sum()
+```
+
+那么使用 `webpack` **打包之后**， 如果我对 `CommonJS` 的导出用 `ESModule` 的导入，或者对 `ESModule` 的导出用 `CommonJS` 的导入会报错吗？
+
+```js
+// add.js
+export function add(a, b) { return a + b; }
+
+// data.jss
+function today() { return "2024.24.24"; }
+
+module.exports = { today }
+
+// main.js
+const add = require('./util/add')
+import * as data from "./util/data"
+console.log(add.add(1, 2)); // 输出 3
+console.log(data.today())   // 输出 2024.24.24
+```
+
+使用 `webpack` 打包之后的项目 其实不会报错
+
+> 如果直接用上述代码，在浏览器会报错(2024.12)，无法使用 `require` 或者 `module.exports`
+
+为什么源码中使用 `require` 的项目在使用 `webpack` 打包之后的项目在浏览器中不会报错呢？
+
+想要通过查看 `bundle.js` 源码分析原理，但是各种 `eval` 函数调用让代码没有格式化，比较难看
+
+因为 `mode` 设置为 `development`，在该模式下 `devtool` 属性的默认值是 `eval`，为了方便查看代码，将其设置为 `source-map`
+
+```js
+module.exports = {
+    mode: "development",
+    entry: "./src/main.js",
+    devtool: "source-map",
+    // ...
+}
+```
+
+| eval | source-map |
+| --- | --- |
+| ![](Image/017.png) | ![](Image/016.png) |
+
+我将处理后的 `js` 代码复制一份到 [07/bundle.js](./src/07/bundle.js)  
+
+观察这个 `bundle.js` 文件
+
+该文件可以分成三大块
+
+1. 定义模块
+
+![](Image/018.png)
+
+2. 定义工具函数
+
+![](Image/019.png)
+
+3. 执行
+
+![](Image/020.png)
+
+并且整个 `bundle.js` 的代码内容都包含在一个大的**立即执行函数**中，所以该文件一经加载，就会立刻执行
+
+首先关注一下 `__webpack_require__` 函数，在 `js` 中 `function` 定义的对象也可以看作是一个 `Object`
+
+所以可以定义 `__webpack_require__.d`、`__webpack_require__.n ` 等函数
+
+- `__webpack_require__.o` 
+
+```js
+__webpack_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
+```
+
+用于检查 `obj` 对象是否拥直接有名为 `prop` 的属性(不继承自原型链)，也就是检查属性是否存在
+
+- `__webpack_require__.r`
+
+```js
+__webpack_require__.r = (exports) => {
+    if (typeof Symbol !== "undefined" && Symbol.toStringTag) {
+        Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+};
+```
+
+用于标记 `exports` 对象是否是 `ES` 模块，由于模块导出有 `CommonJS` 和 `ESModule`，所以需要通过特殊标记来区分不同的模块导出
+
+如果环境支持，设置 `exports` 对象的 `toStringTag` 为 `Module`，这样通过 `Object.prototype.toString.call(exports)` 会输出 `[Object Module]`，方便开发者或者工具识别这是一个 **模块对象**
+
+- `__webpack_require__.d`
+
+```js
+__webpack_require__.d = (exports, definition) => {
+    for (var key in definition) {
+    if (
+        __webpack_require__.o(definition, key) &&
+        !__webpack_require__.o(exports, key)
+    ) {
+        Object.defineProperty(exports, key, {
+        enumerable: true,
+        get: definition[key],
+        });
+    }
+    }
+};
+```
+
+用于将 `definition` 的属性定义到 `exports` 对象上，值的获取方式是直接通过 `definition[key]` 的方式获取，减少了数据拷贝的消耗
+
+- `__webpack_require__.n`
+
+```js
+__webpack_require__.n = (module) => {
+    var getter =
+    module && module.__esModule ? () => module["default"] : () => module;
+    __webpack_require__.d(getter, { a: getter });
+    return getter;
+};
+```
+
+如果 `module` 是一个 `ES Module`，则返回 `Module` 的 `default` 对象；否则返回 `module` 对象本身 
+
+上面所有的工具函数都包装在立即执行函数中，会立刻注册到 `__webpack_require__` 中，所以可以直接调用
+
+--------------------------
+
+在原本的 `main.js` 中，使用不同的导入方式
+
+```js
+import * as data from "./util/data"
+const data1 = require('./util/data')
+```
+
+在 `bundle.js` 中被转换成下面这段，也就是 `bundle.js` 最下面的一个立即执行函数
+
+```js
+var _util_data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util/data */ "./src/util/data.js");
+var _util_data__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_util_data__WEBPACK_IMPORTED_MODULE_1__);
+
+const data1 = __webpack_require__(/*! ./util/data */ "./src/util/data.js");
+```
+
+那么接下来就是要关注 `__webpack_require__` 函数本体了
+
+```js
+function __webpack_require__(moduleId) {
+    var cachedModule = __webpack_module_cache__[moduleId];
+    if (cachedModule !== undefined) {
+        return cachedModule.exports;
+    }
+    var module = (__webpack_module_cache__[moduleId] = {
+        exports: {},
+    });
+
+    __webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+
+    return module.exports;
+}
+```
+
+内容很简单，想要加载 `./src/util/data.js` 文件，会从 `__webpack_module_cache__` 这个全局对象中获取 `module` 的缓存，避免一个文件重复加载、重复执行导致问题
+
+如果 `__webpack_module_cache__` 没有缓存目标文件，那么会先塞一个 名为 `{ exports: {} }` 的空对象并赋值给 `module` 对象，然后从 `__webpack_modules__` 中查找目标模块，并对 `module.exports` 对象进行初始化
+
+看来最终还是要回到 `__webpack_modules__` 对象
+
+----------------------
+
+在 `__webpack_modules` 对象中，根据导出的写法不同，绑定的函数也不相同
+
+```js
+// util/add.js 使用 ESModule 导出
+export function add(a, b) { return a + b; }
+
+// util/data.js 使用 CommonJS 导出
+function today() { return "2024.24.24"; }
+module.exports = { today }
+```
+
+反映到 `bundle.js` 的 `__webpack_modules` 中就是
+
+```js
+"./src/util/add.js": (__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+    "use strict";
+    __webpack_require__.r(__webpack_exports__);
+    __webpack_require__.d(__webpack_exports__, {
+        add: () => /* binding */ add,
+    });
+    function add(a, b) {
+        return a + b;
+    }
+},
+
+"./src/util/data.js": (module) => {
+    function today() {
+        return "2024.24.24";
+    }
+
+    module.exports = {
+        today,
+    };
+},
+```
+
+先从简单的 `data.js` 开始
+
+对于 `data.js` 来说，执行 `__webpack_modules__[moduleId](module, module.exports, __webpack_require__)` 代码，多传入的两个参数不会影响 JS 代码的执行
+
+由于 JS 对复杂对象是浅拷贝，所以函数执行的 `module.exports = { today }` 就直接修改了 `__webpack_module_cache__` 中缓存的对象
+
+那么 `const data1 = __webpack_require__("./src/util/data.js");` 直接就获取到了 `data.js` 导出的内容并存储到 `data1` 对象中，后续可以直接通过 `data1.today()` 来执行导出的函数
+
+接下来从相对复杂的 `add.js` 开始
+
+对于 `add.js` 来说，执行 `__webpack_modules__[moduleId](module, module.exports, __webpack_require__)` 函数是一一对应的
+
+因为 `add.js` 使用的是 `ESModule`，所以先通过 `__webpack_require__.r` 标记 `module.exports`
+
+然后通过 `__webpack_require__.d` 将 `{ add: () => add }` 绑定到 `module.exports` 对象上
+
+代码执行到这， `module.export` 上添加了一个名为 `add` 的函数，该函数会转去执行真正的 `add` 函数
+
+> 这里 `module.exports` 对象的 `add` 函数并不是 `add.js` 中定义的 `add` 函数
+> `module.exports` 对象的 `add` 函数中执行的 `add` 函数才是 `add.js` 中定义的 `add` 函数
+
+-----------------------------
+
+说白了就是 `Webpack` 写了一套自己的模块管理，通过上述代码，以此来兼容 `ESModule` 和 `CommonJS`
