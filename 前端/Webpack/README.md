@@ -1372,6 +1372,14 @@ module.exports = { today }
 
 那么 `const data1 = __webpack_require__("./src/util/data.js");` 直接就获取到了 `data.js` 导出的内容并存储到 `data1` 对象中，后续可以直接通过 `data1.today()` 来执行导出的函数
 
+```js
+module = {
+    exports: {
+        today: `data.js`.today
+    }
+}
+```
+
 接下来从相对复杂的 `add.js` 开始
 
 对于 `add.js` 来说，执行 `__webpack_modules__[moduleId](module, module.exports, __webpack_require__)` 函数是一一对应的
@@ -1380,11 +1388,22 @@ module.exports = { today }
 
 然后通过 `__webpack_require__.d` 将 `{ add: () => add }` 绑定到 `module.exports` 对象上
 
-代码执行到这， `module.export` 上添加了一个名为 `add` 的函数，该函数会转去执行真正的 `add` 函数
+代码执行到这， `module.exports` 上添加了一个名为 `add` 的函数，该函数会转去执行真正的 `add` 函数
 
 > 这里 `module.exports` 对象的 `add` 函数并不是 `add.js` 中定义的 `add` 函数
 > `module.exports` 对象的 `add` 函数中执行的 `add` 函数才是 `add.js` 中定义的 `add` 函数
 
+```js
+module = {
+    exports: {
+        add: (a, b) => { `add.js`.add(a, b) } 
+    }
+}
+```
+
+> **注意**，要理解这里 `exports.add` 和 `exports.data` 两个函数有本质区别，可以说 `exports.data` 等于 `data.js` 中定义的 `function data`，但是 `exports.add` 不等于 `add.js` 中定义的 `function add`
+
 -----------------------------
 
-说白了就是 `Webpack` 写了一套自己的模块管理，通过上述代码，以此来兼容 `ESModule` 和 `CommonJS`
+说白了就是 `Webpack` 写了一套自己的模块管理，通过上述代码，来兼容 `ESModule` 和 `CommonJS` 不同的导入导出
+
