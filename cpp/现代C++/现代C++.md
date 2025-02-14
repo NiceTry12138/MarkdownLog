@@ -185,3 +185,44 @@ class Point1 {
 	virtual void Process2() {}
 };
 ```
+
+![](Image/001.png)
+
+以上图为例，如果一个类有虚函数，那么这个类对象在内存中第一个属性是一个指针，指向这个类的虚函数表
+
+既然知道这个类的第一个属性是一个指针，是否可以通过指针获取到虚函数表，然后获取虚函数表的第一个函数并执行它呢？
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Point1 {
+  int x;
+  int y;
+  virtual void Process2(int InParam) { std::cout << "hello world " << InParam << std::endl; }
+};
+
+typedef void(*Fun)(Point1*, int);
+
+int main()
+{
+  auto a = new Point1();
+
+	std::cout << sizeof(int) << " " << sizeof(long) << " " << sizeof(void*) << std::endl;
+
+  Fun pfun = (Fun)*((long *)*(long *)(a));
+  pfun(a, 4);
+
+  delete a;
+  return 0;
+}
+```
+
+> 这里使用 `long*` 而不是 `int*` 是因为我机器上指针大小是 8 与 `long` 的大小相同
+
+通过 `*(long *)a` 将对象 `a` 从 `Point*` 强转成 `long*`，然后对其取地址，得到虚函数表的首地址
+
+将虚函数表的首地址强转成 `long*` 并对其取地址，得到第一个虚函数的指针，再将其强转成 `void *(int)` 的函数指针，就可以执行它
+
+> 为什么要定义 `Fun` 为 `void(*)(Point*, int)`，还记得之前说过编译器如何对 C++ 类的函数做处理的吗？
+
