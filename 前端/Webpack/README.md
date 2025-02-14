@@ -1445,3 +1445,25 @@ module = {
 //# sourceMappingURL=bundle.js.map
 ```
 
+根据[官网介绍](https://webpack.docschina.org/configuration/devtool/#root)对 `devtool` 值设置的介绍
+
+- 以下几个值不会生成 `source-map`
+  - `false`: 不使用 `source-map`
+  - `(none)`: `production` 模式下的默认值，不生成 `source-map`，这里的 `none` 是指不要写 `devtool` 属性
+  - `eval`: `development` 模式下的默认值，不生成 `source-map`
+    - 但是会在 eval 执行的代码中添加 `//# sourceURL=;` 用于浏览器在执行时解析，并且在调试面板中生成对应的一些文件目录，方便调试
+
+- `eval-source-map` 会将 `source-map` 的内容以 `base64` 的方式编写在 `eval` 函数参数的字符串中
+- `inline-source-map` 会将 `source-map` 的内容以 `base64` 的方式编写在 `output-file` 这里是 `bundle.js` 的文件末尾
+- `cheap-source-map` 生成 `source-map`，但是低开销的，但是不会生成**列映射**。也就是说报错只会报错到文件的行数，不会说第多少列报错
+  - 这个会用的多一点，因为一般来说知道行数就能知道错误位置
+- `cheap-module-source-map` 效果类似于 `cheap-source-map`，但是对 `loader` 的支持会更好
+  - 有些 `loader` 可以给最终文件添加或者修改一些 js 代码
+  - 比如 `babel-loader` 能够将 `es6` 代码转为 `es5` 代码，此时通过 `source-map` 查找到报错的只能找到 `es5` 代码的错误，而不是我们原本编写的 `es6` 代码，增加的 `debug` 定位的难度
+- `hidden-source-map` 就是删除了 `bundle.js` 文件最后指定的映射文件，此时会生成映射文件，但是由于删除了关联关系，所以就算报错也无法定位到源文件
+- `nosources-source-map` 会生成 `sourcemap`，但是只有错误提示，不会生成源代码文件
+  - 对于普通的 `source-map`，报错之后会提示错误位置，并且点击错误位置之后会跳转到还原之后的代码位置
+  - 对于 `nosources-source-map` 会提示错误位置，但是无法跳转到还原之后的代码位置，因为没有生成源代码文件
+
+虽然 `devtool` 的可选类型很多，但大都是一些固定属性的排列组合
+
