@@ -1467,3 +1467,117 @@ module = {
 
 虽然 `devtool` 的可选类型很多，但大都是一些固定属性的排列组合
 
+## Babel
+
+`Babel` 本身是一个独立工具，可以可以不和 webpack 等构建工具搭配，单独使用
+
+### 简单使用
+
+> 08 项目
+
+```js
+const foo = () => "hello world";
+foo();
+module.export = {
+    foo
+}
+```
+
+上述是一个简单的 `js` 代码，由于箭头函数是 `es6` 的语法，一些不支持 `es6` 的浏览器不支持这种写法，此时需要将 js 代码转换成 `es5` 的写法 
+
+这个时候就可以用 `Babel` 了
+
+```bash
+npm install @babel/core -D
+npm install @babel/cli -D
+```
+
+> 安装 babel 的核心模块 和 cli(command library interface)
+
+为了转换箭头函数，所以还需要安装 `babel` 的插件
+
+```bash
+npm install @babel/plugin-transform-arrow-functions -D
+```
+
+```bash
+npx babel main.js --out-dir dist --plugins=@babel/plugin-transform-arrow-functions
+``` 
+
+> 将 `main.js` 转换并输出到 `dist` 目录下
+
+```js
+const foo = function () {
+  return "hello world";
+};
+foo();
+module.export = {
+  foo
+};
+```
+
+除了转换箭头函数的插件，还有转换 `const` 的插件，由于 `const` 和 `var` 都是块级作用域相关的，所以用于转换它们的插件叫 `plugin-transform-block-scoping`
+
+```bash
+npm install @babel/plugin-transform-block-scoping -D
+```
+
+然后继续在命令行中使用
+
+```bash
+npx babel main.js --out-dir dist --plugins=@babel/plugin-transform-arrow-functions,@babel/plugin-transform-block-scoping
+```
+
+将 `const` 变更为 `var` 
+
+```js
+var foo = function () {
+  return "hello world";
+};
+var arr = [1, 2, 3];
+foo();
+console.log(arr.at(1));
+module.export = {
+  foo
+};
+```
+
+如果有很多东西需要转换，一个一个手动配置插件明显是不符合期望的
+
+`babel` 提供一个预测 `@babel/preset-env` 模块，这个模块本质上是一系列插件的组合
+
+```bash
+npm install @babel/preset-env -D
+```
+
+然后直接在命令行中使用 `preset-env`
+
+```bash
+npx babel main.js --out-dir result --presets=@babel/preset-env
+```
+
+直接得到如下结果
+
+```js
+var foo = function () {
+  return "hello world";
+};
+foo();
+module.export = {
+  foo
+};
+```
+
+### Babel 的原理
+
+JS 代码如何被执行？
+
+![](Image/021.png)
+
+JS 源码通过 `Parse` 解析为 `AST`，再转化为 `ByteCode` 去执行
+
+那么 `Babel` 做的事情就是将 es6 的 JS 代码 解析出来的 AST ，转换为新的 AST，再通过代码生成得到 es5 的 JS 代码
+
+![](Image/022.png)
+
+
