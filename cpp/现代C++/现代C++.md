@@ -208,7 +208,7 @@ int main()
 {
   auto a = new Point1();
 
-	std::cout << sizeof(int) << " " << sizeof(long) << " " << sizeof(void*) << std::endl;
+  std::cout << sizeof(int) << " " << sizeof(long) << " " << sizeof(void*) << std::endl;
 
   Fun pfun = (Fun)*((long *)*(long *)(a));
   pfun(a, 4);
@@ -225,4 +225,187 @@ int main()
 将虚函数表的首地址强转成 `long*` 并对其取地址，得到第一个虚函数的指针，再将其强转成 `void *(int)` 的函数指针，就可以执行它
 
 > 为什么要定义 `Fun` 为 `void(*)(Point*, int)`，还记得之前说过编译器如何对 C++ 类的函数做处理的吗？
+
+### 继承的内存模型
+
+- 单继承的内存结构
+
+![](Image/002.png)
+
+- 多继承的内存结构
+
+![](Image/003.png)
+
+- 菱形继承
+
+![](Image/004.png)
+
+```cpp
+#include <iostream>
+class Base {
+    int x;
+};
+class A : public Base {
+    int XX;
+};
+class B : public Base {
+    int YY;
+};
+class C : public A, public B {
+    int ZZ;
+};
+
+int main()
+{
+    std::cout << "sizeof(Base) = " << sizeof(Base) << std::endl;  // 4
+    std::cout << "sizeof(A) = " << sizeof(A) << std::endl;        // 8
+    std::cout << "sizeof(B) = " << sizeof(B) << std::endl;        // 8  
+    std::cout << "sizeof(C) = " << sizeof(C) << std::endl;        // 20
+    return 0;
+}
+```
+
+根据上面的例子，不难发现， 类 C 的大小是**两个父类的大小的和** + **自己属性 ZZ 的大小**，也就是说 C 中有两份 `Base` 数据
+
+传统菱形继承存在很多问题，包括命名冲突、冗余数据等
+
+为了解决菱形继承的问题，C++ 提出了 **虚继承**
+
+```cpp
+class Base {
+    int x;
+};
+class A : public virtual Base {
+    int XX;
+};
+class B : public virtual Base {
+    int YY;
+};
+class C : public A, public B {
+    int ZZ;
+};
+```
+
+这里 `Base` 就是一个虚基类， 不论虚基类再继承体系中出现多少次，在派生类中只包含一份虚基类的成员
+
+```cpp
+sizeof(Base)  // = 4
+sizeof(A)  // = 16
+sizeof(B)  // = 16
+sizeof(C)  // = 40
+```
+
+注意这里 `A` 和 `B` 的内存大小，增加了 8 个 字节，也就是一个指针的大小
+
+很明显，虚基类和虚函数一样，增加了个一个指针，指向这个类的虚基类表，同时由于多了一个指针，需要**内存对齐**，所以 `sizeof(A)` 的内存大小是 4 + 8 + 4(空白内容)
+
+<!-- ![](Image/005.png) -->
+
+```
+════════════ Base ════════════
+┌───────────┐
+│    x      │ 4字节
+└───────────┘
+
+════════════ A ════════════
+┌───────────┬───────────┬───────────┬───────────┐
+│  vbase_ptr (8字节)    │   XX (4)  │ padding (4) │
+└───────────┴───────────┴───────────┴───────────┘
+
+════════════ C 的内存布局 ════════════
+┌───────────┬───────────┬───────────┬───────────┐ ← A部分
+│      A的虚基类指针     │     XX    │  padding  │
+├───────────┼───────────┼───────────┼───────────┤ ← B部分 ← C自身
+│      B的虚基类指针     │     YY    │     ZZ    │ 
+├───────────┼───────────┼───────────┴───────────┤ ← 虚基类Base
+│     x     │  padding  │
+└───────────┴───────────┘
+```
+
+此时 C 的内存大小是 `Base::x` + `A::XX` + A的虚基类表指针 + `B::XX` + B的虚基类表指针 + `C::ZZ`
+
+```cpp
+#include <iostream>
+
+class Base {
+public:
+    int x;
+};
+class A : public virtual Base {
+public:
+    int XX;
+};
+class B : public virtual Base {
+public:
+    int YY;
+};
+class C : public A, public B {
+public:
+    int ZZ;
+};
+
+int main()
+{
+    auto t = new C();
+    t->x = 10;
+    t->XX = 11;
+    t->YY = 12;
+    t->ZZ =13;
+    std::cout << (*(int*)((void *)t + 8)) << std::endl;           // 11
+    std::cout << (*(int*)((void *)t + 16 + 8)) << std::endl;      // 12
+    std::cout << (*(int*)((void *)t + 16 + 8 + 4)) << std::endl;  // 13
+    std::cout << (*(int*)((void *)t + 16 + 16)) << std::endl;     // 10
+    std::cout << sizeof(C) << std::endl;                          // 40
+    return 0;
+}
+```
+
+> Base实例被放在整个对象末尾，通过指针偏移访问
+
+### 空类的内存模型
+
+```cpp
+class A{
+
+};
+
+// sizeof(A) = 1
+```
+
+对于空类 `A`，它的内存大小 sizeof 是多少呢？
+
+答案是 1
+
+为什么一个空类的大小是 1 呢？
+
+在 C++ 中，只要是一个对象，它一定是有大小的，否则怎么给他分配内存、怎么通过寻址查找对象呢？
+
+所以，对于一个编译器来说，如果这个类没有任何属性，编译器会自动给他添加一个 `char` 属性，用于分配内存
+
+那对下面这个情况呢？
+
+```cpp
+class A {};
+
+class B : public A {
+  int X;
+};
+
+class C {
+  A a;
+  int X;
+};
+
+class D : public A {};
+
+// sizeof(B) = 4
+// sizeof(C) = 8
+// sizeof(D) = 1
+```
+
+- 对于 B 来说，已经存在需要占用内存的属性了，不需要再为了分配内存而给 B 的父类 A 额外添加一个 char 
+  - 简称 **空基类优化**
+- 对于 C 来说，`A a` 仍然需要一个 char 类区分内存，再加上内存对齐，所以占 8 字节
+
+> 除了空基类的情况，一般来说继承和组合的方式构成的新类内存大小小童
 
