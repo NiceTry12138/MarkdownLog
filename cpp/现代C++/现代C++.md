@@ -192,6 +192,8 @@ class Point1 {
 
 既然知道这个类的第一个属性是一个指针，是否可以通过指针获取到虚函数表，然后获取虚函数表的第一个函数并执行它呢？
 
+> **tip**: 下面的例子可能在 MSVC 中运行失败，因为 MSVC 的虚函数表的第一位存储着 tpye_info 也就是类的类型信息
+
 ```cpp
 #include <iostream>
 using namespace std;
@@ -225,6 +227,7 @@ int main()
 将虚函数表的首地址强转成 `long*` 并对其取地址，得到第一个虚函数的指针，再将其强转成 `void *(int)` 的函数指针，就可以执行它
 
 > 为什么要定义 `Fun` 为 `void(*)(Point*, int)`，还记得之前说过编译器如何对 C++ 类的函数做处理的吗？
+
 
 ### 继承的内存模型
 
@@ -407,5 +410,169 @@ class D : public A {};
   - 简称 **空基类优化**
 - 对于 C 来说，`A a` 仍然需要一个 char 类区分内存，再加上内存对齐，所以占 8 字节
 
-> 除了空基类的情况，一般来说继承和组合的方式构成的新类内存大小小童
+> 除了空基类的情况，一般来说继承和组合的方式构成的新类内存大小相同
+
+绝大部分情况，**组合优于继承**
+
+除此之外，对于空基类还有一些使用方法，比如下面这种写法
+
+```cpp
+class A {
+public:
+  void ReleaseImpl() {}
+};
+
+class B : private A {
+public:
+  void Release() { ReleaseImpl(); }
+
+private:
+  int x;
+};
+
+class C {
+public:
+  void Release() { a.ReleaseImpl(); }
+  
+private:
+  A a;
+  int x;s
+}
+```
+
+上述代码，对比类 B 和类 C 的实现方式，这个时候更倾向于使用类 B 而不是类 C
+
+1. 更小的内存占用
+2. 使用 `private` 的继承方式，不会暴露内部接口
+
+除此之外，还有一些使用方法
+
+```cpp
+#include <iostream>
+class A1 {
+public:
+  void ReleaseImpl() { std::cout << "A1" << std::endl; }
+};
+class A2 {
+public:
+  void ReleaseImpl() {std::cout << "A2" << std::endl; }
+};
+
+template<typename ToolBase = A1>
+class B : private ToolBase {
+public:
+  void Release() { ToolBase::ReleaseImpl(); }
+};
+
+int main()
+{
+    auto b = B<A2>();
+    auto c = B<A1>();
+    auto d = B();
+    b.Release();
+    c.Release();
+    d.Release();
+    return 0;
+}
+```
+
+结合模板的使用，能够将一些功能拆分到不同的类中，并通过模板选择不同的继承类，来修改程序执行过程中的一些内容
+
+比如，根据继承的基类不同，资源释放的方式也可能不同
+
+### 类的类型信息
+
+```cpp
+#include <iostream>
+class A {
+public:
+    int X;
+    double Y;
+    virtual ~A(){}
+};
+
+class B : public A {
+};
+
+int main()
+{
+    A* a = new A(); 
+    A* b = new B();
+
+    const std::type_info& t1 = typeid(*a);
+    const std::type_info& t2 = typeid(*b);
+
+    std::cout << t1.name() << std::endl;
+    std::cout << t2.name() << std::endl;
+
+    B* c = dynamic_cast<B*>(a);   // nullptr
+    B* d = dynamic_cast<B*>(b);   // success
+
+    std::cout << t1 == t2 << std::endl; // false
+
+    return 0;
+}
+```
+
+> `a` 的编译时类型是 `A`，实际类型是 `A`  
+> `b` 的编译时类型时 `A`，实际类型时 `B`
+
+根据编译器不同，`type_info` 存储的位置也不相同
+
+- MSVC 存储在类型关联的虚函数表中
+- GCC/Clang 存储在独立的内存区域中
+
+也就是说，如果使用 `MSCV` 运行前面的通过虚函数表直接执行虚函数的例子是不能正常运行的，因为 `MSVC` 的虚函数表存储着额外的信息
+
+
+
+### 类的析构要定义为虚函数
+
+```cpp
+#include <iostream>
+class A {
+public:
+    ~A(){
+        std::cout << "~A" << std::endl;
+    }
+};
+
+class B : public A {
+public:
+    ~B() {
+        std::cout << "~B" << std::endl;
+    }
+};
+
+class C : public B {
+public:
+    ~C() {
+        std::cout << "~C" << std::endl;
+    }
+};
+
+int main()
+{
+    A* b = new C();
+    delete b;
+    return 0;
+}
+```
+
+对于上述代码，理论上我们期望的输出结果是 `~C ~B ~A`，因为 `b` 的实际类型是 `C`，根据继承规则应该从子类到父类逐步析构
+
+但是实际上的输出结果是 `~A`，也就是说并没有执行 `C` 和 `B` 的析构
+
+如果类 B 或者类 C 中申请了内存，在析构函数中释放申请的内存，遇到上述情况就会出现析构函数不执行，进而导致内存泄漏的问题
+
+为了解决这个隐患，通常都是讲析构函数定义为虚函数
+
+```cpp
+class A {
+public:
+    virtual ~A(){
+        std::cout << "~A" << std::endl;
+    }
+};
+```
 
