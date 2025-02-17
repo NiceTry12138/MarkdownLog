@@ -6,30 +6,30 @@
 
 ```cpp
 class Point {
-    int x;
-    int y;
+		int x;
+		int y;
 
-    static int xx;
+		static int xx;
 
-    void Process() {
-        // do something
-        Process2(100);
-    }
+		void Process() {
+				// do something
+				Process2(100);
+		}
 
-    void Process2(int x) {
-        // do something
-    }
+		void Process2(int x) {
+				// do something
+		}
 
-    static void Process3() {
-        xx++;
-    }
+		static void Process3() {
+				xx++;
+		}
 };
 
 int Point::x = 0;
 
 int main() {
-    Point pt;
-    pt.Process();
+		Point pt;
+		pt.Process();
 }
 ```
 
@@ -37,25 +37,25 @@ int main() {
 
 ```cpp
 struct Point {
-    int x;
-    int y;
+		int x;
+		int y;
 
-    static int xx;
+		static int xx;
 }
 
 int Point::xx = 0;
 
 void Process(Point* this) {
-    // do something
-    this->Process2(100);
+		// do something
+		this->Process2(100);
 }
 
 void Process2(Point* this, int x) {
-    // do something
+		// do something
 }
 
 void Process3() {
-    Point::xx++;
+		Point::xx++;
 }
 ```
 
@@ -73,15 +73,15 @@ void Process3() {
 #pragma pack(8)
 
 class P1 {
-    char a1;
-    int x;
-    char a2;
+		char a1;
+		int x;
+		char a2;
 };
 
 class P2 {
-    char a1;
-    char a2;
-    int x;
+		char a1;
+		char a2;
+		int x;
 };
 
 // sizeof(P1) 12
@@ -93,26 +93,26 @@ class P2 {
 > 可以使用 `#pragma pack(4)` 控制对齐大小
 
 - **内存对齐规则**
-  - 成员对齐：每个成员的地址必须是其自身大小或 `#pragma pack(n)` 设置值的较小值的**倍数**
-  - 结构体总大小：必须是所有成员中最大对齐值的整数倍
-  - 填充字节：编译器在成员之间插入空隙（padding），以满足对齐要求
+	- 成员对齐：每个成员的地址必须是其自身大小或 `#pragma pack(n)` 设置值的较小值的**倍数**
+	- 结构体总大小：必须是所有成员中最大对齐值的整数倍
+	- 填充字节：编译器在成员之间插入空隙（padding），以满足对齐要求
 
 对于 `class P1` 来说
 
 - char a1
-  - 大小：1 字节
-  - 对齐要求：min(1, 8) = 1
-  - 地址范围：0
+	- 大小：1 字节
+	- 对齐要求：min(1, 8) = 1
+	- 地址范围：0
 - int x
-  - 大小：4 字节
-  - 对齐要求：min(4, 8) = 4
-  - 起始地址必须是 4 的倍数
-  - 当前地址是 1，需填充 3 字节（地址 1-3），使 x 从地址 4 开始
-  - 地址范围：4-7
+	- 大小：4 字节
+	- 对齐要求：min(4, 8) = 4
+	- 起始地址必须是 4 的倍数
+	- 当前地址是 1，需填充 3 字节（地址 1-3），使 x 从地址 4 开始
+	- 地址范围：4-7
 - char a2
-  - 大小：1 字节
-  - 对齐要求：1
-  - 直接放在 x 后面，地址 8
+	- 大小：1 字节
+	- 对齐要求：1
+	- 直接放在 x 后面，地址 8
 
 当前总大小：0-8（共 9 字节）。结构体总大小必须是**最大对齐值**（4）的整数倍。9 向上取整到最近的 4 的倍数是 12，因此末尾填充 3 字节
 
@@ -127,13 +127,13 @@ class P2 {
 对于 `class P2` 来说
 
 - char a1
-  - 地址范围：0
+	- 地址范围：0
 - char a2
-  - 地址范围：1
+	- 地址范围：1
 - int x
-  - 对齐要求：4 
-  - 当前地址是 2，需填充 2 字节（地址 2-3），使 x 从地址 4 开始
-  - 地址范围：4-7
+	- 对齐要求：4 
+	- 当前地址是 2，需填充 2 字节（地址 2-3），使 x 从地址 4 开始
+	- 地址范围：4-7
 
 当前总大小：0-7（共 8 字节）。8 已经是最大对齐值（4）的整数倍，无需额外填充
 
@@ -149,10 +149,10 @@ class P2 {
 
 ```cpp
 class Point {
-    int x;
-    int y;
+		int x;
+		int y;
 
-    void Process() {}
+		void Process() {}
 };
 
 // sizeof(Point) 8
@@ -168,7 +168,7 @@ class Point {
 struct Point { int x; int y;};
 Process(Point* this)
 {
-    // do something
+		// do something
 }
 ```
 
@@ -178,10 +178,10 @@ Process(Point* this)
 
 ```cpp
 class Point1 {
-    int x;
-    int y;
+		int x;
+		int y;
 
-    void Process() {}
+		void Process() {}
 	virtual void Process2() {}
 };
 ```
@@ -199,24 +199,24 @@ class Point1 {
 using namespace std;
 
 class Point1 {
-  int x;
-  int y;
-  virtual void Process2(int InParam) { std::cout << "hello world " << InParam << std::endl; }
+	int x;
+	int y;
+	virtual void Process2(int InParam) { std::cout << "hello world " << InParam << std::endl; }
 };
 
 typedef void(*Fun)(Point1*, int);
 
 int main()
 {
-  auto a = new Point1();
+	auto a = new Point1();
 
-  std::cout << sizeof(int) << " " << sizeof(long) << " " << sizeof(void*) << std::endl;
+	std::cout << sizeof(int) << " " << sizeof(long) << " " << sizeof(void*) << std::endl;
 
-  Fun pfun = (Fun)*((long *)*(long *)(a));
-  pfun(a, 4);
+	Fun pfun = (Fun)*((long *)*(long *)(a));
+	pfun(a, 4);
 
-  delete a;
-  return 0;
+	delete a;
+	return 0;
 }
 ```
 
@@ -246,25 +246,25 @@ int main()
 ```cpp
 #include <iostream>
 class Base {
-    int x;
+		int x;
 };
 class A : public Base {
-    int XX;
+		int XX;
 };
 class B : public Base {
-    int YY;
+		int YY;
 };
 class C : public A, public B {
-    int ZZ;
+		int ZZ;
 };
 
 int main()
 {
-    std::cout << "sizeof(Base) = " << sizeof(Base) << std::endl;  // 4
-    std::cout << "sizeof(A) = " << sizeof(A) << std::endl;        // 8
-    std::cout << "sizeof(B) = " << sizeof(B) << std::endl;        // 8  
-    std::cout << "sizeof(C) = " << sizeof(C) << std::endl;        // 20
-    return 0;
+		std::cout << "sizeof(Base) = " << sizeof(Base) << std::endl;  // 4
+		std::cout << "sizeof(A) = " << sizeof(A) << std::endl;        // 8
+		std::cout << "sizeof(B) = " << sizeof(B) << std::endl;        // 8  
+		std::cout << "sizeof(C) = " << sizeof(C) << std::endl;        // 20
+		return 0;
 }
 ```
 
@@ -276,16 +276,16 @@ int main()
 
 ```cpp
 class Base {
-    int x;
+		int x;
 };
 class A : public virtual Base {
-    int XX;
+		int XX;
 };
 class B : public virtual Base {
-    int YY;
+		int YY;
 };
 class C : public A, public B {
-    int ZZ;
+		int ZZ;
 };
 ```
 
@@ -332,34 +332,34 @@ sizeof(C)  // = 40
 
 class Base {
 public:
-    int x;
+		int x;
 };
 class A : public virtual Base {
 public:
-    int XX;
+		int XX;
 };
 class B : public virtual Base {
 public:
-    int YY;
+		int YY;
 };
 class C : public A, public B {
 public:
-    int ZZ;
+		int ZZ;
 };
 
 int main()
 {
-    auto t = new C();
-    t->x = 10;
-    t->XX = 11;
-    t->YY = 12;
-    t->ZZ =13;
-    std::cout << (*(int*)((void *)t + 8)) << std::endl;           // 11
-    std::cout << (*(int*)((void *)t + 16 + 8)) << std::endl;      // 12
-    std::cout << (*(int*)((void *)t + 16 + 8 + 4)) << std::endl;  // 13
-    std::cout << (*(int*)((void *)t + 16 + 16)) << std::endl;     // 10
-    std::cout << sizeof(C) << std::endl;                          // 40
-    return 0;
+		auto t = new C();
+		t->x = 10;
+		t->XX = 11;
+		t->YY = 12;
+		t->ZZ =13;
+		std::cout << (*(int*)((void *)t + 8)) << std::endl;           // 11
+		std::cout << (*(int*)((void *)t + 16 + 8)) << std::endl;      // 12
+		std::cout << (*(int*)((void *)t + 16 + 8 + 4)) << std::endl;  // 13
+		std::cout << (*(int*)((void *)t + 16 + 16)) << std::endl;     // 10
+		std::cout << sizeof(C) << std::endl;                          // 40
+		return 0;
 }
 ```
 
@@ -391,12 +391,12 @@ class A{
 class A {};
 
 class B : public A {
-  int X;
+	int X;
 };
 
 class C {
-  A a;
-  int X;
+	A a;
+	int X;
 };
 
 class D : public A {};
@@ -407,7 +407,7 @@ class D : public A {};
 ```
 
 - 对于 B 来说，已经存在需要占用内存的属性了，不需要再为了分配内存而给 B 的父类 A 额外添加一个 char 
-  - 简称 **空基类优化**
+	- 简称 **空基类优化**
 - 对于 C 来说，`A a` 仍然需要一个 char 类区分内存，再加上内存对齐，所以占 8 字节
 
 > 除了空基类的情况，一般来说继承和组合的方式构成的新类内存大小相同
@@ -419,24 +419,24 @@ class D : public A {};
 ```cpp
 class A {
 public:
-  void ReleaseImpl() {}
+	void ReleaseImpl() {}
 };
 
 class B : private A {
 public:
-  void Release() { ReleaseImpl(); }
+	void Release() { ReleaseImpl(); }
 
 private:
-  int x;
+	int x;
 };
 
 class C {
 public:
-  void Release() { a.ReleaseImpl(); }
-  
+	void Release() { a.ReleaseImpl(); }
+	
 private:
-  A a;
-  int x;s
+	A a;
+	int x;s
 }
 ```
 
@@ -451,28 +451,28 @@ private:
 #include <iostream>
 class A1 {
 public:
-  void ReleaseImpl() { std::cout << "A1" << std::endl; }
+	void ReleaseImpl() { std::cout << "A1" << std::endl; }
 };
 class A2 {
 public:
-  void ReleaseImpl() {std::cout << "A2" << std::endl; }
+	void ReleaseImpl() {std::cout << "A2" << std::endl; }
 };
 
 template<typename ToolBase = A1>
 class B : private ToolBase {
 public:
-  void Release() { ToolBase::ReleaseImpl(); }
+	void Release() { ToolBase::ReleaseImpl(); }
 };
 
 int main()
 {
-    auto b = B<A2>();
-    auto c = B<A1>();
-    auto d = B();
-    b.Release();
-    c.Release();
-    d.Release();
-    return 0;
+		auto b = B<A2>();
+		auto c = B<A1>();
+		auto d = B();
+		b.Release();
+		c.Release();
+		d.Release();
+		return 0;
 }
 ```
 
@@ -486,9 +486,9 @@ int main()
 #include <iostream>
 class A {
 public:
-    int X;
-    double Y;
-    virtual ~A(){}
+		int X;
+		double Y;
+		virtual ~A(){}
 };
 
 class B : public A {
@@ -496,21 +496,21 @@ class B : public A {
 
 int main()
 {
-    A* a = new A(); 
-    A* b = new B();
+		A* a = new A(); 
+		A* b = new B();
 
-    const std::type_info& t1 = typeid(*a);
-    const std::type_info& t2 = typeid(*b);
+		const std::type_info& t1 = typeid(*a);
+		const std::type_info& t2 = typeid(*b);
 
-    std::cout << t1.name() << std::endl;
-    std::cout << t2.name() << std::endl;
+		std::cout << t1.name() << std::endl;
+		std::cout << t2.name() << std::endl;
 
-    B* c = dynamic_cast<B*>(a);   // nullptr
-    B* d = dynamic_cast<B*>(b);   // success
+		B* c = dynamic_cast<B*>(a);   // nullptr
+		B* d = dynamic_cast<B*>(b);   // success
 
-    std::cout << t1 == t2 << std::endl; // false
+		std::cout << t1 == t2 << std::endl; // false
 
-    return 0;
+		return 0;
 }
 ```
 
@@ -532,30 +532,30 @@ int main()
 #include <iostream>
 class A {
 public:
-    ~A(){
-        std::cout << "~A" << std::endl;
-    }
+		~A(){
+				std::cout << "~A" << std::endl;
+		}
 };
 
 class B : public A {
 public:
-    ~B() {
-        std::cout << "~B" << std::endl;
-    }
+		~B() {
+				std::cout << "~B" << std::endl;
+		}
 };
 
 class C : public B {
 public:
-    ~C() {
-        std::cout << "~C" << std::endl;
-    }
+		~C() {
+				std::cout << "~C" << std::endl;
+		}
 };
 
 int main()
 {
-    A* b = new C();
-    delete b;
-    return 0;
+		A* b = new C();
+		delete b;
+		return 0;
 }
 ```
 
@@ -570,9 +570,77 @@ int main()
 ```cpp
 class A {
 public:
-    virtual ~A(){
-        std::cout << "~A" << std::endl;
-    }
+		virtual ~A(){
+				std::cout << "~A" << std::endl;
+		}
 };
 ```
+
+### 左值右值
+
+- 左值：命名对象、可取地址、可赋值
+	- 基本变量类型、数组、数组元素
+	- 字符串字面量 `"success"[0]` 和 `&"success"` 可以正常编过
+	- 对象变量、对象成员
+	- 函数（可取地址）
+	- 返回左值的表达式
+- 右值：无名、无法取地址、不可赋值
+	- 各种临时变量（函数返回值）、字符串临时变量
+	- 除字符串外的其他基本类型字面量
+	- lambda 表达式
+	- 运算符表达式
+
+```cpp
+
+#include <string>
+#include <iostream>
+#include <utility>
+
+using namespace std::literals;
+
+template<typename T>
+void log(T&& in)
+{
+  std::cout << "log && " << in << std::endl;
+}
+
+template<typename T>
+void log(T& in)
+{
+  std::cout << "log & " << in << std::endl;
+}
+
+void process(int&& data);       
+void process(int& data);
+
+void process(int&& data)
+{
+    std::cout << "process && " << std::endl;
+    process(data);// 记得前置声明 void process(int& data) ，这里的 data 是个左值，不前置声明找不到可以匹配的函数
+}
+
+void process(int& data)
+{
+    std::cout << "process & " << std::endl;
+}
+
+int main()
+{
+    int a = 0;
+    log(1);             // 右值
+    log(a = 30);        // 左值
+    log("123");         // 左值
+    log("456"s);        // 右值 "456"s 等于 string("456") 得到的是一个临时变量
+
+    std::cout << &"success" << std::endl;
+
+    int x = 1, y = 2;
+    process(x+y);            //
+    return 0;
+}
+```
+
+> mscv 编不过，clang 可以
+
+可以注意以下 `process` 函数，虽然 `process(x+y)` 触发的是右值，但是在函数中，`data` 其实是个左值
 
