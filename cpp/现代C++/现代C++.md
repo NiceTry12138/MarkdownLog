@@ -720,3 +720,89 @@ a2 = GetTestCls();			// 触发移动赋值，此时 a2 已经构造完毕，无�
 | 右值 |  | **可以** | 可以 | 可以 |
 | const 右值 |  | 可以 |  | 可以 |
 
+#### 转发
+
+以下面的代码为例
+
+```cpp
+#include <string>
+#include <iostream>
+#include <utility>
+
+void log(int&& x) { std::cout << "right value" << std::endl; }
+void log (int& x) { std::cout << "left value " << std::endl; }
+
+void test(int&& x) { log(x); }
+void test(int& x) { log(x); }
+
+int main()
+{
+    int x = 1;	
+    test(x);				// 输出 left value
+    test(std::move(x));		// 输出 left value
+    return 0;
+}
+```
+
+无论是传入 `test` 的是左值还是右值，最终都只会触发 `log(int&)`，因为传入的右值 `int&& x` 在函数内部被看作是左值 
+
+那么一般来说会希望，`test` 传入右值，则调用 `log(int&&)`; `test` 传入左值，则调用 `log(int&)`
+
+接下来将代码修改为下面这个样子，发现实现了我们的目标
+
+```cpp
+void log(int&& x) { std::cout << "right value" << std::endl; }
+void log(int& x) { std::cout << "left value " << std::endl; }
+
+template<typename T>
+void test(T&& in)
+{
+    log(std::forward<T>(in));
+}
+// test(x);						// 输出 left value
+// test(std::move(x));			// 输出 right value
+```
+
+这里需要引入一个概念：**引用折叠**
+
+| 引用 | | 结果 |
+| --- | --- | --- |
+| `T& &` | -> | `T&` |
+| `T& &&` | -> | `T&` |
+| `T&& &` | -> | `T&` |
+| `T&& &&` | -> | `T&&` |
+
+这里顺便给出 `vs2022` 中 `std::forward` 的实现方式
+
+```cpp
+_EXPORT_STD template <class _Ty>
+_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>& _Arg) noexcept {
+    return static_cast<_Ty&&>(_Arg);
+}
+
+_EXPORT_STD template <class _Ty>
+_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>&& _Arg) noexcept {
+    static_assert(!is_lvalue_reference_v<_Ty>, "bad forward call");
+    return static_cast<_Ty&&>(_Arg);
+}
+```
+
+这里通过模板的方式来匹配左值和右值，通过 `is_lvalue_reference_v` 可以判断模板类型是左值还是右值
+
+上述代码可以理解下面这样
+
+```cpp
+template<typename T>
+T&& forward(T&& param) {
+	if(is_lvalue_reference_v<T>::value) {
+		return param;
+	} else {
+		return std::move(param);
+	}
+}
+```
+
+不过上面的代码是运行时判断的，通过 `template` 可以实现编译时执行
+
+> 所以当遇到 `auto&& obj` 的时候，不能直接断定 `obj` 是右值
+
