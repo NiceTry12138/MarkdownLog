@@ -851,9 +851,15 @@ int main() {
     std::cout << a2.use_count() << std::endl;		// 2 
 	
 	// TestCls b;
-	// auto b1 = b.shared_from_this(); 				// 错误
+	// auto b1 = b.shared_from_this(); 				
+	// 错误 b 会被栈回收 b1 会执行 delete 
+
 	// TestCls* c = new TestCls();
-	// auto c1 = c->shared_from_this();				// 错误
+	// {
+		// auto c1 = c->shared_from_this();						
+	// }
+	// delete c;
+	// 错误 c 和 c1 的生命周期不匹配，c1 销毁后 delete 原始指针，但 c 可能仍会被使用
     return 0;
 }
 ```
