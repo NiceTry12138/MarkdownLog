@@ -1121,3 +1121,147 @@ void process5(const shared_ptr<TestCls>&);	// 比 process4 好一点，用的引
 ### 内存机制
 
 [之前写过C++的内存机制](../内存机制.md)
+
+## 泛型
+
+[之前有写过一些模板相关内容](../泛型与模板.md)
+
+### 模板的实例化
+ 
+- 模板类成员
+  - 普通成员：使用与主模板相同类型模板参数
+    - 数据成员（变量或常量）
+    - 成员函数
+    - 静态成员（数据或函数）
+    - 成员类型别名
+    - 成员类型
+  - 成员模板（使用与主模板不同的类型模板）
+    - 成员模板不能定义**虚函数**，模板实例化会导致链接器不断为虚表增加虚函数增项
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+template <typename T, size_t N = 10> // N 是默认模板参数
+class Array {
+public:
+    // 成员类型别名
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
+    using size_type = size_t;
+    using iterator = T*;           // 简化迭代器实现
+    using const_iterator = const T*;
+
+    // 静态成员
+    static constexpr size_type static_size = N;
+
+    // 构造函数
+    Array() = default;
+
+    // 成员函数
+    reference operator[](size_type pos) {
+        if (pos >= N) {
+            throw std::out_of_range("Index out of range");
+        }
+        return m_data[pos];
+    }
+
+    iterator begin() noexcept { return m_data; }
+    const_iterator cbegin() const noexcept { return m_data; }
+    iterator end() noexcept { return m_data + N; }
+    const_iterator cend() const noexcept { return m_data + N; }
+
+    size_type size() const noexcept { return N; }
+    bool empty() const noexcept { return N == 0; }
+
+    // 静态成员函数
+    static constexpr size_type max_size() noexcept {
+        return static_size;
+    }
+
+	// 错误 成员模板不可以是虚函数
+	template<typename U>
+    virtual void add() {
+        std::cout << "add " << typeid(U).name() << std::endl;
+    }
+
+private:
+    // 数据成员
+    value_type m_data[N] = {}; // 内置数组存储元素
+};
+
+// 静态成员的类外定义（可选）
+template <typename T, size_t N>
+constexpr typename Array<T, N>::size_type Array<T, N>::static_size;
+
+// 示例使用
+int main() {
+    Array<int, 5> arr;
+    // 通过迭代器访问
+    for (auto& elem : arr) {
+        elem = 5;
+    }
+    // 使用成员类型别名
+    Array<int>::value_type x = 10;
+    // 访问静态成员
+    std::cout << "Max size: " << Array<int, 5>::max_size() << std::endl;
+    try {
+        arr[6] = 10; // 抛出异常
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    return 0;
+}
+
+```
+
+![](Image/006.png)
+
+C++ 模板是一中编译时机制，在编译时生成具体的代码，使用实参将模板定义实例化为具体的类型或函数
+
+- C++支持两种模板
+  - 类模板
+  - 函数模板
+
+模板实例化时编译器会对实参类型进行检查，确保实参符合对模板参数的操作要求
+
+- C++模板参数支持两种
+  - 类型参数，可隐式约束，也可以显示约束
+  - 值参数，编译时常量，或 `constexpr` 函数。不同值参数时不同类型（不允许时值浮点数、类对象，编译器不能确定值）
+  - 可以为模板参数提供默认值
+
+```cpp
+template <typename T, size_t N = 10> // N 是默认模板参数
+class Array {}
+
+Array<int, 5> arr;
+```
+
+关于类型别名，优先使用 `using` 而不是 `typedef`，因为 `using` 支持模板，但是 `typedef` 不支持
+
+```cpp
+typedef svector = vector<string>;
+
+using svector = vector<string>;
+
+template<typename T>
+using myvector = vector<T, Allocator<T>>;
+```
+
+
+
+
+- 数据成员：只要类型被使用，编译i其就会根据其数据成员，生成对应类型结构
+- 函数成员：选择性实例化
+  - 非虚函数：如果实际调用到，则会生成代码；如果没有调用到，则不生成
+  - 虚函数：无论是否调用，总会生成代码，因为运行时很可能会用到
+
+如果某些模板方法没有被调用，即使包含编译错误，也会被忽略，这就是**隐藏编译错误**
+
+也可以使用强制实例化模板，来强制要求编译所有模板函数成员，排除所有编译错误，无论是否调用到
+
+```cpp
+template class Array<int>;
+```
