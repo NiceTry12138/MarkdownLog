@@ -806,3 +806,285 @@ T&& forward(T&& param) {
 
 > 所以当遇到 `auto&& obj` 的时候，不能直接断定 `obj` 是右值
 
+### 智能指针 和 shared_from_this
+
+```cpp
+class TestCls {
+public:
+	std::unique_ptr<TestCls> GetThis() {
+		return std::unique_ptr<TestCls>(this);
+	}
+	std::shared_ptr<TestCls> GetSharedThis() {
+		return std::shared_ptr<TestCls>(this);
+	}
+};
+
+int main() {
+	TestCls a;
+	auto a1 = TestCls.GetThis();
+	// auto a2 = TestCls.GetSharedThis();
+	return 0;
+}
+```
+
+上述代码
+
+- 如果想要使用 `unique_ptr` 包装自己，最终会 `delete` 原始指针两次，**这是不合理的**
+- 如果想要使用 `shared_ptr` 包装自己，最终会 `delete` 原始指针两次，**这是不合理的**
+
+想要实现通过自身创建智能指针的功能，只需要继承 `std::enable_shared_from_this` 即可
+
+```cpp
+
+#include <string>
+#include <iostream>
+#include <utility>
+#include <memory>
+
+class TestCls : public std::enable_shared_from_this<TestCls> {};
+
+int main() {
+    TestCls* a = new TestCls();
+    std::shared_ptr<TestCls> a1{ a };
+    auto a2 = a->shared_from_this();
+    std::cout << a1.use_count() << std::endl;		// 2
+    std::cout << a2.use_count() << std::endl;		// 2 
+	
+	// TestCls b;
+	// auto b1 = b.shared_from_this(); 				// 错误
+	// TestCls* c = new TestCls();
+	// auto c1 = c->shared_from_this();				// 错误
+    return 0;
+}
+```
+
+这里 `a1` 和 `a2` 的引用计数都是 2，说明他们指向了同一个 `shared_ptr`
+
+使用 `enable_shared_from_this` 需要满足以下几个条件
+
+1. 必须是 public 继承
+2. 不能通过栈对象使用 `share_from_this()`，上述案例 `b`
+3. 不能通过裸指针使用 `share_from_this()`，上述案例 `c`
+4. 必须通过 `shared_ptr` 来使用
+
+所以，一般使用 `enable_shared_from_this` 的类的时候，会通过静态函数来创建，尽量避免直接使用构造函数创建对象
+
+```cpp
+#include <string>
+#include <iostream>
+#include <utility>
+#include <memory>
+
+class TestCls : public std::enable_shared_from_this<TestCls> {
+public:
+    static std::shared_ptr<TestCls> Create() {
+        return std::make_shared<TestCls>();
+    }
+
+public:
+    TestCls() = default;
+};
+
+int main() {
+    auto a = TestCls::Create();
+    std::shared_ptr<TestCls> a1{ a };
+    auto a2 = a->shared_from_this();
+    std::cout << a1.use_count() << std::endl;		// 3
+    std::cout << a2.use_count() << std::endl;		// 3
+    return 0;
+}
+```
+
+---------------------------
+
+那么怎么实现的呢？
+
+在说明实现之前，需要先介绍 `weak_ptr`,
+
+weak_ptr是对对象的一种弱引用，它不会增加对象的use_count，weak_ptr和shared_ptr可以相互转化，shared_ptr可以直接赋值给weak_ptr，weak_ptr也可以通过调用lock函数来获得shared_ptr
+
+- `weak_ptr` 指针通常不单独使用，只能和 `shared_ptr` 类型指针搭配使用。将一个 `weak_ptr` 绑定到一个 `shared_ptr` 不会改变 `shared_ptr` 的引用计数。一旦最后一个指向对象的 `shared_ptr` 被销毁，对象就会被释放。即使有 `weak_ptr` 指向对象，对象也还是会被释放。
+- `weak_ptr` 并没有重载 `operator->` 和 `operator *` 操作符，因此不可直接通过 `weak_ptr` 使用对象，典型的用法是调用其 `lock` 函数来获得 `shared_ptr` 示例，进而访问原始对象。
+
+```cpp
+
+#include <string>
+#include <iostream>
+#include <utility>
+#include <memory>
+
+std::weak_ptr<int> wptr;
+
+void check() {
+    std::cout << "wptr ref count = " << wptr.use_count() << std::endl;\
+    if(!wptr.expired()) {
+        std::shared_ptr<int> sptr = wptr.lock();
+        std::cout << "value = " << *sptr << std::endl;
+    } else {
+        std::cout << "value is invalid" << std::endl;
+    }
+}
+
+int main() {
+    {
+        auto s = std::make_shared<int>(5);
+        wptr = s;
+        check();    // count = 1 value = 5
+    }
+    check();        // cout = 0 value is invalid
+    return 0;
+}
+```
+
+上面的代码，就是对 `weak_ptr` 和 `shared_ptr` 转化的基本能使用，可以发现对象 `s` 创建的时候 `wptr` 引用计数加一，对象 `s` 销毁的时候 `wptr` 引用计数减一。当对象因为引用计数归零而销毁的时候，`wptr` 的值也无效了
+
+其实在 `shared_ptr` 中提供一个通过 `weak_ptr` 初始化的函数，这也是 `wptr.lock()` 中会调用的函数
+
+```cpp
+// weak_ptr::lock
+_NODISCARD shared_ptr<_Ty> lock() const noexcept { // convert to shared_ptr
+	shared_ptr<_Ty> _Ret;
+	(void) _Ret._Construct_from_weak(*this);
+	return _Ret;
+}
+
+// shared_ptr::_Construct_from_weak
+template <class _Ty2>
+bool _Construct_from_weak(const weak_ptr<_Ty2>& _Other) noexcept {
+	// implement shared_ptr's ctor from weak_ptr, and weak_ptr::lock()
+	if (_Other._Rep && _Other._Rep->_Incref_nz()) {
+		_Ptr = _Other._Ptr;
+		_Rep = _Other._Rep;
+		return true;
+	}
+
+	return false;
+}
+```
+
+> `_Incref_nz` 执行的是**线程安全无锁**的**引用计数增加**
+
+观察 `_Construct_from_weak` 可以看到，新创建的 `shared_ptr` 和原来的 `weak_ptr` 指向同一个原始指针和引用计数指针
+
+所以在 `wptr.lock()` 的时候，其引用计数和增加，新创建的 `shared_ptr` 对象销毁的时候，引用计数减少
+
+再看 `enable_shared_from_this` 是如何实现的？
+
+```cpp
+_EXPORT_STD template <class _Ty>
+class enable_shared_from_this {
+public:
+	// 有些对外接口函数    
+	_NODISCARD shared_ptr<_Ty> shared_from_this() {
+        return shared_ptr<_Ty>(_Wptr);
+    }
+private:
+    template <class _Yty>
+    friend class shared_ptr;
+
+    mutable weak_ptr<_Ty> _Wptr;
+};
+```
+
+在 `enable_shared_from_this` 对 `shared_ptr` 是友元，同时自己存储了一个 `weak_ptr` 的对象
+
+在调用 `shared_from_this` 的时候，直接通过 `_Wptr` 的构造出一个 `shared_ptr` 出来，新对象的出事后走的就是前面介绍的 `_Construct_from_weak` 函数
+
+------------------------
+
+
+那么 `_Wptr` 对象什么时候**初始化**的呢？
+
+以前面解释的静态函数 `Create` 为例，下面贴出来关键代码的实现源码和调用过程，包括：`std::make_shared` 和 `shared_ptr::_Set_ptr_rep_and_enable_shared`
+
+```cpp
+class TestCls : public std::enable_shared_from_this<TestCls> {
+public:
+    static std::shared_ptr<TestCls> Create() {
+        return std::make_shared<TestCls>();
+    }
+}
+
+// std::make_shared
+_EXPORT_STD template <class _Ty, class... _Types>
+_NODISCARD_SMART_PTR_ALLOC
+#if _HAS_CXX20
+    enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
+#else // _HAS_CXX20
+    shared_ptr<_Ty>
+#endif // _HAS_CXX20
+    make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
+    const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
+    return _Ret;
+}
+
+// shared_ptr::_Set_ptr_rep_and_enable_shared
+template <class _Ux>
+void _Set_ptr_rep_and_enable_shared(_Ux* const _Px, _Ref_count_base* const _Rx) noexcept { // take ownership of _Px
+	this->_Ptr = _Px;
+	this->_Rep = _Rx;
+	if constexpr (conjunction_v<negation<is_array<_Ty>>, negation<is_volatile<_Ux>>, _Can_enable_shared<_Ux>>) {
+		if (_Px && _Px->_Wptr.expired()) {
+			_Px->_Wptr = shared_ptr<remove_cv_t<_Ux>>(*this, const_cast<remove_cv_t<_Ux>*>(_Px));
+		}
+	}
+}
+```
+| 模板、变量名 | 作用 |
+| --- | --- |
+| _Px, _Ptr | 原始指针  |
+| _Rx, _Rep | 引用计数  |
+| _Ux | 原始对象类型  |
+| negation | 否定的，取反 |
+| is_array<_Ty> | 数组对象 | 
+| is_volatile<_Ux> | volatile 限定类型 |
+| _Can_enable_shared<_Ux> | 类型支持启用共享（如存在 _Wptr 成员） |
+
+在调用 `TestCls::Create` 的时候，会调用 `std::make_shared`，构建出一个 `shared_ptr` 的时候，调用其 `_Set_ptr_rep_and_enable_shared` 初始化对象
+
+在 `_Set_ptr_rep_and_enable_shared` 中会通过 `_Can_enable_shared` 模板来检查对象是否支持 `enable_shared_from_this`
+
+当原始指针 `_Px` 有效，并 `_Wptr` 中没有有效值，那么就会初始化或者 `_Wptr` 对象
+
+所以，`enable_shared_from_this` 对象的构造顺序应该是这样
+
+1. 通过 `TestCls::Create` 创建第一个 `shared_ptr` 对象
+   - 得到一个 `shared_ptr` 对象
+   - 初始化 `enable_shared_from_this` 这个基类中的 `_Wptr`
+2. 后续使用时通过 `shared_from_this` 函数创建新的 `shared_ptr` 对象
+   - 此时直接通过 `_Wptr.lock()` 来构建新的 `shared_ptr`
+
+-----------------------------
+
+tip: `_Can_enable_shared` 的实现？
+
+```cpp
+_EXPORT_STD template <class _Ty>
+class enable_shared_from_this { // provide member functions that create shared_ptr to this
+public:
+    using _Esft_type = enable_shared_from_this;
+	// 一些接口函数
+private:
+	// 原始指针和引用计数
+}
+```
+
+通过定义可以知道，存在名为 `enable_shared_from_this::_Esft_type` 的类型
+
+```cpp
+template <class _Yty, class = void>
+struct _Can_enable_shared : false_type {}; // detect unambiguous and accessible inheritance from enable_shared_from_this
+
+template <class _Yty>
+struct _Can_enable_shared<_Yty, void_t<typename _Yty::_Esft_type>>
+    : is_convertible<remove_cv_t<_Yty>*, typename _Yty::_Esft_type*>::type {
+    // is_convertible is necessary to verify unambiguous inheritance
+};
+```
+
+通过 `SFINAE` 来匹配类型，如果没有 `_Yty::_Esft_type` 会匹配到上面的 `_Can_enable_shared` 类型，得到 `false_type`
+
+很明显，`enable_shared_from_this` 存在 `_Esft_type`，所以会匹配到下面的 `_Can_enable_shared` 类型
+
