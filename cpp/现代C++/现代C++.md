@@ -808,6 +808,8 @@ T&& forward(T&& param) {
 
 ### 智能指针 和 shared_from_this
 
+#### shared_from_this
+
 ```cpp
 class TestCls {
 public:
@@ -903,11 +905,13 @@ int main() {
 
 ---------------------------
 
-那么怎么实现的呢？
+#### weak_ptr
+
+那么怎么 `shared_from_this` 实现的呢？
 
 在说明实现之前，需要先介绍 `weak_ptr`,
 
-weak_ptr是对对象的一种弱引用，它不会增加对象的use_count，weak_ptr和shared_ptr可以相互转化，shared_ptr可以直接赋值给weak_ptr，weak_ptr也可以通过调用lock函数来获得shared_ptr
+`weak_ptr` 是对对象的一种弱引用，它不会增加对象的 `use_count`，`weak_ptr` 和 `shared_ptr` 可以相互转化， `shared_ptr` 可以直接赋值给 `weak_ptr`，`weak_ptr` 也可以通过调用 `lock` 函数来获得 `shared_ptr`
 
 - `weak_ptr` 指针通常不单独使用，只能和 `shared_ptr` 类型指针搭配使用。将一个 `weak_ptr` 绑定到一个 `shared_ptr` 不会改变 `shared_ptr` 的引用计数。一旦最后一个指向对象的 `shared_ptr` 被销毁，对象就会被释放。即使有 `weak_ptr` 指向对象，对象也还是会被释放。
 - `weak_ptr` 并没有重载 `operator->` 和 `operator *` 操作符，因此不可直接通过 `weak_ptr` 使用对象，典型的用法是调用其 `lock` 函数来获得 `shared_ptr` 示例，进而访问原始对象。
@@ -974,6 +978,8 @@ bool _Construct_from_weak(const weak_ptr<_Ty2>& _Other) noexcept {
 
 所以在 `wptr.lock()` 的时候，其引用计数和增加，新创建的 `shared_ptr` 对象销毁的时候，引用计数减少
 
+#### shared_from_this 的实现原理
+
 再看 `enable_shared_from_this` 是如何实现的？
 
 ```cpp
@@ -997,7 +1003,6 @@ private:
 在调用 `shared_from_this` 的时候，直接通过 `_Wptr` 的构造出一个 `shared_ptr` 出来，新对象的出事后走的就是前面介绍的 `_Construct_from_weak` 函数
 
 ------------------------
-
 
 那么 `_Wptr` 对象什么时候**初始化**的呢？
 
@@ -1094,3 +1099,25 @@ struct _Can_enable_shared<_Yty, void_t<typename _Yty::_Esft_type>>
 
 很明显，`enable_shared_from_this` 存在 `_Esft_type`，所以会匹配到下面的 `_Can_enable_shared` 类型
 
+#### 智能指针的使用
+
+在使用智能指针的时候，需要考虑**所有权**转移的问题，一些时候没必要转移所有权
+
+```cpp
+void process(const TestCls& );			// 极力推荐
+void process2(TestCls*);				// 可以使用
+
+void process3(unique_ptr<TestCls>);		// 一般不推荐，强制转移所有权
+void process4(shared_ptr<TestCls>);		// 比 unique_ptr 好一点，共享所有权
+
+void process5(const unique_ptr<TestCls>&);	// 没必要，大部分情况可以替换成 process(const TestCls&)
+void process5(const shared_ptr<TestCls>&);	// 比 process4 好一点，用的引用
+```
+
+如果功能函数中不涉及所有权传递，应该使用 `T&` 或者 `T*` 作为参数，而不是智能指针
+
+一般建议创建对象的时候使用智能指针
+
+### 内存机制
+
+[之前写过C++的内存机制](../内存机制.md)
