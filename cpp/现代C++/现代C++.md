@@ -1250,9 +1250,6 @@ template<typename T>
 using myvector = vector<T, Allocator<T>>;
 ```
 
-
-
-
 - 数据成员：只要类型被使用，编译i其就会根据其数据成员，生成对应类型结构
 - 函数成员：选择性实例化
   - 非虚函数：如果实际调用到，则会生成代码；如果没有调用到，则不生成
@@ -1265,3 +1262,109 @@ using myvector = vector<T, Allocator<T>>;
 ```cpp
 template class Array<int>;
 ```
+
+### Traits
+
+Traits 本质上是一个模板类（或者结构体），通过 **类型萃取** (Type Traits) 技术实现一些功能
+
+| 用途 | 说明 |
+| --- | --- |
+| 类型信息查询 | 检查类型特征（如是否是指针、是否有拷贝构造函数） |
+| 类型操作 | 修改类型属性（如添加 const 修饰、移除引用） |
+| 行为定制 | 根据类型特征选择不同算法（如优化 POD 类型的复制行为） |
+| 接口统一 | 为不同类型提供统一访问方式（如迭代器类型特征） |
+| 编译期条件判断 | 通过 SFINAE（替换失败不是错误）或 if constexpr 控制代码路径 |
+
+----------------------
+
+标准库常用的一些 traits 
+
+> 在 `type_traits` 文件中
+
+1. 类型特征
+
+```cpp
+// 判断类型是否具有某种特性
+bool b1 = std::is_void<void>::value;          // true
+bool b2 = std::is_integral<int>::value;       // true
+bool b3 = std::is_pointer<int*>::value;       // true
+bool b4 = std::is_reference<int&>::value;     // true
+bool b5 = std::is_const<const int>::value;    // true
+bool b6 = std::is_signed<float>::;            // true
+```
+
+> 还有很多其他
+
+2. 类型关系
+
+```cpp
+bool b1 = std::is_same<int, int>::value;          // true
+bool b2 = std::is_base_of<Base, Derived>::value;  // true (若存在继承关系)
+bool b3 = std::is_convertible<int, double>::;     // true (允许隐式转换)
+```
+
+> 还有很多其他
+
+3. 类型操作
+
+```cpp
+using T1 = std::add_const<int>::type;     // const int
+using T2 = std::remove_pointer<int*>::;   // int
+using T3 = std::add_lvalue_reference_t<int>; // int& (C++14 后缀 _t 语法)
+using T4 = std::decay_t<int[5]>;          // int* (类型退化，类似传值行为)
+```
+
+> 还有很多其他
+
+4. 复合类型检查
+
+```cpp
+bool b1 = std::is_function_v<void()>;       // true (C++17 变量模板语法)
+bool b2 = std::is_compound_v<int>;          // false (基本类型)
+bool b3 = std::is_pod_v<std::pair<int, int>>; // POD 类型检查
+```
+
+> 还有很多其他
+
+-----------------------
+
+迭代器中的 `traits` 
+
+> 位于 `iterator` 文件中
+
+```cpp
+#include <iterator>
+#include <vector>
+
+std::vector<int> vec{1,2,3};
+using IterTraits = std::iterator_traits<decltype(vec.begin())>;
+
+using ValueType = IterTraits::value_type;        // int
+using DiffType = IterTraits::difference_type;    // ptrdiff_t
+using Pointer = IterTraits::pointer;             // int*
+using Category = IterTraits::iterator_category;  // random_access_iterator_tag
+```
+
+最常见的 `traits` 是通过模板特化来实现的，为不同类型提供不同实现
+
+```cpp
+template <typename T>
+struct is_pointer { static constexpr bool value = false; };
+
+template <typename T>
+struct is_pointer<T*> { static constexpr bool value = true; };
+```
+
+那么，使用 `traits` 有哪些好处呢？
+
+- 所有判断都是在编译期完成的，零运行时开销
+- traits 的信息在编译器确定，无法运行时修改
+- 可扩展性：允许用户为自定义类型添加特化版本
+- 无副作用：仅提供信息，不修改类型本身
+
+| 传统方案 | traits 方案 |
+| --- | --- |
+| 运行时类型判断（`dynamic_cast`） | 编译期类型判断（零开销） |
+| 函数重载（代码冗余） | 单一实现 + 类型特征复用 |
+| 硬编码类型限制 | 泛化支持所有满足条件的类型 |
+| 易出错的条件检查 | 类型安全的静态断言 |
