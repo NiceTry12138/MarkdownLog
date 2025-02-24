@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "vendor/glm/glm.hpp"
+
 class Shader
 {
 private:
@@ -10,7 +12,7 @@ private:
 	std::string m_FragmentFilePath;
 	GLuint m_ShaderId;
 
-	// »º´æ uniform µÄ Location
+	// ç¼“å­˜ uniform çš„ Location
 	std::unordered_map<std::string, GLint> m_Locations;
 
 public:
@@ -22,6 +24,7 @@ public:
 
 	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
 	void SetUniform1i(const std::string& name, int v0);
+	void SetUniformMat4f(const std::string& name, const glm::mat4& inMat4);
 		
 private:
 	GLint GetUniformLocation(const std::string& name);

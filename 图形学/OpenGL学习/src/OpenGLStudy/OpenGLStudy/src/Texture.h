@@ -7,14 +7,14 @@ private:
 	GLuint m_RenderID = 0;
 	std::string m_FilePath;
 	GLubyte* m_LocalBuffer{ nullptr };
-	// BPP Bit Per Pixel ±íÊ¾Ã¿¸öÏñËØµÄÎ»Êı£¬ 24bit-color Í¨³£ÓÉÈıÍ¨µÀÑÕÉ«×é³É£»32bit-color Í¨³£ÓÉËÄÍ¨µÀÑÕÉ«×é³É
+	// BPP Bit Per Pixel è¡¨ç¤ºæ¯ä¸ªåƒç´ çš„ä½æ•°ï¼Œ 24bit-color é€šå¸¸ç”±ä¸‰é€šé“é¢œè‰²ç»„æˆï¼›32bit-color é€šå¸¸ç”±å››é€šé“é¢œè‰²ç»„æˆ
 	int m_Width = 0, m_Height = 0, m_BPP = 0;
 
 public:
 	Texture(const std::string& filePath);
 	~Texture();
 	
-	// slot ÓÃÓë°ó¶¨²å²Û
+	// slot ç”¨ä¸ç»‘å®šæ’æ§½
 	void Bind(unsigned int slot = 0) const;
 	void Unbind() const;
 

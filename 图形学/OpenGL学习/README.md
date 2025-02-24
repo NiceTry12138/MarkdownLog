@@ -621,10 +621,6 @@ float positions[] = {
 | --- | --- |
 | ![](Image/011.png) | ![](Image/012.png) |
 
-```cpp
-GLuint =
-```
-
 一般来说
 
 1. 创建索引缓冲区：首先，你需要使用 `glGenBuffers` 创建一个缓冲区对象
@@ -648,6 +644,8 @@ while (!glfwWindowShouldClose(window))
     // something else
 }
 ```
+
+`glDrawElements` 最后一个参数 `const GLvoid * indices` 表示相对于当前绑定的 `GL_ELEMENT_ARRAY_BUFFER` 的数据地址偏移
 
 ## OpenGL 的错误信息
 
@@ -1345,6 +1343,59 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 | --- | --- |
 | ![](Image/018.png) | ![](Image/019.png) |
 
-## END
+### 关于混合
 
-工作需要，后续改为 `Direct` 学习
+之前的代码，需要开启混合，否则会出现问题
+
+什么是混合？
+
+混合就是在渲染一部分或者完全**透明**的东西时，应该怎么做
+
+默认情况下， `OpenGL` 不执行任何混合，它只把目标渲染成不透明的东西
+
+混合决定了如何将输出颜色与目标缓冲区已经存在的颜色结合起来
+
+![](Image/020.png)
+
+> 图片中蓝色区域为半透明，红色为底色
+
+那么上述图片中
+
+- 蓝色是从片段着色器中输出的颜色，所以说是**输出颜色**，也称 `Source`
+- 目标缓冲区是要绘制蓝色方块的区域
+
+如何将两种颜色结合起来？
+
+`OpenGL` 提供三种方法
+
+1. 启用和禁用
+   - `glEnable` 和 `glDisable` 来启用/禁用 `GL_BLEND` 混合
+   - 默认情况下没有开启 `GL_BLEND`，也就不会混合
+2. 使用 `glBlendFunc`，用于如何将两种颜色混合在一起
+   - 接收一个 `src` 和 `dest` 的参数
+   - [glBendFunc](https://docs.gl/gl4/glBlendFunc) 中有详细介绍函数参数的作用
+   - 默认第一个参数 `sfactor` （`src factor`）取值为 `GL_ONE` 也就是全覆盖，所以上述案例中，默认情况蓝色会直接覆盖红色
+   - 默认第二个参数 `dfactor` （`desc factor`） 取值为 `GL_ZERO` 也就是完全丢失，所以上述案例中，默认情况红色被完全抛弃
+
+![](Image/021.png)
+
+默认情况下，`sfactor` 是 `GL_ONE`，`dfactor` 是 `GL_ZERO`，那么最终得到的结果就是 `src` * 1 + `dest` * 0 
+
+```cpp
+glEnable(GL_BLEND);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+```
+
+## 数学计算
+
+使用 `glm` 作为项目的数学库
+
+在游戏运行过程中，除了大部分 UI 绘制在屏幕空间之外，剩下的物体都是在世界空间下，它们具有 3D 坐标，需要将这些物体映射到 2D 的屏幕空间内
+
+这里就涉及到一个 **投影矩阵** 的计算
+
+比如，项目是一个 2D 项目，可以使用正交矩阵进行坐标转换，将 3D 坐标转换到 2D 的屏幕空间
+
+如果项目是一个 3D 项目，一般使用透视矩阵进行坐标转换，将 3D 坐标转换到 2D 的屏幕空间，这是因为 3D 游戏需要近大远小的表现效果
+
+

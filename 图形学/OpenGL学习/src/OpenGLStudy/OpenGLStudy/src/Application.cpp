@@ -12,9 +12,12 @@
 #include "Renderer.h"
 #include "Texture.h"
 
+#include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtc/matrix_transform.hpp"
+
 int main(void)
 {
-	GLFWwindow* window;
+	GLFWwindow* window = nullptr;
 
 	/* Initialize the library */
 	if (!glfwInit())
@@ -42,6 +45,9 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
+	// 设定宽高是 640, 480 比例是 4:3 
+	glm::mat4 proj = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+
 	{
 		float positions[] = {
 			-0.5f, -0.5f, 0.0f, 0.0f,
@@ -55,7 +61,7 @@ int main(void)
 			2, 3, 0
 		};
 
-		//glEnable(GL_BLEND);
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		VertexArray va;
@@ -76,6 +82,7 @@ int main(void)
 		auto shader = Shader("res/shader/Vertex.vert", "res/shader/Fragment.frag");
 		shader.Bind();
 		shader.SetUniform1i("u_Texture", 0);
+		shader.SetUniformMat4f("u_MVP", proj);
 
 		// 清除所有绑定关系
 		va.Unbind();
