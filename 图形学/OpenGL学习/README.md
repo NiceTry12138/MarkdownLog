@@ -1398,4 +1398,40 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 如果项目是一个 3D 项目，一般使用透视矩阵进行坐标转换，将 3D 坐标转换到 2D 的屏幕空间，这是因为 3D 游戏需要近大远小的表现效果
 
+```cpp
+glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+```
+
+快速定义了一个正交矩阵
+
+也就是说会默认情况下渲染 x 轴在 0~960, y 轴在 0~540 范围内的物体
+
+如果相机向右移动 300，等于所有物体向左移动 300
+
+那么转换矩阵就很简单
+
+```cpp
+glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-300, 0, 0));
+glm::mat4 mvp = proj * view;
+```
+
+如果想要物体缓慢移动起来，可以在 `while` 中实时更新相机坐标
+
+```cpp
+while (!glfwWindowShouldClose(window))
+{
+	r += increment;
+	if (r > 400.0f || r < 0.0f) {
+		increment *= -1;
+	}
+
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(r, 0, 0));
+	glm::mat4 mvp = proj * view;
+	shader.SetUniformMat4f("u_MVP", mvp);
+	
+	// do something ...
+}
+```
+
 

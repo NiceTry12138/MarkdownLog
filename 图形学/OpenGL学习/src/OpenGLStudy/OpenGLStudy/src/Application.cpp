@@ -46,14 +46,24 @@ int main(void)
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 	// 设定宽高是 640, 480 比例是 4:3 
-	glm::mat4 proj = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+	//glm::mat4 proj = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+
+	glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+	glm::mat4 mvp = proj * view;
 
 	{
+		//float positions[] = {
+		//	-0.5f, -0.5f, 0.0f, 0.0f,
+		//	 0.5f, -0.5f, 1.0f, 0.0f,
+		//	 0.5f,  0.5f, 1.0f, 1.0f,
+		//	-0.5f,  0.5f, 0.0f, 1.0f,
+		//};		
 		float positions[] = {
-			-0.5f, -0.5f, 0.0f, 0.0f,
-			 0.5f, -0.5f, 1.0f, 0.0f,
-			 0.5f,  0.5f, 1.0f, 1.0f,
-			-0.5f,  0.5f, 0.0f, 1.0f,
+			100.0f, 100.0f, 0.0f, 0.0f,
+			700.0f, 100.0f, 1.0f, 0.0f,
+			700.0f, 400.0f, 1.0f, 1.0f,
+			100.0f, 400.0f, 0.0f, 1.0f,
 		};
 
 		GLuint indeices[] = {
@@ -82,7 +92,7 @@ int main(void)
 		auto shader = Shader("res/shader/Vertex.vert", "res/shader/Fragment.frag");
 		shader.Bind();
 		shader.SetUniform1i("u_Texture", 0);
-		shader.SetUniformMat4f("u_MVP", proj);
+		shader.SetUniformMat4f("u_MVP", mvp);
 
 		// 清除所有绑定关系
 		va.Unbind();
