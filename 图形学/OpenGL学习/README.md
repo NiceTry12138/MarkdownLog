@@ -1434,4 +1434,44 @@ while (!glfwWindowShouldClose(window))
 }
 ```
 
+## 批量渲染
+
+```cpp
+void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const
+{
+	shader.Bind();
+	va.Bind();
+	ib.Bind();
+
+	GL_CALL(glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr));
+}
+```
+
+前面渲染出一个 logo 图片的地方在这里
+
+1. 绑定一个 `shader` 程序，告诉如何渲染
+2. 绑定 `VertexArray`，绑定顶点信息和布局信息
+3. 绑定 `IndexBuffer` 顶点数组，绑定渲染顺序
+
+那么如何渲染出多个 logo 图片呢？
+
+1. 提供一个新的 顶点信息和顶点数组
+2. 使用两个模型视图矩阵，渲染同一个东西，使位置有偏差
+
+由于想要渲染的是两张相同的图片，所以不需要使用第一种方式创建新的顶点数组，这样会产生数据冗余
+
+最快的方法就是直接修改 MVP 矩阵，让其映射到另一个地方去即可
+
+```cpp
+glm::mat4 translationA = glm::translate(glm::mat4(1.0f), glm::vec3(200, 100, 0));
+shader.SetUniformMat4f("u_MVP", mvp * translationA);
+render.Draw(va, ibo, shader);
+
+// 绘制第二张图片
+glm::mat4 translationB = glm::translate(glm::mat4(1.0f), glm::vec3(400, 300, 0));
+shader.SetUniformMat4f("u_MVP", mvp * translationB);
+render.Draw(va, ibo, shader);
+```
+
+> 很明显，在 `render.Draw` 中出现了重复绑定，会有点性能消耗
 

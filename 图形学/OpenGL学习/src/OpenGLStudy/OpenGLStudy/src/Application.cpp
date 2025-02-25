@@ -19,6 +19,14 @@
 #include "vendor/imgui/imgui_impl_glfw.h"
 #include "vendor/imgui/imgui_impl_opengl3.h"
 
+struct ImguiSettings
+{
+	glm::vec3 TransitaionA = glm::vec3(200, 100, 0);
+	glm::vec3 TransitaionB = glm::vec3(400, 300, 0);
+};
+
+ImguiSettings Settings;
+
 void doImguiFrame(ImGuiIO& io)
 {
 	static bool show_demo_window = true;
@@ -39,21 +47,24 @@ void doImguiFrame(ImGuiIO& io)
 		static float f = 0.0f;
 		static int counter = 0;
 
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+		ImGui::Begin("Global Settings");                          // Create a window called "Hello, world!" and append into it.
 
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		ImGui::Checkbox("Another Window", &show_another_window);
+		ImGui::SliderFloat3("Transition A", &Settings.TransitaionA.x, 0.0f, 960.0f);
+		ImGui::SliderFloat3("Transition B", &Settings.TransitaionB.x, 0.0f, 960.0f);
 
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+		//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+		//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+		//ImGui::Checkbox("Another Window", &show_another_window);
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
+		//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		//if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+		//	counter++;
+		//ImGui::SameLine();
+		//ImGui::Text("counter = %d", counter);
+
+		//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::End();
 	}
 
@@ -115,27 +126,37 @@ int main(void)
 		std::cout << "Error: glewInit Faild" << std::endl;
 	}
 
-	std::cout << glGetString(GL_VERSION) << std::endl;
+	//std::cout << glGetString(GL_VERSION) << std::endl;
 
 	// 设定宽高是 640, 480 比例是 4:3 
 	//glm::mat4 proj = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
 
 	glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+	//glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));	// 相机向左偏移 100
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 	glm::mat4 mvp = proj * view;
 
 	{
+		// 不使用MVP矩阵计算时 
 		//float positions[] = {
 		//	-0.5f, -0.5f, 0.0f, 0.0f,
 		//	 0.5f, -0.5f, 1.0f, 0.0f,
 		//	 0.5f,  0.5f, 1.0f, 1.0f,
 		//	-0.5f,  0.5f, 0.0f, 1.0f,
 		//};		
+		// 使用 MVP 矩阵计算
+		//float positions[] = {
+		//	100.0f, 100.0f, 0.0f, 0.0f,
+		//	700.0f, 100.0f, 1.0f, 0.0f,
+		//	700.0f, 400.0f, 1.0f, 1.0f,
+		//	100.0f, 400.0f, 0.0f, 1.0f,
+		//};
+		// 使用 MVP 矩阵计算 并以 （0，0） 为中心，长宽为 100
 		float positions[] = {
-			100.0f, 100.0f, 0.0f, 0.0f,
-			700.0f, 100.0f, 1.0f, 0.0f,
-			700.0f, 400.0f, 1.0f, 1.0f,
-			100.0f, 400.0f, 0.0f, 1.0f,
+			-50, -50, 0.0f, 0.0f,
+			 50, -50, 1.0f, 0.0f,
+			 50,  50, 1.0f, 1.0f,
+			-50,  50, 0.0f, 1.0f,
 		};
 
 		GLuint indeices[] = {
@@ -164,7 +185,6 @@ int main(void)
 		auto shader = Shader("res/shader/Vertex.vert", "res/shader/Fragment.frag");
 		shader.Bind();
 		shader.SetUniform1i("u_Texture", 0);
-		shader.SetUniformMat4f("u_MVP", mvp);
 
 		// 清除所有绑定关系
 		va.Unbind();
@@ -197,6 +217,13 @@ int main(void)
 			}
 
 			//GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+			glm::mat4 translationA = glm::translate(glm::mat4(1.0f), Settings.TransitaionA);
+			shader.SetUniformMat4f("u_MVP", mvp * translationA);
+			render.Draw(va, ibo, shader);
+
+			// 绘制第二张图片
+			glm::mat4 translationB = glm::translate(glm::mat4(1.0f), Settings.TransitaionB);
+			shader.SetUniformMat4f("u_MVP", mvp * translationB);
 			render.Draw(va, ibo, shader);
 
 			// Rendering
