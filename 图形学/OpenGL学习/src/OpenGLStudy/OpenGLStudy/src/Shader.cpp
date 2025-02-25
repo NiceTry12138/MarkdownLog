@@ -10,6 +10,10 @@ Shader::Shader(const std::string& vertexFile, const std::string& fragmentFile)
 	m_ShaderId = CreateShaderWithFile();
 }
 
+Shader::Shader()
+{
+}
+
 Shader::~Shader()
 {
 	glDeleteProgram(m_ShaderId);

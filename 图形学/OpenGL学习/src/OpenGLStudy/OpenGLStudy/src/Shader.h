@@ -17,6 +17,7 @@ private:
 
 public:
 	Shader(const std::string& vertexFile, const std::string& fragmentFile);
+	Shader();
 	~Shader();
 
 	void Bind() const;

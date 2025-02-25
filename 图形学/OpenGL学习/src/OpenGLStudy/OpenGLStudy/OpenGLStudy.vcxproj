@@ -152,6 +152,9 @@
     <ClCompile Include="src\VertexArray.cpp" />
     <ClCompile Include="src\VertexBufferLayout.cpp" />
     <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\test\Test.cpp" />
+    <ClCompile Include="src\test\TestClearColor.cpp" />
+    <ClCompile Include="src\test\TestRenderTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shader\Fragment.frag" />
@@ -175,6 +178,13 @@
     <ClInclude Include="src\VertexArray.h" />
     <ClInclude Include="src\VertexBufferLayout.h" />
     <ClInclude Include="src\Texture.h" />
+    <ClInclude Include="src\test\Test.h" />
+    <ClInclude Include="src\test\TestClearColor.h" />
+    <ClInclude Include="src\test\TestRenderTexture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\ChernoLogo.png" />
+    <Image Include="res\textures\HazelLogo.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

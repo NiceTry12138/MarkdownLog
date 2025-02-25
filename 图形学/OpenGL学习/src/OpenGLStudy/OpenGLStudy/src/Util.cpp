@@ -35,7 +35,7 @@ void LogError(unsigned int Line, const char* functionName) {
 			break;
 		}
 
-		__debugbreak();	// 中断函数 编译器强相关函数，gcc 没有
+		// __debugbreak();	// 中断函数 编译器强相关函数，gcc 没有
 
 		errorType = glGetError();
 	}

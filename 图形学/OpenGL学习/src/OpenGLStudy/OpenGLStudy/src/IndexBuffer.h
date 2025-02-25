@@ -9,6 +9,7 @@ private:
 
 public:
 	IndexBuffer(const GLuint* data, GLuint count);
+	IndexBuffer() = default;
 	~IndexBuffer();
 
 	void Bind() const;

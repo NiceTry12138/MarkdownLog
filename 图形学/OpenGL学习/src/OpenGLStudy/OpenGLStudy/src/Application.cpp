@@ -19,6 +19,9 @@
 #include "vendor/imgui/imgui_impl_glfw.h"
 #include "vendor/imgui/imgui_impl_opengl3.h"
 
+#include "test/TestClearColor.h"
+#include "test/TestRenderTexture.h"
+
 struct ImguiSettings
 {
 	glm::vec3 TransitaionA = glm::vec3(200, 100, 0);
@@ -80,6 +83,151 @@ void doImguiFrame(ImGuiIO& io)
 
 }
 
+void launch(GLFWwindow* window, ImGuiIO& io)
+{
+	// 设定宽高是 640, 480 比例是 4:3 
+	//glm::mat4 proj = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+
+	glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+	//glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));	// 相机向左偏移 100
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+	glm::mat4 mvp = proj * view;
+
+	// 不使用MVP矩阵计算时 
+	//float positions[] = {
+	//	-0.5f, -0.5f, 0.0f, 0.0f,
+	//	 0.5f, -0.5f, 1.0f, 0.0f,
+	//	 0.5f,  0.5f, 1.0f, 1.0f,
+	//	-0.5f,  0.5f, 0.0f, 1.0f,
+	//};		
+	// 使用 MVP 矩阵计算
+	//float positions[] = {
+	//	100.0f, 100.0f, 0.0f, 0.0f,
+	//	700.0f, 100.0f, 1.0f, 0.0f,
+	//	700.0f, 400.0f, 1.0f, 1.0f,
+	//	100.0f, 400.0f, 0.0f, 1.0f,
+	//};
+	// 使用 MVP 矩阵计算 并以 （0，0） 为中心，长宽为 100
+	float positions[] = {
+		-50, -50, 0.0f, 0.0f,
+			50, -50, 1.0f, 0.0f,
+			50,  50, 1.0f, 1.0f,
+		-50,  50, 0.0f, 1.0f,
+	};
+
+	GLuint indeices[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	VertexArray va;
+
+	VertexBuffer vb(positions, sizeof(float) * 4 * 4);
+
+	VertexBufferLayout layout;
+	layout.Push<float>(2);	// 前两个是 顶点
+	layout.Push<float>(2);	// 后两个是 UV 坐标
+
+	va.AddBuffer(vb, layout);
+
+	IndexBuffer ibo(indeices, 6);
+
+	Texture texture("res/textures/ChernoLogo.png");
+	texture.Bind(0);
+
+	auto shader = Shader("res/shader/Vertex.vert", "res/shader/Fragment.frag");
+	shader.Bind();
+	shader.SetUniform1i("u_Texture", 0);
+
+	// 清除所有绑定关系
+	va.Unbind();
+	vb.UnBind();
+	ibo.Unbind();
+	shader.Unbind();
+
+	Renderer render;
+
+	GLfloat r = 0.0f;
+	GLfloat increment = 0.05f;
+	/* Loop until the user closes the window */
+	while (!glfwWindowShouldClose(window))
+	{
+		/* Render here */
+		//glClear(GL_COLOR_BUFFER_BIT);
+		render.Clear();
+
+		doImguiFrame(io);
+
+		//render.draw 里面已经绑定过了 不用再绑定
+		//va.Bind();
+		//ibo.Bind();
+
+		r += increment;
+		//shader.Bind();
+		//shader.SetUniform4f("u_Color", r, .5f, .5f, 1.0f);
+
+		if (r > 1.0f || r < 0.0f) {
+			increment *= -1;
+		}
+
+		//GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+		glm::mat4 translationA = glm::translate(glm::mat4(1.0f), Settings.TransitaionA);
+		shader.SetUniformMat4f("u_MVP", mvp * translationA);
+		render.Draw(va, ibo, shader);
+
+		// 绘制第二张图片
+		glm::mat4 translationB = glm::translate(glm::mat4(1.0f), Settings.TransitaionB);
+		shader.SetUniformMat4f("u_MVP", mvp * translationB);
+		render.Draw(va, ibo, shader);
+
+		// Rendering
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		/* Swap front and back buffers */
+		glfwSwapBuffers(window);
+
+		/* Poll for and process events */
+		glfwPollEvents();
+	}
+}
+
+void launch2(GLFWwindow* window, ImGuiIO& io)
+{
+	//TestModule::TestClearColor TestApp;
+	TestModule::TestRenderTexture TestApp;
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	TestApp.Init();
+
+	while (!glfwWindowShouldClose(window))
+	{
+		// 设置 ImGUI 新一帧
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		TestApp.OnUpdate(0.017f);
+		TestApp.OnRender();
+
+		TestApp.OnImGuiRender();
+
+		// 绘制 ImGUI
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	TestApp.Exit();
+}
+
 int main(void)
 {
 	GLFWwindow* window = nullptr;
@@ -128,115 +276,12 @@ int main(void)
 
 	//std::cout << glGetString(GL_VERSION) << std::endl;
 
-	// 设定宽高是 640, 480 比例是 4:3 
-	//glm::mat4 proj = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+	// 添加测试模块之前的讲解案例
+	//launch(window, io);
 
-	glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-	//glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));	// 相机向左偏移 100
-	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-	glm::mat4 mvp = proj * view;
+	// 使用测试模块
+	launch2(window, io);
 
-	{
-		// 不使用MVP矩阵计算时 
-		//float positions[] = {
-		//	-0.5f, -0.5f, 0.0f, 0.0f,
-		//	 0.5f, -0.5f, 1.0f, 0.0f,
-		//	 0.5f,  0.5f, 1.0f, 1.0f,
-		//	-0.5f,  0.5f, 0.0f, 1.0f,
-		//};		
-		// 使用 MVP 矩阵计算
-		//float positions[] = {
-		//	100.0f, 100.0f, 0.0f, 0.0f,
-		//	700.0f, 100.0f, 1.0f, 0.0f,
-		//	700.0f, 400.0f, 1.0f, 1.0f,
-		//	100.0f, 400.0f, 0.0f, 1.0f,
-		//};
-		// 使用 MVP 矩阵计算 并以 （0，0） 为中心，长宽为 100
-		float positions[] = {
-			-50, -50, 0.0f, 0.0f,
-			 50, -50, 1.0f, 0.0f,
-			 50,  50, 1.0f, 1.0f,
-			-50,  50, 0.0f, 1.0f,
-		};
-
-		GLuint indeices[] = {
-			0, 1, 2,
-			2, 3, 0
-		};
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		VertexArray va;
-
-		VertexBuffer vb(positions, sizeof(float) * 4 * 4);
-
-		VertexBufferLayout layout;
-		layout.Push<float>(2);	// 前两个是 顶点
-		layout.Push<float>(2);	// 后两个是 UV 坐标
-
-		va.AddBuffer(vb, layout);
-
-		IndexBuffer ibo(indeices, 6);
-
-		Texture texture("res/textures/ChernoLogo.png");
-		texture.Bind(0);
-
-		auto shader = Shader("res/shader/Vertex.vert", "res/shader/Fragment.frag");
-		shader.Bind();
-		shader.SetUniform1i("u_Texture", 0);
-
-		// 清除所有绑定关系
-		va.Unbind();
-		vb.UnBind();
-		ibo.Unbind();
-		shader.Unbind();
-
-		Renderer render;
-
-		GLfloat r = 0.0f;
-		GLfloat increment = 0.05f;
-		/* Loop until the user closes the window */
-		while (!glfwWindowShouldClose(window))
-		{
-			/* Render here */
-			//glClear(GL_COLOR_BUFFER_BIT);
-			render.Clear();
-
-			doImguiFrame(io);
-
-			va.Bind();
-			ibo.Bind();
-
-			r += increment;
-			//shader.Bind();
-			//shader.SetUniform4f("u_Color", r, .5f, .5f, 1.0f);
-
-			if (r > 1.0f || r < 0.0f) {
-				increment *= -1;
-			}
-
-			//GL_CALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
-			glm::mat4 translationA = glm::translate(glm::mat4(1.0f), Settings.TransitaionA);
-			shader.SetUniformMat4f("u_MVP", mvp * translationA);
-			render.Draw(va, ibo, shader);
-
-			// 绘制第二张图片
-			glm::mat4 translationB = glm::translate(glm::mat4(1.0f), Settings.TransitaionB);
-			shader.SetUniformMat4f("u_MVP", mvp * translationB);
-			render.Draw(va, ibo, shader);
-
-			// Rendering
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-			/* Swap front and back buffers */
-			glfwSwapBuffers(window);
-
-			/* Poll for and process events */
-			glfwPollEvents();
-		}
-	}
 	glfwTerminate();
 	return 0;
 }

@@ -852,6 +852,22 @@ while (!glfwWindowShouldClose(window))
 
 ## 顶点数组
 
+
+| 概念 | 存储内容 | 目标绑定类型 | 核心作用 |
+| ---  | --- |	---  | --- |
+| VBO |	GPU 显存中的顶点数据 |	GL_ARRAY_BUFFER |	高效存储顶点属性数据 |
+| VAO |	VBO 的配置状态（元数据） |	GL_VERTEX_ARRAY	| 管理 VBO 和顶点属性指针的关联关系 |
+| EBO |	GPU 显存中的索引数据 |	GL_ELEMENT_ARRAY_BUFFER |	优化索引绘制（减少顶点重复） |
+
+```
+VAO（配置管理器）
+├── 记录绑定的 VBO（`GL_ARRAY_BUFFER`）
+│   └── 存储顶点属性数据（位置、颜色等）
+├── 记录顶点属性指针（`glVertexAttribPointer`）
+└── 记录绑定的 EBO（`GL_ELEMENT_ARRAY_BUFFER`）
+    └── 存储索引数据（用于 `glDrawElements`）
+```
+
 **顶点缓冲**（`Vertex Buffer Objects`, VBOs）和**顶点数组**（`Vertex Array Objects`, VAOs）是用于高效管理和渲染顶点数据的关键技术。它们通常一起使用以优化图形渲染流程，但它们的功能和角色是不同的
 
 > 后面大多数情况会用 `VAO` 表示**顶点数组对象，**用 `VBO` 表示**顶点缓冲对象**
@@ -875,6 +891,8 @@ while (!glfwWindowShouldClose(window))
 - 数据如何从这个VBO中获取（例如，跳过起始的多少字节、每个顶点数据的步长是多少）
 - 数据的类型（例如，GL_FLOAT）
 - 数据应如何被顶点着色器接收（例如，位置数据应该链接到顶点着色器中的哪个属性）
+
+
 
 之前的流程是，绑定顶点缓冲区，设置布局，绑定索引缓冲区。现在是，绑定顶点数组，绑定索引缓冲区
 
@@ -924,6 +942,62 @@ glBindVertexArray(vao);
 也可以选择为每个几何图形创建一个 `VAO` 分别绑定不同的顶点数据
 
 如果需要注重开发效率，那么建议每个图元一个 `VAO`；如果每一字节的显存都需要非常小心使用，那么建议全局一个 `VAO`
+
+通常的工作流程是
+
+1. 创建并绑定 `VAO`
+
+```cpp
+glGenVertexArrays(1, &vao);
+glBindVertexArray(vao);
+```
+
+2. 创建并绑定 `VBO`，上传数据
+
+```cpp
+glGenBuffers(1, &vbo);
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+```
+
+3. 设置顶点属性指针
+
+```cpp
+// 位置属性（假设每个顶点有3个float）
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+
+// 颜色属性（偏移3个float）
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+glEnableVertexAttribArray(1);
+```
+
+4. 创建并绑定 `EBO`
+
+```cpp
+glGenBuffers(1, &ebo);
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+```
+
+5. 解绑 `VAO`
+
+```cpp
+glBindVertexArray(0);
+```
+
+6. 绘制时
+
+```cpp
+glBindVertexArray(vao);
+glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+```
+
+一个 `VAO` 可以关联多个 `VBO`，比如一个 `VBO` 存位置，另一个存颜色
+
+`EBO` 的绑定要在 `VAO` 绑定时操作，因为 `EBO` 的绑定会被 `VAO` 记录，`GL_ELEMENT_ARRAY_BUFFER` 是 VAO 的一部分
+
+
 
 ## 简单封装抽象类
 
@@ -1475,3 +1549,81 @@ render.Draw(va, ibo, shader);
 
 > 很明显，在 `render.Draw` 中出现了重复绑定，会有点性能消耗
 
+为了减少 `Draw` 调用的次数，常用的方法还是把所有的贴图对象都塞到一个顶点缓冲区中，然后一次性渲染所有的东西
+
+### 添加测试模块
+
+为了方便测试，将代码抽离到测试模块中，方便不同功能测试
+
+将测试分成几个声明周期
+
+- Init	模块初始化
+- Exit	模块退出
+- OnUpdate	每帧更新计算逻辑
+- OnRender	每帧更新渲染逻辑
+- OnImGuiRender	每帧更新 UI 逻辑
+
+```cpp
+class Test
+{
+public:
+	Test() = default;
+	virtual ~Test() = default;
+	
+	virtual void Init() {};
+	virtual void Exit() {};
+
+	virtual void OnUpdate(float deltaTIme) {};
+	virtual void OnRender() {};
+	virtual void OnImGuiRender() {};
+};
+```
+
+未来所有的测试案例都只用继承 Test 新建一个基类即可，然后将测试代码根据生命周期封装到函数中即可
+
+```cpp
+class TestClearColor : public Test
+{
+public:
+	virtual void OnUpdate(float deltaTIme);
+	virtual void OnRender();
+	virtual void OnImGuiRender();
+
+private:
+	float m_ClearColor[4] = { 0.2f, 0.3f, 0.8f, 1.0f };
+};
+```
+
+在 `TestClearColor` 类中可以定义会用到的数据，而不需要跟之前一样定义到全局作用域中
+
+最后封装以下 `launch2` 函数，接下来只要修改 `Test::TestClearColor TestModule` 创建对象的类型，其他代码不用修改
+
+```cpp
+void launch2(GLFWwindow* window, ImGuiIO& io, glm::mat4& mvp)
+{
+	Test::TestClearColor TestModule;
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	while (!glfwWindowShouldClose(window))
+	{
+		// 设置 ImGUI 新一帧
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		TestModule.OnUpdate(0.017f);
+		TestModule.OnRender();
+
+		TestModule.OnImGuiRender();
+
+		// 绘制 ImGUI
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+}
+```
