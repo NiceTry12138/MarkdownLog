@@ -4,10 +4,7 @@
 
 Shader::Shader(const std::string& vertexFile, const std::string& fragmentFile)
 {
-	m_VertexFilePath = vertexFile;
-	m_FragmentFilePath = fragmentFile;
-
-	m_ShaderId = CreateShaderWithFile();
+	Init(vertexFile, fragmentFile);
 }
 
 Shader::Shader()
@@ -17,6 +14,14 @@ Shader::Shader()
 Shader::~Shader()
 {
 	glDeleteProgram(m_ShaderId);
+}
+
+void Shader::Init(const std::string& vertexFile, const std::string& fragmentFile)
+{
+	m_VertexFilePath = vertexFile;
+	m_FragmentFilePath = fragmentFile;
+
+	m_ShaderId = CreateShaderWithFile();
 }
 
 void Shader::Bind() const
@@ -44,7 +49,7 @@ void Shader::SetUniform1i(const std::string& name, int v0)
 void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& inMat4)
 {
 	GLint location = GetUniformLocation(name);
-	GL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &inMat4[0][0]));
+	glUniformMatrix4fv(location, 1, GL_FALSE, &inMat4[0][0]);
 }
 
 GLint Shader::GetUniformLocation(const std::string& name)

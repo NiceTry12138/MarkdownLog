@@ -20,6 +20,8 @@ public:
 	Shader();
 	~Shader();
 
+	void Init(const std::string& vertexFile, const std::string& fragmentFile);
+
 	void Bind() const;
 	void Unbind() const;
 

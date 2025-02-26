@@ -2,10 +2,10 @@
 #include "Test.h"
 
 namespace TestModule {
-    class TestRenderTexture : public Test
+    class TestTwoBlock : public Test
     {
     public:
-        virtual ~TestRenderTexture();
+        virtual ~TestTwoBlock();
 
         virtual void Init() override;
         virtual void Exit() override;
@@ -15,9 +15,8 @@ namespace TestModule {
         virtual void OnImGuiRender() override;
 
     private:
-        glm::vec3 m_TransitaionA = glm::vec3(200, 100, 0);
-        glm::vec3 m_TransitaionB = glm::vec3(400, 300, 0);
-        
+        glm::vec3 m_CameraTransition = glm::vec3(200, 100, 0);
+
         VertexArray* m_va{ nullptr };
         IndexBuffer* m_ibo{ nullptr };
         VertexBuffer* m_vb{ nullptr };
@@ -27,3 +26,5 @@ namespace TestModule {
         Renderer m_render;
     };
 };
+
+

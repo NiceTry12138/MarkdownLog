@@ -11,9 +11,12 @@ private:
 	int m_Width = 0, m_Height = 0, m_BPP = 0;
 
 public:
+	Texture() = default;
 	Texture(const std::string& filePath);
 	~Texture();
 	
+	void Init(const std::string& filePath);
+
 	// slot 用与绑定插槽
 	void Bind(unsigned int slot = 0) const;
 	void Unbind() const;

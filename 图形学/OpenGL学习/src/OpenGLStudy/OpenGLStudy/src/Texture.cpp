@@ -4,8 +4,22 @@
 
 Texture::Texture(const std::string& filePath)
 {
+	Init(filePath);
+}
+
+Texture::~Texture()
+{
+	if (m_LocalBuffer != nullptr) {
+		stbi_image_free(m_LocalBuffer);
+	}
+
+	GL_CALL(glDeleteTextures(1, &m_RenderID));
+}
+
+void Texture::Init(const std::string& filePath)
+{
 	m_FilePath = filePath;
-	
+
 	stbi_set_flip_vertically_on_load(1);
 	m_LocalBuffer = stbi_load(filePath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 
@@ -27,15 +41,6 @@ Texture::Texture(const std::string& filePath)
 		stbi_image_free(m_LocalBuffer);
 		m_LocalBuffer = nullptr;
 	}
-}
-
-Texture::~Texture()
-{
-	if (m_LocalBuffer != nullptr) {
-		stbi_image_free(m_LocalBuffer);
-	}
-
-	GL_CALL(glDeleteTextures(1, &m_RenderID));
 }
 
 void Texture::Bind(unsigned int slot) const

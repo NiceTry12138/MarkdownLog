@@ -75,6 +75,12 @@
     <ClCompile Include="src\test\TestRenderTexture.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\test\TestTwoBlock.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test\TestDynamicDraw.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shader\Vertex.vert">
@@ -83,6 +89,8 @@
     <None Include="res\shader\Fragment.frag">
       <Filter>src</Filter>
     </None>
+    <None Include="res\shader\Fragment2.frag" />
+    <None Include="res\shader\Vertex2.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -143,6 +151,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\test\TestRenderTexture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\test\TestTwoBlock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\test\TestDynamicDraw.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

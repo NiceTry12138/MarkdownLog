@@ -21,6 +21,8 @@
 
 #include "test/TestClearColor.h"
 #include "test/TestRenderTexture.h"
+#include "test/TestTwoBlock.h"
+#include "test/TestDynamicDraw.h"
 
 struct ImguiSettings
 {
@@ -198,7 +200,9 @@ void launch(GLFWwindow* window, ImGuiIO& io)
 void launch2(GLFWwindow* window, ImGuiIO& io)
 {
 	//TestModule::TestClearColor TestApp;
-	TestModule::TestRenderTexture TestApp;
+	//TestModule::TestRenderTexture TestApp;
+	//TestModule::TestTwoBlock TestApp;
+	TestModule::TestDynamicDraw TestApp;
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

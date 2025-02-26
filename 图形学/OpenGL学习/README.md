@@ -1508,50 +1508,7 @@ while (!glfwWindowShouldClose(window))
 }
 ```
 
-## 批量渲染
-
-```cpp
-void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const
-{
-	shader.Bind();
-	va.Bind();
-	ib.Bind();
-
-	GL_CALL(glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr));
-}
-```
-
-前面渲染出一个 logo 图片的地方在这里
-
-1. 绑定一个 `shader` 程序，告诉如何渲染
-2. 绑定 `VertexArray`，绑定顶点信息和布局信息
-3. 绑定 `IndexBuffer` 顶点数组，绑定渲染顺序
-
-那么如何渲染出多个 logo 图片呢？
-
-1. 提供一个新的 顶点信息和顶点数组
-2. 使用两个模型视图矩阵，渲染同一个东西，使位置有偏差
-
-由于想要渲染的是两张相同的图片，所以不需要使用第一种方式创建新的顶点数组，这样会产生数据冗余
-
-最快的方法就是直接修改 MVP 矩阵，让其映射到另一个地方去即可
-
-```cpp
-glm::mat4 translationA = glm::translate(glm::mat4(1.0f), glm::vec3(200, 100, 0));
-shader.SetUniformMat4f("u_MVP", mvp * translationA);
-render.Draw(va, ibo, shader);
-
-// 绘制第二张图片
-glm::mat4 translationB = glm::translate(glm::mat4(1.0f), glm::vec3(400, 300, 0));
-shader.SetUniformMat4f("u_MVP", mvp * translationB);
-render.Draw(va, ibo, shader);
-```
-
-> 很明显，在 `render.Draw` 中出现了重复绑定，会有点性能消耗
-
-为了减少 `Draw` 调用的次数，常用的方法还是把所有的贴图对象都塞到一个顶点缓冲区中，然后一次性渲染所有的东西
-
-### 添加测试模块
+## 添加测试模块
 
 为了方便测试，将代码抽离到测试模块中，方便不同功能测试
 
@@ -1605,7 +1562,7 @@ void launch2(GLFWwindow* window, ImGuiIO& io, glm::mat4& mvp)
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	TestModule.Init();
 	while (!glfwWindowShouldClose(window))
 	{
 		// 设置 ImGUI 新一帧
@@ -1625,5 +1582,205 @@ void launch2(GLFWwindow* window, ImGuiIO& io, glm::mat4& mvp)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+	TestModule.Exit();
 }
 ```
+
+## 批量渲染
+
+```cpp
+void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const
+{
+	shader.Bind();
+	va.Bind();
+	ib.Bind();
+
+	GL_CALL(glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr));
+}
+```
+
+前面渲染出一个 logo 图片的地方在这里
+
+1. 绑定一个 `shader` 程序，告诉如何渲染
+2. 绑定 `VertexArray`，绑定顶点信息和布局信息
+3. 绑定 `IndexBuffer` 顶点数组，绑定渲染顺序
+
+那么如何渲染出多个 logo 图片呢？
+
+1. 提供一个新的 顶点信息和顶点数组
+2. 使用两个模型视图矩阵，渲染同一个东西，使位置有偏差
+
+由于想要渲染的是两张相同的图片，所以不需要使用第一种方式创建新的顶点数组，这样会产生数据冗余
+
+最快的方法就是直接修改 MVP 矩阵，让其映射到另一个地方去即可
+
+```cpp
+glm::mat4 translationA = glm::translate(glm::mat4(1.0f), glm::vec3(200, 100, 0));
+shader.SetUniformMat4f("u_MVP", mvp * translationA);
+render.Draw(va, ibo, shader);
+
+// 绘制第二张图片
+glm::mat4 translationB = glm::translate(glm::mat4(1.0f), glm::vec3(400, 300, 0));
+shader.SetUniformMat4f("u_MVP", mvp * translationB);
+render.Draw(va, ibo, shader);
+```
+
+> 很明显，在 `render.Draw` 中出现了重复绑定，会有点性能消耗
+
+为了减少 `Draw` 调用的次数，常用的方法还是把所有的贴图对象都塞到一个顶点缓冲区中，然后一次性渲染所有的东西
+
+![](Image/022.jpg)
+
+以冒险岛游戏为例，该游戏出现了数量众多的贴图，如果将每个贴图渲染为带有纹理的独立四边形，在数量超过一定量级之后就会出现性能问
+
+如果将一个一个贴图作为单独的 DrawCall 绘制，GPU 会跟不上，当拉远相机瞬间绘制目标变多的时候，会突然掉帧
+
+另一个例子是 **粒子系统**，通常复杂的例子系统比如**烟雾**的例子数量都是成千上万的，对这种数量级的粒子仍然一个一个单独绘制的话，性能损耗极大
+
+前面介绍过通过两次渲染的方式来绘制两个图片，除了这种方法之外，还可以通过将将两个矩形 8 个顶点和 6*2 个顶点索引关联到同一个 VAO 上，然后通过这个 VAO 一次性渲染
+
+```cpp
+float positions[] = {
+	-50, -50, 0.0f, 0.0f,
+	 50, -50, 1.0f, 0.0f,
+	 50,  50, 1.0f, 1.0f,
+	-50,  50, 0.0f, 1.0f,
+
+	150, 150, 0.0f, 0.0f,
+	250, 150, 1.0f, 0.0f,
+	250, 250, 1.0f, 1.0f,
+	150, 250, 0.0f, 1.0f,
+};
+
+GLuint indeices[] = {
+	0, 1, 2,
+	2, 3, 0,
+
+	4, 5, 6,
+	6, 7, 4,
+};
+
+m_va = new VertexArray();
+
+m_vb = new VertexBuffer(positions, sizeof(float) * 4 * 8);
+
+VertexBufferLayout layout;
+layout.Push<float>(2);	// 前两个是 顶点
+layout.Push<float>(2);	// 后两个是 UV 坐标
+
+m_va->AddBuffer(*m_vb, layout);
+
+m_ibo = new IndexBuffer(indeices, 12);
+```
+
+直接在 `positions` 中把两个方形的 8 个顶点信息存储，在 `indeices` 中将四个三角形的关系填入
+
+那么最后就可以一次性绘制两个方形
+
+如何设置两个方形使用不同的纹理呢？
+
+类似纹理映射时设置 `-50, -50, 0.0f, 0.0f` 前两个表示世界坐标、后面两个表示纹理坐标一样，我们将一些信息存储在顶点中
+
+GPU 支持多个贴图槽，意味着可以同时将多个贴图保存到槽中，再通过定点中的信息来决定从哪个槽中获取贴图
+
+所以，我们将数据修改为 `-50, -50, 0.0f, 0.0f, 1.0f`，最后加了一个 `1.0f` 用于表示从插槽 1 中获取贴图
+
+```cpp
+m_Shader = Shader("res/shader/Vertex.vert", "res/shader/Fragment.frag");
+glUseProgram(m_SHader->GetRendererID());
+auto loc = glGetUniformLocation(m_Shader->GetRendererID(), "u_Textures");
+// 设置接收 插槽为 0 和 1 的贴图
+int smaplers[2] = {0, 1};
+glUniform1iv(loc, 2, samplers);
+```
+
+在着色器中可以通过 `u_Textures` 属性来接收 0 和 1 插槽的贴图，在顶点中添加了索引序号，配合使用就能得到目标贴图
+
+```glsl
+#version 450 core
+layout (location = 0) out vec4 o_Color;
+
+in float v_TexIndex;
+in vec2 v_TexCoord;
+uniform sampler2D u_Textures[2];
+
+void main()
+{
+	int index = int(v_TexIndex);
+	o_Color = texture(u_Textures[index], v_TexCoord);
+}
+```
+
+解决了多贴图的问题，那么如果每帧方形对象的坐标都不相同，应该怎么办呢？
+
+这个情况是很常见的，在游戏中虽然存在大量不会移动的静态物体，同时也存在很多会移动的物体，它们的坐标会每帧发生变化
+
+其实实现起来也很简单，就是将 **顶点缓冲区** 设置为 **动态的**
+
+```cpp
+VertexBuffer::VertexBuffer(const void* data, GLuint size)
+{
+	glGenBuffers(1, &m_RendererID);
+	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+}
+```
+
+注意 `glBufferData` 函数最后的参数 `GL_STATIC_DRAW` 标记了这块数据是静态的、不会更改的
+
+| 宏定义 | 数据更新频率 | 用途方向 | 典型应用场景 | 优化建议 |
+| --- | --- | --- | --- | --- | 
+| GL_STREAM_DRAW | 高频修改（每帧） | CPU → GPU（应用→显存） | 动态顶点数据（如粒子系统、动画） | 适合数据频繁更新且仅用于绘制 | 
+| GL_STREAM_READ | 高频读取 | 	GPU → CPU（显存→应用） | 实时读取渲染结果（如截图、后处理分析） | 较少使用，可能引发性能瓶颈 | 
+| GL_STREAM_COPY | 高频复制	 | GPU ↔ GPU（显存→显存） | GPU 内部频繁复制的中间数据（如计算着色器） | 适用于计算管线中的数据中转 | 
+| GL_STATIC_DRAW | 几乎不修改 | CPU → GPU（应用→显存） | 静态模型数据（地形、建筑） | 数据上传后长期不变，优先分配显存 | 
+| GL_STATIC_READ | 几乎不修改 | GPU → CPU（显存→应用） | 预计算的静态数据回读（如烘焙光照数据） | 极少使用，通常避免 CPU 读取显存 | 
+| GL_STATIC_COPY | 几乎不修改 | GPU ↔ GPU（显存→显存） | 静态 GPU 内部数据副本（如预生成的纹理数据） | 长期驻留显存的副本数据 | 
+| GL_DYNAMIC_DRAW | 中频修改 | CPU → GPU（应用→显存） | 动态但复用的数据（如 UI 顶点、骨骼动画） | 数据可能部分更新（glBufferSubData） | 
+| GL_DYNAMIC_READ | 中频读取 | GPU → CPU（显存→应用） | 周期性读取 GPU 数据（如物理引擎反馈） | 需谨慎使用，避免频繁同步 | 
+| GL_DYNAMIC_COPY | 中频复制 | GPU ↔ GPU（显存→显存） | 动态 GPU 内部数据交换（如帧缓冲切换） | 适用于频繁但轻量的显存操作 | 
+
+- 定义的**前缀**决定了**更新频率**
+  - `STREAM`: 高频更新/访问，用完即弃（粒子位置）
+  - `STATIC`: 初始化后基本不变，长期复用（静态模型）
+  - `DYNAMIC`: 周期性修改/访问，会多次使用
+- 定义的**后缀**决定了**数据流向**
+  - `DRAW`: CPU -> GPU（如顶点/索引缓冲区）
+  - `READ`： GPU -> CPU（如像素缓冲区）
+  - `COPY` 数据在 GPU 内部复制（如着色器输出到渲染管线输入）
+
+```cpp
+// 定义顶点信息数组
+struct Vertex {
+	float Position[3];
+	float Color[4];
+	float TexCoord[2];
+	float TextureIndex;
+};
+
+// 绑定数据
+glCreateBuffers(1, &m_VBO);
+glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 1000, nullptr, GL_DYNAMIC_DRAW);	// 预先申请好 1000 个 Vertex 的内存地址 虽然可能用不到
+```
+
+注意这里 `glBufferData` 函数，并没有指定 `data` 而是设置为 `nullptr`，这是为了在以后设置
+
+```cpp
+void OnUpdate()
+{
+	const int BlueCount = 4;
+	for (int i = 0; i < BlueCount; i++)
+	{
+		m_Vertexs[i] = m_OriginVertexs[i];
+		m_Vertexs[i].Position[0] += m_BlueTransition.x;
+		m_Vertexs[i].Position[1] += m_BlueTransition.y;
+	}
+	// 设置动态缓冲区
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(m_Vertexs), m_Vertexs);
+}
+```
+
+在每帧计算的时候，让 `imgui` 设置 `m_BlueTransition` 的 x、y，然后每帧更新 `m_Vertexs` 的数据，最后通过 `glBufferSubData` 来绑定数据到 `GL_ARRAY_BUFFER` 上
+
