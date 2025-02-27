@@ -101,6 +101,7 @@ int main()
         ProcessInput(window);       // 检查按键触发
 
         // 清空屏幕颜色 防止上一帧的内容影响这一帧的内容
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         TestRenderImGUI(window);
