@@ -152,3 +152,72 @@ while (!glfwWindowShouldClose(window))
 }
 ```
 
+## 渲染流水线
+
+> https://learnopengl-cn.github.io/01%20Getting%20started/04%20Hello%20Triangle/#_3
+
+![](Image/022.png)
+
+### 顶点着色器
+
+顶点着色器的核心作用之一是将顶点的 3D 坐标 转换为另一种 3D 坐标（通常是 **裁剪空间坐标**）。这个过程涉及多个坐标系的变换：
+
+- 模型空间（Local Space）：顶点在原始模型中的坐标（例如一个立方体的顶点坐标可能是 (-0.5, -0.5, 0.0)）。
+- 世界空间（World Space）：通过模型矩阵（Model Matrix）将顶点坐标变换到场景中的全局位置（例如将立方体放置在 (x, y, z) 处）。
+- 观察空间（View Space）：通过视图矩阵（View Matrix）将顶点坐标变换到摄像机视角下的坐标系。
+- 裁剪空间（Clip Space）：通过投影矩阵（Projection Matrix）将顶点坐标变换到一个规范化空间（范围 [-1, 1]^3），超出范围的顶点会被裁剪掉。
+
+![](Image/023.png)
+
+裁剪剪切体块之外的顶点后，剩余顶点的位置将标准化为称为 NDC（**标准化设备坐标**）的通用坐标系。
+
+标准化设备坐标是一个x、y和z值在-1.0到1.0的一小段空间。任何落在范围外的坐标都会被丢弃/裁剪，不会显示在你的屏幕上
+
+![](Image/024.png)
+
+通过使用由 `glViewport` 函数提供的数据，进行视口变换(`Viewport Transform`)，**标准化设备坐标**(`Normalized Device Coordinates`)会变换为**屏幕空间坐标**(`Screen-space Coordinates`)。所得的屏幕空间坐标又会被变换为片段输入到**片段着色器**中
+
+顶点着色器除了处理位置坐标之外，还能对顶点的其他属性进行初步计算，比如
+
+- 颜色：为顶点赋予颜色
+- 纹理坐标：传递或动态生成纹理坐标（UV）
+- 法线：对法线进行变化
+- 自定义属性：如顶点动画中的位移
+
+顶点着色器只能处理单个顶点的数据，无法直接访问其他顶点的信息
+
+顶点着色器必须输出 `gl_Position` 裁剪空间坐标，其他属性通过 `out` 传递到后续阶段
+
+顶点着色器代码大致如下
+
+```glsl
+#version 450 core
+
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec4 inColor;
+layout(location = 2) in vec2 texCoord;
+layout(location = 3) in float texIndex;
+
+uniform mat4 u_MVP;
+
+out vec2 v_TexCoord;
+out vec4 v_Color;
+out float v_TexIndex;
+
+void main() {
+	gl_Position = u_MVP * vec4(position, 1.0);
+	v_TexCoord = texCoord;
+	v_TexIndex = int(texIndex);
+	v_Color = inColor;
+}
+```
+
+### 传入顶点数据
+
+在 [OpenGLStudy](./README.md) 中有详细解释过 VertexArray、VertexBuffer、IndexBuffer，以及如何将数据传递给 OpenGL 以及顶点着色器
+
+### 封装 Shader
+
+[封装Shader](https://learnopengl-cn.github.io/01%20Getting%20started/05%20Shaders/#_6)
+
+
