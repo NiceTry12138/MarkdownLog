@@ -1,7 +1,11 @@
 #pragma once
 #include "TestBase.h"
+#include "../Util/CommonData.h"
 
-class TestClearColor : public TestBase
+#include "../Util/Shader.h"
+#include "../Util/Texture.h"
+
+class TestPosition : public TestBase
 {
 public:
 	virtual void OnEnter(GLFWwindow* window) override;
@@ -13,9 +17,14 @@ public:
 	virtual void UpdateImGUI(GLFWwindow* window) override;
 
 private:
-	float m_ClearColor[3] = { 0.0f, 0.0f ,0.0f };
-	bool m_UseImGUI = true;
+	GLuint m_VBO;
+	GLuint m_VAO;
+	GLuint m_IB;
 
-	bool m_IsAdd = true;
+	Shader m_Shader;
+	Texture m_Tex1;
+	Texture m_Tex2;
+
+	std::vector<Vertex_v0> m_vertexs;
 };
 

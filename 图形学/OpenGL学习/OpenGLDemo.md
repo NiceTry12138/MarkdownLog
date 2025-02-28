@@ -356,6 +356,103 @@ glBindTexture(GL_TEXTURE_2D, texture);
 
 > `GL_TEXTURE8` 等价于 `GL_TEXTURE0 + 8`
 
+#### 封装类
+
+为了方便贴图的使用，封装了下面这样一个简单的 texture 类
+
+```cpp
+#include "Texture.h"
+#include "stb_image.h"
+
+Texture::~Texture()
+{
+	DeleteTexture();
+}
+
+void Texture::Init(const std::string& filePath)
+{
+	if (m_FilePath == filePath) {
+		return;
+	}
+
+	DeleteTexture();
+	m_FilePath = filePath;
+
+	stbi_set_flip_vertically_on_load(1);
+	m_LocalBuffer = stbi_load(filePath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
+
+	GL_CALL(glGenTextures(1, & m_TextureId));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_TextureId));
+
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));		// 指定缩小器
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));		// 指定放大器
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));	// 设置贴图超过 0~1 之后的读取方式
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));	// 
+
+	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
+
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));		// 解绑
+
+	if (m_LocalBuffer) {
+		stbi_image_free(m_LocalBuffer);
+		m_LocalBuffer = nullptr;
+	}
+}
+
+void Texture::Bind(GLuint slot)
+{
+	GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_TextureId));
+}
+
+void Texture::UnBind()
+{
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
+}
+
+int Texture::GetHeight()
+{
+	return m_Height;
+}
+
+int Texture::GetWidth()
+{
+	return m_Width;
+}
+
+void Texture::DeleteTexture()
+{
+	stbi_image_free(m_LocalBuffer);
+	m_LocalBuffer = nullptr;
+
+	GL_CALL(glDeleteTextures(1, &m_TextureId));
+	m_TextureId = GL_ZERO;
+}
+
+这个类存在一个问题，下面这段代码在运行时会出现问题
+
+```cpp
+m_Tex1.Init("res/textures/test2.png");
+m_Tex1.Bind(0);
+m_Tex2.Init("res/textures/test3.png");
+m_Tex2.Bind(1);
+```
+
+1. `m_Tex1.Bind(0)` 激活了 `GL_TEXTURE0` 槽位并绑定了贴图
+2. 因为当前激活了 `GL_TEXTURE0`，所以`m_Tex2.Init` 仍然在 `GL_TEXTURE0` 槽位上进行
+3. `m_Tex2.Init` 最后 `glBindTexture(GL_TEXTURE_2D, 0)` 解绑了 `GL_TEXTURE0` 上的贴图
+
+那么，最后 `m_Tex1` 这个贴图就是绑定失败的，它被 `m_Tex2` 给无意间释放掉了
+
+所以，`Texture` 建议下面这样操作，一起初始化，一起绑定
+
+```cpp
+m_Tex1.Init("res/textures/test2.png");
+m_Tex2.Init("res/textures/test3.png");
+m_Tex1.Bind(0);
+m_Tex2.Bind(1);
+```
+
 ## 坐标系统
 
 

@@ -133,6 +133,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Util\CommonHead.cpp" />
+    <ClCompile Include="src\Util\Shader.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\third\imgui\imgui.cpp" />
@@ -145,8 +147,12 @@
     <ClCompile Include="src\third\stb_image\stb_image.cpp" />
     <ClCompile Include="src\testModule\TestBase.cpp" />
     <ClCompile Include="src\testModule\TestClearColor.cpp" />
+    <ClCompile Include="src\testModule\TestPosition.cpp" />
+    <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Util\CommonData.h" />
+    <ClInclude Include="src\Util\Shader.h" />
     <ClInclude Include="src\third\imgui\imconfig.h" />
     <ClInclude Include="src\third\imgui\imgui.h" />
     <ClInclude Include="src\third\imgui\imgui_impl_glfw.h" />
@@ -159,6 +165,18 @@
     <ClInclude Include="src\third\stb_image\stb_image.h" />
     <ClInclude Include="src\testModule\TestBase.h" />
     <ClInclude Include="src\testModule\TestClearColor.h" />
+    <ClInclude Include="src\testModule\TestPosition.h" />
+    <ClInclude Include="src\Util\Texture.h" />
+    <ClInclude Include="src\Util\CommonHead.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shader\TextPosition\Fragment.frag" />
+    <None Include="res\shader\TextPosition\Vertex.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\test.jpg" />
+    <Image Include="res\textures\test2.png" />
+    <Image Include="res\textures\test3.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

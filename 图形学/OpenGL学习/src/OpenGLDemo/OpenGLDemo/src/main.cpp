@@ -1,4 +1,7 @@
 #include <iostream>
+#include <chrono>
+
+// 先 include glad 再 include glfw
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -7,6 +10,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "testModule/TestClearColor.h"
+#include "testModule/TestPosition.h"
 
 // 定义回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -97,16 +101,26 @@ int main()
 
     InitImGUI(window);
 
-    TestClearColor TestApp;
+    //TestClearColor TestApp;
+    TestPosition TestApp;
 
     TestApp.OnEnter(window);
+
+    auto prevTime = std::chrono::high_resolution_clock::now();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // 如果不需要关闭窗口，则持续进入循环
     while (!glfwWindowShouldClose(window))
     {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - prevTime).count() / 1000.0f;
+        prevTime = std::move(currentTime);
+
         TestApp.ClearRender(window);
         TestApp.InputProcess(window);
-        TestApp.Update(window, 0.017f);
+        TestApp.Update(window, deltaTime);
         TestApp.Render(window);
 
         glfwSwapBuffers(window);    // 交换缓冲区

@@ -51,6 +51,18 @@
     <ClCompile Include="src\testModule\TestClearColor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\testModule\TestPosition.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util\Shader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util\CommonHead.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -89,5 +101,35 @@
     <ClInclude Include="src\testModule\TestClearColor.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\testModule\TestPosition.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\Shader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\Texture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\CommonHead.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\CommonData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shader\TextPosition\Vertex.vert" />
+    <None Include="res\shader\TextPosition\Fragment.frag" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\test.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\textures\test2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\textures\test3.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>
