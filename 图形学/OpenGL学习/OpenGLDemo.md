@@ -220,4 +220,142 @@ void main() {
 
 [封装Shader](https://learnopengl-cn.github.io/01%20Getting%20started/05%20Shaders/#_6)
 
+### Texture
+
+在 [OpenGLStudy](./src/OpenGLStudy/OpenGLStudy/src/Texture.h) 项目中，有对 `Texture` 贴图的封装
+
+```cpp
+void Texture::Init(const std::string& filePath)
+{
+	m_FilePath = filePath;
+
+	stbi_set_flip_vertically_on_load(1);
+	m_LocalBuffer = stbi_load(filePath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
+
+	GL_CALL(glGenTextures(1, &m_RenderID));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_RenderID));
+
+	// 一定要设置的纹理 否则只能得到黑色纹理
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));	// 指定缩小器
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));	// 指定放大器
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+
+	// 传递数据 GL_RGBA8 后面加8 用与表示每个通道站多少位
+	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
+
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
+
+	if (m_LocalBuffer) {
+		stbi_image_free(m_LocalBuffer);
+		m_LocalBuffer = nullptr;
+	}
+}
+```
+
+这里对贴图进行设置时，涉及到了几个设置 `GL_TEXTURE_WRAP_T`、`GL_TEXTURE_WRAP_S`、`GL_TEXTURE_MAG_FILTER`、`GL_TEXTURE_MIN_FILTER`
+
+根据 `docs.gl` 对 `glTexParameteri` 函数的[解释](https://docs.gl/gl4/glTexParameter)，对于贴图的设置还有很多种
+
+| 贴图设置的参数名称 | 作用 | 可选值 | 默认值 |
+| --- | --- | --- | --- | 
+| GL_TEXTURE_MIN_FILTER | 设置纹理缩小（远距离）时的采样方式 | GL_NEAREST, GL_LINEAR, GL_NEAREST_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR | GL_NEAREST_MIPMAP_LINEAR | 
+| GL_TEXTURE_MAG_FILTER | 设置纹理放大（近距离）时的采样方式 | GL_NEAREST, GL_LINEAR | GL_LINEAR | 
+| GL_TEXTURE_WRAP_S/T/R | 设置纹理坐标在 S/T/R 轴超出 [0,1] 时的处理方式 | GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_BORDER | GL_REPEAT | 
+| GL_TEXTURE_BASE_LEVEL | 设置纹理 Mipmap 的最小使用级别（0 表示最高分辨率） | 非负整数 | 0 | 
+| GL_TEXTURE_MAX_LEVEL | 设置纹理 Mipmap 的最大使用级别 | 非负整数 | 000（实际由硬件决定） | 
+| GL_TEXTURE_MIN_LOD | 设置纹理细节级别（LOD）的最小值 | 浮点数 | 1000（允许最低细节） | 
+| GL_TEXTURE_MAX_LOD | 设置纹理细节级别（LOD）的最大值 | 浮点数 | 1000（允许最高细节） | 
+| GL_TEXTURE_LOD_BIAS | 设置 LOD 的偏移值（正值为模糊，负值为锐利） | 浮点数 | 0.0 | 
+| GL_TEXTURE_COMPARE_MODE | 设置深度/模板纹理的比较模式 | GL_NONE（禁用比较）, GL_COMPARE_REF_TO_TEXTURE（启用比较） | GL_NONE | 
+| GL_TEXTURE_COMPARE_FUNC | 设置深度比较函数（需与 GL_COMPARE_REF_TO_TEXTURE 配合使用） | GL_LEQUAL, GL_GEQUAL, GL_LESS, GL_GREATER, GL_EQUAL, GL_ALWAYS 等 | GL_LEQUAL | 
+| GL_DEPTH_STENCIL_TEXTURE_MODE | 设置深度/模板纹理的采样模式（返回深度值还是模板值） | GL_DEPTH_COMPONENT, GL_STENCIL_INDEX | GL_DEPTH_COMPONENT | 
+| GL_TEXTURE_SWIZZLE_R/G/B/A | 设置纹理颜色通道的映射关系（重新排列或复制通道） | GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE | 各通道对应自身（如 R→R） | 
+
+#### 贴图设置
+
+`GL_TEXTURE_MIN_FILTER` 和 `GL_TEXTURE_MAG_FILTER` 表示贴图放大缩小时，采用的纹理过滤方式
+
+| GL_NEAREST | GL_LINEAR |
+| --- | --- | --- |
+| 中文 | 临近过滤 | 线性过滤 |
+| 作用 | 选择离中心点最接近的纹理坐标的像素 | 基于纹理坐标附近的纹理像素，计算插值 |
+| 表现效果 | ![](Image/025.png) | ![](Image/026.png) |
+
+![](Image/027.png)
+
+对比 `GL_NEAREST` 和 `GL_LINEAR` 在图片放大之后的表现效果，很明显发现 `GL_NEAREST` 锯齿感明显，`GL_LINEAR` 更加自然
+
+贴图设置的 `GL_TEXTURE_WRAP_S/T/R` 的 `S/T/R` 对应可以理解为 x、y、z，这个设置的作用就是当纹理坐标超过 `[0, 1]` 的取值范围之后，应该如何处理
+
+![](Image/028.png)
+
+贴图设置的 `GL_TEXTURE_SWIZZLE_R/G/B/A` 用于通道映射
+
+```cpp
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_RED)
+```
+
+通过上述代码的设置，读取贴图的 `alpha` 通道的时，从 `r` 通道读取
+
+```cpp
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+```
+
+通过上述代码的设置，读取贴图的 `RGB` 都是通过 `R` 通道获取值，比如 `R` 值为 0.8, `A` 值为 1.0，最后得到的就是 `(0.8, 0.8, 0.8, 1.0)` 的灰度值
+
+#### 贴图的 Mipmap
+
+在游戏运行过程中，物体有远有近
+
+现在有一个大房子，用了一张 1024 * 1024 的贴图，在近距离观看细节丰富，但是远距离一般不需要这么丰富的细节，为了性能考虑可以把贴图换成 512 * 512；如果距离再远一些，即使使用 256 * 256 的贴图效果也不差
+
+为了运行时性能，会根据举例的远近使用不同尺寸的贴图，这就是 `MipMap` **多级渐远纹理**
+
+![](Image/029.png)
+
+在 `OpenGL` 中可以使用 `glGenerateMipmap` 函数来创建多级纹理，而不需要自己手动创建
+
+
+| 过滤方式 | 描述 | 
+| --- | --- |
+| GL_NEAREST_MIPMAP_NEAREST | 使用最邻近的多级渐远纹理来匹配像素大小，并使用邻近插值进行纹理采样 | 
+| GL_LINEAR_MIPMAP_NEAREST | 使用最邻近的多级渐远纹理级别，并使用线性插值进行采样 | 
+| GL_NEAREST_MIPMAP_LINEAR | 在两个最匹配像素大小的多级渐远纹理之间进行线性插值，使用邻近插值进行采样 | 
+| GL_LINEAR_MIPMAP_LINEAR | 在两个邻近的多级渐远纹理之间使用线性插值，并使用线性插值进行采样 | 
+
+```cpp
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+```
+
+> 注意，只有在 `GL_TEXTURE_MIN_FILTER` 也就是缩小的时候才设置 `MipMap`，`GL_TEXTURE_MAG_FILTER` 放大的时候设置无效
+
+#### 纹理单元
+
+在 [OpenGLStudy的着色器](./src/OpenGLStudy/OpenGLStudy/res/shader/Fragment.frag) 中使用 `uniform sampler2D u_Texture` 来接收一个贴图
+
+但是在代码中却使用 `glUniform1i` 设置贴图为 0
+
+```cpp
+m_shader->SetUniform1i("u_Texture", 0);
+```
+
+这是因为，这里设置的 0 并不是指贴图自身，而是贴图的槽位，也被称为 **纹理单元**
+
+```cpp
+glActiveTexture(GL_TEXTURE0); // 在绑定纹理之前先激活纹理单元
+glBindTexture(GL_TEXTURE_2D, texture);
+```
+
+使用 `glActiveTexture` 激活指定的纹理单元之后，使用 `glBindTexture` 会将贴图绑定到当前激活的纹理单元中
+
+`OpenGL` 至少保证有 16 个纹理单元，根据机器不同有的可以支持 32 个，也就是支持 `GL_TEXTURE0` ~ `GL_TEXTURE15`，可以写成 `GL_TEXTURE0 + Index` 的方式
+
+> `GL_TEXTURE8` 等价于 `GL_TEXTURE0 + 8`
+
+## 坐标系统
+
 

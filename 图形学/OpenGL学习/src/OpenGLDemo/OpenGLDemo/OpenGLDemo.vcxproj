@@ -143,6 +143,8 @@
     <ClCompile Include="src\third\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\third\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\third\stb_image\stb_image.cpp" />
+    <ClCompile Include="src\testModule\TestBase.cpp" />
+    <ClCompile Include="src\testModule\TestClearColor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imconfig.h" />
@@ -155,6 +157,8 @@
     <ClInclude Include="src\third\imgui\imstb_textedit.h" />
     <ClInclude Include="src\third\imgui\imstb_truetype.h" />
     <ClInclude Include="src\third\stb_image\stb_image.h" />
+    <ClInclude Include="src\testModule\TestBase.h" />
+    <ClInclude Include="src\testModule\TestClearColor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

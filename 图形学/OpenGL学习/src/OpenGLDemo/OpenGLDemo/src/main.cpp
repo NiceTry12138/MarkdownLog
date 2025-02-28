@@ -6,6 +6,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "testModule/TestClearColor.h"
+
 // 定义回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -95,20 +97,23 @@ int main()
 
     InitImGUI(window);
 
+    TestClearColor TestApp;
+
+    TestApp.OnEnter(window);
+
     // 如果不需要关闭窗口，则持续进入循环
     while (!glfwWindowShouldClose(window))
     {
-        ProcessInput(window);       // 检查按键触发
-
-        // 清空屏幕颜色 防止上一帧的内容影响这一帧的内容
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        TestRenderImGUI(window);
+        TestApp.ClearRender(window);
+        TestApp.InputProcess(window);
+        TestApp.Update(window, 0.017f);
+        TestApp.Render(window);
 
         glfwSwapBuffers(window);    // 交换缓冲区
         glfwPollEvents();           // 检查触发的事件
     }
+
+    TestApp.OnExit(window);
 
     glfwTerminate();
 	return 0;
