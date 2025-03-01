@@ -17,9 +17,9 @@ public:
 	virtual void UpdateImGUI(GLFWwindow* window) override;
 
 private:
-	GLuint m_VBO;
-	GLuint m_VAO;
-	GLuint m_IB;
+	GLuint m_VBO{ GL_ZERO };
+	GLuint m_VAO{ GL_ZERO };
+	GLuint m_IB{ GL_ZERO };
 
 	Shader m_Shader;
 	Texture m_Tex1;

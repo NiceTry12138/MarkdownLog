@@ -2,7 +2,7 @@
 
 void TestPosition::OnEnter(GLFWwindow* window)
 {
-	//					 ×ø±ê					ÑÕÉ«						UV ×ø±ê			ÌùÍ¼ĞòºÅ
+	//					 åæ ‡					é¢œè‰²						UV åæ ‡			è´´å›¾åºå·
 	m_vertexs.push_back({ 0.5f,  0.5f, 0.0f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 1.0f,		0 });
 	m_vertexs.push_back({ 0.5f, -0.5f, 0.0f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 0.0f,		0 });
 	m_vertexs.push_back({ -0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 0.0f,		1 });
@@ -13,25 +13,25 @@ void TestPosition::OnEnter(GLFWwindow* window)
 		2, 3, 0
 	};
 
-	// ´´½¨ VAO
+	// åˆ›å»º VAO
 	glGenVertexArrays(1, &m_VAO);
 
-	// °ó¶¨ VAO
+	// ç»‘å®š VAO
 	glBindVertexArray(m_VAO);
 
-	// ´´½¨ VBO IB
+	// åˆ›å»º VBO IB
 	glGenBuffers(1, &m_VBO);
 	glGenBuffers(1, &m_IB);
 
-	// °ó¶¨ VBO ºÍ Êı¾İ
+	// ç»‘å®š VBO å’Œ æ•°æ®
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_VBO));
 	GL_CALL(glBufferData(GL_ARRAY_BUFFER, m_vertexs.size() * sizeof(Vertex_v0), m_vertexs.data(), GL_STATIC_DRAW));
 
-	// °ó¶¨ IB ºÍ Êı¾İ
+	// ç»‘å®š IB å’Œ æ•°æ®
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IB));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
 
-	// ÉèÖÃ VAO ÄÚ´æ½á¹¹
+	// è®¾ç½® VAO å†…å­˜ç»“æ„
 	GL_CALL(glEnableVertexAttribArray(0));
 	GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_v0), (void *)offsetof(Vertex_v0, position)));
 
@@ -44,13 +44,14 @@ void TestPosition::OnEnter(GLFWwindow* window)
 	GL_CALL(glEnableVertexAttribArray(3));
 	GL_CALL(glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(Vertex_v0), (void*)offsetof(Vertex_v0, texIndex)));
 
-	// ³õÊ¼»¯ shader
+	// åˆå§‹åŒ– shader
 	//m_Shader.NewInit("res/shader/TextPosition/Vertex.vert", "res/shader/TextPosition/Fragment.frag");
 	m_Shader.Init("res/shader/TextPosition/Vertex.vert", "res/shader/TextPosition/Fragment.frag");
 
-	// ³õÊ¼»¯ texture
+	// åˆå§‹åŒ– texture
 	m_Tex1.Init("res/textures/test2.png");
 	m_Tex2.Init("res/textures/test3.png");
+
 	m_Tex1.Bind(0);
 	m_Tex2.Bind(1);
 
@@ -64,6 +65,7 @@ void TestPosition::OnExit(GLFWwindow* window)
 
 void TestPosition::UpdateLogic(float delayTime)
 {
+	
 }
 
 void TestPosition::ClearRender(GLFWwindow* window)

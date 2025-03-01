@@ -118,9 +118,10 @@ int main()
         float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - prevTime).count() / 1000.0f;
         prevTime = std::move(currentTime);
 
-        TestApp.ClearRender(window);
         TestApp.InputProcess(window);
         TestApp.Update(window, deltaTime);
+
+        TestApp.ClearRender(window);
         TestApp.Render(window);
 
         glfwSwapBuffers(window);    // 交换缓冲区
