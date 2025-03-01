@@ -75,6 +75,11 @@ void TestPosition::UpdateLogic(float delayTime)
 	RotateAxis.g = m_RotateY ? 1.0f : 0.0f;
 	RotateAxis.b = m_RotateZ ? 1.0f : 0.0f;
 
+	m_Rotate += delayTime * m_RotateSpeed;
+	if (m_Rotate > 180.0f) {
+		m_Rotate -= 360;
+	}
+
 	m_model = glm::rotate(glm::mat4(1.0f), glm::radians(m_Rotate), RotateAxis);
 	m_view = glm::translate(glm::mat4(1.0f), m_Transition);
 
@@ -110,7 +115,7 @@ void TestPosition::UpdateImGUI(GLFWwindow* window)
 	ImGui::Checkbox("Rotate X", &m_RotateX);
 	ImGui::Checkbox("Rotate Y", &m_RotateY);
 	ImGui::Checkbox("Rotate Z", &m_RotateZ);
-	ImGui::SliderFloat("Rotate Angle", &m_Rotate, -180.0f, 180.0f);
+	ImGui::SliderFloat("Rotate Speed", &m_RotateSpeed, 1.0f, 500);
 	ImGui::SliderFloat3("Camera Location", &m_Transition.r, -5.0f, 5.0f);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);

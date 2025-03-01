@@ -33,7 +33,9 @@ private:
 
 	glm::vec3 m_Transition = glm::vec3(0.0f, 0.0f, -3.0f);
 
-	float m_Rotate = -45;
+	float m_Rotate = -45.0f;
+	float m_RotateSpeed = 1.0f;
+
 	bool m_RotateX = true;
 	bool m_RotateY = false;
 	bool m_RotateZ = false;
