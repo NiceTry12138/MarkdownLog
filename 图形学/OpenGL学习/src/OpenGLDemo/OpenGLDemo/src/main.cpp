@@ -9,13 +9,18 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "Util/RenderSettings.h"
+
 #include "testModule/TestClearColor.h"
 #include "testModule/TestPosition.h"
+
 
 // 定义回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+    RSI->ViewportWidth = width;
+    RSI->ViewportHeight = height;
 }
 
 void InitImGUI(GLFWwindow* window)
@@ -95,7 +100,7 @@ int main()
         return -1;
     }
 
-    glViewport(0, 0, 800, 600);
+    glViewport(RSI->ViewportX, RSI->ViewportY, RSI->ViewportWidth, RSI->ViewportHeight);
     // 绑定回调函数
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -122,6 +127,7 @@ int main()
         TestApp.Update(window, deltaTime);
 
         TestApp.ClearRender(window);
+        TestApp.RenderImGUI(window);
         TestApp.Render(window);
 
         glfwSwapBuffers(window);    // 交换缓冲区

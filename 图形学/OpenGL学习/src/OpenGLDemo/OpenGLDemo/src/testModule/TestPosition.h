@@ -26,5 +26,16 @@ private:
 	Texture m_Tex2;
 
 	std::vector<Vertex_v0> m_vertexs;
+
+	glm::mat4 m_model = glm::mat4(1.0f);		// 模型矩阵
+	glm::mat4 m_view = glm::mat4(1.0f);			// 视图矩阵
+	glm::mat4 m_proj = glm::mat4(1.0f);			// 投影矩阵
+
+	glm::vec3 m_Transition = glm::vec3(0.0f, 0.0f, -3.0f);
+
+	float m_Rotate = -45;
+	bool m_RotateX = true;
+	bool m_RotateY = false;
+	bool m_RotateZ = false;
 };
 

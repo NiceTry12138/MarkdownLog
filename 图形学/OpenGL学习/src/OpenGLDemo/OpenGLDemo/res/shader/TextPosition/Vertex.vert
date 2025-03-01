@@ -9,8 +9,12 @@ out vec4 v_Color;
 out vec2 v_TexCoord;
 flat out int v_TexIndex;
 
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
 void main() {
-	gl_Position = vec4(inPosition, 1.0f);
+	gl_Position = projection * view * model * vec4(inPosition, 1.0);
 	v_TexCoord = inTexCoord;
 	v_TexIndex = inTexIndex;
 	v_Color = inColor;

@@ -7,26 +7,29 @@ class TestBase
 public:
 	virtual ~TestBase() = default;
 
-	// ½øÈë²âÊÔ ³õÊ¼»¯Âß¼­
+	// è¿›å…¥æµ‹è¯• åˆå§‹åŒ–é€»è¾‘
 	virtual void OnEnter(GLFWwindow* window);
-	// ÍË³ö²âÊÔ ÇåÀíÂß¼­
+	// é€€å‡ºæµ‹è¯• æ¸…ç†é€»è¾‘
 	virtual void OnExit(GLFWwindow* window);
 
 	void Update(GLFWwindow* window, float delayTime);
 	
-	// ×Ô¶¨Òå glClear Âß¼­
+	// è‡ªå®šä¹‰ glClear é€»è¾‘
 	virtual void ClearRender(GLFWwindow* window);
 
-	// ×Ô¶¨Òå äÖÈ¾Âß¼­
+	// è‡ªå®šä¹‰ æ¸²æŸ“é€»è¾‘
 	virtual void Render(GLFWwindow* window);
+	
+	// è‡ªå®šä¹‰ æ¸²æŸ“é€»è¾‘
+	void RenderImGUI(GLFWwindow* window);
 
-	// ×Ô¶¨Òå imGUI 
+	// è‡ªå®šä¹‰ imGUI 
 	virtual void UpdateImGUI(GLFWwindow* window);
 	
-	// ×Ô¶¨Òå ¼ÆËãÂß¼­
+	// è‡ªå®šä¹‰ è®¡ç®—é€»è¾‘
 	virtual void UpdateLogic(float delayTime);
 
-	// Êä³ö¼àÌıÊÂ¼ş
+	// è¾“å‡ºç›‘å¬äº‹ä»¶
 	virtual void InputProcess(GLFWwindow* window);
 };
 

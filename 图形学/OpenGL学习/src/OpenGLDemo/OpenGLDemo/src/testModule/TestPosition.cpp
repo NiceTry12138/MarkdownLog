@@ -1,4 +1,5 @@
 #include "TestPosition.h"
+#include "../Util/RenderSettings.h"
 
 void TestPosition::OnEnter(GLFWwindow* window)
 {
@@ -56,6 +57,10 @@ void TestPosition::OnEnter(GLFWwindow* window)
 	m_Tex2.Bind(1);
 
 	m_Shader.UnBind();
+
+	//m_model = glm::rotate(m_model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	//m_view = glm::translate(m_view, m_Transition);
+	//m_proj = glm::perspective(glm::radians(45.0f), (float)RSI->ViewportWidth / (float)RSI->ViewportWidth, 0.1f, 100.0f);
 }
 
 void TestPosition::OnExit(GLFWwindow* window)
@@ -65,7 +70,16 @@ void TestPosition::OnExit(GLFWwindow* window)
 
 void TestPosition::UpdateLogic(float delayTime)
 {
-	
+	glm::vec3 RotateAxis = glm::vec3(0.0f, 0.0f, 0.0f);
+	RotateAxis.r = m_RotateX ? 1.0f : 0.0f;
+	RotateAxis.g = m_RotateY ? 1.0f : 0.0f;
+	RotateAxis.b = m_RotateZ ? 1.0f : 0.0f;
+
+	m_model = glm::rotate(glm::mat4(1.0f), glm::radians(m_Rotate), RotateAxis);
+	m_view = glm::translate(glm::mat4(1.0f), m_Transition);
+
+	// 可能会更新窗口视口大小 每帧更新一下
+	m_proj = glm::perspective(glm::radians(45.0f), (float)RSI->ViewportWidth / (float)RSI->ViewportWidth, 0.1f, 100.0f);
 }
 
 void TestPosition::ClearRender(GLFWwindow* window)
@@ -79,6 +93,10 @@ void TestPosition::Render(GLFWwindow* window)
 	m_Shader.SetUniform1i("u_Texture0", 0);
 	m_Shader.SetUniform1i("u_Texture1", 1);
 
+	m_Shader.SetUniformMat4f("model", m_model);
+	m_Shader.SetUniformMat4f("view", m_view);
+	m_Shader.SetUniformMat4f("projection", m_proj);
+
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
@@ -87,7 +105,14 @@ void TestPosition::UpdateImGUI(GLFWwindow* window)
 {
 	const auto& io = ImGui::GetIO();
 
-	ImGui::Begin("ClearColor");
+	ImGui::Begin("Rotate");
+
+	ImGui::Checkbox("Rotate X", &m_RotateX);
+	ImGui::Checkbox("Rotate Y", &m_RotateY);
+	ImGui::Checkbox("Rotate Z", &m_RotateZ);
+	ImGui::SliderFloat("Rotate Angle", &m_Rotate, -180.0f, 180.0f);
+	ImGui::SliderFloat3("Camera Location", &m_Transition.r, -5.0f, 5.0f);
+
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 	if (ImGui::Button("Close Window"))
 		glfwSetWindowShouldClose(window, true);

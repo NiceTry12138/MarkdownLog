@@ -10,16 +10,6 @@ void TestBase::OnExit(GLFWwindow* window)
 
 void TestBase::Update(GLFWwindow* window, float delayTime)
 {
-    // …Ë÷√ ImGUI –¬“ª÷°
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    UpdateImGUI(window);
-
-    // ªÊ÷∆ ImGUI
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     UpdateLogic(delayTime);
 }
@@ -33,6 +23,20 @@ void TestBase::Render(GLFWwindow* window)
 {
 }
 
+void TestBase::RenderImGUI(GLFWwindow* window)
+{
+	// ËÆæÁΩÆ ImGUI Êñ∞‰∏ÄÂ∏ß
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	UpdateImGUI(window);
+
+	// ÁªòÂà∂ ImGUI
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 void TestBase::UpdateImGUI(GLFWwindow* window)
 {
 
@@ -44,7 +48,7 @@ void TestBase::UpdateLogic(float delayTime)
 
 void TestBase::InputProcess(GLFWwindow* window)
 {
-    // º‡Ã˝ ECS ∞¥º¸
+    // ÁõëÂê¨ ECS ÊåâÈîÆ
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
