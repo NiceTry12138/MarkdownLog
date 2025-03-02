@@ -13,6 +13,7 @@
 
 #include "testModule/TestClearColor.h"
 #include "testModule/TestPosition.h"
+#include "testModule/TestCamera.h"
 
 
 // 定义回调函数
@@ -107,7 +108,8 @@ int main()
     InitImGUI(window);
 
     //TestClearColor TestApp;
-    TestPosition TestApp;
+    //TestPosition TestApp;
+    TestCamera TestApp;
 
     TestApp.OnEnter(window);
 

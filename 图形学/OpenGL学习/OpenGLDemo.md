@@ -455,4 +455,73 @@ m_Tex2.Bind(1);
 
 ## 坐标系统
 
+`MVP` 矩阵 Module、View、Projection
+
+模型的顶点坐标的原点一般是模型的中心点，通过 Module 矩阵得到顶点的世界坐标
+
+得到世界坐标之后，将其转换成观察空间，也就是以相机为原点的坐标系下
+
+最后通过 Projectin 将顶点坐标进行裁剪，对于空间外的点剔除
+
+### 相机坐标
+
+相机需要定位朝向和坐标，以此来确定视图矩阵
+
+坐标无需多言，由 3 个 float 组成的结构体
+
+```cpp
+glm::vec3(0.0f, 0.0f, 3.0f);
+```
+
+`OpenGL` 是右手坐标系， X 轴正方向向右，Y轴正方向向上，Z轴正方向垂直屏幕向外
+
+所以，如果想要看到位于（0,0） 坐标的物体，并且相机向后移动的时候，物体缩小，一般是让相机沿着 Z 轴正方向移动
+
+接下来就是确定相机的朝向
+
+通过两个向量就可以确定相机的朝向，一个是 `LoopAt` 一个是 `Up Vector`
+
+确定 `LookAt` 的坐标点，通过 `LookAt` 坐标减去 相机坐标 得到一个方向向量，该向量就是相机朝向，通过这个向量可以确定相机朝向中的 `Yaw` 和 `Pitch`
+
+`Up Vector` 表示相机向上的向量，通过这个向量，确定相机朝向的 `Rall`
+
+不过有的时候，也可以需要知道相机的 `Right Vector`，不过这个比较好计算，通过 `Look` 和 `Up Vector` 通过**叉乘**便可以计算出 `Right Vector`
+
+```cpp
+// 计算 LookAt Vector
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+// 定义 Up Vector
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// 计算 Right Vector
+glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+```
+
+通过上面计算的向量和坐标，可以计算得到 View 矩阵
+
+```cpp
+glm::mat4 view;
+						// 相机坐标					 	目标坐标							Up Vector
+view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),  glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec3(0.0f, 1.0f, 0.0f));
+```
+
+记住，`OpenGL` 的坐标系是右手坐标系，y轴向上，x轴向左，z轴垂直屏幕向外
+
+![](Image/030.png)
+
+所以 `direction.y = sin(pitch)`
+
+![](Image/031.png)
+
+在计算 `xz` 轴是，向量长度是 `cos(pitch)` 
+
+对应的点的坐标是 
+
+- `direction.x = cos(pitch) * cos(yaw)`
+- `direction.z = cos(pitch) * sin(yaw)`
+
+注意：此时 `Camera Up Vector` 保持不变，因为 `Up Vector` 是用于控制 `Roll` 的，一般不会变化
+
 

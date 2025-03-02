@@ -8,6 +8,7 @@
 #include <set>
 #include <unordered_set>
 #include <vector>
+#include <algorithm>
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"

@@ -4,15 +4,26 @@
 void TestPosition::OnEnter(GLFWwindow* window)
 {
 	//					 坐标					颜色						UV 坐标			贴图序号
-	m_vertexs.push_back({ 0.5f,  0.5f, 0.0f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 1.0f,		0 });
-	m_vertexs.push_back({ 0.5f, -0.5f, 0.0f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 0.0f,		0 });
-	m_vertexs.push_back({ -0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 0.0f,		1 });
-	m_vertexs.push_back({ -0.5f,  0.5f, 0.0f,	0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		1 });
+	m_vertexs.push_back({ 0.5f,  0.5f, -0.5f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 1.0f,		0 });	// 立方体 下面 右上角
+	m_vertexs.push_back({ 0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 0.0f,		0 });	// 立方体 下面 右下角
+	m_vertexs.push_back({ -0.5f, -0.5f, -0.5f,	0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 0.0f,		1 });	// 立方体 下面 左下角
+	m_vertexs.push_back({ -0.5f,  0.5f, -0.5f,	0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		1 });	// 立方体 下面 左上角
+	m_vertexs.push_back({ 0.5f,  0.5f,  0.5f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 1.0f,		0 });	// 立方体 上面 右上角
+	m_vertexs.push_back({ 0.5f, -0.5f,  0.5f,	1.0f, 1.0f, 0.0f, 1.0f,		1.0f, 0.0f,		0 });	// 立方体 上面 右下角
+	m_vertexs.push_back({ -0.5f, -0.5f,  0.5f,	0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 0.0f,		1 });	// 立方体 上面 左下角
+	m_vertexs.push_back({ -0.5f,  0.5f,  0.5f,	0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		1 });	// 立方体 上面 左上角
 
 	GLuint indices[] = {
-		0, 1, 2,
-		2, 3, 0
+		0, 1, 2, 2, 3, 0,			// 组成下面的两个三角形
+		4, 5, 6, 6, 7, 4,			
+		1, 2, 6, 6, 5, 1,
+		0, 1, 5, 5, 4, 0,
+		2, 3, 7, 7, 6, 2,
+		0, 3, 4, 4, 7, 3,
 	};
+	
+	// 启动深度测试
+	glEnable(GL_DEPTH_TEST);
 
 	// 创建 VAO
 	glGenVertexArrays(1, &m_VAO);
@@ -84,12 +95,13 @@ void TestPosition::UpdateLogic(float delayTime)
 	m_view = glm::translate(glm::mat4(1.0f), m_Transition);
 
 	// 可能会更新窗口视口大小 每帧更新一下
-	m_proj = glm::perspective(glm::radians(45.0f), (float)RSI->ViewportWidth / (float)RSI->ViewportWidth, 0.1f, 100.0f);
+	m_proj = glm::perspective(glm::radians(45.0f), (float)RSI->ViewportHeight / (float)RSI->ViewportWidth, 0.1f, 100.0f);
 }
 
 void TestPosition::ClearRender(GLFWwindow* window)
 {
-	TestBase::ClearRender(window);
+	//TestBase::ClearRender(window);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void TestPosition::Render(GLFWwindow* window)
@@ -103,7 +115,7 @@ void TestPosition::Render(GLFWwindow* window)
 	m_Shader.SetUniformMat4f("projection", m_proj);
 
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
 }
 
 void TestPosition::UpdateImGUI(GLFWwindow* window)
