@@ -69,10 +69,9 @@ void TestCamera::OnEnter(GLFWwindow* window)
 
 	m_Shader.UnBind();
 
-	// 设置鼠标捕获和隐藏
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetWindowUserPointer(window, this);
-	glfwSetCursorPosCallback(window, &TestCamera::StaticMouseCallback);
+	//std::cout << glfwGetInputMode(window, GLFW_CURSOR) << std::endl;
+	BindMouse(window);
+
 }
 
 void TestCamera::OnExit(GLFWwindow* window)
@@ -129,6 +128,7 @@ void TestCamera::InputProcess(GLFWwindow* window)
 {
 	TestBase::InputProcess(window);
 
+
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		m_CameraLocation -= glm::normalize(glm::cross(m_CameraForward, m_CameraUp)) * m_MoveSpeed;
@@ -144,6 +144,18 @@ void TestCamera::InputProcess(GLFWwindow* window)
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		m_CameraLocation -= m_CameraForward * m_MoveSpeed;
+	}
+	
+	
+	if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+	{
+		m_bLeftAltPress = true;
+		UnBindMouse(window);
+	}
+	else if(m_bLeftAltPress) {
+		// 因为当前状况 如果不按下 左 alt，每帧都会导致该函数触发，加个判断防止重复触发
+		m_bLeftAltPress = false;
+		BindMouse(window);
 	}
 }
 
@@ -189,6 +201,24 @@ void TestCamera::MouseCallback(GLFWwindow* window, double xpos, double ypos)
 	front.y = sin(glm::radians(m_CameraPitch));
 	front.z = sin(glm::radians(m_CameraYaw)) * cos(glm::radians(m_CameraPitch));
 	m_CameraForward = glm::normalize(front);
+}
 
-	std::cout << "x " << m_CameraForward.r << " y " << m_CameraForward.g << " z " << m_CameraForward.b << std::endl;
+void TestCamera::BindMouse(GLFWwindow* window)
+{
+	m_isFirstMouse = true;
+	// 设置鼠标捕获和隐藏
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetWindowUserPointer(window, this);
+	glfwSetCursorPosCallback(window, &TestCamera::StaticMouseCallback);
+}
+
+void TestCamera::UnBindMouse(GLFWwindow* window)
+{
+	m_isFirstMouse = false;
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+	// 因为设置自己的鼠标绑定把 ImGUI 的鼠标绑定覆盖了 所以退出自己的鼠标绑定时 重新让 ImGUI 绑定
+	ImGui_ImplGlfw_RestoreCallbacks(window);	
+	ImGui_ImplGlfw_InstallCallbacks(window);
 }

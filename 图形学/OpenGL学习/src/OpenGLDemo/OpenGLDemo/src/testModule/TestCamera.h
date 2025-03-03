@@ -23,6 +23,10 @@ public:
 
 	void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 
+protected:
+	void BindMouse(GLFWwindow* window);
+	void UnBindMouse(GLFWwindow* window);
+
 private:
 	GLuint m_VBO{ GL_ZERO };
 	GLuint m_VAO{ GL_ZERO };
@@ -52,6 +56,8 @@ private:
 
 	float m_LastMousePosX;
 	float m_LastMousePosY;
-	bool m_isFirstMouse = true;
+	bool m_isFirstMouse = true;			// 防止鼠标进入捕获状态时 突然闪烁
+
+	bool m_bLeftAltPress = false;
 };
 
