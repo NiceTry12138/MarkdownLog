@@ -1,6 +1,8 @@
 #include "TestLight.h"
 #include "../Util/RenderSettings.h"
 
+TestLight TestLight::_self;
+
 void TestLight::OnEnter(GLFWwindow* window)
 {
 	//					 坐标					颜色						UV 坐标			贴图序号

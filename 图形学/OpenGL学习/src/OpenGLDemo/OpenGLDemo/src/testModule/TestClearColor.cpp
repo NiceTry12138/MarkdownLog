@@ -1,4 +1,7 @@
 #include "TestClearColor.h"
+#include "TestModuleManager.h"
+
+TestClearColor TestClearColor::_self;
 
 void TestClearColor::OnEnter(GLFWwindow* window)
 {
@@ -7,7 +10,8 @@ void TestClearColor::OnEnter(GLFWwindow* window)
 
 void TestClearColor::OnExit(GLFWwindow* window)
 {
-
+	glClearColor(0.0f, 0.0f , 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void TestClearColor::UpdateLogic(float delayTime)

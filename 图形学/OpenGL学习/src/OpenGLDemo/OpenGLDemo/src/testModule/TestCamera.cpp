@@ -1,5 +1,8 @@
 #include "TestCamera.h"
 #include "../Util/RenderSettings.h"
+#include "TestModuleManager.h"
+
+TestCamera TestCamera::_self;
 
 void TestCamera::OnEnter(GLFWwindow* window)
 {

@@ -4,6 +4,9 @@
 class TestClearColor : public TestBase
 {
 public:
+	TestClearColor() : TestBase("TestClearColor") {}
+
+public:
 	virtual void OnEnter(GLFWwindow* window) override;
 	virtual void OnExit(GLFWwindow* window) override;
 
@@ -17,5 +20,7 @@ private:
 	bool m_UseImGUI = true;
 
 	bool m_IsAdd = true;
+
+	static TestClearColor _self;
 };
 

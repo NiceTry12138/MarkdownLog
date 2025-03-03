@@ -1,4 +1,11 @@
 #include "TestBase.h"
+#include "TestModuleManager.h"
+
+TestBase::TestBase(const std::string& TestModuleName)
+{
+	m_TestModuleName = TestModuleName;
+	TestModuleManager::GetInstance()->AddTestModule(m_TestModuleName, this);
+}
 
 void TestBase::OnEnter(GLFWwindow* window)
 {
@@ -29,6 +36,11 @@ void TestBase::RenderImGUI(GLFWwindow* window)
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+
+	ImGui::Begin("Common Test Title");
+	if (ImGui::Button("Back Test"))
+		TestModuleManager::GetInstance()->NoSelectTestModule(window);
+	ImGui::End();
 
 	UpdateImGUI(window);
 

@@ -9,6 +9,9 @@
 class TestLight : public TestWithMouseBase
 {
 public:
+	TestLight() : TestWithMouseBase("TestLight") {}
+
+public:
 	virtual void OnEnter(GLFWwindow* window) override;
 	virtual void OnExit(GLFWwindow* window) override;
 
@@ -46,5 +49,7 @@ private:
 
 	Camera m_Camera;
 	bool m_bLeftAltPress = false;
+
+	static TestLight _self;
 };
 

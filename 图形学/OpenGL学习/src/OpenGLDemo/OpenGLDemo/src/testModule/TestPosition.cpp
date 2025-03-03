@@ -1,6 +1,8 @@
 #include "TestPosition.h"
 #include "../Util/RenderSettings.h"
 
+TestPosition TestPosition::_self;
+
 void TestPosition::OnEnter(GLFWwindow* window)
 {
 	//					 坐标					颜色						UV 坐标			贴图序号

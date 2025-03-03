@@ -8,6 +8,9 @@
 class TestCamera : public TestBase
 {
 public:
+	TestCamera() : TestBase("TestCamera") {}
+
+public:
 	virtual void OnEnter(GLFWwindow* window) override;
 	virtual void OnExit(GLFWwindow* window) override;
 
@@ -59,5 +62,8 @@ private:
 	bool m_isFirstMouse = true;			// 防止鼠标进入捕获状态时 突然闪烁
 
 	bool m_bLeftAltPress = false;
+
+private:
+	static TestCamera _self;			// 静态对象 编译时构造 自动注册
 };
 

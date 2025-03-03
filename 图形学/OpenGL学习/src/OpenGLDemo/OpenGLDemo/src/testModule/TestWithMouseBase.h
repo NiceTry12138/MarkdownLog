@@ -6,6 +6,8 @@
 class TestWithMouseBase : public TestBase
 {
 public:
+	TestWithMouseBase(const std::string& ModleName) : TestBase(ModleName) {}
+
 	virtual void BindMouse(GLFWwindow* window);
 	virtual void UnBindMouse(GLFWwindow* window);
 

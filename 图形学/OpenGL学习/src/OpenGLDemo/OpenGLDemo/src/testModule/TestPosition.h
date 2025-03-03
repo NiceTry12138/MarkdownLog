@@ -8,6 +8,9 @@
 class TestPosition : public TestBase
 {
 public:
+	TestPosition() : TestBase("TestPosition") {}
+
+public:
 	virtual void OnEnter(GLFWwindow* window) override;
 	virtual void OnExit(GLFWwindow* window) override;
 
@@ -39,5 +42,7 @@ private:
 	bool m_RotateX = true;
 	bool m_RotateY = false;
 	bool m_RotateZ = false;
+
+	static TestPosition _self;
 };
 

@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\testModule\TestModuleManager.cpp" />
     <ClCompile Include="src\testModule\TestWithMouseBase.cpp" />
     <ClCompile Include="src\Util\Camera.cpp" />
     <ClCompile Include="src\testModule\TestCamera.cpp" />
@@ -157,6 +158,7 @@
     <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\testModule\TestModuleManager.h" />
     <ClInclude Include="src\testModule\TestWithMouseBase.h" />
     <ClInclude Include="src\Util\Camera.h" />
     <ClInclude Include="src\testModule\TestCamera.h" />

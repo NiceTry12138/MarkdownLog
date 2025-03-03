@@ -11,10 +11,7 @@
 
 #include "Util/RenderSettings.h"
 
-#include "testModule/TestClearColor.h"
-#include "testModule/TestPosition.h"
-#include "testModule/TestCamera.h"
-#include "testModule/TestLight.h"
+#include "testModule/TestModuleManager.h"
 
 
 // 定义回调函数
@@ -108,13 +105,6 @@ int main()
 
     InitImGUI(window);
 
-    //TestClearColor TestApp;
-    //TestPosition TestApp;
-    //TestCamera TestApp;
-    TestLight TestApp;
-
-    TestApp.OnEnter(window);
-
     auto prevTime = std::chrono::high_resolution_clock::now();
 
     glEnable(GL_BLEND);
@@ -127,18 +117,13 @@ int main()
         float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - prevTime).count() / 1000.0f;
         prevTime = std::move(currentTime);
 
-        TestApp.InputProcess(window);
-        TestApp.Update(window, deltaTime);
-
-        TestApp.ClearRender(window);
-        TestApp.RenderImGUI(window);
-        TestApp.Render(window);
+        TestModuleManager::GetInstance()->Update(window, deltaTime);
 
         glfwSwapBuffers(window);    // 交换缓冲区
         glfwPollEvents();           // 检查触发的事件
     }
 
-    TestApp.OnExit(window);
+    //TestApp.OnExit(window);
 
     glfwTerminate();
 	return 0;

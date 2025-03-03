@@ -5,6 +5,8 @@
 class TestBase
 {
 public:
+	TestBase(const std::string& TestModuleName);
+
 	virtual ~TestBase() = default;
 
 	// 进入测试 初始化逻辑
@@ -31,5 +33,8 @@ public:
 
 	// 输出监听事件
 	virtual void InputProcess(GLFWwindow* window);
+
+protected:
+	std::string m_TestModuleName;
 };
 
