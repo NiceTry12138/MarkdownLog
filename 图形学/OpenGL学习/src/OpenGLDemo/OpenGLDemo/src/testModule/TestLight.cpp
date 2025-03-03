@@ -77,6 +77,7 @@ void TestLight::OnEnter(GLFWwindow* window)
 void TestLight::OnExit(GLFWwindow* window)
 {
 	glfwSetWindowUserPointer(window, nullptr);
+	UnBindMouse(window);
 }
 
 void TestLight::UpdateLogic(float delayTime)

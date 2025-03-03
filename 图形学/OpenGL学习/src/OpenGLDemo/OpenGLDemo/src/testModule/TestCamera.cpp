@@ -80,6 +80,7 @@ void TestCamera::OnEnter(GLFWwindow* window)
 void TestCamera::OnExit(GLFWwindow* window)
 {
 	glfwSetWindowUserPointer(window, nullptr);
+	UnBindMouse(window);
 }
 
 void TestCamera::UpdateLogic(float delayTime)
