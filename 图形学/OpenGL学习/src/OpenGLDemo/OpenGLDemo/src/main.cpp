@@ -14,6 +14,7 @@
 #include "testModule/TestClearColor.h"
 #include "testModule/TestPosition.h"
 #include "testModule/TestCamera.h"
+#include "testModule/TestLight.h"
 
 
 // 定义回调函数
@@ -109,7 +110,8 @@ int main()
 
     //TestClearColor TestApp;
     //TestPosition TestApp;
-    TestCamera TestApp;
+    //TestCamera TestApp;
+    TestLight TestApp;
 
     TestApp.OnEnter(window);
 

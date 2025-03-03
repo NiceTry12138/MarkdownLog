@@ -72,6 +72,15 @@
     <ClCompile Include="src\testModule\TestCamera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\testModule\TestLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util\Camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\testModule\TestWithMouseBase.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -978,6 +987,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\testModule\TestCamera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\testModule\TestLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\Camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\testModule\TestWithMouseBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

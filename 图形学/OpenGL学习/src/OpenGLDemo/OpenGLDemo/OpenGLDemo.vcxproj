@@ -133,7 +133,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\testModule\TestWithMouseBase.cpp" />
+    <ClCompile Include="src\Util\Camera.cpp" />
     <ClCompile Include="src\testModule\TestCamera.cpp" />
+    <ClCompile Include="src\testModule\TestLight.cpp" />
     <ClCompile Include="src\Util\RenderSettings.cpp" />
     <ClCompile Include="src\third\glm\detail\glm.cpp" />
     <ClCompile Include="src\Util\CommonHead.cpp" />
@@ -154,7 +157,10 @@
     <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\testModule\TestWithMouseBase.h" />
+    <ClInclude Include="src\Util\Camera.h" />
     <ClInclude Include="src\testModule\TestCamera.h" />
+    <ClInclude Include="src\testModule\TestLight.h" />
     <ClInclude Include="src\Util\RenderSettings.h" />
     <ClInclude Include="src\third\glm\common.hpp" />
     <ClInclude Include="src\third\glm\detail\compute_common.hpp" />
