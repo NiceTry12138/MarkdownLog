@@ -120,7 +120,7 @@ Shader::~Shader()
 
 void Shader::SetUniform1i(const std::string& inName, const int& value)
 {
-	// ·ÀÖ¹Ê¹ÓÃÊ±Íü¼ÇÏÈ°ó¶¨ ÓÖÎªÁË±ÜÃâÃ¿´ÎÉèÖÃ¶¼°ó¶¨ Ê¹ÓÃ s_CurrentBindShader ¼ÇÂ¼°ó¶¨×´Ì¬
+	// é˜²æ­¢ä½¿ç”¨æ—¶å¿˜è®°å…ˆç»‘å®š åˆä¸ºäº†é¿å…æ¯æ¬¡è®¾ç½®éƒ½ç»‘å®š ä½¿ç”¨ s_CurrentBindShader è®°å½•ç»‘å®šçŠ¶æ€
 	Bind();
 	auto location = GetShaderLocation(inName);
 	if (location == -1)
@@ -128,6 +128,17 @@ void Shader::SetUniform1i(const std::string& inName, const int& value)
 		return;
 	}
 	GL_CALL(glUniform1i(location, value));
+}
+
+void Shader::SetUniform1f(const std::string& inName, const float& value)
+{
+	Bind();
+	GLint location = GetShaderLocation(inName);
+	if (location == -1)
+	{
+		return;
+	}
+	GL_CALL(glUniform1f(location, value));
 }
 
 void Shader::SetUniform4f(const std::string& inName, float v0, float v1, float v2, float v3)
@@ -150,6 +161,17 @@ void Shader::SetUniformMat4f(const std::string& inName, const glm::mat4& inMat4)
 		return;
 	}
 	GL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &inMat4[0][0]));
+}
+
+void Shader::SetUniform3f(const std::string& inName, float v0, float v1, float v2)
+{
+	Bind();
+	GLint location = GetShaderLocation(inName);
+	if (location == -1)
+	{
+		return;
+	}
+	GL_CALL(glUniform3f(location, v0, v1, v2));
 }
 
 void Shader::Bind()
@@ -195,7 +217,7 @@ GLint Shader::GetShaderLocation(const std::string& inName)
 		std::cout << "can't find Shader Location with Name " << inName << std::endl;
 	}
 	
-	// shader ÄÚÈİ²»»á±ä£¬Í¬Ò»¸ö shader Ã»ÓĞÕâ¸ö name µÄ²Û¾ÍÒ»¶¨Ã»ÓĞ
+	// shader å†…å®¹ä¸ä¼šå˜ï¼ŒåŒä¸€ä¸ª shader æ²¡æœ‰è¿™ä¸ª name çš„æ§½å°±ä¸€å®šæ²¡æœ‰
 	m_locationMap[inName] = result;
 
 	return result;
@@ -208,13 +230,13 @@ GLuint Shader::CreateShader(const std::string& vertexSource, const std::string& 
 	GLuint vs = CompileShader(vertexSource, GL_VERTEX_SHADER);
 	GLuint fs = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
 
-	GL_CALL(glAttachShader(program, vs));			// ½« vs °ó¶¨µ½ program ÉÏ
-	GL_CALL(glAttachShader(program, fs));			// ½« fs °ó¶¨µ½ program ÉÏ
+	GL_CALL(glAttachShader(program, vs));			// å°† vs ç»‘å®šåˆ° program ä¸Š
+	GL_CALL(glAttachShader(program, fs));			// å°† fs ç»‘å®šåˆ° program ä¸Š
 
-	GL_CALL(glLinkProgram(program));					// Á´½Ó³ÌĞò£¬½«ËùÓĞ×ÅÉ«Æ÷ºÏ²¢ÎªÒ»¸ö¿ÉÖ´ĞĞµÄ³ÌĞò
-	GL_CALL(glValidateProgram(program));				// ÑéÖ¤³ÌĞòÊÇ·ñ¿ÉÒÔÖ´ĞĞ
+	GL_CALL(glLinkProgram(program));					// é“¾æ¥ç¨‹åºï¼Œå°†æ‰€æœ‰ç€è‰²å™¨åˆå¹¶ä¸ºä¸€ä¸ªå¯æ‰§è¡Œçš„ç¨‹åº
+	GL_CALL(glValidateProgram(program));				// éªŒè¯ç¨‹åºæ˜¯å¦å¯ä»¥æ‰§è¡Œ
 
-	GL_CALL(glDeleteShader(vs));						// É¾³ı×ÅÉ«Æ÷¶ÔÏó£¬Ò»µ©Á´½Ó³É¹¦ÄÇÃ´´úÂëÒÑ¾­Á¬½Óµ½³ÌĞòÖĞÁË£¬¿ÉÒÔÉ¾³ı×ÅÉ«Æ÷¶ÔÏó
+	GL_CALL(glDeleteShader(vs));						// åˆ é™¤ç€è‰²å™¨å¯¹è±¡ï¼Œä¸€æ—¦é“¾æ¥æˆåŠŸé‚£ä¹ˆä»£ç å·²ç»è¿æ¥åˆ°ç¨‹åºä¸­äº†ï¼Œå¯ä»¥åˆ é™¤ç€è‰²å™¨å¯¹è±¡
 	GL_CALL(glDeleteShader(fs));
 	
 	return program;
@@ -225,14 +247,14 @@ GLuint Shader::CompileShader(const std::string& inSource, GLenum inType)
 	GLuint shaderId = glCreateShader(inType);
 
 	const char* source = inSource.c_str();
-	GL_CALL(glShaderSource(shaderId, 1, &source, nullptr));			// ´«Èë nullptr ±íÊ¾¶ÁÈ¡Õû¸ö×Ö·û´®Êı×é
+	GL_CALL(glShaderSource(shaderId, 1, &source, nullptr));			// ä¼ å…¥ nullptr è¡¨ç¤ºè¯»å–æ•´ä¸ªå­—ç¬¦ä¸²æ•°ç»„
 	GL_CALL(glCompileShader(shaderId));
 
 	GLint errorId;
 	GL_CALL(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &errorId));
 	if (errorId == GL_FALSE)
 	{
-		// ±àÒë´íÎó
+		// ç¼–è¯‘é”™è¯¯
 		GLint length = 0;
 		GL_CALL(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &length));
 		

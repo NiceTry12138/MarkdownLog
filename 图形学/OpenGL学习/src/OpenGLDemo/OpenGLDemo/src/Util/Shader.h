@@ -9,8 +9,10 @@ public:
 	~Shader();
 
 	void SetUniform1i(const std::string& inName, const int& value);
+	void SetUniform1f(const std::string& inName, const float& value);
 	void SetUniform4f(const std::string& inName, float v0, float v1, float v2, float v3);
 	void SetUniformMat4f(const std::string& inName, const glm::mat4& inMat4);
+	void SetUniform3f(const std::string& inName, float v0, float v1, float v2);
 
 	void Bind();
 	void UnBind();
@@ -29,7 +31,7 @@ private:
 
 	//GLuint CreateShaderWithFile(const std::string& vertexFile, const std::string& fragmentFile);
 private:
-	std::unordered_map<std::string, GLint> m_locationMap;	// ≤€Œª”≥…‰
+	std::unordered_map<std::string, GLint> m_locationMap;	// ÊßΩ‰ΩçÊò†Â∞Ñ
 	GLuint m_ShaderID{ GL_ZERO };
 };
 

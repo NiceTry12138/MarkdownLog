@@ -556,6 +556,97 @@ glm::vec3 finalColor = lightColor * toyColor;
 
 ![](Image/033.png)
 
-[101中关于漫反射的计算](../Games101/图形学.md#blinn-phong反射模型)
+[101中关于反射的计算](../Games101/图形学.md#blinn-phong反射模型)
+
+根据漫反射、镜面反射和环境光的计算，得到着色器内容如下
+
+- 顶点着色器
+
+通过 `GL_ARRAY_BUFFER` 获得顶点坐标和法线，通过 `uniform` 设置 MVP 矩阵，计算得到顶点的直接坐标 `FragPos`
+
+```cpp
+#version 330 core
+
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec3 inNormal;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out vec3 Normal;
+out vec3 FragPos;
+
+void main() {
+	gl_Position = projection * view * model * vec4(inPosition, 1.0);
+
+	Normal = inNormal;
+	FragPos = vec3(model * vec4(inPosition, 1.0));
+}
+```
+
+- 片段着色器
+
+通过 `uniform` 设置相机坐标和灯光坐标、灯光颜色、物体颜色等参数
+
+通过顶点着色器得到顶点的世界坐标、顶点法线
+
+```cpp
+#version 330 core
+
+layout(location = 0) out vec4 o_color;
+
+in vec3 FragPos;                // 顶点坐标
+in vec3 Normal;					// 法线向量
+
+uniform vec3 viewPos;           // 相机坐标
+uniform vec3 lightPos;          // 灯的坐标
+
+uniform vec3 objectColor;       // 基本颜色
+uniform vec3 lightColor;        // 灯光颜色
+
+uniform float ambientStrength;  // 环境光强度
+uniform float diffuseStrength;  // 漫反射强度
+uniform float specularStrength;	// 镜面反射强度
+
+void main() {
+	// 环境光
+	vec3 ambient = ambientStrength * lightColor;
+	
+	vec3 normal = normalize(Normal);
+	vec3 lightDir = normalize(lightPos - FragPos);
+
+	// 光的强度与距离有一定关系
+	float lightDis = distance(lightPos, FragPos);
+	float disRate = 1 / lightDis / lightDis;
+
+	// 漫反射
+	float rate = max(dot(lightDir, normal), 0.0);	// 因为光线可能从物体的反面，此时忽略这个，所以用 max(0.0, )
+	vec3 diffuse = disRate * diffuseStrength * rate * lightColor;
+
+	// 镜面反射
+	vec3 enterViewDir = viewPos - FragPos;
+	vec3 halfV = (lightDir + enterViewDir) / length(lightDir + enterViewDir);
+	halfV = normalize(halfV);						// 半程向量
+	float specularRate = pow(max(dot(halfV, normal), 0.0), 32);
+	vec3 specular = disRate * specularStrength * specularRate * lightColor;
+
+	vec3 result = (ambient + diffuse + specular) * objectColor;
+	o_color = vec4(result, 1.0);
+}
+```
+
+跟之前不同的是，这里修改了 `Vertex` 的结构体
+
+```cpp
+// 顶点信息 v1 版本 
+struct Vertex_v1
+{
+	float position[3];			  // 顶点坐标
+	float normal[3];			  // 法线贴图
+};
+```
+
+![](Image/034.png)
 
 

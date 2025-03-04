@@ -12,6 +12,9 @@ public:
 	void SetFirstMouse(bool bIsFirst);
 	void SetMoveSpeed(float moveSpeed);
 	void SetRotateSpeed(float rotateSpeed);
+	void SetLocation(glm::vec3 inLocation);
+
+	glm::vec3 GetCameraLocation();
 
 private:
 	glm::vec3 m_CameraLocation = glm::vec3(0.0f, 0.0f, 3.0f);

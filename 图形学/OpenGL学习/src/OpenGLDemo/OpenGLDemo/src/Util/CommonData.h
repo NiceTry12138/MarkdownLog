@@ -1,11 +1,19 @@
 #pragma once
 
-// ¶¥µãĞÅÏ¢ v0 °æ±¾ ºóĞø¸ù¾İĞèÒª¿ÉÄÜĞÂÔö v1¡¢v2 ...
+// é¡¶ç‚¹ä¿¡æ¯ v0 ç‰ˆæœ¬ åç»­æ ¹æ®éœ€è¦å¯èƒ½æ–°å¢ v1ã€v2 ...
 struct Vertex_v0
 {
-	float position[3];			  // ¶¥µã×ø±ê
-	float color[4];				  // ¶¥µãÑÕÉ«
-	float texCoord[2];			  // ¶¥µãµÄ UV ×ø±ê	
-	int texIndex;				  // ¶¥µãÊ¹ÓÃÌùÍ¼µÄĞòºÅ
+	float position[3];			  // é¡¶ç‚¹åæ ‡
+	float color[4];				  // é¡¶ç‚¹é¢œè‰²
+	float texCoord[2];			  // é¡¶ç‚¹çš„ UV åæ ‡	
+	int texIndex;				  // é¡¶ç‚¹ä½¿ç”¨è´´å›¾çš„åºå·
+};
+
+
+// é¡¶ç‚¹ä¿¡æ¯ v1 ç‰ˆæœ¬ 
+struct Vertex_v1
+{
+	float position[3];			  // é¡¶ç‚¹åæ ‡
+	float normal[3];			  // æ³•çº¿è´´å›¾
 };
 

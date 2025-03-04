@@ -1416,6 +1416,10 @@
     <None Include="src\third\glm\gtx\wrap.inl">
       <Filter>头文件</Filter>
     </None>
+    <None Include="res\shader\Light\Fragment.frag" />
+    <None Include="res\shader\Light\Vertex.vert" />
+    <None Include="res\shader\Light\LightFragment.frag" />
+    <None Include="res\shader\Light\LightVertex.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\test.jpg">

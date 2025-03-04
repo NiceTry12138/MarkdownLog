@@ -14,5 +14,5 @@ void main() {
         texture(u_Texture0, v_TexCoord) : 
         texture(u_Texture1, v_TexCoord);
     
-    o_color = mix(texColor, v_Color, 0.3); // »ìºÏÎÆÀíºÍÑÕÉ«
+    o_color = mix(texColor, v_Color, 0.3); // æ··åˆçº¹ç†å’Œé¢œè‰²
 }

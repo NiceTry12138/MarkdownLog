@@ -466,6 +466,10 @@
     <ClInclude Include="src\Util\UtilTemplate.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shader\Light\Fragment.frag" />
+    <None Include="res\shader\Light\LightFragment.frag" />
+    <None Include="res\shader\Light\LightVertex.vert" />
+    <None Include="res\shader\Light\Vertex.vert" />
     <None Include="res\shader\TextPosition\Fragment.frag" />
     <None Include="res\shader\TextPosition\Vertex.vert" />
     <None Include="src\third\glm\detail\func_common.inl" />

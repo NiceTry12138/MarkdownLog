@@ -74,3 +74,13 @@ void Camera::SetRotateSpeed(float rotateSpeed)
 {
 	m_RorateSpeed = rotateSpeed;
 }
+
+void Camera::SetLocation(glm::vec3 inLocation)
+{
+	m_CameraLocation = inLocation;
+}
+
+glm::vec3 Camera::GetCameraLocation()
+{
+	return m_CameraLocation;
+}

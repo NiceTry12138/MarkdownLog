@@ -103,6 +103,6 @@ void TestModuleManager::TestModuleRun(GLFWwindow* window, float deltaTime)
 	TestModule->Update(window, deltaTime);
 
 	TestModule->ClearRender(window);
-	TestModule->RenderImGUI(window);
 	TestModule->Render(window);
+	TestModule->RenderImGUI(window);
 }
