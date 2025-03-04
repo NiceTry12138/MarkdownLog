@@ -40,10 +40,14 @@ void main() {
 	vec3 diffuse = disRate * cubeMaterial.diffuse * rate * light.diffuse;
 
 	// 镜面反射
-	vec3 enterViewDir = viewPos - FragPos;
-	vec3 halfV = (lightDir + enterViewDir) / length(lightDir + enterViewDir);
-	halfV = normalize(halfV);						// 半程向量
-	float specularRate = pow(max(dot(halfV, normal), 0.0), cubeMaterial.shininess);
+	vec3 enterViewDir = normalize(viewPos - FragPos);
+		// 通过半程向量计算
+	// vec3 halfV = (lightDir + enterViewDir) / length(lightDir + enterViewDir);
+	// halfV = normalize(halfV);						// 半程向量
+	// float specularRate = pow(max(dot(halfV, normal), 0.0), cubeMaterial.shininess);
+		// 直接使用 OpenGL 的 reflect 计算
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float specularRate = pow(max(dot(enterViewDir, reflectDir), 0.0), cubeMaterial.shininess);
 	vec3 specular = disRate * cubeMaterial.specular * specularRate * light.specular;
 
 	vec3 result = ambient + diffuse + specular;
