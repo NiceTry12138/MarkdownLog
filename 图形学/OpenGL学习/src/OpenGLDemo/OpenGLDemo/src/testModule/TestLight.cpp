@@ -84,7 +84,7 @@ void TestLight::OnEnter(GLFWwindow* window)
 	m_LightShader.Init("res/shader/Light/LightVertex.vert", "res/shader/Light/LightFragment.frag");
 	m_LightShader.UnBind();
 
-	CreateLight();
+	InitLight();
 
 	m_Camera.SetLocation(glm::vec3(0.0f, 0.0f, 3.0f));
 
@@ -120,21 +120,23 @@ void TestLight::Render(GLFWwindow* window)
 	m_Shader.SetUniformMat4f("view", m_view);
 	m_Shader.SetUniformMat4f("projection", m_proj);
 
-	m_Shader.SetUniform3f("objectColor", 1.0f, 0.5f, 0.31f);
-	m_Shader.SetUniform3f("lightColor", 1.0f, 1.0f, 1.0f);
+	m_Shader.SetUniform3f("light.ambient", m_light.ambient.x, m_light.ambient.y, m_light.ambient.z);		// 设置强度
+	m_Shader.SetUniform3f("light.diffuse", m_light.diffuse.x, m_light.diffuse.y, m_light.diffuse.z);
+	m_Shader.SetUniform3f("light.specular", m_light.specular.x, m_light.specular.y, m_light.specular.z);
+	m_Shader.SetUniform3f("light.lightPos", m_light.lightPos.x, m_light.lightPos.y, m_light.lightPos.z);
 
-	m_Shader.SetUniform1f("ambientStrength", m_ambientStrength);		// 设置强度
-	m_Shader.SetUniform1f("diffuseStrength", m_diffuseStrength);
-	m_Shader.SetUniform1f("specularStrength",m_specularStrength);
+	m_Shader.SetUniform3f("cubeMaterial.ambient", m_cubeMaterial.ambient.x, m_cubeMaterial.ambient.y, m_cubeMaterial.ambient.z);
+	m_Shader.SetUniform3f("cubeMaterial.diffuse", m_cubeMaterial.diffuse.x, m_cubeMaterial.diffuse.y, m_cubeMaterial.diffuse.z);
+	m_Shader.SetUniform3f("cubeMaterial.specular", m_cubeMaterial.specular.x, m_cubeMaterial.specular.y, m_cubeMaterial.specular.z );
+	m_Shader.SetUniform1i("cubeMaterial.shininess", m_cubeMaterial.shininesss);
 
 	m_Shader.SetUniform3f("viewPos", m_Camera.GetCameraLocation().x, m_Camera.GetCameraLocation().y, m_Camera.GetCameraLocation().z);
-	m_Shader.SetUniform3f("lightPos", m_LightPos.x, m_LightPos.y, m_LightPos.z);
 
 	glBindVertexArray(m_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6 * 6);
 
 	auto lightModule = glm::mat4(1.0f);
-	lightModule = glm::translate(lightModule, m_LightPos);
+	lightModule = glm::translate(lightModule, m_light.lightPos);
 	lightModule = glm::scale(lightModule, glm::vec3(0.2f)); // a smaller cube
 
 	m_LightShader.Bind();
@@ -152,9 +154,16 @@ void TestLight::UpdateImGUI(GLFWwindow* window)
 
 	ImGui::Begin("Light");
 
-	ImGui::SliderFloat("Light ambientStrength", &m_ambientStrength, 0.0f, 1.0f);
-	ImGui::SliderFloat("Light diffuseStrength", &m_diffuseStrength, 0.0f, 5.0f);
-	ImGui::SliderFloat("Light specularStrength", &m_specularStrength, 0.0f, 5.0f);
+	ImGui::SliderFloat3("Light ambient", &m_light.ambient.x, 0.0f, 1.0f);
+	ImGui::SliderFloat3("Light diffuse", &m_light.diffuse.x, 0.0f, 5.0f);
+	ImGui::SliderFloat3("Light specular", &m_light.specular.x, 0.0f, 5.0f);
+	ImGui::SliderFloat3("Light position", &m_light.lightPos.x, -5.0f, 5.0f);
+
+	ImGui::SliderFloat3("Cube Material ambient", &m_cubeMaterial.ambient.x, 0.0f, 1.0f);
+	ImGui::SliderFloat3("Cube Material diffuse", &m_cubeMaterial.diffuse.x, 0.0f, 5.0f);
+	ImGui::SliderFloat3("Cube Material specular", &m_cubeMaterial.specular.x, 0.0f, 5.0f);
+	ImGui::SliderInt("Cube Material position", &m_cubeMaterial.shininesss, 1, 100);
+
 
 	if (ImGui::Button("Close Window"))
 		glfwSetWindowShouldClose(window, true);
@@ -210,4 +219,19 @@ void TestLight::CreateLight()
 	// 灯光只需要位置数据
 	GL_CALL(glEnableVertexAttribArray(0));
 	GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex_v1), (void*)offsetof(Vertex_v1, position)));
+}
+
+void TestLight::InitLight()
+{
+	CreateLight();
+
+	m_light.lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+	m_light.ambient = glm::vec3(1.0f) * 0.1f;
+	m_light.diffuse = glm::vec3(1.0f) * 1.0f;
+	m_light.specular = glm::vec3(1.0f) * 0.5f;
+
+	m_cubeMaterial.ambient = glm::vec3(1.0f, 0.5f, 0.31f);
+	m_cubeMaterial.diffuse = glm::vec3(1.0f, 0.5f, 0.31f);
+	m_cubeMaterial.specular = glm::vec3(0.5f, 0.5f, 0.5f);
+	m_cubeMaterial.shininesss = 32;
 }

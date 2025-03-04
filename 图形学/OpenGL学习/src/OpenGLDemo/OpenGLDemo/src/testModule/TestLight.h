@@ -30,6 +30,8 @@ public:
 protected:
 	void CreateLight();
 
+	void InitLight();
+
 private:
 	GLuint m_VBO{ GL_ZERO };
 	GLuint m_VAO{ GL_ZERO };
@@ -44,17 +46,14 @@ private:
 	glm::mat4 m_view = glm::mat4(1.0f);			// 视图矩阵
 	glm::mat4 m_proj = glm::mat4(1.0f);			// 投影矩阵
 
-	glm::vec3 m_LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-
 	float m_CameraMoveSpeed = 0.1f;
 	float m_CameraRotateSpeed = 0.1f;
 
 	Camera m_Camera;
 	bool m_bLeftAltPress = false;
 
-	float m_ambientStrength = 0.1f;
-	float m_diffuseStrength = 1.0f;
-	float m_specularStrength = 0.5f;
+	Material_v0 m_cubeMaterial;
+	LightConfig_v0 m_light;
 
 	static TestLight _self;
 };
