@@ -671,4 +671,68 @@ vec3 specular = light.specular * spec * texture(cubeMaterial.specular, TexCoords
 - 在镜面反射贴图中间是一片黑色，所以物体中间几乎没有镜面反射的高光
 - 在镜面反射贴图四周是带有花纹的白色，所以物体四周会有不规则的高光，模拟出磨损的效果
 
+### 光的种类
+
+1. 平行光
+
+对于现实的参考就是阳光，由于距离过远可以直接理解为平行光
+
+对于这种光，无法也不需要定义坐标，只需要定义一个向量，表示光的方向即可
+
+```cpp
+struct Light {
+    // vec3 position; // 使用定向光就不再需要了
+    vec3 direction;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+```
+
+2. 点光源
+
+对于现实的参考就是白炽灯，具有坐标，且向四周发出光亮
+
+对于点光源，至少需要包含光源坐标，其实之前的案例就是几个最简单的点光源
+
+除了坐标之外，通常会设置距离。目前常见的点光源都有两个距离：**开始衰减距离**和**最远光照距离**
+
+显示生活中，灯光越近越亮，越远越按。同理，在虚拟世界也可以这么设置，**开始衰减距离**表示灯光强度开始衰减，**最远光照距离** 表示在此之外的物体不受该灯光影响
+
+![](Image/038.png)
+
+很明显中间这段弧线是个反函数，可以通过设置参数来控制函数曲线
+
+```cpp
+struct Light {
+    vec3 position;  
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
+};
+```
+
+> 计算例子： 1.0 / (constant + linear * distance + quadratic * distance * distance)
+
+- 聚光
+
+对于现实的参考就是聚光灯，具有坐标，和一个**特定方向**的照射光线
+
+与点光源相似，有一个**开始衰减**的角度和一个照射的**最大角度**
+
+![](Image/039.png)
+
+| 变量定于 | 作用 |
+| --- | --- 
+| LightDir | 从片段指向光源的向量 |
+| SpotDir | 聚光灯所指向的方向 |
+| Phi | 聚光半径的切光角 |
+| Theta | LightDir 和 SpotDir 向量之间的夹角 |
+
 
