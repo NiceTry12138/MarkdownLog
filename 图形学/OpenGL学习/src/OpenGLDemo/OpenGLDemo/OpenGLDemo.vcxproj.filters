@@ -84,6 +84,9 @@
     <ClCompile Include="src\testModule\TestModuleManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\testModule\TestLightCube.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -1004,6 +1007,9 @@
     <ClInclude Include="src\testModule\TestModuleManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\testModule\TestLightCube.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shader\TextPosition\Vertex.vert" />
@@ -1420,6 +1426,8 @@
     <None Include="res\shader\Light\Vertex.vert" />
     <None Include="res\shader\Light\LightFragment.frag" />
     <None Include="res\shader\Light\LightVertex.vert" />
+    <None Include="res\shader\Light\Cube.frag" />
+    <None Include="res\shader\Light\Cube.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\test.jpg">
@@ -1429,6 +1437,12 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="res\textures\test3.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\textures\light\container2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\textures\light\container2_specular.png">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

@@ -524,7 +524,7 @@ view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),  glm::vec3(0.0f, 0.0f, 0.0f),  g
 
 注意：此时 `Camera Up Vector` 保持不变，因为 `Up Vector` 是用于控制 `Roll` 的，一般不会变化
 
-## 颜色
+## 颜色和光照
 
 人能观察到物体的颜色，其实是物体不能吸收的颜色，也可以理解为反射的颜色
 
@@ -648,5 +648,27 @@ struct Vertex_v1
 ```
 
 ![](Image/034.png)
+
+物体具体是什么颜色，可以通过贴图来表现，物体的高光颜色强度也可以通过贴图来表示
+
+| 物体漫反射颜色 | 物体镜面反射颜色 |
+| --- | --- | 
+| ![](Image/035.png) | ![](Image/036.png) |
+
+在片段着色器中，可以使用 UV 坐标获取贴图颜色，将漫反射颜色 + 镜面反射颜色 得到的就是最后物体表现的颜色
+
+```cpp
+// 通过贴图 漫反射颜色
+vec3 diffuse = light.diffuse * diff * texture(cubeMaterial.diffuse, TexCoords).rgb;
+// 通过贴图 镜面反射颜色  
+vec3 specular = light.specular * spec * texture(cubeMaterial.specular, TexCoords).rgb;  
+```
+
+![](Image/037.png)
+
+观察箱子的表面
+
+- 在镜面反射贴图中间是一片黑色，所以物体中间几乎没有镜面反射的高光
+- 在镜面反射贴图四周是带有花纹的白色，所以物体四周会有不规则的高光，模拟出磨损的效果
 
 

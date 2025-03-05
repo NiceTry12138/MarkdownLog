@@ -18,6 +18,14 @@ struct Vertex_v1
 	float normal[3];			  // 法线贴图
 };
 
+// 顶点信息 v2 版本 
+struct Vertex_v2
+{
+	float position[3];			  // 顶点坐标
+	float normal[3];			  // 法线贴图
+	float texCoords[2];			  // UV 坐标
+};
+
 
 // 材质
 struct Material_v0
@@ -36,4 +44,13 @@ struct LightConfig_v0
 	glm::vec3 specular;		// 高光颜色 使用 vec3 可以分别控制每个颜色的强度
 
 	glm::vec3 lightPos;		// 灯光的坐标
+};
+
+
+struct Material_v1
+{
+	GLuint diffuse;			// 漫反射光贴图
+	GLuint specular;		// 高光颜色贴图
+
+	int shininesss;			// 反光度
 };

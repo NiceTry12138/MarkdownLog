@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\testModule\TestLightCube.cpp" />
     <ClCompile Include="src\testModule\TestModuleManager.cpp" />
     <ClCompile Include="src\testModule\TestWithMouseBase.cpp" />
     <ClCompile Include="src\Util\Camera.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\testModule\TestLightCube.h" />
     <ClInclude Include="src\testModule\TestModuleManager.h" />
     <ClInclude Include="src\testModule\TestWithMouseBase.h" />
     <ClInclude Include="src\Util\Camera.h" />
@@ -466,6 +468,8 @@
     <ClInclude Include="src\Util\UtilTemplate.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shader\Light\Cube.frag" />
+    <None Include="res\shader\Light\Cube.vert" />
     <None Include="res\shader\Light\Fragment.frag" />
     <None Include="res\shader\Light\LightFragment.frag" />
     <None Include="res\shader\Light\LightVertex.vert" />
@@ -610,6 +614,8 @@
     <None Include="src\third\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\textures\light\container2.png" />
+    <Image Include="res\textures\light\container2_specular.png" />
     <Image Include="res\textures\test.jpg" />
     <Image Include="res\textures\test2.png" />
     <Image Include="res\textures\test3.png" />

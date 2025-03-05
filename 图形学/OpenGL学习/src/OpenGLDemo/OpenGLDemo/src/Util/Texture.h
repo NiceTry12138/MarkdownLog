@@ -14,6 +14,8 @@ public:
 	int GetHeight();
 	int GetWidth();
 
+	GLuint GetBindSlot();
+
 	void DeleteTexture();
 private:
 	GLubyte* m_LocalBuffer{ nullptr };
@@ -22,5 +24,6 @@ private:
 	std::string m_FilePath;
 
 	GLuint m_TextureId{ GL_ZERO };
+	GLuint m_LastBindSlot;
 };
 

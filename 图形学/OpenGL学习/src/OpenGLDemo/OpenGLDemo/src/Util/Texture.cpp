@@ -38,6 +38,7 @@ void Texture::Init(const std::string& filePath)
 
 void Texture::Bind(GLuint slot)
 {
+	m_LastBindSlot = slot;
 	GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
 	GL_CALL(glBindTexture(GL_TEXTURE_2D, m_TextureId));
 }
@@ -55,6 +56,11 @@ int Texture::GetHeight()
 int Texture::GetWidth()
 {
 	return m_Width;
+}
+
+GLuint Texture::GetBindSlot()
+{
+	return m_LastBindSlot;
 }
 
 void Texture::DeleteTexture()
