@@ -87,6 +87,15 @@
     <ClCompile Include="src\testModule\TestLightCube.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Util\Mesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util\Model.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\testModule\TestModelV1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -1010,6 +1019,15 @@
     <ClInclude Include="src\testModule\TestLightCube.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\Util\Mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\Model.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\testModule\TestModelV1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shader\TextPosition\Vertex.vert" />
@@ -1428,6 +1446,8 @@
     <None Include="res\shader\Light\LightVertex.vert" />
     <None Include="res\shader\Light\Cube.frag" />
     <None Include="res\shader\Light\Cube.vert" />
+    <None Include="res\shader\model\model.frag" />
+    <None Include="res\shader\model\model.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\test.jpg">

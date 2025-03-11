@@ -5,6 +5,9 @@ class Texture
 {
 public:
 	virtual ~Texture();
+	Texture(Texture&& Other);
+	Texture() = default;
+	Texture(const Texture& Other) = default;
 
 	void Init(const std::string& filePath);
 

@@ -76,14 +76,17 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)OpenGLDemo\src\third\imgui;$(SolutionDir)OpenGLDemo\src\third\stb_image;$(SolutionDir)OpenGLDemo\src\third\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\assimp\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)OpenGLDemo\src\third\imgui;$(SolutionDir)OpenGLDemo\src\third\stb_image;$(SolutionDir)OpenGLDemo\src\third\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\assimp\lib;$(SolutionDir)Dependencies\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Dependencies\assimp\lib\assimpd.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -133,6 +136,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\testModule\TestModelV1.cpp" />
+    <ClCompile Include="src\Util\Model.cpp" />
+    <ClCompile Include="src\Util\Mesh.cpp" />
     <ClCompile Include="src\testModule\TestLightCube.cpp" />
     <ClCompile Include="src\testModule\TestModuleManager.cpp" />
     <ClCompile Include="src\testModule\TestWithMouseBase.cpp" />
@@ -159,6 +165,9 @@
     <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\testModule\TestModelV1.h" />
+    <ClInclude Include="src\Util\Model.h" />
+    <ClInclude Include="src\Util\Mesh.h" />
     <ClInclude Include="src\testModule\TestLightCube.h" />
     <ClInclude Include="src\testModule\TestModuleManager.h" />
     <ClInclude Include="src\testModule\TestWithMouseBase.h" />
@@ -474,6 +483,8 @@
     <None Include="res\shader\Light\LightFragment.frag" />
     <None Include="res\shader\Light\LightVertex.vert" />
     <None Include="res\shader\Light\Vertex.vert" />
+    <None Include="res\shader\model\model.frag" />
+    <None Include="res\shader\model\model.vert" />
     <None Include="res\shader\TextPosition\Fragment.frag" />
     <None Include="res\shader\TextPosition\Vertex.vert" />
     <None Include="src\third\glm\detail\func_common.inl" />

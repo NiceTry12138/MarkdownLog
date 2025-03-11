@@ -735,4 +735,33 @@ struct Light {
 | Phi | 聚光半径的切光角 |
 | Theta | LightDir 和 SpotDir 向量之间的夹角 |
 
+## 模型
+
+使用 `assimp` 来加载模型
+需要添加 `include` 和 `lib` 的路径
+
+```bash
+$(SolutionDir)Dependencies\assimp\include
+$(SolutionDir)Dependencies\assimp\lib
+```
+
+需要添加 `assimpd.lib` 库
+
+并且在生成事件中，将 `assimpd.dll` 复制到输出路径
+
+```bash
+copy /Y "$(SolutionDir)Dependencies\assimp\lib\assimpd.dll" "$(OutDir)"
+```
+
+![](Image/040.png)
+
+> 编译时依赖 `assimpd.lib`，运行时依赖 `assimpd.dll`
+
+编译 `win32` 平台的 `assimp` 使用命令行
+
+```bash
+mkdir build && cd build
+cmake ../ -A win32
+```
+
 

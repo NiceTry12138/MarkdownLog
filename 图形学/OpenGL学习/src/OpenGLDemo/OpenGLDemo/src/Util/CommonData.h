@@ -1,5 +1,15 @@
 #pragma once
-#include "glm/glm.hpp"
+#include "CommonHead.h"
+
+#define MAX_BONE_INFLUENCE 4
+
+enum class ETextureType : GLuint
+{
+	E_Diffuse = 0,		// 漫反射
+	E_Specular = 1,		// 镜面反射
+	E_Normal = 2,		// 法线
+	E_Height = 3,		// 高度
+};
 
 // 顶点信息 v0 版本 后续根据需要可能新增 v1、v2 ...
 struct Vertex_v0
@@ -54,3 +64,19 @@ struct Material_v1
 
 	int shininesss;			// 反光度
 };
+
+struct Vertex_Mesh {
+	glm::vec3 Position;							// 顶点坐标
+	glm::vec3 Normal;							// 顶点法线
+	glm::vec2 TexCoords;						// UV 坐标
+	glm::vec3 Tangent;							// 切线向量
+	glm::vec3 Bitangent;						// 副切线向量
+	int m_BoneIDs[MAX_BONE_INFLUENCE];			// 影响该顶点的骨骼 ID
+	float m_Weights[MAX_BONE_INFLUENCE];		// 每个骨骼对该顶点的影响权重
+};
+
+struct Texture_Mesh {
+	ETextureType tType;
+	std::string path;
+};
+

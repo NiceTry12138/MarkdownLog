@@ -6,6 +6,22 @@ Texture::~Texture()
 	DeleteTexture();
 }
 
+Texture::Texture(Texture&& Other)
+{
+	m_LocalBuffer = Other.m_LocalBuffer;
+	m_Width = Other.m_Width;
+	m_Height = Other.m_Height;
+	m_BPP = Other.m_BPP;
+	m_FilePath = Other.m_FilePath;
+	m_TextureId = Other.m_TextureId;
+	m_LastBindSlot = Other.m_LastBindSlot;
+
+	Other.m_LocalBuffer = nullptr;
+	Other.m_FilePath.empty();
+	Other.m_TextureId = GL_ZERO;
+	Other.m_LastBindSlot = GL_ZERO;
+}
+
 void Texture::Init(const std::string& filePath)
 {
 	if (m_FilePath == filePath) {
