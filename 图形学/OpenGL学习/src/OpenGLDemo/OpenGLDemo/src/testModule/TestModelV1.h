@@ -40,6 +40,8 @@ private:
 	glm::mat4 m_view = glm::mat4(1.0f);			// 视图矩阵
 	glm::mat4 m_proj = glm::mat4(1.0f);			// 投影矩阵
 
+	//glm::vec3 m_modelRotate = glm::vec3(0.0f);
+
 	float m_CameraMoveSpeed = 0.1f;
 	float m_CameraRotateSpeed = 0.1f;
 

@@ -1,6 +1,8 @@
 #include "Texture.h"
 #include "stb_image.h"
 
+#include <assimp/scene.h>
+
 Texture::~Texture()
 {
 	DeleteTexture();
@@ -17,7 +19,7 @@ Texture::Texture(Texture&& Other)
 	m_LastBindSlot = Other.m_LastBindSlot;
 
 	Other.m_LocalBuffer = nullptr;
-	Other.m_FilePath.empty();
+	Other.m_FilePath.clear();
 	Other.m_TextureId = GL_ZERO;
 	Other.m_LastBindSlot = GL_ZERO;
 }
@@ -52,6 +54,87 @@ void Texture::Init(const std::string& filePath)
 	}
 }
 
+void Texture::InitWithModelTexture(const std::string& filePath)
+{
+	if (m_FilePath == filePath) {
+		return;
+	}
+
+	DeleteTexture();
+	m_FilePath = filePath;
+
+	glGenTextures(1, &m_TextureId);
+
+	int nrComponents;
+
+	stbi_set_flip_vertically_on_load(0);
+	unsigned char* data = stbi_load(filePath.c_str(), &m_Width, &m_Height, &nrComponents, 0);
+	if (data)
+	{
+		GLenum format = GL_RED;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, m_TextureId);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << filePath << std::endl;
+		stbi_image_free(data);
+	}
+	data = nullptr;
+}
+
+void Texture::InitWithModelInnterTexture(const aiTexture* inTexture)
+{
+	glGenTextures(1, &m_TextureId);
+
+	glBindTexture(GL_TEXTURE_2D, m_TextureId);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int nrChannels = 1;
+	unsigned char* image_data = nullptr;
+	if (inTexture->mHeight == 0)
+	{
+		image_data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(inTexture->pcData), inTexture->mWidth, &m_Width, &m_Height, &nrChannels, 0);
+	}
+	else
+	{
+		image_data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(inTexture->pcData), inTexture->mWidth * inTexture->mHeight, &m_Width, &m_Height, &nrChannels, 0);
+	}
+
+	if (image_data != nullptr)
+	{
+		GLenum format = 1;
+		if (nrChannels == 1)
+			format = GL_RED;
+		else if (nrChannels == 3)
+			format = GL_RGB;
+		else if (nrChannels == 4)
+			format = GL_RGBA;
+		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, image_data);
+	}
+	image_data = nullptr;
+}
+
 void Texture::Bind(GLuint slot)
 {
 	m_LastBindSlot = slot;
@@ -77,6 +160,11 @@ int Texture::GetWidth()
 GLuint Texture::GetBindSlot()
 {
 	return m_LastBindSlot;
+}
+
+GLuint Texture::GetTextureID()
+{
+	return m_TextureId;
 }
 
 void Texture::DeleteTexture()

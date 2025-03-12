@@ -1,6 +1,8 @@
 #pragma once
 #include "CommonHead.h"
 
+class aiTexture;
+
 class Texture
 {
 public:
@@ -10,6 +12,8 @@ public:
 	Texture(const Texture& Other) = default;
 
 	void Init(const std::string& filePath);
+	void InitWithModelTexture(const std::string& filePath);
+	void InitWithModelInnterTexture(const aiTexture* inTexture);
 
 	void Bind(GLuint slot = 0);
 	void UnBind();
@@ -18,6 +22,7 @@ public:
 	int GetWidth();
 
 	GLuint GetBindSlot();
+	GLuint GetTextureID();
 
 	void DeleteTexture();
 private:

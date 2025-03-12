@@ -10,8 +10,6 @@ Mesh::Mesh(Mesh&& Other)
 	indices = std::move(Other.indices);
 	textures = std::move(Other.textures);
 
-	loadedTextures = std::move(Other.loadedTextures);
-
 	Other.VAO = GL_ZERO;
 	Other.VBO = GL_ZERO;
 	Other.EBO = GL_ZERO;
@@ -29,7 +27,6 @@ void Mesh::init(const std::vector<Vertex_Mesh>& inVertices, const std::vector<GL
 	this->textures = inTextures;
 
 	setUpMesh();
-	setUpTexture();
 }
 
 void Mesh::Draw(Shader& shader)
@@ -49,7 +46,6 @@ void Mesh::Draw(Shader& shader)
 	// uniform sampler2D texture_specular2;
 
 	for (GLuint index = 0; index < textures.size(); ++index) {
-		loadedTextures[index].Bind(index);
 		std::string slotName;
 		switch (textures[index].tType)
 		{
@@ -67,6 +63,9 @@ void Mesh::Draw(Shader& shader)
 			break;
 		}
 		shader.SetUniform1i(slotName, index);
+
+		glBindTexture(GL_TEXTURE_2D, textures[index].textureId);
+		glActiveTexture(GL_TEXTURE0 + index);
 	}
 
 	// draw mesh
@@ -116,14 +115,4 @@ void Mesh::setUpMesh()
 	
 	// 解绑 避免影响其他流程 或者被其他流程影响
 	glBindVertexArray(GL_ZERO);
-}
-
-void Mesh::setUpTexture()
-{
-	for (auto& item : textures)
-	{
-		Texture t;
-		t.Init(item.path);
-		loadedTextures.push_back(std::move(t));
-	}
 }

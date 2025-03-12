@@ -76,7 +76,30 @@ struct Vertex_Mesh {
 };
 
 struct Texture_Mesh {
+	GLuint textureId;
 	ETextureType tType;
-	std::string path;
+	std::string path;							// 全路径名称
+	std::string fileName;						// 文件名称
+
+	operator std::string() {
+		std::string typeStr = "unknow type";
+		switch (tType)
+		{
+		case ETextureType::E_Diffuse:
+			typeStr = "diffuse";
+			break;
+		case ETextureType::E_Specular:
+			typeStr = "specular";
+			break;
+		case ETextureType::E_Normal:
+			typeStr = "normal";
+			break;
+		case ETextureType::E_Height:
+			typeStr = "height";
+			break;
+		}
+
+		return "textureId = " + std::to_string(textureId) + " path = " + path + " type = " + typeStr;
+	}
 };
 

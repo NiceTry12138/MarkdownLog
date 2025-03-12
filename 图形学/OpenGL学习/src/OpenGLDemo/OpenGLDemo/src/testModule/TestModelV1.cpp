@@ -18,6 +18,7 @@ void TestModelV1::OnEnter(GLFWwindow* window)
 	BindMouse(window);
 
 	m_model = glm::scale(m_model, glm::vec3(3.0f, 3.0f, 3.0));
+	m_model = glm::rotate(m_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
 void TestModelV1::OnExit(GLFWwindow* window)
@@ -63,6 +64,8 @@ void TestModelV1::UpdateImGUI(GLFWwindow* window)
 	const auto& io = ImGui::GetIO();
 
 	ImGui::Begin("Model");
+
+	//ImGui::SliderFloat3("Model Rotate ", &m_modelRotate.x, -180, 180);
 
 	if (ImGui::Button("Close Window"))
 		glfwSetWindowShouldClose(window, true);

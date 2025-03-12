@@ -23,13 +23,10 @@ public:
 protected:
 	// 绑定数据信息
 	void setUpMesh();
-	void setUpTexture();
 
 private:
 	GLuint VAO{ GL_ZERO };		// vertex array object
 	GLuint VBO{ GL_ZERO };		// vertex buffer
 	GLuint EBO{ GL_ZERO };		// element buffer
-
-	std::vector<Texture> loadedTextures;
 };
 
