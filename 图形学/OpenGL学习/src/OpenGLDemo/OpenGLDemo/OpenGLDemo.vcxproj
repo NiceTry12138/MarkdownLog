@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Util\BaseLight.cpp" />
     <ClCompile Include="src\testModule\TestModelV1.cpp" />
     <ClCompile Include="src\Util\Model.cpp" />
     <ClCompile Include="src\Util\Mesh.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Util\BaseLight.h" />
     <ClInclude Include="src\testModule\TestModelV1.h" />
     <ClInclude Include="src\Util\Model.h" />
     <ClInclude Include="src\Util\Mesh.h" />

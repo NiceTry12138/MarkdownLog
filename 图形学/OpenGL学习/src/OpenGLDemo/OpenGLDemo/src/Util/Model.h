@@ -32,5 +32,5 @@ private:
 	std::vector<Mesh> meshes;
 	std::string directory;
 
-	std::vector<Texture> loadedTextures = std::vector<Texture>(32);
+	std::vector<Texture> loadedTextures = std::vector<Texture>(128);
 };

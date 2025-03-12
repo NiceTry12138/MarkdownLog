@@ -1,0 +1,169 @@
+# Blender MTL File: 'export.blend'
+# Material Count: 12
+
+newmtl arm
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\arm_L_arm_Normal.jpg
+map_Kd textures\\arm_L_arm_BaseColor.jpg
+map_Ns textures\\arm_L_arm_Roughness.jpg
+refl textures\\arm_L_arm_Metallic.jpg
+
+newmtl cloak_and_foot
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.597013 0.800000 0.366458
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\foot-and-cloak_L_cloak_Normal.jpg
+map_Kd textures\\foot-and-cloak_L_cloak_BaseColor.jpg
+map_Ns textures\\foot-and-cloak_L_cloak_Roughness.jpg
+refl textures\\foot-and-cloak_L_cloak_Metallic.jpg
+
+newmtl clothing
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.512842 0.800000 0.564326
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\clothes_L_clothes_Normal.jpg
+map_Kd textures\\clothes_L_clothes_BaseColor.jpg
+map_Ns textures\\clothes_L_clothes_Roughness.jpg
+
+newmtl dagger
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.435523 0.800000 0.553419
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\dagger_L_dagger_Normal.jpg
+map_Kd textures\\dagger_L_dagger_BaseColor.jpg
+map_Ns textures\\dagger_L_dagger_Roughness.jpg
+refl textures\\dagger_L_dagger_Metallic.jpg
+
+newmtl hand
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.250919 0.586601
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\hand_L_glove_Normal.jpg
+map_Kd textures\\hand_L_glove_BaseColor.jpg
+map_Ns textures\\hand_L_glove_Roughness.jpg
+refl textures\\hand_L_glove_Metallic.jpg
+
+newmtl helm
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.654912 0.317046
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\helm_L_helm_L_Normal.jpg
+map_Kd textures\\helm_L_helm_L_BaseColor.jpg
+map_Ns textures\\helm_L_helm_L_Roughness.jpg
+refl textures\\helm_L_helm_L_Metallic.jpg
+
+newmtl leg
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.580154 0.434102
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\leg_L_leg_Normal.jpg
+map_Kd textures\\leg_L_leg_BaseColor.jpg
+map_Ns textures\\leg_L_leg_Roughness.jpg
+refl textures\\leg_L_leg_Metallic.jpg
+
+newmtl main
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump textures\\main_L_main_Normal.jpg
+map_Kd textures\\main_L_main_BaseColor.jpg
+map_Ns textures\\main_L_main_Roughness.jpg
+refl textures\\main_L_main_Metallic.jpg
+
+newmtl po01
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.347549 0.452140 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\porch01_L_porch_A_Normal.jpg
+map_Kd textures\\porch01_L_porch_A_BaseColor.jpg
+map_Ns textures\\porch01_L_porch_A_Roughness.jpg
+refl textures\\porch01_L_porch_A_Metallic.jpg
+
+newmtl po02
+Ns 96.078443
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.075721 0.501964
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Bump textures\\porch-02_L_Material_Normal.jpg
+map_Kd textures\\porch-02_L_Material_BaseColor.jpg
+map_Ns textures\\porch-02_L_Material_Roughness.jpg
+refl textures\\porch-02_L_Material_Metallic.jpg
+
+newmtl shield
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.466147 0.483155
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\shiled_L_shield_Normal.jpg
+map_Kd textures\\shiled_L_shield_BaseColor.jpg
+map_Ns textures\\shiled_L_shield_Roughness.jpg
+refl textures\\shiled_L_shield_Metallic.jpg
+
+newmtl sword
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.424858 0.663587
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump textures\\sword_L_sword_Normal.jpg
+map_Kd textures\\sword_L_sword_BaseColor.jpg
+map_Ns textures\\sword_L_sword_Roughness.jpg
+refl textures\\sword_L_sword_Metallic.jpg

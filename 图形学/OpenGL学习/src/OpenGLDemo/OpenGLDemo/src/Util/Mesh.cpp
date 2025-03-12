@@ -46,27 +46,33 @@ void Mesh::Draw(Shader& shader)
 	// uniform sampler2D texture_specular2;
 
 	for (GLuint index = 0; index < textures.size(); ++index) {
+		glActiveTexture(GL_TEXTURE0 + index);
+		glBindTexture(GL_TEXTURE_2D, textures[index].textureId);
+
 		std::string slotName;
 		switch (textures[index].tType)
 		{
-		case ETextureType::E_Diffuse:
+		case ETextureType::E_DIFFUSE:
 			slotName = "texture_diffuse" + std::to_string(textureDiffuseIndex++);
 			break;
-		case ETextureType::E_Specular:
+		case ETextureType::E_SPECULAR:
 			slotName = "texture_specular" + std::to_string(textureSpecularIndex++);
 			break;
-		case ETextureType::E_Height:
-			slotName = "texture_height" + std::to_string(textureHeightIndex++);
+		case ETextureType::E_HEIGHT:
+			slotName = "texture_normal" + std::to_string(textureHeightIndex++);
 			break;
-		case ETextureType::E_Normal:
+		case ETextureType::E_NORMALS:
 			slotName = "texture_normal" + std::to_string(textureNormalIndex++);
+			break;
+		case ETextureType::E_SHININESS:
+			slotName = "texture_shiness" + std::to_string(textureNormalIndex++);
 			break;
 		}
 		shader.SetUniform1i(slotName, index);
-
-		glBindTexture(GL_TEXTURE_2D, textures[index].textureId);
-		glActiveTexture(GL_TEXTURE0 + index);
+		//std::cout << "use texture: id = " << (std::string)textures[index] << " slotId = " << index << " slotName = " << slotName << std::endl;
 	}
+
+	//std::cout << std::endl  << std::endl;
 
 	// draw mesh
 	glBindVertexArray(VAO);

@@ -96,6 +96,9 @@
     <ClCompile Include="src\testModule\TestModelV1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Util\BaseLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -1026,6 +1029,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\testModule\TestModelV1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\BaseLight.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

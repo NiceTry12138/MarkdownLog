@@ -3,12 +3,63 @@
 
 #define MAX_BONE_INFLUENCE 4
 
-enum class ETextureType : GLuint
+enum ETextureType
 {
-	E_Diffuse = 0,		// 漫反射
-	E_Specular = 1,		// 镜面反射
-	E_Normal = 2,		// 法线
-	E_Height = 3,		// 高度
+    E_NONE = 0,
+    E_DIFFUSE = 1,
+    E_SPECULAR = 2,
+    E_AMBIENT = 3,
+    E_EMISSIVE = 4,
+    E_HEIGHT = 5,
+    E_NORMALS = 6,
+    E_SHININESS = 7,
+    E_OPACITY = 8,
+    E_DISPLACEMENT = 9,
+    E_LIGHTMAP = 10,
+    E_REFLECTION = 11,
+    E_BASE_COLOR = 12,
+    E_NORMAL_CAMERA = 13,
+    E_EMISSION_COLOR = 14,
+    E_METALNESS = 15,
+    E_DIFFUSE_ROUGHNESS = 16,
+    E_AMBIENT_OCCLUSION = 17,
+    E_UNKNOWN = 18,
+    E_SHEEN = 19,
+    E_CLEARCOAT = 20,
+    E_TRANSMISSION = 21,
+    E_MAYA_BASE = 22,
+    E_MAYA_SPECULAR = 23,
+    E_MAYA_SPECULAR_COLOR = 24,
+    E_MAYA_SPECULAR_ROUGHNESS = 25,
+};
+
+static std::map<ETextureType, std::string> G_TextureTypeToString = {
+	{ ETextureType::E_NONE  , "NONE " },
+	{ ETextureType::E_DIFFUSE  , "DIFFUSE " },
+	{ ETextureType::E_SPECULAR  , "SPECULAR " },
+	{ ETextureType::E_AMBIENT  , "AMBIENT " },
+	{ ETextureType::E_EMISSIVE  , "EMISSIVE " },
+	{ ETextureType::E_HEIGHT  , "HEIGHT " },
+	{ ETextureType::E_NORMALS  , "NORMALS " },
+	{ ETextureType::E_SHININESS  , "SHININESS " },
+	{ ETextureType::E_OPACITY  , "OPACITY " },
+	{ ETextureType::E_DISPLACEMENT  , "DISPLACEMENT " },
+	{ ETextureType::E_LIGHTMAP  , "LIGHTMAP " },
+	{ ETextureType::E_REFLECTION  , "REFLECTION " },
+	{ ETextureType::E_BASE_COLOR  , "BASE_COLOR " },
+	{ ETextureType::E_NORMAL_CAMERA  , "NORMAL_CAMERA " },
+	{ ETextureType::E_EMISSION_COLOR  , "EMISSION_COLOR " },
+	{ ETextureType::E_METALNESS  , "METALNESS " },
+	{ ETextureType::E_DIFFUSE_ROUGHNESS  , "DIFFUSE_ROUGHNESS " },
+	{ ETextureType::E_AMBIENT_OCCLUSION  , "AMBIENT_OCCLUSION " },
+	{ ETextureType::E_UNKNOWN  , "UNKNOWN " },
+	{ ETextureType::E_SHEEN  , "SHEEN " },
+	{ ETextureType::E_CLEARCOAT  , "CLEARCOAT " },
+	{ ETextureType::E_TRANSMISSION  , "TRANSMISSION " },
+	{ ETextureType::E_MAYA_BASE  , "MAYA_BASE " },
+	{ ETextureType::E_MAYA_SPECULAR  , "MAYA_SPECULAR " },
+	{ ETextureType::E_MAYA_SPECULAR_COLOR  , "MAYA_SPECULAR_COLOR " },
+	{ ETextureType::E_MAYA_SPECULAR_ROUGHNESS  , "MAYA_SPECULAR_ROUGHNESS " },
 };
 
 // 顶点信息 v0 版本 后续根据需要可能新增 v1、v2 ...
@@ -82,24 +133,8 @@ struct Texture_Mesh {
 	std::string fileName;						// 文件名称
 
 	operator std::string() {
-		std::string typeStr = "unknow type";
-		switch (tType)
-		{
-		case ETextureType::E_Diffuse:
-			typeStr = "diffuse";
-			break;
-		case ETextureType::E_Specular:
-			typeStr = "specular";
-			break;
-		case ETextureType::E_Normal:
-			typeStr = "normal";
-			break;
-		case ETextureType::E_Height:
-			typeStr = "height";
-			break;
-		}
-
-		return "textureId = " + std::to_string(textureId) + " path = " + path + " type = " + typeStr;
+		std::string typeStr = G_TextureTypeToString[tType];
+		return "textureId = " + std::to_string(textureId) + " path = " + fileName + " type = " + typeStr;
 	}
 };
 
