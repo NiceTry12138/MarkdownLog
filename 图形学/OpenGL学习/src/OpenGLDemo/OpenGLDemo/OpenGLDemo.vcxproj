@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\testModule\TestFrameBuffer.cpp" />
     <ClCompile Include="src\Util\BaseLight.cpp" />
     <ClCompile Include="src\testModule\TestModelV1.cpp" />
     <ClCompile Include="src\Util\Model.cpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\testModule\TestFrameBuffer.h" />
     <ClInclude Include="src\Util\BaseLight.h" />
     <ClInclude Include="src\testModule\TestModelV1.h" />
     <ClInclude Include="src\Util\Model.h" />
@@ -479,6 +481,8 @@
     <ClInclude Include="src\Util\UtilTemplate.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shader\FrameBuffer\fb.frag" />
+    <None Include="res\shader\FrameBuffer\fb.vert" />
     <None Include="res\shader\Light\Cube.frag" />
     <None Include="res\shader\Light\Cube.vert" />
     <None Include="res\shader\Light\Fragment.frag" />

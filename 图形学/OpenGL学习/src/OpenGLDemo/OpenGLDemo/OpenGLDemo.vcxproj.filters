@@ -99,6 +99,9 @@
     <ClCompile Include="src\Util\BaseLight.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\testModule\TestFrameBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -1034,10 +1037,11 @@
     <ClInclude Include="src\Util\BaseLight.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\testModule\TestFrameBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shader\TextPosition\Vertex.vert" />
-    <None Include="res\shader\TextPosition\Fragment.frag" />
     <None Include="src\third\glm\detail\func_common.inl">
       <Filter>头文件</Filter>
     </None>
@@ -1454,6 +1458,10 @@
     <None Include="res\shader\Light\Cube.vert" />
     <None Include="res\shader\model\model.frag" />
     <None Include="res\shader\model\model.vert" />
+    <None Include="res\shader\FrameBuffer\fb.frag" />
+    <None Include="res\shader\FrameBuffer\fb.vert" />
+    <None Include="res\shader\TextPosition\Fragment.frag" />
+    <None Include="res\shader\TextPosition\Vertex.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\test.jpg">
