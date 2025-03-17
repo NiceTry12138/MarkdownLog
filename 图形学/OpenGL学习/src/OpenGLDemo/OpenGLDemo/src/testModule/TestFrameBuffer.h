@@ -41,7 +41,11 @@ private:
 	GLuint m_FBO{ GL_ZERO };					// Frame Buffer Object 帧缓冲对象
 	GLuint m_VAOPlane{ GL_ZERO };				// 一个平面的 VAO 用于绘制帧缓冲效果
 	GLuint m_textureBuffer{ GL_ZERO };			// 用于存储帧缓冲的 贴图
+	GLuint m_depthTextureBuffer{ GL_ZERO };			// 用于存储帧缓冲的 贴图
 	Shader m_planeShader;
+
+	float m_blurSize;
+	int m_blurTimes = 1;
 	
 	bool m_ShowFBO{ true };						// 是否渲染到 FBO 上
 

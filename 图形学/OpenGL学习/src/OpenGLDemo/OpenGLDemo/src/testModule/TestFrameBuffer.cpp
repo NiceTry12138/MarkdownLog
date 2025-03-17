@@ -23,10 +23,18 @@ void TestFrameBuffer::OnEnter(GLFWwindow* window)
 
 	m_planeShader.Init("res/shader/FrameBuffer/fb.vert", "res/shader/FrameBuffer/fb.frag");
 	m_planeShader.SetUniform1i("screenTexture", 10);
+	m_planeShader.SetUniform1f("u_BlurSize", 1.0f / RSI->ViewportWidth);
+	m_planeShader.SetUniform1f("m_blurTimes", m_blurTimes);
 	m_planeShader.UnBind();
+
+	InitFBO();
+
+	m_ModelRotate = glm::vec3(-90.0f, 0.0f, 0.0f);
 
 	m_Light.Init();
 	m_LightPos = glm::vec3(5.0f);
+
+	m_blurSize = RSI->ViewportWidth;
 }
 
 void TestFrameBuffer::OnExit(GLFWwindow* window)
@@ -74,6 +82,7 @@ void TestFrameBuffer::Render(GLFWwindow* window)
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		m_planeShader.Bind();
 		glBindVertexArray(m_VAOPlane);
 		glActiveTexture(GL_TEXTURE10);
 		glBindTexture(GL_TEXTURE_2D, m_textureBuffer);
@@ -87,11 +96,8 @@ void TestFrameBuffer::UpdateImGUI(GLFWwindow* window)
 
 	ImGui::Begin("Model");
 
-	ImGui::SliderFloat3("Light Position", &m_LightPos.x, -10.0f, 10.0f);
-	ImGui::SliderFloat("Model Scale", &m_ModelScale, 0.1f, 2.0f);
-	ImGui::SliderFloat3("Model Rotate", &m_ModelRotate.x, -180.0f, 180.0f);
-	ImGui::SliderInt("Model Shineness", &m_Shineness, 0, 64);
 	ImGui::Checkbox("Show FBO Plane?", &m_ShowFBO);
+	ImGui::SliderInt("Blue Times ", &m_blurTimes, 1, 5);
 
 	if (ImGui::Button("Close Window"))
 		glfwSetWindowShouldClose(window, true);
