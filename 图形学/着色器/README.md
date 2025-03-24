@@ -239,3 +239,70 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 又或者，只用一张很大的 `RenderTarget` 贴在地面，然后将所有 `Actor` 的射线检测之后的视线范围都投射到这张大的 `RenderTarget` 中
 
 如此一来只用一张 `RenderTarget` 就可以一次性绘制
+
+## 黑洞隧道
+
+![](Image/019.png)
+
+```glsl
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    float Multiple = 8.0;
+    float PI = 3.1315926535;
+
+    vec2 uv = fragCoord/iResolution.xy;
+    
+    // 将值域变化为 -1 ~ 1
+    float posX = (uv.x - 0.5) * 2.0;
+    float posY = (uv.y - 0.5) * 2.0;
+    
+    
+    // 修正: 调整 UV 坐标到中心对称且保持宽高比 上面代码无法保证宽高比 导致跟随图片尺寸拉伸
+    vec2 uv2 = (2.0 * fragCoord - iResolution.xy) / min(iResolution.x, iResolution.y);
+    posX = uv2.x;
+    posY = uv2.y;
+    
+    // 得到角度 -PI ~ PI
+    float angle = atan(posY, posX);
+    float dis = length(vec2(posX, posY));
+    
+    // 角度转换为 0 ~ PI 且上下对称
+    // angle = abs(angle / PI);
+    // angle = mod(angle + iTime, 1.0);
+    // fragColor = vec4(vec3(angle), 1.0);
+
+    // 角度转换为 0 ~ PI 并且中心对称
+    // float hit = mod(angle / PI+ iTime, 1.0);    // 重点函数 使用 mod 而不是 abs 
+    // vec3 col = mix(vec3(0.), vec3(1.), hit);   
+    // fragColor = vec4(col, 1.0);
+
+    // * Multiple 是为了实现多段条纹
+    // 加上 1.0 / dis 是为了通过反函数来实现条纹扭曲的效果
+    // 最后乘以 dis 保证屏幕中间的暗 来实现黑洞效果
+    float hit = sin((angle / PI + iTime + 1.0 / dis) * Multiple * PI) * dis;
+    vec3 col = mix(vec3(0.), vec3(1.), hit);   
+    fragColor = vec4(col, 1.0);
+}
+```
+
+核心思路就是通过极坐标的角度来表示颜色变化
+
+对面下面两种计算方法得到的颜色差异
+
+![](Image/002.gif)
+
+```glsl
+float hit = mod(angle / PI+ iTime, 1.0);
+vec3 col = mix(vec3(0.), vec3(1.), hit);   
+fragColor = vec4(col, 1.0);
+```
+
+![](Image/001.gif)
+
+```glsl
+angle = abs(angle / PI);
+angle = mod(angle + iTime, 1.0);
+fragColor = vec4(vec3(angle), 1.0);
+```
+
+> 多用一个 abs 
