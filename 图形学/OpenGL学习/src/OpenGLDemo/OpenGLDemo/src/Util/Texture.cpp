@@ -135,6 +135,40 @@ void Texture::InitWithModelInnterTexture(const aiTexture* inTexture)
 	image_data = nullptr;
 }
 
+void Texture::InitWithSkyBox(const std::map<ESkyBoxTextureType, std::string>& InTexturesPath)
+{
+	glGenTextures(1, &m_TextureId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureId);
+
+	stbi_set_flip_vertically_on_load(1);
+
+	for (const auto& TextureItem : InTexturesPath)
+	{
+		unsigned char* image_data = nullptr;
+		image_data = stbi_load(TextureItem.second.c_str(), &m_Width, &m_Height, &m_BPP, 0);
+		if (image_data != nullptr)
+		{
+			GL_CALL(glTexImage2D(G_CubeTextureTypeMap[TextureItem.first], 0, GL_RGB, m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data));
+		}
+		stbi_image_free(image_data);
+		image_data = nullptr;
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+}
+
+void Texture::BindCubeTexture(GLuint slot)
+{
+	m_LastBindSlot = slot;
+	GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
+	GL_CALL(glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureId));
+}
+
 void Texture::Bind(GLuint slot)
 {
 	m_LastBindSlot = slot;

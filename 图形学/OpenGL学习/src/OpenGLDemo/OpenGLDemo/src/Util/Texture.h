@@ -1,5 +1,6 @@
 #pragma once
-#include "CommonHead.h"
+//#include "CommonHead.h"
+#include "CommonData.h"
 
 class aiTexture;
 
@@ -14,7 +15,9 @@ public:
 	void Init(const std::string& filePath);
 	void InitWithModelTexture(const std::string& filePath);
 	void InitWithModelInnterTexture(const aiTexture* inTexture);
+	void InitWithSkyBox(const std::map<ESkyBoxTextureType, std::string>& InTexturesPath);
 
+	void BindCubeTexture(GLuint slot = 0);
 	void Bind(GLuint slot = 0);
 	void UnBind();
 

@@ -102,6 +102,12 @@
     <ClCompile Include="src\testModule\TestFrameBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\testModule\TestSkyBox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util\SkyBox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -1040,6 +1046,12 @@
     <ClInclude Include="src\testModule\TestFrameBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\testModule\TestSkyBox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Util\SkyBox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\third\glm\detail\func_common.inl">
@@ -1462,6 +1474,8 @@
     <None Include="res\shader\FrameBuffer\fb.vert" />
     <None Include="res\shader\TextPosition\Fragment.frag" />
     <None Include="res\shader\TextPosition\Vertex.vert" />
+    <None Include="res\shader\SkyBox\skybox.frag" />
+    <None Include="res\shader\SkyBox\skybox.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\test.jpg">

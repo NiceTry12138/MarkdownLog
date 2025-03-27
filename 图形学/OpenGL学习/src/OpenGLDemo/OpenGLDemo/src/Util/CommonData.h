@@ -34,32 +34,51 @@ enum ETextureType
 };
 
 static std::map<ETextureType, std::string> G_TextureTypeToString = {
-	{ ETextureType::E_NONE  , "NONE " },
-	{ ETextureType::E_DIFFUSE  , "DIFFUSE " },
-	{ ETextureType::E_SPECULAR  , "SPECULAR " },
-	{ ETextureType::E_AMBIENT  , "AMBIENT " },
-	{ ETextureType::E_EMISSIVE  , "EMISSIVE " },
-	{ ETextureType::E_HEIGHT  , "HEIGHT " },
-	{ ETextureType::E_NORMALS  , "NORMALS " },
-	{ ETextureType::E_SHININESS  , "SHININESS " },
-	{ ETextureType::E_OPACITY  , "OPACITY " },
-	{ ETextureType::E_DISPLACEMENT  , "DISPLACEMENT " },
-	{ ETextureType::E_LIGHTMAP  , "LIGHTMAP " },
-	{ ETextureType::E_REFLECTION  , "REFLECTION " },
-	{ ETextureType::E_BASE_COLOR  , "BASE_COLOR " },
-	{ ETextureType::E_NORMAL_CAMERA  , "NORMAL_CAMERA " },
-	{ ETextureType::E_EMISSION_COLOR  , "EMISSION_COLOR " },
-	{ ETextureType::E_METALNESS  , "METALNESS " },
-	{ ETextureType::E_DIFFUSE_ROUGHNESS  , "DIFFUSE_ROUGHNESS " },
-	{ ETextureType::E_AMBIENT_OCCLUSION  , "AMBIENT_OCCLUSION " },
-	{ ETextureType::E_UNKNOWN  , "UNKNOWN " },
-	{ ETextureType::E_SHEEN  , "SHEEN " },
-	{ ETextureType::E_CLEARCOAT  , "CLEARCOAT " },
-	{ ETextureType::E_TRANSMISSION  , "TRANSMISSION " },
-	{ ETextureType::E_MAYA_BASE  , "MAYA_BASE " },
-	{ ETextureType::E_MAYA_SPECULAR  , "MAYA_SPECULAR " },
-	{ ETextureType::E_MAYA_SPECULAR_COLOR  , "MAYA_SPECULAR_COLOR " },
-	{ ETextureType::E_MAYA_SPECULAR_ROUGHNESS  , "MAYA_SPECULAR_ROUGHNESS " },
+	{ ETextureType::E_NONE,							"NONE " },
+	{ ETextureType::E_DIFFUSE,						"DIFFUSE " },
+	{ ETextureType::E_SPECULAR,						"SPECULAR " },
+	{ ETextureType::E_AMBIENT,						"AMBIENT " },
+	{ ETextureType::E_EMISSIVE,						"EMISSIVE " },
+	{ ETextureType::E_HEIGHT,						"HEIGHT " },
+	{ ETextureType::E_NORMALS,						"NORMALS " },
+	{ ETextureType::E_SHININESS,					"SHININESS " },
+	{ ETextureType::E_OPACITY,						"OPACITY " },
+	{ ETextureType::E_DISPLACEMENT,					"DISPLACEMENT " },
+	{ ETextureType::E_LIGHTMAP,						"LIGHTMAP " },
+	{ ETextureType::E_REFLECTION,					"REFLECTION " },
+	{ ETextureType::E_BASE_COLOR,					"BASE_COLOR " },
+	{ ETextureType::E_NORMAL_CAMERA,				"NORMAL_CAMERA " },
+	{ ETextureType::E_EMISSION_COLOR,				"EMISSION_COLOR " },
+	{ ETextureType::E_METALNESS,					"METALNESS " },
+	{ ETextureType::E_DIFFUSE_ROUGHNESS,			"DIFFUSE_ROUGHNESS " },
+	{ ETextureType::E_AMBIENT_OCCLUSION,			"AMBIENT_OCCLUSION " },
+	{ ETextureType::E_UNKNOWN,						"UNKNOWN " },
+	{ ETextureType::E_SHEEN,						"SHEEN " },
+	{ ETextureType::E_CLEARCOAT,					"CLEARCOAT " },
+	{ ETextureType::E_TRANSMISSION,					"TRANSMISSION " },
+	{ ETextureType::E_MAYA_BASE,					"MAYA_BASE " },
+	{ ETextureType::E_MAYA_SPECULAR,				"MAYA_SPECULAR " },
+	{ ETextureType::E_MAYA_SPECULAR_COLOR,			"MAYA_SPECULAR_COLOR " },
+	{ ETextureType::E_MAYA_SPECULAR_ROUGHNESS,		"MAYA_SPECULAR_ROUGHNESS " },
+};
+
+enum class ESkyBoxTextureType : uint8_t
+{
+	E_Right,			// 右
+	E_Left,				// 左
+	E_Top,				// 上
+	E_Bottom,			// 下
+	E_Front,			// 前
+	E_Back,				// 后
+};
+
+static std::map<ESkyBoxTextureType, unsigned int> G_CubeTextureTypeMap = {
+	{ ESkyBoxTextureType::E_Right	, GL_TEXTURE_CUBE_MAP_POSITIVE_X },
+	{ ESkyBoxTextureType::E_Left	, GL_TEXTURE_CUBE_MAP_NEGATIVE_X },
+	{ ESkyBoxTextureType::E_Top		, GL_TEXTURE_CUBE_MAP_POSITIVE_Y },
+	{ ESkyBoxTextureType::E_Bottom	, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y },
+	{ ESkyBoxTextureType::E_Front	, GL_TEXTURE_CUBE_MAP_POSITIVE_Z },
+	{ ESkyBoxTextureType::E_Back	, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z },
 };
 
 // 顶点信息 v0 版本 后续根据需要可能新增 v1、v2 ...
