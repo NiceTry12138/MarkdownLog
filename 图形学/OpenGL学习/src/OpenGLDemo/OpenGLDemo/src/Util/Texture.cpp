@@ -140,7 +140,7 @@ void Texture::InitWithSkyBox(const std::map<ESkyBoxTextureType, std::string>& In
 	glGenTextures(1, &m_TextureId);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureId);
 
-	stbi_set_flip_vertically_on_load(1);
+	stbi_set_flip_vertically_on_load(0);
 
 	for (const auto& TextureItem : InTexturesPath)
 	{

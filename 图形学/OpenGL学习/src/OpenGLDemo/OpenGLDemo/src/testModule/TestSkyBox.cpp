@@ -9,7 +9,7 @@ void TestSkyBox::OnEnter(GLFWwindow* window)
 	glEnable(GL_DEPTH_TEST);
 
 	// 初始化 shader
-	m_ModelShader.Init("res/shader/model/model.vert", "res/shader/model/model.frag");
+	m_ModelShader.Init("res/shader/SkyBox/model.vert", "res/shader/SkyBox/model.frag");
 	m_packageModel.Init("res/model/Miku/miku_prefab.fbx");
 
 	m_Camera.SetLocation(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -27,8 +27,8 @@ void TestSkyBox::OnExit(GLFWwindow* window)
 void TestSkyBox::UpdateLogic(float delayTime)
 {
 	m_view = m_Camera.GetView();
-	m_Camera.SetMoveSpeed(1);
-	m_Camera.SetRotateSpeed(1);
+	m_Camera.SetMoveSpeed(0.2f);
+	m_Camera.SetRotateSpeed(0.2f);
 
 	// 可能会更新窗口视口大小 每帧更新一下
 	m_proj = glm::perspective(glm::radians(45.0f), (float)RSI->ViewportHeight / (float)RSI->ViewportWidth, 0.1f, 100.0f);
@@ -43,15 +43,14 @@ void TestSkyBox::Render(GLFWwindow* window)
 {
 	m_ModelShader.Bind();
 
-
 	auto CameraLocation = m_Camera.GetCameraLocation();
 
-	m_ModelShader.SetUniformMat4f("model", glm::mat4(1.0f));
+	auto model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+
+	m_ModelShader.SetUniformMat4f("model", model);
 	m_ModelShader.SetUniformMat4f("view", m_view);
 	m_ModelShader.SetUniformMat4f("projection", m_proj);
-	m_ModelShader.SetUniform3f("lightPos", 0.0f, 0.0f, 0.0f);
-	m_ModelShader.SetUniform3f("viewPos", CameraLocation.x, CameraLocation.y, CameraLocation.z);
-	m_ModelShader.SetUniform1i("shineness", 4);
 
 	m_packageModel.Draw(m_ModelShader);
 

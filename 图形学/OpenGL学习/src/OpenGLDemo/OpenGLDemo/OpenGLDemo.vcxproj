@@ -495,6 +495,8 @@
     <None Include="res\shader\Light\Vertex.vert" />
     <None Include="res\shader\model\model.frag" />
     <None Include="res\shader\model\model.vert" />
+    <None Include="res\shader\SkyBox\model.frag" />
+    <None Include="res\shader\SkyBox\model.vert" />
     <None Include="res\shader\SkyBox\skybox.frag" />
     <None Include="res\shader\SkyBox\skybox.vert" />
     <None Include="res\shader\TextPosition\Fragment.frag" />

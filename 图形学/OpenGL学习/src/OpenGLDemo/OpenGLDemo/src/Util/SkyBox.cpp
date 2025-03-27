@@ -26,16 +26,23 @@ void SkyBox::Init(const std::map<ESkyBoxTextureType, std::string> InTexturePath)
 
 void SkyBox::Draw(const glm::mat4& view, const glm::mat4& projection)
 {
+    // 通过将 4阶矩阵 转换为 3阶矩阵 去除位移信息，保证天空盒永远以相机为中心
+    auto cubeView = glm::mat4(glm::mat3(view));
+
+    glDepthFunc(GL_LEQUAL);
+
     const int TextureSlot = 1;
     m_cubeImage.BindCubeTexture(TextureSlot);
     m_skyShader.Bind();
     m_skyShader.SetUniform1i("cubeTexture", TextureSlot);
     m_skyShader.SetUniformMat4f("projection", projection);
-    m_skyShader.SetUniformMat4f("view", view);
+    m_skyShader.SetUniformMat4f("view", cubeView);
 
     glBindVertexArray(m_VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6 * 6);
     glBindVertexArray(GL_ZERO);
+
+    glDepthFunc(GL_LESS);
 }
 
 void SkyBox::InitVAO()
@@ -99,7 +106,7 @@ void SkyBox::InitVAO()
     glBindVertexArray(GL_ZERO);
 }
 
-void SkyBox::InitImage()
+void SkyBox::InitImage()    
 {
     m_cubeImage.InitWithSkyBox(m_TexturePath);
 }

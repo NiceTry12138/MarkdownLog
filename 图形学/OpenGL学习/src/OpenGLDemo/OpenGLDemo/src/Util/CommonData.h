@@ -73,12 +73,12 @@ enum class ESkyBoxTextureType : uint8_t
 };
 
 static std::map<ESkyBoxTextureType, unsigned int> G_CubeTextureTypeMap = {
-	{ ESkyBoxTextureType::E_Right	, GL_TEXTURE_CUBE_MAP_POSITIVE_X },
-	{ ESkyBoxTextureType::E_Left	, GL_TEXTURE_CUBE_MAP_NEGATIVE_X },
+	{ ESkyBoxTextureType::E_Right	, GL_TEXTURE_CUBE_MAP_NEGATIVE_X  },
+	{ ESkyBoxTextureType::E_Left	, GL_TEXTURE_CUBE_MAP_POSITIVE_X},
 	{ ESkyBoxTextureType::E_Top		, GL_TEXTURE_CUBE_MAP_POSITIVE_Y },
 	{ ESkyBoxTextureType::E_Bottom	, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y },
-	{ ESkyBoxTextureType::E_Front	, GL_TEXTURE_CUBE_MAP_POSITIVE_Z },
-	{ ESkyBoxTextureType::E_Back	, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z },
+	{ ESkyBoxTextureType::E_Front	, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z},
+	{ ESkyBoxTextureType::E_Back	, GL_TEXTURE_CUBE_MAP_POSITIVE_Z  },
 };
 
 // 顶点信息 v0 版本 后续根据需要可能新增 v1、v2 ...
