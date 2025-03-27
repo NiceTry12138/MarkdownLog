@@ -918,3 +918,88 @@ glDrawArrays(GL_TRIANGLES, 0, 36);
 ```
 > 使用案例
 
+### 高级 GLSL
+
+`Uniform` 缓冲对象，按照之前写过的着色器来看，我们需要对 模型、灯光、天空盒 等物体的着色器设置 model、view、projection 三个矩阵，但是 view 和 projection 矩阵都是相同的
+
+为了避免重复设置， `OpenGL` 提供了 Uniform 缓冲对象
+
+首先需要在 着色器中定义 Uniform 块
+
+```glsl
+// GLSL 着色器中定义的 Uniform 块
+layout(std140) uniform MyUBO {
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
+    vec3 lightPosition;
+    float lightIntensity;
+};
+```
+
+Uniform 缓冲对象(Uniform Buffer Object) 也是一种缓冲，使用 `glGenBuffer` 来创建它
+
+```cpp
+GLuint ubo;
+glGenBuffers(1, &ubo);
+glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+
+// 根据 MyUBO 的定义 计算总大小（需手动对齐）
+const GLsizeiptr uboSize = 
+    sizeof(glm::mat4) * 2 +  // viewMatrix + projectionMatrix
+    sizeof(glm::vec4) +      // lightPosition（vec3 按 vec4 对齐）
+    sizeof(float);           // lightIntensity
+
+glBufferData(GL_UNIFORM_BUFFER, uboSize, NULL, GL_DYNAMIC_DRAW);
+```
+
+使用之前提到过的 `glMapBuffer` + `memcpy` 来填入数据
+
+```cpp
+// 假设使用 glm 数学库
+glm::mat4 view = ...;
+glm::mat4 projection = ...;
+glm::vec3 lightPos = ...;
+float intensity = ...;
+
+// 映射 UBO 并写入数据
+glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+GLvoid* ptr = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+
+// 写入 viewMatrix（偏移 0）
+memcpy(ptr, &view, sizeof(glm::mat4));
+
+// 写入 projectionMatrix（偏移 sizeof(mat4)）
+memcpy((char*)ptr + sizeof(glm::mat4), &projection, sizeof(glm::mat4));
+
+// 写入 lightPosition（偏移 sizeof(mat4)*2，按 vec4 对齐）
+glm::vec4 lightPosAligned(lightPos, 0.0f); // 填充为 vec4
+memcpy((char*)ptr + sizeof(glm::mat4)*2, &lightPosAligned, sizeof(glm::vec4));
+
+// 写入 lightIntensity（偏移 sizeof(mat4)*2 + sizeof(vec4)）
+memcpy((char*)ptr + sizeof(glm::mat4)*2 + sizeof(glm::vec4), &intensity, sizeof(float));
+
+glUnmapBuffer(GL_UNIFORM_BUFFER);
+```
+
+与 `Texture` 类似，将 Uniform Buffer Object 绑定到指定的槽上
+
+```cpp
+// 将 UBO 对象关联到绑定点 0
+glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+
+// 对 shaderProgramA
+GLuint uboIndexA = glGetUniformBlockIndex(shaderProgramA, "MyUBO");
+glUniformBlockBinding(shaderProgramA, uboIndexA, 0); // 绑定到绑定点 0
+
+// 对 shaderProgramB
+GLuint uboIndexB = glGetUniformBlockIndex(shaderProgramB, "MyUBO");
+glUniformBlockBinding(shaderProgramB, uboIndexB, 0); // 同样绑定到绑定点 0
+```
+
+这里有一个点需要注意到，那就是着色器中定义 Uniform 块时使用的 `std140`
+
+`std140` 是 OpenGL 中用于定义 Uniform 缓冲对象(Uniform Buffer Object) 和 着色器缓冲对象(SSBO) **内存布局**的规则
+
+目的是**显式控制**，使得 CPU 和 GPU 能够正确读取数据，避免因为硬件差异导致的数据错位
+
+

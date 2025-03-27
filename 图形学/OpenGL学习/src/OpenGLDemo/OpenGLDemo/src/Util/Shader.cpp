@@ -174,6 +174,17 @@ void Shader::SetUniform3f(const std::string& inName, float v0, float v1, float v
 	GL_CALL(glUniform3f(location, v0, v1, v2));
 }
 
+void Shader::BindUBO(const std::string& inName, int inSlot)
+{
+	Bind();
+	GLint location = glGetUniformBlockIndex(m_ShaderID, inName.c_str());
+	if (location == -1) {
+		std::cout << "Can't Find Uniform Buffer Object: " << inName << " In Shader";
+		return;
+	}
+	GL_CALL(glUniformBlockBinding(m_ShaderID, location, inSlot));
+}
+
 void Shader::Bind()
 {
 	if (s_CurrentBindShader == m_ShaderID)

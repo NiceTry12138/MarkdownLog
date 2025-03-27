@@ -13,6 +13,7 @@ public:
 	void SetUniform4f(const std::string& inName, float v0, float v1, float v2, float v3);
 	void SetUniformMat4f(const std::string& inName, const glm::mat4& inMat4);
 	void SetUniform3f(const std::string& inName, float v0, float v1, float v2);
+	void BindUBO(const std::string& inName, int inSlot);
 
 	void Bind();
 	void UnBind();

@@ -34,6 +34,9 @@ public:
 
 protected:
 	void InitSkyBox();
+	
+	void InitUBO();
+	void UpdateUBO();
 
 private:
 	glm::mat4 m_model = glm::mat4(1.0f);		// 模型矩阵
@@ -44,6 +47,8 @@ private:
 	bool m_bLeftAltPress = false;
 
 	SkyBox m_sky;
+
+	GLuint m_UBO;								// Uniform Buffer Obejct
 
 	Shader m_ModelShader;
 	Model m_packageModel;

@@ -4,6 +4,8 @@
 
 TestSkyBox TestSkyBox::_self;
 
+static GLuint UBOSLOT = 2;
+
 void TestSkyBox::OnEnter(GLFWwindow* window)
 {	// 启动深度测试
 	glEnable(GL_DEPTH_TEST);
@@ -16,6 +18,7 @@ void TestSkyBox::OnEnter(GLFWwindow* window)
 	BindMouse(window);
 
 	InitSkyBox();
+	InitUBO();
 }
 
 void TestSkyBox::OnExit(GLFWwindow* window)
@@ -32,6 +35,8 @@ void TestSkyBox::UpdateLogic(float delayTime)
 
 	// 可能会更新窗口视口大小 每帧更新一下
 	m_proj = glm::perspective(glm::radians(45.0f), (float)RSI->ViewportHeight / (float)RSI->ViewportWidth, 0.1f, 100.0f);
+
+	UpdateUBO();
 }
 
 void TestSkyBox::ClearRender(GLFWwindow* window)
@@ -41,6 +46,8 @@ void TestSkyBox::ClearRender(GLFWwindow* window)
 
 void TestSkyBox::Render(GLFWwindow* window)
 {
+	glBindBufferBase(GL_UNIFORM_BUFFER, UBOSLOT, m_UBO);
+
 	m_ModelShader.Bind();
 
 	auto CameraLocation = m_Camera.GetCameraLocation();
@@ -49,9 +56,8 @@ void TestSkyBox::Render(GLFWwindow* window)
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 
 	m_ModelShader.SetUniformMat4f("model", model);
-	m_ModelShader.SetUniformMat4f("view", m_view);
-	m_ModelShader.SetUniformMat4f("projection", m_proj);
-
+	m_ModelShader.BindUBO("Matrices", UBOSLOT);
+	
 	m_packageModel.Draw(m_ModelShader);
 
 	m_sky.Draw(m_view, m_proj);
@@ -104,4 +110,22 @@ void TestSkyBox::UnBindMouse(GLFWwindow* window)
 void TestSkyBox::InitSkyBox()
 {
 	m_sky.Init();
+}
+
+void TestSkyBox::InitUBO()
+{
+	GL_CALL(glGenBuffers(1, &m_UBO));
+	GL_CALL(glBindBuffer(GL_UNIFORM_BUFFER, m_UBO));
+	GL_CALL(glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, NULL, GL_DYNAMIC_DRAW));
+}
+
+void TestSkyBox::UpdateUBO()
+{
+	GL_CALL(glBindBuffer(GL_UNIFORM_BUFFER, m_UBO));
+	GLvoid* ptr = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+
+	memcpy(ptr, &m_view, sizeof(m_view));
+	memcpy((char*)ptr + sizeof(m_view), &m_proj, sizeof(m_proj));
+
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
