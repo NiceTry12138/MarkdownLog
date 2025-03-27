@@ -1002,4 +1002,4 @@ glUniformBlockBinding(shaderProgramB, uboIndexB, 0); // 同样绑定到绑定点
 
 目的是**显式控制**，使得 CPU 和 GPU 能够正确读取数据，避免因为硬件差异导致的数据错位
 
-
+> 关于 `Uniform Buffer Object` 的测试用例可以在 `TestSkyBox.cpp` 中查看到
