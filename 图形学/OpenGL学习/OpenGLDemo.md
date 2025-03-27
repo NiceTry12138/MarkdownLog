@@ -827,5 +827,94 @@ vec4 pos = projection * view * vec4(inPosition, 1.0);
 gl_Position = pos.xyww;
 ```
 
+### 高级数据
 
+使用 `glBufferData` 会分配一块 GPU 内存，并将数据添加到这块内存中，如果设置为 null 则只会分配，不会填充
+
+使用 `glBufferSubData` 可以填充缓冲的特定区域
+
+`glBufferSubData` 函数定义如下
+
+```cpp
+void glBufferSubData(	GLenum target,
+						GLintptr offset,
+						GLsizeiptr size,
+						const GLvoid * data);
+```
+
+`glBufferSubData` 函数使用如下
+
+```cpp
+// 创建并初始化顶点缓冲区
+GLuint VBO;
+glGenBuffers(1, &VBO);
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+float vertices[12] = { /* 初始6个顶点（每个含x,y） */ };
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+// 更新第3到第4个顶点（索引2和3）
+float updatedData[4] = {0.5f, 0.5f, -0.5f, -0.5f}; // 新坐标 (x1,y1, x2,y2)
+glBufferSubData(GL_ARRAY_BUFFER, 2 * sizeof(float) * 2, sizeof(updatedData), updatedData);
+```
+
+使用 `glMapBuffer` 可以得到缓冲内存的指针，然后通过 `memcpy` 拷贝数据进去
+
+```cpp
+float data[] = {
+  0.5f, 1.0f, -0.35f
+  ...
+};
+glBindBuffer(GL_ARRAY_BUFFER, buffer);
+// 获取指针
+void *ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+// 复制数据到内存
+memcpy(ptr, data, sizeof(data));
+// 记得告诉OpenGL我们不再需要这个指针了
+glUnmapBuffer(GL_ARRAY_BUFFER);
+```
+
+这里的 `glUnmapBuffer` 不是丢弃 `GL_ARRAY_BUFFER`，而是接触指针映射，即 `ptr` 指针无法映射到 GPU 内存中，继续使用 `ptr` 会导致错误
+
+> 相当于 `glUnmapBuffer` 会释放 CPU 对缓冲区内存的映射权限
+
+使用 `glCopyBufferSubData` 能够将一个缓冲目标的数据拷贝到另一个缓冲目标中
+
+```cpp
+void glCopyBufferSubData(	GLenum readTarget,
+							GLenum writeTarget,
+							GLintptr readOffset,
+							GLintptr writeOffset,
+							GLsizeiptr size);
+```
+
+> 函数定义
+
+```cpp
+// 创建两个缓冲区
+GLuint vboSrc, vboDst;
+glGenBuffers(1, &vboSrc);
+glGenBuffers(1, &vboDst);
+
+// 填充源缓冲区
+float srcData[] = { /* 顶点数据 */ };
+glBindBuffer(GL_COPY_READ_BUFFER, vboSrc);
+glBufferData(GL_COPY_READ_BUFFER, sizeof(srcData), srcData, GL_STATIC_DRAW);
+
+// 初始化目标缓冲区（大小与源相同）
+glBindBuffer(GL_COPY_WRITE_BUFFER, vboDst);
+glBufferData(GL_COPY_WRITE_BUFFER, sizeof(srcData), NULL, GL_STATIC_DRAW);
+
+// 复制整个缓冲区
+glCopyBufferSubData(
+    GL_COPY_READ_BUFFER,
+    GL_COPY_WRITE_BUFFER,
+    0, 0, sizeof(srcData)
+);
+
+// 使用目标缓冲区渲染
+glBindBuffer(GL_ARRAY_BUFFER, vboDst);
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+glDrawArrays(GL_TRIANGLES, 0, 36);
+```
+> 使用案例
 
