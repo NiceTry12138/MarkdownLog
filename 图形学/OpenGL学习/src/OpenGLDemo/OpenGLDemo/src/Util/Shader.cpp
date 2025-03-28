@@ -84,13 +84,14 @@ void Shader::NewInit(const std::string& inVertexFile, const std::string& inFragm
 	glDeleteShader(fragment);
 }
 
-void Shader::Init(const std::string& inVertexFile, const std::string& inFragmentFile)
+void Shader::Init(const std::string& inVertexFile, const std::string& inFragmentFile, const std::string& inGeoFile)
 {
 	if (m_ShaderID != GL_ZERO) 
 	{
 		DeleteShader();
 	}
 
+	// 读取 顶点着色器
 	std::ifstream ifs;
 	ifs.open(inVertexFile, std::ios::in);
 	if (!ifs.is_open()) {
@@ -101,6 +102,7 @@ void Shader::Init(const std::string& inVertexFile, const std::string& inFragment
 	std::string vertextShaderSrouce((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	ifs.close();
 
+	// 读取 片段着色器
 	ifs.open(inFragmentFile, std::ios::in);
 	if (!ifs.is_open()) {
 		std::cout << "Compile Shader Fail: Can't Open File" << std::endl;
@@ -110,12 +112,47 @@ void Shader::Init(const std::string& inVertexFile, const std::string& inFragment
 	std::string fragmentShaderSource((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	ifs.close();
 
-	m_ShaderID = CreateShader(vertextShaderSrouce, fragmentShaderSource);
+	// 读取 几何着色器
+	std::string geoShaderSource;
+	if (!inGeoFile.empty())
+	{
+		ifs.open(inGeoFile, std::ios::in);
+		if (!ifs.is_open()) {
+			std::cout << "Compile Shader Fail: Can't Open File" << std::endl;
+			return;
+		}
+
+		geoShaderSource = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+		ifs.close();
+	}
+
+	m_ShaderID = CreateShader(vertextShaderSrouce, fragmentShaderSource, geoShaderSource);
 }
 
 Shader::~Shader()
 {
 	GL_CALL(glDeleteProgram(m_ShaderID));
+}
+
+// 在 Attach 之后，需要重新绑定 UBO、顶点属性、Uniform 变量
+void Shader::AttachGeoShader(const std::string& inGeoShaderFile)
+{
+	std::ifstream ifs;
+	ifs.open(inGeoShaderFile, std::ios::in);
+	if (!ifs.is_open()) {
+		std::cout << "Compile Shader Fail: Can't Open File" << std::endl;
+		return;
+	}
+
+	std::string geoShaderSrouce((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	ifs.close();
+
+	GLuint gs = CompileShader(geoShaderSrouce, GL_GEOMETRY_SHADER);
+
+	GL_CALL(glAttachShader(m_ShaderID, gs));			// 将 vs 绑定到 program 上
+	GL_CALL(glLinkProgram(m_ShaderID));					// 链接程序，将所有着色器合并为一个可执行的程序
+	GL_CALL(glValidateProgram(m_ShaderID));				// 验证程序是否可以执行
+	GL_CALL(glDeleteShader(gs));
 }
 
 void Shader::SetUniform1i(const std::string& inName, const int& value)
@@ -179,7 +216,7 @@ void Shader::BindUBO(const std::string& inName, int inSlot)
 	Bind();
 	GLint location = glGetUniformBlockIndex(m_ShaderID, inName.c_str());
 	if (location == -1) {
-		std::cout << "Can't Find Uniform Buffer Object: " << inName << " In Shader";
+		std::cout << "Can't Find Uniform Buffer Object: " << inName << " In Shader" << std::endl;
 		return;
 	}
 	GL_CALL(glUniformBlockBinding(m_ShaderID, location, inSlot));
@@ -234,7 +271,7 @@ GLint Shader::GetShaderLocation(const std::string& inName)
 	return result;
 }
 
-GLuint Shader::CreateShader(const std::string& vertexSource, const std::string& fragmentSource)
+GLuint Shader::CreateShader(const std::string& vertexSource, const std::string& fragmentSource, const std::string& geoSource)
 {
 	GLuint program = glCreateProgram();
 	
@@ -244,12 +281,20 @@ GLuint Shader::CreateShader(const std::string& vertexSource, const std::string& 
 	GL_CALL(glAttachShader(program, vs));			// 将 vs 绑定到 program 上
 	GL_CALL(glAttachShader(program, fs));			// 将 fs 绑定到 program 上
 
+	GLuint gs = GL_ZERO;
+	if (!geoSource.empty())
+	{
+		gs = CompileShader(geoSource, GL_GEOMETRY_SHADER);
+		GL_CALL(glAttachShader(program, gs));			// 将 vs 绑定到 program 上
+	}
+
 	GL_CALL(glLinkProgram(program));					// 链接程序，将所有着色器合并为一个可执行的程序
 	GL_CALL(glValidateProgram(program));				// 验证程序是否可以执行
 
 	GL_CALL(glDeleteShader(vs));						// 删除着色器对象，一旦链接成功那么代码已经连接到程序中了，可以删除着色器对象
 	GL_CALL(glDeleteShader(fs));
-	
+	GL_CALL(glDeleteShader(gs));
+
 	return program;
 }
 

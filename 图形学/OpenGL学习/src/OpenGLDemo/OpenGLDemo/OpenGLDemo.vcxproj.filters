@@ -108,6 +108,9 @@
     <ClCompile Include="src\Util\SkyBox.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\testModule\TestGeoShader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -1052,6 +1055,9 @@
     <ClInclude Include="src\Util\SkyBox.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\testModule\TestGeoShader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\third\glm\detail\func_common.inl">
@@ -1478,6 +1484,13 @@
     <None Include="res\shader\SkyBox\skybox.vert" />
     <None Include="res\shader\SkyBox\model.frag" />
     <None Include="res\shader\SkyBox\model.vert" />
+    <None Include="res\shader\GeoShader\model.frag" />
+    <None Include="res\shader\GeoShader\model.vert" />
+    <None Include="res\shader\GeoShader\skybox.frag" />
+    <None Include="res\shader\GeoShader\skybox.vert" />
+    <None Include="res\shader\GeoShader\line.fs" />
+    <None Include="res\shader\GeoShader\line.gs" />
+    <None Include="res\shader\GeoShader\line.vs" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\test.jpg">

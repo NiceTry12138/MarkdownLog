@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\testModule\TestGeoShader.cpp" />
     <ClCompile Include="src\Util\SkyBox.cpp" />
     <ClCompile Include="src\testModule\TestFrameBuffer.cpp" />
     <ClCompile Include="src\testModule\TestSkyBox.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="src\Util\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\testModule\TestGeoShader.h" />
     <ClInclude Include="src\Util\SkyBox.h" />
     <ClInclude Include="src\testModule\TestFrameBuffer.h" />
     <ClInclude Include="src\testModule\TestSkyBox.h" />
@@ -487,6 +489,13 @@
   <ItemGroup>
     <None Include="res\shader\FrameBuffer\fb.frag" />
     <None Include="res\shader\FrameBuffer\fb.vert" />
+    <None Include="res\shader\GeoShader\line.fs" />
+    <None Include="res\shader\GeoShader\line.gs" />
+    <None Include="res\shader\GeoShader\line.vs" />
+    <None Include="res\shader\GeoShader\model.frag" />
+    <None Include="res\shader\GeoShader\model.vert" />
+    <None Include="res\shader\GeoShader\skybox.frag" />
+    <None Include="res\shader\GeoShader\skybox.vert" />
     <None Include="res\shader\Light\Cube.frag" />
     <None Include="res\shader\Light\Cube.vert" />
     <None Include="res\shader\Light\Fragment.frag" />
