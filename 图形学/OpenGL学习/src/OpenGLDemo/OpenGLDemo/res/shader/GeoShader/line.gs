@@ -8,7 +8,11 @@ in VS_OUT {
 
 const float MAGNITUDE = 1.0f;
 
-uniform mat4 projection;
+// 添加与顶点着色器一致的 UBO 声明
+layout (std140) uniform Matrices {
+    mat4 view;
+    mat4 projection;
+};
 
 void GenerateLine(int index)
 {

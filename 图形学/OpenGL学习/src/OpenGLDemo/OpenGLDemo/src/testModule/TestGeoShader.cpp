@@ -56,10 +56,10 @@ void TestGeoShader::Render(GLFWwindow* window)
 	auto model = glm::mat4(1.0f);
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 
-	//m_ModelShader.Bind();
-	//m_ModelShader.SetUniformMat4f("model", model);
-	//m_ModelShader.BindUBO("Matrices", UBOSLOT);
-	//m_packageModel.Draw(m_ModelShader);
+	m_ModelShader.Bind();
+	m_ModelShader.SetUniformMat4f("model", model);
+	m_ModelShader.BindUBO("Matrices", UBOSLOT);
+	m_packageModel.Draw(m_ModelShader);
 
 	m_GeoShader.Bind();
 	m_GeoShader.SetUniformMat4f("model", model);

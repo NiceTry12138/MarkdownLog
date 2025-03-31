@@ -249,6 +249,7 @@ bool Shader::IsValid()
 void Shader::DeleteShader()
 {
 	GL_CALL(glDeleteShader(m_ShaderID));
+	m_ShaderID = GL_ZERO;
 }
 
 GLint Shader::GetShaderLocation(const std::string& inName)
@@ -305,6 +306,19 @@ GLuint Shader::CompileShader(const std::string& inSource, GLenum inType)
 	const char* source = inSource.c_str();
 	GL_CALL(glShaderSource(shaderId, 1, &source, nullptr));			// 传入 nullptr 表示读取整个字符串数组
 	GL_CALL(glCompileShader(shaderId));
+
+	switch (inType)
+	{
+	case GL_VERTEX_SHADER:
+		checkCompileErrors(shaderId, "VERTEX");
+		break;
+	case GL_FRAGMENT_SHADER:
+		checkCompileErrors(shaderId, "FRAGMENT");
+		break;
+	case GL_GEOMETRY_SHADER:
+		checkCompileErrors(shaderId, "GEOMETRY");
+		break;
+	}
 
 	GLint errorId;
 	GL_CALL(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &errorId));
