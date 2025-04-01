@@ -61,10 +61,14 @@ void TestGeoShader::Render(GLFWwindow* window)
 	m_ModelShader.BindUBO("Matrices", UBOSLOT);
 	m_packageModel.Draw(m_ModelShader);
 
-	m_GeoShader.Bind();
-	m_GeoShader.SetUniformMat4f("model", model);
-	m_GeoShader.BindUBO("Matrices", UBOSLOT);
-	m_packageModel.Draw(m_GeoShader);
+	if (m_useGeoShader)
+	{
+		m_GeoShader.Bind();
+		m_GeoShader.SetUniformMat4f("model", model);
+		m_GeoShader.SetUniform1f("MAGNITUDE", m_LineLength);
+		m_GeoShader.BindUBO("Matrices", UBOSLOT);
+		m_packageModel.Draw(m_GeoShader);
+	}
 
 	m_sky.Draw(m_view, m_proj);
 }
@@ -74,7 +78,8 @@ void TestGeoShader::UpdateImGUI(GLFWwindow* window)
 	const auto& io = ImGui::GetIO();
 
 	ImGui::Begin("SkyBox");
-
+	ImGui::SliderFloat("Line Length", &m_LineLength, 0.001f, 0.2f);
+	ImGui::Checkbox("Use Geo Shader", &m_useGeoShader);
 	ImGui::End();
 }
 

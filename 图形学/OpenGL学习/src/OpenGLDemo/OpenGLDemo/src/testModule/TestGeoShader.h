@@ -54,6 +54,9 @@ private:
 	Shader m_ModelShader;
 	Model m_packageModel;
 
+	float m_LineLength = 0.05f;
+	bool m_useGeoShader = true;
+
 	static TestGeoShader _self;
 };
 
