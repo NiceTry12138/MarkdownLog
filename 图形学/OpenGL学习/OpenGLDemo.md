@@ -1003,3 +1003,51 @@ glUniformBlockBinding(shaderProgramB, uboIndexB, 0); // 同样绑定到绑定点
 目的是**显式控制**，使得 CPU 和 GPU 能够正确读取数据，避免因为硬件差异导致的数据错位
 
 > 关于 `Uniform Buffer Object` 的测试用例可以在 `TestSkyBox.cpp` 中查看到
+
+### 几何着色器
+
+在顶点着色器之后，片段着色器之前运行
+
+几何着色器的输入是一个图元（如点或三角形）的一组顶点
+
+几何着色器可以在定点发送到下一个着色器之前对它们随意变化，也可以更改顶点的图元类型，或者生成更多顶点
+
+下面这个顶点着色器，输入是一个 `triangles` 的图元，具有三个顶点，所以在 `main` 中执行了 `GenerateLine` 三次；输出指定是一个 `line_strip`
+
+在 `GenerateLine` 函数中，每次调用 `EmitVertex` 就会将 `gl_Position` 的值发射出去，调用 `EndPrimitive` 时会将之前发射出去的所有 `gl_Position` 组合成指定的输出渲染图元
+
+根据该 几何着色器 的代码，不难发现该函数实现的功能。基于输入的图元的三个顶点，根据每个顶点的法线，生成三个线段，并且将原本的 `triangles` 图元变换成 `line_strip` 线段，线段方向时顶点的法线方向，线段长度是 `MAGNITUDE`
+
+```glsl
+#version 330 core
+layout (triangles) in;
+layout (line_strip, max_vertices = 6) out;
+
+in VS_OUT {
+    vec3 normal;
+} gs_in[];
+
+uniform float MAGNITUDE = 0.05f;
+
+// 添加与顶点着色器一致的 UBO 声明
+layout (std140) uniform Matrices {
+    mat4 view;
+    mat4 projection;
+};
+
+void GenerateLine(int index)
+{
+    gl_Position = gl_in[index].gl_Position;
+    EmitVertex();
+    gl_Position = (gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * MAGNITUDE);
+    EmitVertex();
+    EndPrimitive();
+}
+
+void main()
+{
+    GenerateLine(0); // first vertex normal
+    GenerateLine(1); // second vertex normal
+    GenerateLine(2); // third vertex normal
+}
+```
