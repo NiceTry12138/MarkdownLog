@@ -111,6 +111,9 @@
     <ClCompile Include="src\testModule\TestGeoShader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\testModule\TestGLInstance.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\third\imgui\imstb_truetype.h">
@@ -1056,6 +1059,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\testModule\TestGeoShader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\testModule\TestGLInstance.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

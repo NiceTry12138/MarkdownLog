@@ -1051,3 +1051,121 @@ void main()
     GenerateLine(2); // third vertex normal
 }
 ```
+
+### 实例化
+
+这个实例化并不是创建出对象，而是更像单例的含义，即模型数据只存储一份，通过一些其他的数据差异来渲染出多个相同的物体
+
+比如，有 100 个石头，如果真的加载 100 个模型和对应贴图，消耗会很大，并且每个石头会调用一次 draw-call。如果使用 gl_instanceID 那么只会加载模型和贴图一次，通过 gl_instanceID 来区分石头并动态修改其属性
+
+使用 `glDrawArraysInstanced` 和 `glDrawElementsInstanced` 替代之前的 `glDrawArrays` 和 `glDrawElements`。在着色器中可以使用 `gl_InstanceID` 这个内置变量，该变量是一个从 0 开始的递增的变量，用于区分相同实例的不同物体。如果有 100 个石头，那么 `gl_InstanceID` 就是从 0 ~ 99
+
+以下面的代码为例，在 顶点着色器 中，定义了一个 `offsets` 数组，通过 `gl_InstanceID` 数据来区分不同的物体，再通过序号动态修改每个物体的坐标
+
+```glsl
+#version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec3 aColor;
+
+out vec3 fColor;
+
+uniform vec2 offsets[100];
+
+void main()
+{
+    vec2 offset = offsets[gl_InstanceID];
+    gl_Position = vec4(aPos + offset, 0.0, 1.0);
+    fColor = aColor;
+}
+```
+
+在 CPU 阶段，可以使用下面代码设置 `offsets`
+
+```cpp
+shader.use();
+for(unsigned int i = 0; i < 100; i++)
+{
+    shader.setVec2(("offsets[" + std::to_string(i) + "]"), translations[i]);
+}
+```
+
+不过由于数组长度的限制，物体数量超过一定值之后**无法使用数组**，毕竟 `uniform` 定义的数组长度是有上限的
+
+这个时候使用**实例化数组**，将数据定义成顶点属性，这样能存储更多内容，并且仅在**顶点着色器**渲染一个新的实例时才会更新
+
+1. 新增一个顶点属性
+
+```glsl
+#version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec3 aColor;
+layout (location = 2) in vec2 aOffset;
+```
+
+2. 创建顶点顶点缓冲并绑定数据
+
+```cpp
+unsigned int instanceVBO;
+glGenBuffers(1, &instanceVBO);
+glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+glBindBuffer(GL_ARRAY_BUFFER, 0);
+```
+
+3. 设置顶点属性
+
+```cpp
+glEnableVertexAttribArray(2);
+glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+glBindBuffer(GL_ARRAY_BUFFER, 0);   
+glVertexAttribDivisor(2, 1);
+```
+
+这里出现了一个新的函数 `glVertexAttribDivisor`，该函数时 OpenGL 用于控制顶点属性实例化渲染中如何更新的函数
+
+```cpp
+void glVertexAttribDivisor(
+    GLuint index,   // 顶点属性位置（如 layout(location=2) 中的 2）
+    GLuint divisor  // 除数（Divisor），表示每渲染多少个实例推进一次属性数据
+);
+```
+
+| divisor 值 | 作用 |
+| --- | --- |
+| 0 | 每个顶点更新 |
+| 1 | 每个实例更新 |
+| N | 每渲染 N 个实例更新一次 |
+
+> 比如 100 个石头，每 10 个石头共享同一个颜色，那么 `divisor` 的值就是 10
+
+也可以这么理解，对于每个顶点属性都会调用 `glVertexAttribDivisor(index, 0)` 让其每个顶点都更新，对于一些数据我们希望每个实例更新，所以通过 `glVertexAttribDivisor(index, 1)` 设置
+
+[实例化](https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/10%20Instancing/)教程中，使用了一个 `glm::mat4` 来一次性包含 4 个 `glm::vec4`
+
+```cpp
+glEnableVertexAttribArray(3);
+glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+glEnableVertexAttribArray(4);
+glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+glEnableVertexAttribArray(5);
+glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+glEnableVertexAttribArray(6);
+glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+```
+
+> 定义顶点属性
+
+为什么将一个 `glm::mat4` 拆分成 4 个 `glm::vec4` 来定义顶点属性？
+
+因为单个顶点属性最多只能包含 4 个浮点数。`glm::mat4` 包含 16 个浮点，超过顶点定义的大小范围
+
+```glsl
+layout (location = 3) in mat4 aInstanceMatrix;
+```
+
+为什么顶点属性通过 glEnableVertexAttribArray 定义了 3、4、5、6 但是在顶点着色器中直接使用 `location=3` ？
+
+这是因为 OpenGL 允许 **属性聚合**，当顶点属性是 `mat4` 时，OpenGL 会自动将其映射到连续的 4 个 `vec4` 属性
+
+

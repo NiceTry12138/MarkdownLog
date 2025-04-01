@@ -137,6 +137,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\testModule\TestGeoShader.cpp" />
+    <ClCompile Include="src\testModule\TestGLInstance.cpp" />
     <ClCompile Include="src\Util\SkyBox.cpp" />
     <ClCompile Include="src\testModule\TestFrameBuffer.cpp" />
     <ClCompile Include="src\testModule\TestSkyBox.cpp" />
@@ -171,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\testModule\TestGeoShader.h" />
+    <ClInclude Include="src\testModule\TestGLInstance.h" />
     <ClInclude Include="src\Util\SkyBox.h" />
     <ClInclude Include="src\testModule\TestFrameBuffer.h" />
     <ClInclude Include="src\testModule\TestSkyBox.h" />
