@@ -6,9 +6,9 @@ in VS_OUT {
     vec3 normal;
 } gs_in[];
 
-const float MAGNITUDE = 1.0f;
+uniform float MAGNITUDE = 0.05f;
 
-// 添加与顶点着色器一致的 UBO 声明
+// 娣诲姞涓庨《鐐圭潃鑹插櫒涓�鑷寸殑 UBO 澹版槑
 layout (std140) uniform Matrices {
     mat4 view;
     mat4 projection;
@@ -16,9 +16,9 @@ layout (std140) uniform Matrices {
 
 void GenerateLine(int index)
 {
-    gl_Position = projection * gl_in[index].gl_Position;
+    gl_Position = gl_in[index].gl_Position;
     EmitVertex();
-    gl_Position = projection * (gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * MAGNITUDE);
+    gl_Position = (gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * MAGNITUDE);
     EmitVertex();
     EndPrimitive();
 }
