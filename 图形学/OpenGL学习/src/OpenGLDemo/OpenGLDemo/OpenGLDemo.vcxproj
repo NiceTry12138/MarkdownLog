@@ -85,7 +85,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\assimp\lib;$(SolutionDir)Dependencies\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)Dependencies\assimp\lib\assimp-vc143-mtd.dll" "$(OutDir)"</Command>
+      <Command>copy /Y "$(SolutionDir)Dependencies\assimp\lib\assimp-vc143-mtd.dll" "$(OutDir)"
+xcopy /Y /E /I "$(SolutionDir)OpenGLDemo\res" "$(OutDir)res\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -498,6 +499,8 @@
     <None Include="res\shader\GeoShader\model.vert" />
     <None Include="res\shader\GeoShader\skybox.frag" />
     <None Include="res\shader\GeoShader\skybox.vert" />
+    <None Include="res\shader\Instanced\instanced.frag" />
+    <None Include="res\shader\Instanced\instanced.vert" />
     <None Include="res\shader\Light\Cube.frag" />
     <None Include="res\shader\Light\Cube.vert" />
     <None Include="res\shader\Light\Fragment.frag" />

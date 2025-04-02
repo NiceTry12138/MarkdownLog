@@ -14,11 +14,29 @@ void Model::Init(const std::string& Path)
     loadModel(Path);
 }
 
-void Model::Draw(Shader& shader)
+void Model::Draw(Shader& shader, int count)
 {
     for (auto& meshItem : meshes)
     {
-        meshItem.Draw(shader);
+        meshItem.Draw(shader, count);
+    }
+}
+
+std::vector<GLuint> Model::GetMeshVAOs()
+{
+    std::vector<GLuint> Result;
+    for (const auto& item : meshes)
+    {
+        Result.push_back(item.GetVAO());
+    }
+    return Result;
+}
+
+void Model::AddInstanceData()
+{
+    for (auto& Item : meshes)
+    {
+        Item.AddInstanceData();
     }
 }
 

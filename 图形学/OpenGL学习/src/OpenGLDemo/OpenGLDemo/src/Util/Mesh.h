@@ -19,7 +19,11 @@ public:
 
 	void init(const std::vector<Vertex_Mesh>& inVertices, const std::vector<GLuint>& inIndices, const std::vector<Texture_Mesh>& inTextures);
 
-	void Draw(Shader& shader);
+	void Draw(Shader& shader, int count = 0);
+
+	void AddInstanceData();
+
+	GLuint GetVAO() const;
 protected:
 	// 绑定数据信息
 	void setUpMesh();

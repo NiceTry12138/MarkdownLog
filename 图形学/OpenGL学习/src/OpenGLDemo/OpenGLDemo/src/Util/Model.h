@@ -17,7 +17,10 @@ public:
 	Model() = default;
 
 	void Init(const std::string& Path);
-	void Draw(Shader& shader);
+	void Draw(Shader& shader, int count = 0);
+
+	std::vector<GLuint> GetMeshVAOs();
+	void AddInstanceData();
 protected:
 	void loadModel(const std::string& Path);
 	void processNode(aiNode* node, const aiScene* scene);

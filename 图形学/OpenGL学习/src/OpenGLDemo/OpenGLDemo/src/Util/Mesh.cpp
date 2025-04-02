@@ -29,7 +29,7 @@ void Mesh::init(const std::vector<Vertex_Mesh>& inVertices, const std::vector<GL
 	setUpMesh();
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::Draw(Shader& shader, int count)
 {
 	shader.Bind();
 
@@ -76,11 +76,51 @@ void Mesh::Draw(Shader& shader)
 
 	// draw mesh
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+
+	if (count != 0)
+	{
+		glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0, count);
+	}
+	else {
+		glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+	}
 
 	// 清空 贴图 和 VAO 的绑定
 	glBindVertexArray(GL_ZERO);
 	glActiveTexture(GL_TEXTURE0);
+}
+
+void Mesh::AddInstanceData()
+{
+	glBindVertexArray(VAO);
+
+	// 这里可以整合成一个 for 循环 
+	int Index = 7;
+	glEnableVertexAttribArray(Index);
+	glVertexAttribPointer(Index, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+	glVertexAttribDivisor(Index, 1);
+
+	++Index;
+	glEnableVertexAttribArray(Index);
+	glVertexAttribPointer(Index, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+	glVertexAttribDivisor(Index, 1);
+	
+	++Index;
+	glEnableVertexAttribArray(Index);
+	glVertexAttribPointer(Index, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 2));
+	glVertexAttribDivisor(Index, 1);
+
+	++Index;
+	glEnableVertexAttribArray(Index);
+	glVertexAttribPointer(Index, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 3));
+	glVertexAttribDivisor(Index, 1);
+
+	glBindVertexArray(GL_ZERO);
+}
+
+GLuint Mesh::GetVAO() const
+{
+	return VAO;
 }
 
 void Mesh::setUpMesh()

@@ -1497,6 +1497,8 @@
     <None Include="res\shader\GeoShader\line.fs" />
     <None Include="res\shader\GeoShader\line.gs" />
     <None Include="res\shader\GeoShader\line.vs" />
+    <None Include="res\shader\Instanced\instanced.frag" />
+    <None Include="res\shader\Instanced\instanced.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\test.jpg">

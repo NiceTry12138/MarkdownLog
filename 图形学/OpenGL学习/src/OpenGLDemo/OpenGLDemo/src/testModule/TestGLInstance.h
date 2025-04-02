@@ -38,6 +38,9 @@ protected:
 	void InitUBO();
 	void UpdateUBO();
 
+	void InitGVBO();
+	void UpdateGVBOData(float delayTime);
+
 private:
 	glm::mat4 m_model = glm::mat4(1.0f);		// 模型矩阵
 	glm::mat4 m_view = glm::mat4(1.0f);			// 视图矩阵
@@ -53,6 +56,13 @@ private:
 	Shader m_ModelShader;
 	Model m_packageModel;
 
+	GLuint m_GVBO;								// 一个全局的 VBO 用于存储 实例化数组
+
+	std::vector<glm::mat4> m_InstanceData;		
+
+	int m_InstanceNum = 1000;
+
+	bool m_useInstance = true;
 	static TestGLInstance _self;
 };
 
