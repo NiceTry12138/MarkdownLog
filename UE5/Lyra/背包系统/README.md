@@ -134,7 +134,6 @@ private:
 	UPROPERTY(Replicated)
 	TSubclassOf<ULyraInventoryItemDefinition> ItemDef;
 };
-
 ```
 
 `ItemDef` 存储着配置信息，用于其他对象查询配置内容，因此会对外提供 `FindFragmentByClass` 的方法，通过类名进行查询对应的 `ULyraInventoryItemFragment` 配置信息
@@ -147,4 +146,143 @@ private:
 
 > 类之间的基本关联关系如上图所示
 
+## 可拾取物品
 
+在各种游戏都会出现可拾取物品，当玩家出现在其周围时会触发自动拾取或者通过交互拾取
+
+这对这种可交互拾取的物体， `Lyra` 也有相关的实现
+
+首先 `Lyra` 将这种拾取物分为两种
+
+1. 通过 `ULyraInventoryItemDefinition` 和 **数量** 定义拾取物体的配置
+2. 通过 `ULyraInventoryItemInstance` 定义拾取物体的配置，用于已经实例化的物体，比如 CS 游戏中丢掉枪械，要保存枪械的子弹数量信息
+
+针对上述两种类型的拾取物，分别定义了两种结构体用于存储对应的信息 `FPickupTemplate` 和 `FPickupInstance`
+
+```cpp
+USTRUCT(BlueprintType)
+struct FPickupTemplate
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+	int32 StackCount = 1;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ULyraInventoryItemDefinition> ItemDef;
+};
+
+USTRUCT(BlueprintType)
+struct FPickupInstance
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<ULyraInventoryItemInstance> Item = nullptr;
+};
+```
+
+又因为，有的时候一个拾取物可能包含多个拾取物，比如一个包裹中包括多个拾取物，所以需要一个 `FInventoryPickup` 来表示这些信息
+
+```cpp
+USTRUCT(BlueprintType)
+struct FInventoryPickup
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPickupInstance> Instances;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPickupTemplate> Templates;
+};
+```
+
+未来，所有的拾取物只需要通过一个 `FInventoryPickup` 就可以表示其中包含的所有物体
+
+不过为了标识场景中的一个物体是可以被拾取的，需要在它身上打上一些标记，比如 **接口** `IPickupable`
+
+```cpp
+class IPickupable
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable)
+	virtual FInventoryPickup GetPickupInventory() const = 0;
+};
+```
+
+通过上述的定义，对应场景中可拾取物体的定义实现就是下面这样
+
+```cpp
+UCLASS(Abstract, Blueprintable)
+class ALyraWorldCollectable : public AActor, public IInteractableTarget, public IPickupable
+{
+	GENERATED_BODY()
+
+public:
+
+	ALyraWorldCollectable();
+
+	virtual void GatherInteractionOptions(const FInteractionQuery& InteractQuery, FInteractionOptionBuilder& InteractionBuilder) override;
+	virtual FInventoryPickup GetPickupInventory() const override;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	FInteractionOption Option;
+
+	UPROPERTY(EditAnywhere)
+	FInventoryPickup StaticInventory;
+};
+```
+
+`Option` 中存储着一系列交互相关的信息，比如显示的 `UI`、文本信息、赋予玩家的 GA 等
+
+> 这里赋予玩家的 GA 是在玩家触发交互之后，进行的一系列操作，比如播放动画、添加物品到背包等
+
+![](Image/003.png)
+
+上图是 `B_InteractableRock` 示例对象的配置
+
+- 当触发交互时会激活 `InteractionAbilityToGrant` 配置的 GA
+- 当可以交互时会显示 `InteractionWidget` 到 UI 界面
+
+![](Image/004.png)
+
+> 按 G 键进行交互
+
+在触发交互，执行 GA 的时候，流程如下，从 `GameplayEventData` 中获取**玩家**和**拾取物**，为避免耦合这里获取的是 `IPickupable` 接口
+
+先将装备添加到 `Controller` 中存储的背包中，再播放对应的动画
+
+> 需要注意，这里的 `Controller` 是 `ALyraPlayerController`，原生是没有 `ULyraInventoryManagerComponent` 组件的，通过 `GameFeature` 配置在其激活时创建 `ULyraInventoryManagerComponent` 并 `Add` 到 `ALyraPlayerController` 上
+
+![](Image/005.png)
+
+为了在蓝图中完成接口调用，使用了 `TScriptInterface`。`TScriptInterface` 是 `Unreal` 对 C++ 接口的增强封装，解决了原生 C++ 接口在反射系统和蓝图集成中的局限性，同时保持了运行时高效性
+
+```cpp
+TScriptInterface<IPickupable> UPickupableStatics::GetFirstPickupableFromActor(AActor* Actor)
+{
+	// If the actor is directly pickupable, return that.
+	TScriptInterface<IPickupable> PickupableActor(Actor);
+	if (PickupableActor)
+	{
+		return PickupableActor;
+	}
+
+	// If the actor isn't pickupable, it might have a component that has a pickupable interface.
+	TArray<UActorComponent*> PickupableComponents = Actor ? Actor->GetComponentsByInterface(UPickupable::StaticClass()) : TArray<UActorComponent*>();
+	if (PickupableComponents.Num() > 0)
+	{
+		// Get first pickupable, if the user needs more sophisticated pickup distinction, will need to be solved elsewhere.
+		return TScriptInterface<IPickupable>(PickupableComponents[0]);
+	}
+
+	return TScriptInterface<IPickupable>();
+}
+```
