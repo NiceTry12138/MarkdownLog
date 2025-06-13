@@ -691,6 +691,163 @@ int main() {
 
 ### 聚合类的模板化
 
-**聚合类** 指的是 用户没有定义的显式的或者继承而来的构造函数，没有 private、protected 的静态成员，没有虚函数，没有 virtual、private或者protected 的基类
+**聚合类** 指的是 用户没有定义的显式的或者继承而来的构造函数，没有 `private`、`protected` 的非静态成员，没有虚函数，没有 `virtual`、`private` 或者 `protected` 的基类
+
+```cpp
+template<typename T>
+struct ValueWithComment {
+    T value;
+    std::string comment;
+}
+
+ValueWithComment<int> vc;
+vc.value = 42;
+vc.comment = "initial value";
+
+ValueWithComment(char const*, char const*)-> ValueWithComment<std::string>;
+
+ValueWithComment vc2 = {"hello", "initial value"};
+```
+
+没有**推断指引**的话，就不能使用上述初始化方法，因为`ValueWithComment` 没有相应的构造函数来完成相关类型推断
+
+## 非类型模板参数
+
+模板参数不一定非得是某种具体的类型，也可以是**常规数值**
+
+与类模板使用类型作为参数类似，可以使代码的另一些细节留到被使用时再确定
+
+```cpp
+template<typename T, std::size_t MaxSize>
+class Stack{
+public:
+    T x[MaxSize];
+};
+
+int main() {
+    Stack<int, 10> a;
+    std::cout << sizeof(a.x) << std::endl;  // Log: 40 
+    return 0;
+}
+```
+
+> 输出 40，一个 int 占 4 字节，10个元素就是 4 * 10 = 40 字节
+
+```cpp
+template<int Val, typename T>
+T addValue (T x)
+{
+    return x + Val;
+}
+
+int main() {
+    std::cout << addValue<10>(2) << std::endl;  // log: 12
+    return 0;
+}
+```
+
+除了常规定义之外，还可以做一些其他的事情，比如下面当作仿函数使用（不是真的仿函数）
+
+```cpp
+std::transform (
+    source.begin(), 
+    source.end(),
+    dest.begin(), 
+    addValue<5,int>)
+```
+
+> 这里 `addValue` 被实例化为 传入int 型参数加 5 的函数实例
+
+也可以像下面这样操作，通过传入的 `Val` 推导出结果
+
+```cpp
+template<auto Val, typename T = decltype(Val)>
+T foo();
+```
+
+### 非类型模板参数的限制
+
+通常只能是
+
+- 整型常量（包括枚举）
+- 指向 objects/functions/members 的指针
+- objects 或 functions 的左值引用
+- std::nullptr_t 
+
+```cpp
+// 整型常量
+template<int Size>
+struct FixedArray {};
+
+FixedArray<5> arr5;
+
+// 枚举常量
+enum class Color { Red, Green, Blue };
+template<Color C>
+struct TrafficLight {};
+
+TrafficLight<Color::Red> redLight;
+
+// 一些定义 方便后面使用
+int global_value = 42;
+void print_hello() {}
+struct MyClass {
+    int value = 100;
+    void print() { 
+        std::cout << "MyClass::print()\n"; 
+    }
+};
+
+// 指向对象的指针
+template<int* Ptr>
+struct PointerWrapper {};
+
+PointerWrapper<&global_value> pw;
+
+// 指向函数的指针
+template<void (*FuncPtr)()>
+struct FunctionWrapper {};
+
+FunctionWrapper<&print_hello> fw;
+
+// 指向成员对象的指针
+template<int MyClass::*MemberPtr>
+struct MemberWrapper {};
+
+MemberWrapper<&MyClass::value> mw;
+
+// 指向成员函数的指针
+template<void (MyClass::*MemberFuncPtr)()>
+struct MemberFunctionWrapper {};
+
+MemberFunctionWrapper<&MyClass::print> mfw;
+```
+
+**浮点型数值**或者 class 类型的对象都不能作为非类型模板参数使用
+
+```cpp
+template<double VAT>    // Error
+double process (double v) 
+{
+    return v * VAT;
+}
+template<std::string name> // ERROR:
+class MyClass {};
+```
+
+**非类型模板参数**支持**编译期表达式**
+
+```cpp
+C<sizeof(int) + 4, sizeof(int)==4> c
+```
+
+但是如果涉及到 `operator >` 计算的时候要小心，容易被解析成类型模板的 反尖括号
+
+```cpp
+C<sizeof(int) + 4, sizeof(int) > 4> c; // Error 第一个 > 符号被理解成模板的反尖括号结尾，导致解析错误
+C<sizeof(int) + 4, (sizeof(int) > 4)> c; // OK 用括号抱起来
+```
+
+## 变参模板
 
 
