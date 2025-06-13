@@ -850,4 +850,33 @@ C<sizeof(int) + 4, (sizeof(int) > 4)> c; // OK 用括号抱起来
 
 ## 变参模板
 
+```cpp
+template<typename T>
+void print(T t)
+{
+    std::cout << typeid(T).name() << " " << t<< std::endl;
+}
+
+template<typename T, typename... Types>
+void print(T firstArg, Types... args)
+{
+    print(firstArg);
+    print(args...);
+}
+
+int main() {
+    print(1, 2, "3", '4', 5.0);
+    return 0;
+}
+```
+
+> 当 `print('4', 5.0)` 的时候先触发 `print('4')` 再触发 `print(5.0)`，跳出了递归循环
+
+- 使用 `typename...` 表示多个模板类型
+- 使用 `Types...` 表示接受多个输入参数
+- 使用 `args...` 来拆分多个输入参数
+
+另外，这里 `print` 出现了**变参**和**非变参**模板的**重载**
+
+
 
