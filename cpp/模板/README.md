@@ -878,5 +878,26 @@ int main() {
 
 另外，这里 `print` 出现了**变参**和**非变参**模板的**重载**
 
+### sizeof... 运算符
 
+`sizeof...` 会被扩展成参数包中所包含的参数数目
 
+```cpp
+template<typename T, typename... Types>
+void print(T firstArg, Types... args)
+{
+    std::cout << "args size = " << sizeof...(args) << " ";
+    std::cout << "firstArg = " << firstArg << std::endl;
+    if constexpr (sizeof...(args) > 0) { 
+        print(args...); 
+    }
+}
+```
+
+如果调用 `print(1, 2, 3, 4, 5)` 则会一次输出 `args size = 4、3、2、1、0`
+
+注意这里使用了 `constexpr`，是为了避免实例化无效调用，否则会出现 `args` 参数包为空，没有对应函数调用的情况
+
+由于 `constexpr` 是编译期条件判断，当 `sizeof...(args)` 长度为 0 的时候，编译器直接丢该实例化模板函数中的这段分支语句，也就不会出现对 空参数包 的 `print`
+
+在不使用 `constexpr` 的情况下，定义 `void print() {}` 无参数的 `print` 来匹配 `args` 参数包为空的情况
