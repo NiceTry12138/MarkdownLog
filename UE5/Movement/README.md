@@ -1,6 +1,6 @@
 # 移动组件
 
-## collide and slide 算法
+## 碰撞查询
 
 > https://zhuanlan.zhihu.com/p/685714685
 
@@ -23,7 +23,7 @@
 
 由于以上这些问题的存在，角色移动不能直接使用 **物理引擎** 来控制
 
-### 碰撞查询
+### collide and slide 算法
 
 虚幻引擎将碰撞检测的信息封装成 `FHitResult`，虽然下面这些理论知识与虚幻引擎无关，为了方便参数解释，还是提前说明 
 
@@ -76,7 +76,89 @@
 
 --------
 
+### MoveAlongFloor
 
+| 可以移动的坡度 | 不可移动的坡度 |
+| --- | --- |
+| ![](Image/004.jpg) | ![](Image/005.jpg) |
+
+通过 速度、加速都、摩擦力、BrakingDeceleration 等，计算出最后的速度向量 `Velocity * DeltaTime`
+
+根据地面坡度调整移动向量方向，例如可移动坡度的红色箭头
+
+如果碰撞检测返回 `Hit` 的结果是 `Block`，表示检测到斜坡比较陡，那么可以将剩下的移动向量改为沿着面2移动
+
+引擎通过 `Hit.Normal` 获取 **面2** 的法线方向，通过**坡度检测**，若夹角小于 `WalkableFloorAngle` 则判定为缓坡，可以行走；若夹角大于 `WalkableFloorAngle` 判定为陡坡，不可行走
+
+随后第一次响应 **沿面移动** `SlideVector = OriginalDelta - (OriginalDelta • Hit.Normal) * Hit.Normal`，之后再次调用 `SafeMoveUpdatedComponent`
+
+此时再次射线检测，如果返回的 Hit 的结果还是 Blokc，表示面2 非常陡，可能需要 StepUp 上楼逻辑
+
+### StepUp
+
+![](Image/006.jpg)
+
+上楼逻辑分成 3 次移动构成
+
+1. 首先向上移动 `MaxStepHeight` 高度
+2. 然后向前移动(如果前移过程中检测到 Block，那么需要执行 SlideAlongSurface)
+3. 最后向下移动，移动到面 2 上面
+
+不过很多情况会导致 StepUp 失败
+
+比如：移动过程中检测到**穿透** `Penetration`，最终无法落到一个合适的落脚点
+
+如果 `StepUp` 失败，需要调用 `SlideAlongSurface` 贴着面走
+
+### SlideAlongSurface
+
+![](Image/007.jpg)
+
+大概就是下面这个情况，会触发 `SlideAlongSurface`，红色向量是加速度方向
+
+在计算 `MoveAlongFloor` 之后，由于 `StepUp` 失败，尝试 `SlideAlongSurface`
+
+得到橙色向量为实际速度方向
+
+### TwoWallAdjust
+
+| 沿着 面3 向右移动 | 沿着 面3 向上移动 |
+| --- | --- |
+| ![](Image/009.jpg) | ![](Image/008.jpg) |
+
+
+当我们通过 `SlideAlongSurface` 移动的时候，前面又出现一堵墙，此时需要计算 **墙2** 和 **墙3** 之间的角度，如果夹角大于 90°，那么可以沿着**面3**的方向继续移动
+
+### FindFloor
+
+通过 `FindFloor` 可以计算得到脚下的地面信息，并包含在 `FFindFloorResult` 结构体中
+
+| FFindFloorResult 属性 | 作用 |
+| --- | --- |
+| bBlockHit | 是否跟地面有碰撞 | 
+| bWalkableFloor | 可以行走的地面 | 
+| bLineTrace | 是否是通过line trace检测出来的结果 | 
+| FloorDist | Sweep查询到地面的距离 | 
+| LineDist | LineTrace查询到地面的距离 | 
+| HitResult | 跟地面的FHitResult | 
+
+#### ComputeFloorDist
+
+一般情况下，只需要一次垂直向下 `Sweep` 检测就可以计算出 `FloorDist`
+
+![](Image/010.jpg)
+
+不过还会出现一种情况，那就是角色有一部分在地面里面
+
+![](Image/011.jpg)
+
+此时检测的 `bStartPenetration` 是 true
+
+需要缩小叫能提，重新向下 `Sweep` 计算出来的 `FloorDist - ShrinkHeight` 就是原胶囊体跟地面的距离
+
+所有缩小的胶囊体 `Sweep` 让然出现了穿透的情况，需要修改使用 `Line Trace` 并且从胶囊体中心向下检测胶囊体的半高，如何检测到了 `Hit`，则可以计算陷入地面以下的高度
+
+无论是 `Sweep` 还是 `LineTrace`，单次调整的高度 `MaxPenetrationAdjust` 最大只能是胶囊体的半径，如果陷入地面的深度大于高度，无法一次调整到地面上，需要多帧处理
 
 ## UE 的移动组件
 
