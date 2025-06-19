@@ -249,4 +249,154 @@ bool UMovementComponent::MoveUpdatedComponentImpl( const FVector& Delta, const F
 
 所以对于 `ACharacter` 来说，更新坐标执行的是 `UPrimitiveComponent::MoveComponentImpl`
 
+接下来逐步对代码 `MoveComponentImpl` 进行解释
+
+1. 初始化并计算像移动方向进行 `Sweep` 所需要的数据
+
+```cpp
+// Set up
+const FVector TraceStart = GetComponentLocation();  // 当前坐标
+const FVector TraceEnd = TraceStart + Delta;        // 理论终点坐标
+float DeltaSizeSq = (TraceEnd - TraceStart).SizeSquared();  // 移动距离的平方
+const FQuat InitialRotationQuat = GetComponentTransform().GetRotation();  // 当前角度
+```
+
+注意这里 `DeltaSizeSq` 使用的是 `SizeSquared`，也就是**长度的平方**
+
+节省了 `sqrt` 计算的性能，因为与 `MinMovementDistSq` 比较大小，不需要精确值，大概那个范围就行
+
+-------
+
+2. 当移动和旋转都是极小值时，跳过后续计算流程。如果只是移动距离值极小，那么将 `DeltaSizeSq` 设置为 0
+
+```cpp
+// ComponentSweepMulti does nothing if moving < KINDA_SMALL_NUMBER in distance, so it's important to not try to sweep distances smaller than that. 
+const float MinMovementDistSq = (bSweep ? FMath::Square(4.f* UE_KINDA_SMALL_NUMBER) : 0.f);
+if (DeltaSizeSq <= MinMovementDistSq)
+{
+  // Skip if no vector or rotation.
+  if (NewRotationQuat.Equals(InitialRotationQuat, SCENECOMPONENT_QUAT_TOLERANCE))
+  {
+    // copy to optional output param
+    if (OutHit)
+    {
+      OutHit->Init(TraceStart, TraceEnd);
+    }
+    return true;
+  }
+  DeltaSizeSq = 0.f;
+}
+```
+
+> `NewRotationQuat` **新角度**与 `InitialRotationQuat` **当前角度**
+
+-------
+
+3. 调用 `MyWorld->ComponentSweepMulti` 进行 `Sweep` 检测
+
+```cpp
+// static void PullBackHit(FHitResult& Hit, const FVector& Start, const FVector& End, const float Dist)
+// {
+// 	const float DesiredTimeBack = FMath::Clamp(0.1f, 0.1f/Dist, 1.f/Dist) + 0.001f;
+// 	Hit.Time = FMath::Clamp( Hit.Time - DesiredTimeBack, 0.f, 1.f );
+// }
+
+TArray<FHitResult> Hits;
+
+bool const bHadBlockingHit = MyWorld->ComponentSweepMulti(Hits, this, TraceStart, TraceEnd, InitialRotationQuat, Params);
+
+if (Hits.Num() > 0)
+{
+  const float DeltaSize = FMath::Sqrt(DeltaSizeSq);
+  for(int32 HitIdx=0; HitIdx<Hits.Num(); HitIdx++)
+  {
+    PullBackHit(Hits[HitIdx], TraceStart, TraceEnd, DeltaSize);
+  }
+}
+```
+
+> `PullBackHit` 函数实现以注释的形式在上面代码块中
+
+还记得 `DeltaSizeSq` 是距离的平方吗？得到真正的距离 `DeltaSize`
+
+由于物理引擎返回的碰撞点可能非常接近物体表面，由于浮点计算误差实际碰撞点可能略微**嵌入**碰撞体内部，可能会导致后续处理出现**卡在表面**或者**抖动**问题
+
+使用 `PullBackHit` 将碰撞点拉回一点
+
+`FMath::Clamp(0.1f, 0.1f/Dist, 1.f/Dist) + 0.001f` 保证最少有 0.001 的拉回，并且拉回的长度与距离反比
+
+- 短距离移动，拉回更大的比例，因为精度问题更加突出，激进修正，确保稳定性
+- 长距离移动，拉回较小的比例，精度问题相对较小，保守修正，保持准确性
+
+-------
+
+4. 筛选有效的碰撞结果，并准备后续事件处理
+
+根据 **阻挡碰撞** 和 **重叠事件** 进行不同处理
+
+![](Image/012.png)
+
+这里主要做了三个判断
+
+- 如果出现了 `bStartPenetrating`，则表示一开始角色就与其他物体重叠了，遍历得到 **方向** 与 **碰撞面法线** 进行 **点乘**值最小的面
+- 如果没有出现 `bStartPenetrating`，则保存第一个 `bBlockingHit` 的碰撞信息
+- 如果出现了 `Overlap`，则记录其信息
+
+如果先出现了 `bStartPenetrating`，表示角色与其他物体重合，需要首先解决重叠问题，其他的都不重要
+
+如果先出现了普通的 `bBlockingHit`，表示角色没有与其他物体重合，那么其他的 `bStartPenetrating` 理论上就不会出现，也不重要
+
+比阻挡碰撞点远的 `Overlap` 全部忽略，因为不会移动到那些 `Overlap` 的点
+
+| 普通的 `bBlockingHit` | 出现 `bStartPenetrating` |
+| --- | --- |
+| ![](Image/002.jpg) | ![](Image/003.jpg) |
+
+> 别忘了前面解释过的 `collide and slide`
+
+-------------
+
+5. 根据筛选得到的 Hit 预处理数据
+
+如果 `bBlockingHit == false`，则没有碰撞，移动的终点就是 `TraceEnd` 点
+如果 `bBlockingHit == true`，则出现了碰撞，根据根据碰撞点的信息更新 `NewLocation`
+
+如果 `NewLocation` 与 **当前坐标** 的距离极小，那么 `NewLocation` 就等于 **当前坐标**
+
+6. 计算对称旋转
+
+```cpp
+bIncludesOverlapsAtEnd = AreSymmetricRotations(InitialRotationQuat, NewRotationQuat, GetComponentScale());
+```
+
+主要服务于**碰撞检测**的优化处理，对于胶囊体来说，绕 Z 轴旋转不影响碰撞
+
+7. 更新坐标和旋转朝向
+
+```cpp
+bMoved = InternalSetWorldLocationAndRotation(NewLocation, NewRotationQuat, bSkipPhysicsMove, Teleport);
+```
+
+8. 更新重叠事件
+
+如果出现了**移动** 即 `bMoved == true`，则需要更新 `Overlap` 的信息
+
+根据 `IsDeferringMovementUpdates` 判断是否需要**延迟更新**，如果延迟更新则将数据存储在 `FScopedMovementUpdate` 中，否则立刻调用 `UpdateOverlaps`
+
+9. 更新碰撞事件
+
+如果出现了 `bBlockingHit`，并且需要发送碰撞事件，同样根据是否需要**延迟更新**来决定立刻发送事件，还是交给 `FScopedMovementUpdate` 来延迟发送
+
+```cpp
+if (IsDeferringMovementUpdates())
+{
+  FScopedMovementUpdate* ScopedUpdate = GetCurrentScopedMovement();
+  ScopedUpdate->AppendBlockingHitAfterMove(BlockingHit);
+}
+else
+{
+  DispatchBlockingHit(*Actor, BlockingHit);
+}
+```
+
 
