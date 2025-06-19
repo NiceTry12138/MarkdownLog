@@ -538,4 +538,38 @@ else if (CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy && IsNetMode(NM_
 
 #### PerformMovement
 
+1. 记录是否发生了**传送**
 
+当前帧与上一帧的坐标的不相同，表示发生了非连续性移动
+
+```cpp
+bTeleportedSinceLastUpdate = UpdatedComponent->GetComponentLocation() != LastUpdateLocation;
+```
+
+2. 如果 **没有移动状态**、**根组件不可移动**、**开启物理模拟** 提前退出移动计算
+
+```cpp
+MovementMode == MOVE_None || UpdatedComponent->Mobility != EComponentMobility::Movable || UpdatedComponent->IsSimulatingPhysics()
+```
+
+3. 记录是否需要强制在下一帧进行地面检测
+
+如果当前 **处于地面移动** 或者 **发生了传送**
+
+```cpp
+bForceNextFloorCheck |= (IsMovingOnGround() && bTeleportedSinceLastUpdate);
+```
+
+> 使用 `|=` 是为了确保如果已经为 true，则保持 true。**确保不覆盖其他代码路径设置的强制检测标志**
+
+4. 根据 `RootMotion` 添加移动速度
+
+```cpp
+if( CurrentRootMotion.HasAdditiveVelocity() )
+{
+  const FVector Adjustment = (Velocity - LastUpdateVelocity);
+  CurrentRootMotion.LastPreAdditiveVelocity += Adjustment;
+}
+```
+
+5. 
