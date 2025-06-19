@@ -498,3 +498,44 @@ if (bEnablePhysicsInteraction)
   ApplyRepulsionForce(DeltaTime);
 }
 ```
+
+#### ControlledCharacterMove
+
+```cpp
+{
+  SCOPE_CYCLE_COUNTER(STAT_CharUpdateAcceleration);
+
+  // We need to check the jump state before adjusting input acceleration, to minimize latency
+  // and to make sure acceleration respects our potentially new falling state.
+  CharacterOwner->CheckJumpInput(DeltaSeconds);
+
+  // apply input to acceleration
+  Acceleration = ScaleInputAcceleration(ConstrainInputAcceleration(InputVector));
+  AnalogInputModifier = ComputeAnalogInputModifier();
+}
+
+if (CharacterOwner->GetLocalRole() == ROLE_Authority)
+{
+  PerformMovement(DeltaSeconds);
+}
+else if (CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy && IsNetMode(NM_Client))
+{
+  ReplicateMoveToServer(DeltaSeconds, Acceleration);
+}
+```
+
+代码逻辑也比较简单，就是根据权限进行不同的逻辑判断
+
+| 角色类型 | 移动处理 | 同步方向 |
+| --- | --- | --- |
+| 权威角色(Authority) | 直接执行PerformMovement | 向客户端广播状态 |
+| 客户端自主代理(AutonomousProxy) | 本地预测+发送ReplicateMove | 向服务器发送输入 |
+| 客户端模拟代理(SimulatedProxy) | 不在此处理 | 接收服务器状态 |
+
+因为我们是本地运行，我们自己就是 `Authority` ，所以直接执行 `PerformMovement` 即可
+
+> 通常来说，联机游戏的 `Authority` 就是服务器；不过单机游戏的主角也是 `Authority`
+
+#### PerformMovement
+
+
