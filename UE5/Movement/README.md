@@ -344,6 +344,10 @@ if (Hits.Num() > 0)
 
 如果先出现了 `bStartPenetrating`，表示角色与其他物体重合，需要首先解决重叠问题，其他的都不重要
 
+并且，对于所有 `bStartPenetrating` 的 Hit，要找到 **移动方向** 和 **接触面法向量** 点乘最小的 Hit，这是因为最小的点乘意味着最直接相反的方向，能够高效的脱离穿透
+
+> **移动方向** 和 **接触面法向量** 点乘 的物理意义是 **法线与移动方向几乎完全相反**
+
 如果先出现了普通的 `bBlockingHit`，表示角色没有与其他物体重合，那么其他的 `bStartPenetrating` 理论上就不会出现，也不重要
 
 比阻挡碰撞点远的 `Overlap` 全部忽略，因为不会移动到那些 `Overlap` 的点
@@ -399,4 +403,98 @@ else
 }
 ```
 
+### CharacterMovementComponent
 
+需要注意的是有一个 `AsyncCharacterMovement` 的全局变量，默认值为 false
+
+默认情况下，`UCharacterMovementComponent` 的移动逻辑是在游戏线程（`Game Thread`）的同步 `Tick` 中执行的。如果启用 `AsyncCharacterMovement`，引擎会将部分移动计算（如物理模拟、速度更新等）分配到其他线程（如工作线程池）异步执行，从而减轻主线程的压力
+
+不过这又涉及到 **线程安全**、**同步延迟**、**调试复杂**等问题
+
+#### TickComponent
+
+想要知道一个类做了哪些事情，最重要的就是看它在 `Tick` 中做了什么
+
+1. 是否开启物理模拟，物理模拟不做处理
+
+防止**物理引擎**和移**动组件**同时修改 `UpdatedComponent` 的 `Transform`，导致不可预测的行为
+
+```cpp
+const bool bIsSimulatingPhysics = UpdatedComponent->IsSimulatingPhysics();
+```
+
+2. 更新 `AvoidanceLockTimer` 的值
+
+```cpp
+AvoidanceLockTimer -= DeltaTime;
+```
+
+`AvoidanceLockTimer` 是避障系统 `Avoidance System` 的核心计时器
+
+- **防止避障抖动**，当角色正在进行避障操作时，锁定一段时间避免频繁调整方向
+- **解决避障冲突**，多个角色互相避让时协调决策优先级
+- **优化性能**，避免不必要的避障计算频率
+- **确保移动流畅性**，避免角色在密集区域出现**犹豫不决**的摇摆现象
+
+3. 鉴定权限，走不同的执行逻辑
+
+| ENetRol 类型 | 权限归属 | 含义 |
+| --- | --- | --- |
+| ROLE_None | 无效角色 | 刚创建未初始化的 Actor 或即将销毁的对象 |
+| ROLE_SimulatedProxy | 客户端模拟代理 | 客户端上非玩家控制的角色（如其他玩家/NPC） |
+| ROLE_AutonomousProxy | 客户端自主代理	 | 客户端上玩家自己控制的角色（本地玩家角色） | 
+| ROLE_Authority | 服务器权威 | 服务器端拥有最终控制权的对象（如游戏状态、NPC逻辑）	 |
+
+如果是 `ROLE_SimulatedProxy` 是 其他玩家 或者 NPC，那么只需要同步位置和选择
+
+```cpp
+else if (CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)
+{
+  if (bShrinkProxyCapsule)
+  {
+    AdjustProxyCapsuleSize();
+  }
+  SimulatedTick(DeltaTime);
+}
+```
+
+如果是 **受控角色**
+
+```cpp
+if (bShouldPerformControlledCharMove)
+{
+  ControlledCharacterMove(InputVector, DeltaTime);
+
+  const bool bIsaListenServerAutonomousProxy = CharacterOwner->IsLocallyControlled()
+                          && (CharacterOwner->GetRemoteRole() == ROLE_AutonomousProxy);
+
+  if (bIsaListenServerAutonomousProxy)
+  {
+    ServerAutonomousProxyTick(DeltaTime);
+  }
+}
+```
+
+![](Image/013.png)
+
+一般来说，单机本地角色只会执行 `ControlledCharacterMove`，后面也只对该函数进行讨论
+
+4. 判断是否需要处理 RVO 避障逻辑
+
+```cpp
+if (bUseRVOAvoidance)
+{
+  UpdateDefaultAvoidance();
+}
+```
+
+5. 判断是否需要与物理交互
+
+```cpp
+if (bEnablePhysicsInteraction)
+{
+  SCOPE_CYCLE_COUNTER(STAT_CharPhysicsInteraction);
+  ApplyDownwardForce(DeltaTime);
+  ApplyRepulsionForce(DeltaTime);
+}
+```
