@@ -690,4 +690,67 @@ if (bAllowPhysicsRotationDuringAnimRootMotion || !HasAnimRootMotion())
 
 ![](Image/014.png)
 
+当 不需要朝向移动方向 也 不需要使用控制器朝向 的时候，不需要更新角色的 `Rotation`
 
+- `bOrientRotationToMovement`: 朝向移动方向
+- `bUseControllerDesiredRotation`: 使用控制器朝向
+
+获取角色当前朝向 `CurrentRotation`，获取本帧最大允许旋转 `DeltaRot`
+
+> 有一个 `RotationRate` 的配置属性，通过 `DeltaTime` 计算得到 `DeltaRot`
+
+最重要的其实是获取 `DesiredRotation` 也就是期望旋转朝向
+
+如果朝向移动方向，则通过**加速度** `Acceleration` 计算
+
+```cpp
+DesiredRotation = Acceleration.GetSafeNormal().Rotation();
+```
+
+如果通过 Controller 计算，则需要拿到 Controller
+
+```cpp
+DesiredRotation = CharacterOwner->Controller->GetDesiredRotation();
+```
+
+判断是否需要**保持竖直** `bWantsToBeVertical`，防止角色倾斜（如RPG游戏）
+
+如果 **自定义重力**
+
+1. 将期望旋转从世界空间转换到以重力方向为自定义重力的局部空间
+2. 将 `Pitch` 和 `Yaw` 设置为 0
+3. 将期望旋转从局部空间转到世界空间
+
+```cpp
+FRotator GravityRelativeDesiredRotation = (GravityToWorldTransform * DesiredRotation.Quaternion()).Rotator();
+GravityRelativeDesiredRotation.Pitch = 0.f;
+GravityRelativeDesiredRotation.Yaw = FRotator::NormalizeAxis(GravityRelativeDesiredRotation.Yaw);
+GravityRelativeDesiredRotation.Roll = 0.f;
+DesiredRotation = (WorldToGravityTransform * GravityRelativeDesiredRotation.Quaternion()).Rotator();
+```
+
+如果没有自定义旋转，那么很简单
+
+```cpp
+DesiredRotation.Pitch = 0.f;
+DesiredRotation.Yaw = FRotator::NormalizeAxis(DesiredRotation.Yaw);
+DesiredRotation.Roll = 0.f;
+```
+
+接下来对得到的 `DesiredRotation` 进行插值处理
+
+```cpp
+// YAW
+if (!FMath::IsNearlyEqual(CurrentRotation.Yaw, DesiredRotation.Yaw, AngleTolerance))
+{
+  DesiredRotation.Yaw = FMath::FixedTurn(CurrentRotation.Yaw, DesiredRotation.Yaw, DeltaRot.Yaw);
+}
+```
+
+> `ROLL`、`PITCH`、`YAW` 的处理相同，分别对三轴进行插值处理
+
+最后调用 `MoveUpdateComponent` 来更新角色朝向
+
+```cpp
+MoveUpdatedComponent( FVector::ZeroVector, DesiredRotation, /*bSweep*/ false );
+```
