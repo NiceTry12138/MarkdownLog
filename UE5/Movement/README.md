@@ -572,4 +572,80 @@ if( CurrentRootMotion.HasAdditiveVelocity() )
 }
 ```
 
-5. 
+5. 定义 `FScopedMovementUpdate`
+
+`FScopedMovementUpdate` 作用比较简单
+
+- 在**构造函数**中根据条件判断执行 `BeginScopedMovementUpdate`
+- 在**析构函数**中根据条件判断执行 `EndScopedMovementUpdate`
+
+```cpp
+{
+		FScopedMovementUpdate ScopedMovementUpdate(UpdatedComponent, bEnableScopedMovementUpdates ? EScopedUpdate::DeferredUpdates : EScopedUpdate::ImmediateUpdates);
+    
+    // .... 很多很多移动计算
+}
+```
+
+上述代码中，使用 `{}` 定义了一个作用域，当作用域结束之后会执行 `ScopedMovementUpdate` 的**析构函数**
+
+6. 缓存当前的速度和坐标
+
+```cpp
+OldVelocity = Velocity;
+OldLocation = UpdatedComponent->GetComponentLocation();
+```
+
+7. 添加 `Impulse`(冲量) 和 `Force`(力) 到速度上
+
+```cpp
+Velocity += PendingImpulseToApply + (PendingForceToApply * DeltaSeconds);
+
+PendingImpulseToApply = FVector::ZeroVector;
+PendingForceToApply = FVector::ZeroVector;
+```
+
+这一步顺便判断了力的方向，如果存在 **竖直方向** 的 **向上力** 修改当前状态为 `Move_Falling`
+
+```cpp
+if ( IsMovingOnGround() && (GravityRelativePendingImpulseToApply.Z + (GravityRelativePendingForceToApply.Z * DeltaSeconds) + (GetGravityZ() * DeltaSeconds) > UE_SMALL_NUMBER))
+{
+  SetMovementMode(MOVE_Falling);
+}
+```
+
+8. 更新角色状态
+
+```cpp
+UpdateCharacterStateBeforeMovement(DeltaSeconds);
+```
+
+函数内容其实很简单，就是判断是否需要进入 **蹲** 的状态
+
+根据 `bWantsToCrouch`、`bIsCrouching` 和 `CanCrouchInCurrentState()` 判断当前是否**需要** 以及 **能够** 进入或者退出 **蹲** 的状态 
+
+9. 检查 `Launch`(跳跃)
+
+如果调用了 `Launch` 想要跳跃，则直接用 跳跃 向量覆盖 `Velocity`，并设置当前状态为 `MOVE_Failing`，并设置 `bForceNextFloorCheck` 强制检查地面
+
+```cpp
+if (!PendingLaunchVelocity.IsZero() && HasValidData())
+{
+  Velocity = PendingLaunchVelocity;
+  SetMovementMode(MOVE_Falling);
+  PendingLaunchVelocity = FVector::ZeroVector;
+  bForceNextFloorCheck = true;
+  return true;
+}
+```
+
+10. 清除旧的速度
+
+```cpp
+PendingImpulseToApply = FVector::ZeroVector;    // 清空 冲量
+PendingForceToApply = FVector::ZeroVector;      // 清空 力
+PendingLaunchVelocity = FVector::ZeroVector;    // 清空 Launch速度
+```
+
+11. 处理 `RootMotion` 对 `Velocity` 的影响 
+12. 
