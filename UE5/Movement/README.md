@@ -645,7 +645,49 @@ if (!PendingLaunchVelocity.IsZero() && HasValidData())
 PendingImpulseToApply = FVector::ZeroVector;    // 清空 冲量
 PendingForceToApply = FVector::ZeroVector;      // 清空 力
 PendingLaunchVelocity = FVector::ZeroVector;    // 清空 Launch速度
+
+// 清除跳跃的输入 允许下一帧更新
+CharacterOwner->ClearJumpInput(DeltaSeconds);
+NumJumpApexAttempts = 0;
 ```
 
 11. 处理 `RootMotion` 对 `Velocity` 的影响 
-12. 
+12. 调用 `StartNewPhysics` 根据当前状态执行不同的更新函数
+
+| 状态 | 调用函数 |
+| --- | --- |
+| MOVE_None |  |
+| MOVE_Walking | PhysWalking |
+| MOVE_NavWalking | PhysNavWalking |
+| MOVE_Falling | PhysFalling |
+| MOVE_Flying | PhysFlying |
+| MOVE_Swimming | PhysSwimming |
+| MOVE_Custom | PhysCustom |
+| 其他 | SetMovementMode(MOVE_None) | 
+
+13. 再次调用 `UpdateCharacterStateBeforeMovement` 
+
+因为可能更新角色状态，此时可能不能再 **蹲** 了
+
+14. 更新角色朝向
+
+如果当前存在 `RootMotion` 并且 **不允许存在RootMotion时物理旋转**，则跳过 `PhysicsRotation`
+
+```cpp
+if (bAllowPhysicsRotationDuringAnimRootMotion || !HasAnimRootMotion())
+{
+  PhysicsRotation(DeltaSeconds);
+}
+```
+
+> 很明显，如果存在 `RootMotion` 优先使用 `RootMotion` 来计算旋转
+
+15. 根据 `RootMotion` 更新朝向
+
+#### PhysicsRotation
+
+负责处理角色朝向的自动更新
+
+![](Image/014.png)
+
+
