@@ -828,23 +828,3 @@ CalcAvoidanceVelocity(DeltaTime);
 ```
 
 总的来说，先计算摩擦力，先将速度减去 **摩擦力** * Delta，在加上 **加速度** * Delta
-
-#### PhysFlying
-
-
-
-#### PhysNavWalking
-
-
-
-#### PhysFalling
-
-
-
-#### PhysWalking
-
-
-
-#### PhysSwimming
-
-
