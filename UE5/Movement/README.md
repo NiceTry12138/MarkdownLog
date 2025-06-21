@@ -754,3 +754,97 @@ if (!FMath::IsNearlyEqual(CurrentRotation.Yaw, DesiredRotation.Yaw, AngleToleran
 ```cpp
 MoveUpdatedComponent( FVector::ZeroVector, DesiredRotation, /*bSweep*/ false );
 ```
+
+#### CalcVelocity
+
+无论是 `Walk`、`Swim`、`Failing`、`Flying` 都需要计算速度，之后进行后续移动逻辑判断
+
+记录 `` **加速度**、`MaxAcc` **最大速度**、`Friction` **摩擦力**
+
+`bZeroRequestedAcceleration` 判断是否存在 AI 路径跟随的移动请求导致的加速度
+
+- 如果强制最大加速度
+  - 如果当前存在加速度，则根据 **加速度方向** 乘以 **最大加速度** 得到 **加速度**
+  - 如果当前不存在加速度，则根据 **朝向** 或者 **速度方向** 乘以 **最大加速度** 得到 **加速度**
+
+```cpp
+if (bForceMaxAccel)
+{
+  if (Acceleration.SizeSquared() > UE_SMALL_NUMBER)
+  {
+    Acceleration = Acceleration.GetSafeNormal() * MaxAccel;
+  }
+  else 
+  {
+    Acceleration = MaxAccel * (Velocity.SizeSquared() < UE_SMALL_NUMBER ? UpdatedComponent->GetForwardVector() : Velocity.GetSafeNormal());
+  }
+  AnalogInputModifier = 1.f;
+}
+```
+
+计算最大速度限制，这里 `GetMinAnalogSpeed` 是获取防抖最小速度，用于保证最小移动速度的
+
+```cpp
+const float MaxInputSpeed = FMath::Max(MaxSpeed * AnalogInputModifier, GetMinAnalogSpeed());
+MaxSpeed = FMath::Max(RequestedSpeed, MaxInputSpeed);
+```
+
+如果 **没有加速度** 或者 **当前速度大于最大速度** 则单独计算摩擦力对速度的影响
+
+如果 **存在加速度** 计算加速度和摩擦力对速度的影响
+
+```cpp
+Velocity = Velocity - (Velocity - AccelDir * Velocity.Size()) * FMath::Min(DeltaTime * Friction, 1.f);
+```
+
+> 注意，这里计算摩擦力时 **摩擦力的方向** 修正为 `Velocity - AccelDir * Velocity.Size()` 既不是
+
+如果 **在流体中**，摩擦力对速度三个轴都有影响
+
+```cpp
+Velocity = Velocity * (1.f - FMath::Min(Friction * DeltaTime, 1.f));
+```
+
+应用输入加速度
+
+```
+const float NewMaxInputSpeed = IsExceedingMaxSpeed(MaxInputSpeed) ? Velocity.Size() : MaxInputSpeed;
+Velocity += Acceleration * DeltaTime;
+Velocity = Velocity.GetClampedToMaxSize(NewMaxInputSpeed);
+```
+
+应用路径请求的加速度
+
+```cpp
+const float NewMaxRequestedSpeed = IsExceedingMaxSpeed(RequestedSpeed) ? Velocity.Size() : RequestedSpeed;
+Velocity += RequestedAcceleration * DeltaTime;
+Velocity = Velocity.GetClampedToMaxSize(NewMaxRequestedSpeed);  
+```
+
+计算 RVO 避障，修改速度大小和方向
+
+```cpp
+CalcAvoidanceVelocity(DeltaTime);
+```
+
+总的来说，先计算摩擦力，先将速度减去 **摩擦力** * Delta，在加上 **加速度** * Delta
+
+#### PhysFlying
+
+
+
+#### PhysNavWalking
+
+
+
+#### PhysFalling
+
+
+
+#### PhysWalking
+
+
+
+#### PhysSwimming
+
+
