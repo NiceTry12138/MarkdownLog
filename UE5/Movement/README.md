@@ -759,7 +759,7 @@ MoveUpdatedComponent( FVector::ZeroVector, DesiredRotation, /*bSweep*/ false );
 
 无论是 `Walk`、`Swim`、`Failing`、`Flying` 都需要计算速度，之后进行后续移动逻辑判断
 
-记录 `` **加速度**、`MaxAcc` **最大速度**、`Friction` **摩擦力**
+记录 `Acceleration` **加速度**、`MaxSpeed` **最大速度**、`Friction` **摩擦力**
 
 `bZeroRequestedAcceleration` 判断是否存在 AI 路径跟随的移动请求导致的加速度
 
@@ -791,6 +791,10 @@ MaxSpeed = FMath::Max(RequestedSpeed, MaxInputSpeed);
 
 如果 **没有加速度** 或者 **当前速度大于最大速度** 则单独计算摩擦力对速度的影响
 
+```cpp
+ApplyVelocityBraking(DeltaTime, ActualBrakingFriction, BrakingDeceleration);
+```
+
 如果 **存在加速度** 计算加速度和摩擦力对速度的影响
 
 ```cpp
@@ -807,7 +811,7 @@ Velocity = Velocity * (1.f - FMath::Min(Friction * DeltaTime, 1.f));
 
 应用输入加速度
 
-```
+```cpp
 const float NewMaxInputSpeed = IsExceedingMaxSpeed(MaxInputSpeed) ? Velocity.Size() : MaxInputSpeed;
 Velocity += Acceleration * DeltaTime;
 Velocity = Velocity.GetClampedToMaxSize(NewMaxInputSpeed);
