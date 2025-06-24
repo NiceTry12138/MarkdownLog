@@ -805,6 +805,8 @@ Velocity = Velocity - (Velocity - AccelDir * Velocity.Size()) * FMath::Min(Delta
 
 > 注意，这里计算摩擦力时 **摩擦力的方向** 修正为 `Velocity - AccelDir * Velocity.Size()` 既不是
 
+![](Image/015.jpg)
+
 如果 **在流体中**，摩擦力对速度三个轴都有影响
 
 ```cpp
