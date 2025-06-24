@@ -137,6 +137,16 @@ GE 的时间配置如上图所示，分为三种类型
 
 > `Mod` 是 `Modifier` 的缩写
 
+### 关于 UGameplayEffect、FGameplayEffectSpec 和 FActiveGameplayEffect
+
+`UGameplayEffect` 用于配置，新建的 GE 的资产就是这个
+
+`FGameplayEffectSpec` 包含 `UGameplayEffect` 和 对应的运行时信息，比如运行时计算得到的 `Duration`、`Period` 等
+
+`FActiveGameplayEffect` 包含 `UGameplayEffect`，当一个 GE 是周期性时，会加入到 `FActiveGameplayEffectsContainer` 容器中，需要记录 GE 执行的 开始时间、下一次执行时间 等信息
+
+综上，不同的配置用于的不同的情况，但是无论如何，一个 GE 只要被应用了，就会创建对应的 `FGameplayEffectSpec` 实例
+
 ### GE 的添加流程
 
 以 `BlueprintCallable` 的 `BP_ApplyGameplayEffectToSelf` 作为入口
