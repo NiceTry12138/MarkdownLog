@@ -513,9 +513,9 @@ if (AttributeSet->PreGameplayEffectExecute(ExecuteData))
 
 ![GE的执行流程](Image/001.png)
 
-### UGameplayEffectCalculation
+### UGameplayEffectExecutionCalculation
 
-`UGameplayEffectCalculation` 与 `UGameplayModMagnitudeCalculation` 类似，都是可以自定义属性的计算过程，不同的是 `UGameplayEffectCalculation` 可以对多个属性进行操作
+`UGameplayEffectExecutionCalculation` 与 `UGameplayModMagnitudeCalculation` 类似，都是可以自定义属性的计算过程，不同的是 `UGameplayEffectExecutionCalculation` 可以对多个属性进行操作
 
 以 `Lyra` 项目中的 `ULyraDamageExecution` 为例
 
@@ -562,7 +562,7 @@ OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(ULyraHealthS
 
 ### UGameplayEffectComponent
 
-为了方便配置、提升可扩展性，将 GE 执行的各个流程封装成成 `UGameplayEffectComponent`，根据各自的需求实现各自的共嫩
+为了方便配置、提升可扩展性，将 GE 执行的各个流程封装成成 `UGameplayEffectComponent`，根据各自的需求实现各自的功能
 
 从源码来看，`UGameplayEffectComponent` 内容非常简单
 
