@@ -65,6 +65,84 @@
 
 ## Attribute
 
+### AttributeSet
+
+- 作为**属性容器**，存储游戏实体的所有属性
+- 作为**行为控制器**，通过生命周期钩子函数控制属性修改逻辑
+- 实现网络同步基础
+- 执行数值钳制、伤害计算等游戏规则
+
+| 虚函数 | 作用 | 返回值 |
+| --- | --- | --- |
+| PreGameplayEffectExecute | 效果执行执行前触发 | 返回 false 可阻止效果应用 |
+| PostGameplayEffectExecute | 处理效果后的状态更新 |  |
+| PreAttributeChange | 任何属性修改前调用（包括直接修改） |  |
+| PostAttributeChange | 属性修改后调用 |  |
+| PreAttributeBaseChange | 属性基础值修改前调用（Aggregator存在时） |  |
+| PostAttributeBaseChange | 属性基础值修改后调用 |  |
+| OnAttributeAggregatorCreated | 自定义属性聚合规则 |  |
+
+![](Image/013.png)
+
+在 `UAbilitySystemComponent::InitializeComponent` 的时候，会获取绑定对象上所有的 `UAttributeSet` 并将其保存在 `SpawnedAttributes` 属性中
+
+```cpp
+void UAbilitySystemComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+  // Do Something ...
+
+	TArray<UObject*> ChildObjects;
+	GetObjectsWithOuter(Owner, ChildObjects, false, RF_NoFlags, EInternalObjectFlags::Garbage);
+
+	for (UObject* Obj : ChildObjects)
+	{
+		UAttributeSet* Set = Cast<UAttributeSet>(Obj);
+		if (Set)  
+		{
+			SpawnedAttributes.AddUnique(Set);
+		}
+	}
+
+	SetSpawnedAttributesListDirty();
+}
+```
+
+所以在角色中需要定义 `UAttributeSet` 属性
+
+```cpp
+class LYRAGAME_API ALyraCharacterWithAbilities : public ALyraCharacter
+{
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Lyra|PlayerState")
+	TObjectPtr<ULyraAbilitySystemComponent> AbilitySystemComponent;
+	
+	UPROPERTY()
+	TObjectPtr<const class ULyraHealthSet> HealthSet;
+	UPROPERTY()
+	TObjectPtr<const class ULyraCombatSet> CombatSet;
+}
+```
+
+然后在构造函数中初始化 `UAttributeSet` 属性 和 技能系统组件 (`ULyraAbilitySystemComponent`)
+
+```cpp
+ALyraCharacterWithAbilities::ALyraCharacterWithAbilities(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<ULyraAbilitySystemComponent>(this, TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	HealthSet = CreateDefaultSubobject<ULyraHealthSet>(TEXT("HealthSet"));
+	CombatSet = CreateDefaultSubobject<ULyraCombatSet>(TEXT("CombatSet"));
+}
+```
+
+> Lyra 继承 `UAbilitySystemComponent` 实现了自己的 `ULyraAbilitySystemComponent`
+
+通过上面的代码，可以发现一个角色可以存在多个 `UAttributeSet`
+
 ### 关于属性的思考
 
 - 效果 A：是 `Duration` 类型，持续时间是 3s，`Period` 为 0，作用是 Add HP 50%
@@ -99,6 +177,95 @@ Current Value = 35.0 Base Value = 35.0    // 3s 之后
 > 临时性 HP 修改全部作用于 ExtraHP，比如 效果A，或者其他 Buff、Debuff  
 > 直接扣除 HP 的全部作用于 Damage  
 > 增加当前 HP 的全部作用于 HP  
+
+### 关于属性的最大最小值
+
+1. 限制一个属性的取值范围，需要自己处理
+2. 一个属性的最大值可能是另一个属性的值，比如**血量**和**最大血量**，最大血量会随着角色等级增加
+
+以 `Lyra` 为例
+
+首先对**生命值**和**最大生命值**设置取值范围
+
+```cpp
+void ULyraHealthSet::ClampAttribute(const FGameplayAttribute& Attribute, float& NewValue) const
+{
+	if (Attribute == GetHealthAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
+	}
+	else if (Attribute == GetMaxHealthAttribute())
+	{
+		NewValue = FMath::Max(NewValue, 1.0f);
+	}
+}
+```
+
+剩下的就是在合适调用 `ClampAttribute`
+
+通常在什么时候会对属性进行修改？ GE 执行的时候
+
+于是在 GE 执行之后，将属性值限制在范围内即可
+
+```cpp
+void ULyraHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
+{
+  // ... do something
+
+  else if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	{
+		SetHealth(FMath::Clamp(GetHealth(), MinimumHealth, GetMaxHealth()));
+	}
+	else if (Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
+	{
+		OnMaxHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, MaxHealthBeforeAttributeChange, GetMaxHealth());
+	}
+}
+```
+
+当然还有一些其他情况，比如说在 C++ 中拿到 `AttributeSet` 然后强行修改对应属性，应对这种状态也有对应函数接口
+
+在 `PreAttributeBaseChange` 和 `PreAttributeChange` 中，将将要设置的属性值进行修改，保证值在允许的区间范围内
+
+在 `PostAttributeChange` 函数中判断是否修改了最大血量，如果当前血量大于最大血量，限制当前血量的值
+
+```cpp
+void ULyraHealthSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
+{
+	Super::PreAttributeBaseChange(Attribute, NewValue);
+
+	ClampAttribute(Attribute, NewValue);
+}
+
+void ULyraHealthSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
+{
+	Super::PreAttributeChange(Attribute, NewValue);
+
+	ClampAttribute(Attribute, NewValue);
+}
+
+void ULyraHealthSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if (Attribute == GetMaxHealthAttribute())
+	{
+		// Make sure current health is not greater than the new max health.
+		if (GetHealth() > NewValue)
+		{
+			ULyraAbilitySystemComponent* LyraASC = GetLyraAbilitySystemComponent();
+			check(LyraASC);
+
+			LyraASC->ApplyModToAttribute(GetHealthAttribute(), EGameplayModOp::Override, NewValue);
+		}
+	}
+
+	if (bOutOfHealth && (GetHealth() > 0.0f))
+	{
+		bOutOfHealth = false;
+	}
+}
+```
 
 ## GE
 
