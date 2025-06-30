@@ -615,3 +615,311 @@ OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(ULyraHealthS
 --------
 
 由于 `UGameplayEffectComponent` 的存在，现在 GE 的配置更加方便、简单、易读
+
+## FActiveGameplayEffectsContainer
+
+这是什么？
+
+这是一个存储激活的 GE (`FActiveGameplayEffect`) 的**容器**(`Container`)
+
+当一个 GE 被实例化的时候会封装成 `FGameplayEffectSpec`，当 GE 有持续时间时会通过 `ApplyGameplayEffectSpec` 添加到容器中，并封装成 `FActiveGameplayEffect`
+
+```cpp
+struct GAMEPLAYABILITIES_API FActiveGameplayEffectsContainer : public FFastArraySerializer
+```
+
+它继承自 `FFastArraySerializer`，是一种专为复制大型数组而设计的序列化方式
+
+- 适用于 `TArray` 类型。
+- 高效处理数组内任意位置的元素删除与新增，复制时仅发送变化的内容（Delta 序列化）。
+- 支持在客户端触发新增、删除事件回调
+
+> `MarkItemDirty` 对修改的 Entity 标脏
+
+`FActiveGameplayEffectsContainer` 维护一个数组 `GameplayEffects_Internal` 用于存储 Active GE 的实体
+
+```cpp
+UPROPERTY()
+TArray<FActiveGameplayEffect>	GameplayEffects_Internal;
+```
+
+| 类型 | 属性 | 作用 |
+| --- | --- | --- |
+| TMap<FGameplayAttribute, FAggregatorRef> | AttributeAggregatorMap | 每个被任何 Active GE 修改过的 FGameplayAttribute 维护一个 FAggregator |
+| TMap<FGameplayAttribute, FOnGameplayAttributeChange> | AttributeChangeDelegates | 注册当某个 FGameplayAttribute 的值发生变化时触发的回调委托 |
+| TMap<FGameplayAttribute, FOnGameplayAttributeValueChange> | AttributeValueChangeDelegates | 为每个 FGameplayAttribute 维护一个当该属性值发生有意义的变化（超出容差范围）时触发的回调委托 |
+| TMap<FObjectKey, FCustomModifierDependencyHandle> | CustomMagnitudeClassDependencies | 管理动态数值计算器 (UGameplayModMagnitudeCalculation 类) 的依赖关系 |
+| TMap<TWeakObjectPtr<UGameplayEffect>, TArray<FActiveGameplayEffectHandle> > | SourceStackingMap | 用于管理当这个 ASC 是 GE 的 Instigator (来源) 时，该 GE 在其他目标身上的堆叠情况 |
+| mutable int32 | ScopedLockCount | 作用域锁 (Scoped Lock) 的计数器 |
+| int32 | PendingRemoves | 一个简单的计数器，记录当前有多少个 FActiveGameplayEffect 被标记为待移除 |
+
+### HandleActiveGameplayEffectStackOverflow
+
+处理堆叠逻辑
+
+将堆叠超过 `Limit` 时配置的 `OverflowEffects` 应用到 `Owner` 上
+
+```cpp
+for (TSubclassOf<UGameplayEffect> OverflowEffect : StackedGE->OverflowEffects)
+{
+  if (const UGameplayEffect* CDO = OverflowEffect.GetDefaultObject())
+  {
+    FGameplayEffectSpec NewGESpec;
+    NewGESpec.InitializeFromLinkedSpec(CDO, OverflowingSpec);
+    Owner->ApplyGameplayEffectSpecToSelf(NewGESpec);
+  }
+}
+```
+
+根据 `bClearStackOnOverflow` 配置，清理掉当前的 GE
+
+```cpp
+if (!bAllowOverflowApplication && StackedGE->bClearStackOnOverflow)
+{
+  Owner->RemoveActiveGameplayEffect(ActiveStackableGE.Handle);
+}
+```
+
+### ApplyGameplayEffectSpec
+
+首先找到 `Stack` 堆叠的 `ActiveGE`
+
+如果存在堆叠的 GE 则触发堆叠逻辑，否则创建新的 `ActiveGE`
+
+#### 处理堆叠逻辑
+
+- 如果 `ExistingStackableGE` 不为空，则表示找到能够堆叠的 GE
+
+如果当前 `ExistingStackableGE` 的堆叠层数已经等于 `StackLimitCount`，那么新添加的 GE 肯定会导致堆叠溢出
+
+需要执行 `HandleActiveGameplayEffectStackOverflow` 来处理堆叠溢出逻辑
+
+```cpp
+if (ExistingSpec.GetStackCount() == ExistingSpec.Def->StackLimitCount)
+{
+  if (!HandleActiveGameplayEffectStackOverflow(*ExistingStackableGE, ExistingSpec, Spec))
+  {
+    return nullptr;
+  }
+}
+```
+
+接下来处理堆叠层数，让 `ExistingStackableGE` 的堆叠层数是
+
+```cpp
+NewStackCount = ExistingSpec.GetStackCount() + Spec.GetStackCount();
+if (ExistingSpec.Def->StackLimitCount > 0)
+{
+  NewStackCount = FMath::Min(NewStackCount, ExistingSpec.Def->StackLimitCount);
+}
+
+// ... do something else
+
+ExistingStackableGE->Spec.SetStackCount(NewStackCount);
+```
+
+> 注意这里通过 `FMath::Min` 限制了堆叠层数不超过 `StackLimitCount`
+
+最后根据配置来处理时间周期相关的逻辑，比如重新计时等
+
+```cpp
+// Make sure the GE actually wants to refresh its duration
+if (GEDef->StackDurationRefreshPolicy == EGameplayEffectStackingDurationPolicy::NeverRefresh)
+{
+  bSetDuration = false;
+}
+else
+{
+  RestartActiveGameplayEffectDuration(*ExistingStackableGE);
+}
+```
+
+根据上面的代码，不难发现一个问题，那就是对堆叠层数的处理
+
+试想一种情况，当前有 4 层，新添加的 GE 是 2 层，`StackLimitCount` 的限制是 5 层
+
+根据上面的代码逻辑
+
+1. 由于当前层数 4 层不等于 `StackLimitCount`，所以不处理堆叠溢出逻辑
+2. 计算 `NewStackCount` 堆叠层数，由于 `FMath::Min` 所以最后 `NewStackCount` 等于 5
+3. 后续其他逻辑
+
+这里对**堆叠层数**的处理和**堆叠层数溢出**的处理有点违反习惯
+
+通常来说 `4 + 2 = 6 > 5` 应该触发堆叠溢出，但是没有，再下一次添加的时候才会触发，这里的逻辑需要特别记住
+
+#### 不堆叠 创建新的 ActiveGE
+
+- 如果 `ExistingStackableGE` 为空，则需要创建新的 `ActiveGE`
+
+这里需要关注一个成员属性 `ScopeLockCount`
+
+```cpp
+mutable int32 ScopedLockCount;
+```
+
+`ScopedLockCount` 用于表示当前的这个**容器**(`Container`)是否正在被使用，如果当前容器正在被使用
+
+`GameplayEffects_Internal.GetSlack()` 可以得到数组预分配内存中可容纳的额外元素数量。如果该值 `<= 0` 表示数组已满（或接近满），此时添加新元素会触发**内存重新分配**
+
+如果当前容器正在被使用，并且容器已满，那么就不能直接添加到容器中，需要添加到 `PendingGameplayEffectHead` 链表中
+
+```cpp
+if (ScopedLockCount > 0 && GameplayEffects_Internal.GetSlack() <= 0)
+```
+
+如果 `PendingGameplayEffectNext` 为空，则在堆上创建新的对象；如果不为空，则直接在现有内存上构建对象
+
+```cpp
+if (*PendingGameplayEffectNext == nullptr)
+{
+  // 堆分配新对象
+  AppliedActiveGE = new FActiveGameplayEffect(NewHandle, Spec, GetWorldTime(), GetServerWorldTime(), InPredictionKey);
+  *PendingGameplayEffectNext = AppliedActiveGE;
+}
+else
+{
+  // 重用内存
+  **PendingGameplayEffectNext = FActiveGameplayEffect(NewHandle, Spec, GetWorldTime(), GetServerWorldTime(), InPredictionKey);
+  AppliedActiveGE = *PendingGameplayEffectNext;
+}
+// 更新链表指针
+PendingGameplayEffectNext = &AppliedActiveGE->PendingNext;
+```
+
+如果可以直接添加到 `GameplayEffects_Internal` 数组中，则调用下面这个代码逻辑
+
+```cpp
+AppliedActiveGE = new(GameplayEffects_Internal) FActiveGameplayEffect(NewHandle, Spec, GetWorldTime(), GetServerWorldTime(), InPredictionKey);
+```
+
+上述代码使用了 `placement new`，关于其解释在[另一篇文章](../../cpp/内存机制.md#placement-new)中 
+
+简单来说 `placement new` 用于在一块已经创建了内存的地方调用构造函数
+
+通过上面这些条件判断，最终创建出 `ActiveGE` 并添加到合适的地方
+
+`ScopedLockCount` 用于表示当前的 `Container` 是否正在被使用，使用 `FScopedActiveGameplayEffectLock` 的构造和析构函数来 **增加** 或 **减少** `ScopedLockCount` 的值
+
+> `mutable` 关键字表示该变量可以在 `count` 函数中修改 
+
+```cpp
+void FActiveGameplayEffectsContainer::IncrementLock()
+{
+	ScopedLockCount++;
+}
+
+void FActiveGameplayEffectsContainer::DecrementLock()
+{
+	if (--ScopedLockCount == 0)
+  {
+    // 处理 PendingGameplayEffectHead 逻辑
+  }
+}
+
+FScopedActiveGameplayEffectLock::FScopedActiveGameplayEffectLock(FActiveGameplayEffectsContainer& InContainer)
+	: Container(InContainer)
+{
+	Container.IncrementLock();
+}
+
+FScopedActiveGameplayEffectLock::~FScopedActiveGameplayEffectLock()
+{
+	Container.DecrementLock();
+}
+```
+
+当 `FScopedActiveGameplayEffectLock` 析构的时候，去判断 `ScopedLockCount` 是否归零，如果归零了就可以去处理 `PendingGameplayEffectHead` 相关逻辑，将其真正添加到 `GameplayEffects_Internal` 数组中
+
+#### 后续处理
+
+1. 收集和初始化数据，绑定关联关系
+
+```cpp
+AppliedEffectSpec.CaptureAttributeDataFromTarget(Owner);
+AppliedEffectSpec.CalculateModifierMagnitudes();
+
+AppliedEffectSpec.CapturedRelevantAttributes.RegisterLinkedAggregatorCallbacks(AppliedActiveGE->Handle);
+```
+
+2. 计算持续时间，并绑定 `Timer`，在持续时间结束后调用 `UAbilitySystemComponent::CheckDurationExpired`
+
+```cpp
+float FinalDuration = AppliedEffectSpec.CalculateModifiedDuration();
+
+AppliedEffectSpec.SetDuration(FinalDuration, true);
+
+if (Owner && bSetDuration)
+{
+  FTimerManager& TimerManager = Owner->GetWorld()->GetTimerManager();
+  FTimerDelegate Delegate = FTimerDelegate::CreateUObject(Owner, &UAbilitySystemComponent::CheckDurationExpired, AppliedActiveGE->Handle);
+  TimerManager.SetTimer(AppliedActiveGE->DurationHandle, Delegate, FinalDuration, false);
+  if (!ensureMsgf(AppliedActiveGE->DurationHandle.IsValid(), TEXT("Invalid Duration Handle after attempting to set duration for GE %s @ %.2f"), 
+    *AppliedActiveGE->GetDebugString(), FinalDuration))
+  {
+    TimerManager.SetTimerForNextTick(Delegate);
+  }
+}
+```
+
+3. 计算执行周期，并绑定 `Timer`，在执行时调用 `UAbilitySystemComponent::ExecutePeriodicEffect`
+
+```cpp
+FTimerManager& TimerManager = Owner->GetWorld()->GetTimerManager();
+FTimerDelegate Delegate = FTimerDelegate::CreateUObject(Owner, &UAbilitySystemComponent::ExecutePeriodicEffect, AppliedActiveGE->Handle);
+
+if (AppliedEffectSpec.Def->bExecutePeriodicEffectOnApplication)
+{
+  TimerManager.SetTimerForNextTick(Delegate);
+}
+
+TimerManager.SetTimer(AppliedActiveGE->PeriodHandle, Delegate, AppliedEffectSpec.GetPeriod(), true);
+```
+
+4. 标记脏数据
+5. 后续处理，并抛出事件
+
+```cpp
+if (ExistingStackableGE)
+{
+  OnStackCountChange(*ExistingStackableGE, StartingStackCount, NewStackCount);
+}
+else
+{
+  InternalOnActiveGameplayEffectAdded(*AppliedActiveGE);
+}
+```
+
+### FActiveGameplayEffectHandle
+
+`FActiveGameplayEffectHandle` 用于表示 `FActiveGameplayEffect` 唯一 ID
+
+```cpp
+FActiveGameplayEffectHandle NewHandle = FActiveGameplayEffectHandle::GenerateNewHandle(Owner);
+```
+
+在 `FActiveGameplayEffect` 构造函数中存储在 `Handle` 属性中
+
+`Handle` 的创建逻辑也很简单
+
+```cpp
+static int32 GHandleID=0;
+FActiveGameplayEffectHandle NewHandle(GHandleID++);
+
+TWeakObjectPtr<UAbilitySystemComponent> WeakPtr(OwningComponent);
+
+GlobalActiveGameplayEffectHandles::Map.Add(NewHandle, WeakPtr);
+
+return NewHandle;
+```
+
+根据上面的代码，不难发现，就是定义了一个全局变量 `GHandleID`，每次都创建的时候都直接 ++ 即可
+
+主要是在全局作用域中存储 `Handle` 和 `Owner` 的关系
+
+```cpp
+namespace GlobalActiveGameplayEffectHandles
+{
+	static TMap<FActiveGameplayEffectHandle, TWeakObjectPtr<UAbilitySystemComponent>>	Map;
+}
+```
