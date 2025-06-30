@@ -797,6 +797,17 @@ AppliedActiveGE = new(GameplayEffects_Internal) FActiveGameplayEffect(NewHandle,
 
 简单来说 `placement new` 用于在一块已经创建了内存的地方调用构造函数
 
+由于 `TArray` 重载了 `operator new`，所以这里会对数组中一个合适的位置进行 `placement new` 操作
+
+```cpp
+template <typename T,typename AllocatorType> void* operator new(size_t Size, TArray<T, AllocatorType>& Array)
+{
+	check(Size == sizeof(T));
+	const auto Index = Array.AddUninitialized();
+	return &Array[Index];
+}
+```
+
 通过上面这些条件判断，最终创建出 `ActiveGE` 并添加到合适的地方
 
 `ScopedLockCount` 用于表示当前的 `Container` 是否正在被使用，使用 `FScopedActiveGameplayEffectLock` 的构造和析构函数来 **增加** 或 **减少** `ScopedLockCount` 的值
