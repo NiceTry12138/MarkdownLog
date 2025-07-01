@@ -389,7 +389,7 @@ for (auto& ChannelEntry : ModChannelsMap)
 
 将 **攻击倍率** 记录在 `Channel1` 通道中，将 **伤害倍率** 记录在 `Channel2` 中
 
-> 实际情况可能更加负责，这里只是为了说明 `Channel` 的使用，而举例
+> 实际情况可能更加复杂，这里只是为了说明 `Channel` 的使用，而举例
 
 `FAggregatorModChannel` 结构体本身比较简单
 
@@ -490,7 +490,7 @@ float GameplayEffectUtilities::GetModifierBiasByModifierOp(EGameplayModOp::Type 
 }
 ```
 
-`GetModifierBiasByModifierOp` 函数也很简单，对 **加法** 和 **覆盖** 操作返回 0；对 **乘法** 和 **触发** 返回 0
+`GetModifierBiasByModifierOp` 函数也很简单，对 **加法** 和 **覆盖** 操作返回 0；对 **乘法** 和 **除法** 返回 0
 
 其实理解 `Bias` 的作用很简单，比如我希望血量增加 50%，那么 **乘法** 操作最后得到的值是 `0.5`，`BaseValue * 0.5` 很明显不符合我们的需求
 
