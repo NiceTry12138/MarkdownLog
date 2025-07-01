@@ -934,3 +934,238 @@ namespace GlobalActiveGameplayEffectHandles
 	static TMap<FActiveGameplayEffectHandle, TWeakObjectPtr<UAbilitySystemComponent>>	Map;
 }
 ```
+
+### CheckDuration
+
+记得 `ActiveGE` 的持续时间绑定的 `Delegate` 吗
+
+```cpp
+FTimerDelegate Delegate = FTimerDelegate::CreateUObject(Owner, &UAbilitySystemComponent::CheckDurationExpired, AppliedActiveGE->Handle);
+```
+
+当持续时间结束之后，执行 `Owner` 的 `UAbilitySystemComponent::CheckDurationExpired`
+
+```cpp
+void UAbilitySystemComponent::CheckDurationExpired(FActiveGameplayEffectHandle Handle)
+{
+	ActiveGameplayEffects.CheckDuration(Handle);
+}
+```
+
+本质上还是执行 `Container` 的 `CheckDuration` 函数
+
+逻辑也比较简单，根据 `Handle` 找到对应的 `ActiveGE`
+
+记录**当前时间** 和 GE 的**持续时间**
+
+```cpp
+float Duration = Effect.GetDuration();
+float CurrentTime = GetWorldTime();
+```
+
+判断时间是否超时
+
+```cpp
+if (Duration > 0.f && (((Effect.StartWorldTime + Duration) < CurrentTime) ||
+    FMath::IsNearlyZero(CurrentTime - Duration - Effect.StartWorldTime, KINDA_SMALL_NUMBER)))
+```
+
+如果没有超时，鉴定为有问题，强制刷新持续时间
+
+```cpp
+else
+{
+  // Effect isn't finished, just refresh its duration timer
+  RefreshDurationTimer = true;
+}
+```
+
+如果超时，根据所属 `Stack` 堆叠策略，执行不同的计算逻辑
+
+```cpp
+// Figure out what to do based on the expiration policy
+switch(Effect.Spec.Def->GetStackExpirationPolicy())
+{
+case EGameplayEffectStackingExpirationPolicy::ClearEntireStack:
+  StacksToRemove = -1; // Remove all stacks
+  CheckForFinalPeriodicExec = true;					
+  break;
+case EGameplayEffectStackingExpirationPolicy::RemoveSingleStackAndRefreshDuration:
+  StacksToRemove = 1;
+  CheckForFinalPeriodicExec = (Effect.Spec.GetStackCount() == 1);
+  RefreshStartTime = true;
+  RefreshDurationTimer = true;
+  break;
+case EGameplayEffectStackingExpirationPolicy::RefreshDuration:
+  RefreshStartTime = true;
+  RefreshDurationTimer = true;
+  break;
+};	
+```
+
+| 堆叠策略 | 作用 | 执行操作 |
+| --- | --- | --- |
+| ClearEntireStack | 清除整个堆叠 | 完全移除整个效果堆叠 |
+| RemoveSingleStackAndRefreshDuration | 移除单个堆叠并刷新持续时间 |  |
+| RefreshDuration | 刷新持续时间 | 不减少堆叠数，只刷新效果的持续时间 |
+
+
+根据前面策略，设置 `StacksToRemove`、`RefreshStartTime`、`RefreshDurationTimer` 的值，再根据值执行不同的逻辑
+
+`StacksToRemove` 默认值为 -2 表示不做事，该值为 -1 时表示全部清除，为正数时清除指定层数
+
+`RefreshStartTime` 为真，执行 `RestartActiveGameplayEffectDuration`，但是这一步只是修改 `ActiveGE` 的 `StartTime` 为当前时间，并触发 `OnGameplayEffectDurationChange` 事件
+
+本质上，并没有真的改变持续时间本身
+
+`RefreshDurationTimer` 为真，会真正的重新创建并绑定定时器委托
+
+
+```cpp
+if (StacksToRemove >= -1)
+{
+  InternalRemoveActiveGameplayEffect(ActiveGEIdx, StacksToRemove, false);
+}
+
+if (RefreshStartTime)
+{
+  RestartActiveGameplayEffectDuration(Effect);
+}
+
+if (RefreshDurationTimer)
+{
+  // ... 重新设置 Timer
+}
+```
+
+### ExecutePeriodicGameplayEffect
+
+记得 `ActiveGE` 的周期执行绑定的 `Delegate` 吗
+
+```cpp
+FTimerDelegate Delegate = FTimerDelegate::CreateUObject(Owner, &UAbilitySystemComponent::ExecutePeriodicEffect, AppliedActiveGE->Handle);
+
+void UAbilitySystemComponent::ExecutePeriodicEffect(FActiveGameplayEffectHandle	Handle)
+{
+	ActiveGameplayEffects.ExecutePeriodicGameplayEffect(Handle);
+}
+```
+
+所以本质上，还是执行 `FActiveGameplayEffectsContainer` 容器的 `ExecutePeriodicGameplayEffect` 函数
+
+```cpp
+void FActiveGameplayEffectsContainer::ExecutePeriodicGameplayEffect(FActiveGameplayEffectHandle Handle)
+{
+	GAMEPLAYEFFECT_SCOPE_LOCK();
+
+	FActiveGameplayEffect* ActiveEffect = GetActiveGameplayEffect(Handle);
+
+	if (ActiveEffect != nullptr)
+	{
+		InternalExecutePeriodicGameplayEffect(*ActiveEffect);
+	}
+}
+```
+
+根据下面的代码，可以分为两个部分
+
+1. 执行部分 `ExecuteActiveEffectsFrom`
+2. 对 `Owner` 和 `Source` 的 **事件广播**
+
+```cpp
+void FActiveGameplayEffectsContainer::InternalExecutePeriodicGameplayEffect(FActiveGameplayEffect& ActiveEffect)
+{
+	GAMEPLAYEFFECT_SCOPE_LOCK();	
+	if (!ActiveEffect.bIsInhibited)
+	{
+		FScopeCurrentGameplayEffectBeingApplied ScopedGEApplication(&ActiveEffect.Spec, Owner);
+
+    // do something else ...
+		
+		ActiveEffect.Spec.ModifiedAttributes.Empty();
+
+		ExecuteActiveEffectsFrom(ActiveEffect.Spec);
+
+		UAbilitySystemComponent* SourceASC = ActiveEffect.Spec.GetContext().GetInstigatorAbilitySystemComponent();
+		Owner->OnPeriodicGameplayEffectExecuteOnSelf(SourceASC, ActiveEffect.Spec, ActiveEffect.Handle);
+		if (SourceASC)
+		{
+			SourceASC->OnPeriodicGameplayEffectExecuteOnTarget(Owner, ActiveEffect.Spec, ActiveEffect.Handle);
+		}
+	}
+}
+```
+
+### ExecuteActiveEffectsFrom
+
+周期性 GE 真正执行逻辑的地方
+
+1. 捕获数据，计算 `Modifier` 具体数值
+
+```cpp
+SpecToUse.CapturedTargetTags.GetActorTags().Reset();
+Owner->GetOwnedGameplayTags(SpecToUse.CapturedTargetTags.GetActorTags());
+
+SpecToUse.CalculateModifierMagnitudes();
+```
+
+2. 通过 `InternalExecuteMod` 修改属性的 `BaseValue`
+
+```cpp
+for (int32 ModIdx = 0; ModIdx < SpecToUse.Modifiers.Num(); ++ModIdx)
+{
+  const FGameplayModifierInfo& ModDef = SpecToUse.Def->Modifiers[ModIdx];
+  
+  FGameplayModifierEvaluatedData EvalData(ModDef.Attribute, ModDef.ModifierOp, SpecToUse.GetModifierMagnitude(ModIdx, true));
+  ModifierSuccessfullyExecuted |= InternalExecuteMod(SpecToUse, EvalData);
+}
+```
+
+3. 执行 GE 中配置的 `UGameplayEffectExecutionCalculation`
+
+```cpp
+for (const FGameplayEffectExecutionDefinition& CurExecDef : SpecToUse.Def->Executions)
+{
+  // 得到 Execution 的 CDO
+  const UGameplayEffectExecutionCalculation* ExecCDO = CurExecDef.CalculationClass->GetDefaultObject<UGameplayEffectExecutionCalculation>();
+
+  // 执行 Execute 
+  FGameplayEffectCustomExecutionParameters ExecutionParams(SpecToUse, CurExecDef.CalculationModifiers, Owner, CurExecDef.PassedInTags, PredictionKey);
+  FGameplayEffectCustomExecutionOutput ExecutionOutput;
+  ExecCDO->Execute(ExecutionParams, ExecutionOutput);
+  
+  // 对 ExecutionOutput 进行操作
+  TArray<FGameplayModifierEvaluatedData>& OutModifiers = ExecutionOutput.GetOutputModifiersRef();
+  
+  for (FGameplayModifierEvaluatedData& CurExecMod : OutModifiers)
+  {
+    // If the execution didn't manually handle the stack count, automatically apply it here
+    if (bApplyStackCountToEmittedMods && SpecStackCount > 1)
+    {
+      CurExecMod.Magnitude = GameplayEffectUtilities::ComputeStackedModifierMagnitude(CurExecMod.Magnitude, SpecStackCount, CurExecMod.ModifierOp);
+    }
+    ModifierSuccessfullyExecuted |= InternalExecuteMod(SpecToUse, CurExecMod);
+  }
+
+  // ... do something else 
+}
+```
+
+4. 抛出事件
+
+```cpp
+if (InvokeGameplayCueExecute && SpecToUse.Def->GameplayCues.Num())
+{
+  UAbilitySystemGlobals::Get().GetGameplayCueManager()->InvokeGameplayCueExecuted_FromSpec(Owner, SpecToUse, PredictionKey);
+}
+
+for (const FGameplayEffectSpecHandle& TargetSpec : ConditionalEffectSpecs)
+{
+  if (TargetSpec.IsValid())
+  {
+    Owner->ApplyGameplayEffectSpecToSelf(*TargetSpec.Data.Get(), PredictionKey);
+  }
+}
+
+Spec.Def->OnExecuted(*this, Spec, PredictionKey);
+```
