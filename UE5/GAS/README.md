@@ -267,6 +267,270 @@ void ULyraHealthSet::PostAttributeChange(const FGameplayAttribute& Attribute, fl
 }
 ```
 
+## Aggregator
+
+聚合器，用于存储对一个属性的所有操作
+
+由于一些 GE 是临时对属性进行修改，在 GE 到期或者因为其他 GE 而被抑制的时候，需要撤销对属性的修改
+
+如果单独使用一个 `float` 来记录属性是不合适的，因为在 GE 撤销的时候无法对属性进行准确的还原
+
+通常的做法是，记录一个 `BaseValue`，记录基于 `BaseValue` 进行一系列的操作 `Mod`，最后通过 `BaseValue` 和 `Mod` 可以得到 `CurrentValue` 也就是最终值
+
+> 最终显示给玩家的，可能是多个属性集合起来的效果
+
+```cpp
+USTRUCT(BlueprintType)
+struct GAMEPLAYABILITIES_API FGameplayAttributeData
+{
+  // Some Functions ...
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute")
+	float BaseValue;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute")
+	float CurrentValue;
+}
+```
+
+### FAggregatorModInfo
+
+`FAggregatorModInfo` 用于存储对属性的**一次**操作的信息
+
+```cpp
+struct GAMEPLAYABILITIES_API FAggregatorModInfo
+{
+	EGameplayModEvaluationChannel Channel;
+	EGameplayModOp::Type Op;
+	const FAggregatorMod* Mod;
+};
+```
+
+`Op` 就是 `Operator`，就是操作
+
+UE 提供 四种 操作：加、乘、除、覆盖
+
+| 类型 | 含义 |
+| --- | --- |
+| EGameplayModOp::Additive | 加 |
+| EGameplayModOp::Multiplicitive | 乘 |
+| EGameplayModOp::Division | 除 |
+| EGameplayModOp::Override | 覆盖 |
+| EGameplayModOp::Max | 无效操作 |
+
+> 没有减法，因为加一个负数，就是减法
+
+`FAggregatorMod` 存储的是具体操作的数值
+
+```cpp
+struct GAMEPLAYABILITIES_API FAggregatorMod
+{
+  // Some Functions ...
+
+	const FGameplayTagRequirements*	SourceTagReqs;  // 施加效果者的标签
+	const FGameplayTagRequirements*	TargetTagReqs;  // 被施加效果者的标签
+
+	float EvaluatedMagnitude;	    // 计算后的最终修改值
+	float StackCount;             // 效果堆叠机制
+
+	FActiveGameplayEffectHandle ActiveHandle;	
+	bool IsPredicted;             // 是否是预测生成的
+
+private:
+	mutable bool IsQualified;     // 该 Mod 是否有效
+}
+```
+
+不过这个结构体，通常是用于记录一些数据传递给外界，运行时本质存储并非如此
+
+### FAggregatorModChannel
+
+`FAggregatorModChannel` 用于存储一个 `Channel` 中的所有 `Mod`
+
+> `Channel` 不知道怎么翻译，一般可以说是 **通道**
+
+```cpp
+UENUM()
+enum class EGameplayModEvaluationChannel : uint8
+{
+	Channel0 UMETA(Hidden),
+	Channel1 UMETA(Hidden),
+	Channel2 UMETA(Hidden),
+	Channel3 UMETA(Hidden),
+	Channel4 UMETA(Hidden),
+	Channel5 UMETA(Hidden),
+	Channel6 UMETA(Hidden),
+	Channel7 UMETA(Hidden),
+	Channel8 UMETA(Hidden),
+	Channel9 UMETA(Hidden),
+
+	// Always keep last
+	Channel_MAX UMETA(Hidden)
+};
+```
+
+虚幻给出了 10 个 `Channel`
+
+至于 `Channel` 的作用就是将 `Channel0` 计算的值，作为基础值给 `Channel1`，再将 `Channel1` 的值作为基础值给 `Channel2` 
+
+```cpp
+for (auto& ChannelEntry : ModChannelsMap)
+{
+  const FAggregatorModChannel& CurChannel = ChannelEntry.Value;
+  ComputedValue = CurChannel.EvaluateWithBase(ComputedValue, Parameters);
+}
+```
+
+用于对不同权重 `Mod` 进行操作
+
+比如，游戏中 **伤害** 通常是 `(基础攻击力 + 装备攻击力) * 攻击倍率 * 伤害倍率 * 增伤倍率`
+
+可以将 `基础攻击力 + 装备攻击力` 记录在 `Channel0` 通道中，计算得到值
+
+将 **攻击倍率** 记录在 `Channel1` 通道中，将 **伤害倍率** 记录在 `Channel2` 中
+
+> 实际情况可能更加负责，这里只是为了说明 `Channel` 的使用，而举例
+
+`FAggregatorModChannel` 结构体本身比较简单
+
+```cpp
+struct GAMEPLAYABILITIES_API FAggregatorModChannel
+{
+public:
+  // 一些其他的函数（Some Function Else） ... 
+
+  static float SumMods(const TArray<FAggregatorMod>& InMods, float Bias, const FAggregatorEvaluateParameters& Parameters);
+
+private:
+	TArray<FAggregatorMod> Mods[EGameplayModOp::Max];
+}
+```
+
+核心属性仅有一个 `Mods`，其本质是一个 **二维数组**，一维数组长度是 4，数组中各个元素对应的就是具体操作的数值
+
+比如 `EGameplayModOp::Additive` 值为 0，那么 `Mods[0]` 存储的就是 **加法** 对应的所有操作数值
+
+> `EGameplayModOp::Max` 值等于 4
+
+#### EvaluateWithBase
+
+以 `EvaluateWithBase` 函数为例，说明计算一个 `Channel` 的计算过程
+
+```cpp
+float FAggregatorModChannel::EvaluateWithBase(float InlineBaseValue, const FAggregatorEvaluateParameters& Parameters) const
+{
+	for (const FAggregatorMod& Mod : Mods[EGameplayModOp::Override])
+	{
+		if (Mod.Qualifies())
+		{
+			return Mod.EvaluatedMagnitude;
+		}
+	}
+
+	float Additive = SumMods(Mods[EGameplayModOp::Additive], GameplayEffectUtilities::GetModifierBiasByModifierOp(EGameplayModOp::Additive), Parameters);
+	float Multiplicitive = SumMods(Mods[EGameplayModOp::Multiplicitive], GameplayEffectUtilities::GetModifierBiasByModifierOp(EGameplayModOp::Multiplicitive), Parameters);
+	float Division = SumMods(Mods[EGameplayModOp::Division], GameplayEffectUtilities::GetModifierBiasByModifierOp(EGameplayModOp::Division), Parameters);
+
+	if (FMath::IsNearlyZero(Division))
+	{
+		ABILITY_LOG(Warning, TEXT("Division summation was 0.0f in FAggregatorModChannel."));
+		Division = 1.f;
+	}
+
+	return ((InlineBaseValue + Additive) * Multiplicitive) / Division;
+}
+```
+
+首先获取 `EGameplayModOp::Override` 类型为 **覆盖** 操作的所有 `Mod`，找到第一个有效的 `Mod`，将其值作为返回值
+
+> 很合理，**覆盖** 就是要覆盖其他操作计算的结果
+
+接下来分别获取 加、乘、除 计算对应的值，并存储到对应的变量中 `Additive`、`Multiplicitive`、`Division`
+
+> 这里顺便检查了一下 `Division` 是否趋近于 0，预防除 0 错误
+
+最后计算的值是 `((InlineBaseValue + Additive) * Multiplicitive) / Division`
+
+可以知道，GAS 默认的计算公式是 `(Value + Add) * Multi / Division`
+
+#### SumMods
+
+`SumMods` 函数比较简单，用于计算一个 **加**、**乘**、**除** 各自操作的最终值
+
+```cpp
+float FAggregatorModChannel::SumMods(const TArray<FAggregatorMod>& InMods, float Bias, const FAggregatorEvaluateParameters& Parameters)
+{
+	float Sum = Bias;
+
+	for (const FAggregatorMod& Mod : InMods)
+	{
+		if (Mod.Qualifies())
+		{
+			Sum += (Mod.EvaluatedMagnitude - Bias);
+		}
+	}
+
+	return Sum;
+}
+```
+
+虽然看着简单，但是 `Bias` 是什么？
+
+`Bias` 具体的作用需要看到调用 `SumMods` 时的参数
+
+```cpp
+float Additive = SumMods(Mods[EGameplayModOp::Additive], GameplayEffectUtilities::GetModifierBiasByModifierOp(EGameplayModOp::Additive), Parameters);
+
+float GameplayEffectUtilities::GetModifierBiasByModifierOp(EGameplayModOp::Type ModOp)
+{
+	static const float ModifierOpBiases[EGameplayModOp::Max] = {0.f, 1.f, 1.f, 0.f};
+	check(ModOp >= 0 && ModOp < EGameplayModOp::Max);
+
+	return ModifierOpBiases[ModOp];
+}
+```
+
+`GetModifierBiasByModifierOp` 函数也很简单，对 **加法** 和 **覆盖** 操作返回 0；对 **乘法** 和 **触发** 返回 0
+
+其实理解 `Bias` 的作用很简单，比如我希望血量增加 50%，那么 **乘法** 操作最后得到的值是 `0.5`，`BaseValue * 0.5` 很明显不符合我们的需求
+
+对于乘法来说，期望增加 50% 其实是希望 `BaseValue * 1.5`，所以这里的 `Bias` 就是根据具体的操作，对基础计算值做一个修改
+
+从另一个角度来说，如果没有乘法操作，如果得到的操作值是 0，最终值也是 0，也是个错
+
+### FAggregatorModChannelContainer
+
+`FAggregatorModChannelContainer` 就是一个 通道容器，存储所有通道对应的 `FAggregatorModChannel`
+
+```cpp
+struct GAMEPLAYABILITIES_API FAggregatorModChannelContainer
+{
+  // 其他的一些计算函数(Some Functions Else)...
+
+  float EvaluateWithBase(float InlineBaseValue, const FAggregatorEvaluateParameters& Parameters) const;
+
+private:
+	TMap<EGameplayModEvaluationChannel, FAggregatorModChannel> ModChannelsMap;
+}
+```
+
+基于给定的基础值，通过 `EvaluateWithBase` 可以得到最终的值
+
+```cpp
+float FAggregatorModChannelContainer::EvaluateWithBase(float InlineBaseValue, const FAggregatorEvaluateParameters& Parameters) const
+{
+	float ComputedValue = InlineBaseValue;
+
+	for (auto& ChannelEntry : ModChannelsMap)
+	{
+		const FAggregatorModChannel& CurChannel = ChannelEntry.Value;
+		ComputedValue = CurChannel.EvaluateWithBase(ComputedValue, Parameters);
+	}
+
+	return ComputedValue;
+}
+```
+
 ## GE
 
 ### GE 的时间周期分类
