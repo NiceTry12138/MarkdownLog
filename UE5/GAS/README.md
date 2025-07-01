@@ -1134,12 +1134,11 @@ for (const FGameplayEffectExecutionDefinition& CurExecDef : SpecToUse.Def->Execu
   FGameplayEffectCustomExecutionOutput ExecutionOutput;
   ExecCDO->Execute(ExecutionParams, ExecutionOutput);
   
-  // 对 ExecutionOutput 进行操作
+  // 对 ExecutionOutput 进行操作，对属性进行修改
   TArray<FGameplayModifierEvaluatedData>& OutModifiers = ExecutionOutput.GetOutputModifiersRef();
   
   for (FGameplayModifierEvaluatedData& CurExecMod : OutModifiers)
   {
-    // If the execution didn't manually handle the stack count, automatically apply it here
     if (bApplyStackCountToEmittedMods && SpecStackCount > 1)
     {
       CurExecMod.Magnitude = GameplayEffectUtilities::ComputeStackedModifierMagnitude(CurExecMod.Magnitude, SpecStackCount, CurExecMod.ModifierOp);
@@ -1147,7 +1146,21 @@ for (const FGameplayEffectExecutionDefinition& CurExecDef : SpecToUse.Def->Execu
     ModifierSuccessfullyExecuted |= InternalExecuteMod(SpecToUse, CurExecMod);
   }
 
-  // ... do something else 
+  // 添加 Execution 中配置的根据条件添加的 GE
+  if (bRunConditionalEffects)
+  {
+    for (const FConditionalGameplayEffect& ConditionalEffect : CurExecDef.ConditionalGameplayEffects)
+    {
+      if (ConditionalEffect.CanApply(SpecToUse.CapturedSourceTags.GetActorTags(), SpecToUse.GetLevel()))
+      {
+        FGameplayEffectSpecHandle SpecHandle = ConditionalEffect.CreateSpec(SpecToUse.GetEffectContext(), SpecToUse.GetLevel());
+        if (SpecHandle.IsValid())
+        {
+          ConditionalEffectSpecs.Add(SpecHandle);
+        }
+      }
+    }
+  }
 }
 ```
 
