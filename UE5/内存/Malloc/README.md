@@ -437,7 +437,7 @@ FFreeMem* Free = (FFreeMem*)OSAlloc(Allocator, OsBytes, ActualPoolSize);
 
 > 代码有些修改，大差不差  
 
-通过前面的 `GetPoolInfo`，通过申请的地址，创建或者获得对应的 `FPoolInfo`，如果一次性申请几个页的大小，设置对应的 `PoolInfo` 的 `TableIndex` 为 `Offset` 序号索引，`AllocSize` 和 `FreeMem` 为空
+通过前面的 `GetPoolInfo`，通过申请的地址，创建或者获得对应的 `FPoolInfo`，如果一次性内存的大小超过的 `BlockSize`，设置对应的 `PoolInfo` 的 `TableIndex` 为 `Offset` 序号索引，`AllocSize` 和 `FreeMem` 为空
 
 ```cpp
 FPoolInfo* Pool;
@@ -475,7 +475,7 @@ Table->NumActivePools++;
 Table->MaxActivePools = FMath::Max(Table->MaxActivePools, Table->NumActivePools);
 #endif
 // Create first free item.
-Free->NumFreeBlocks = Blocks;		// 包含的页表数量
+Free->NumFreeBlocks = Blocks;		// 包含的空闲块的数量
 Free->Next          = nullptr;
 ```
 
