@@ -483,4 +483,31 @@ Free->Next          = nullptr;
 
 #### AllocateBlockFromPool
 
+根据 `NumFreeBlocks` 和 `BlockSize` 可以得到内存中，可以用使用的空闲内存的地址
 
+`Pool->FirstMem` 作为空闲内存的起点， `--Pool->FirstMem->NumFreeBlocks * Table->BlockSize` 表示内存偏移
+
+注意，这里是 `--Pool->FirstMem->NumFreeBlocks`，先减少，再计算
+
+所以，内存是从高位开始分配的
+
+```cpp
+FFreeMem* Free = (FFreeMem*)((uint8*)Pool->FirstMem + --Pool->FirstMem->NumFreeBlocks * Table->BlockSize);
+```
+
+当当前的 `FPoolInfo` 已经没有空闲内存分配之后，将 `FirstMem` 指向链表的下一个空闲块
+
+如果没有下一个空闲块，则将池移至 `ExhaustedPool`
+
+```cpp
+if( !Pool->FirstMem->NumFreeBlocks )
+{
+	Pool->FirstMem = Pool->FirstMem->Next;
+	if( !Pool->FirstMem )
+	{
+		// Move to exhausted list.
+		Pool->Unlink();
+		Pool->Link( Table->ExhaustedPool );
+	}
+}
+```
