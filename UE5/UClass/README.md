@@ -285,4 +285,103 @@ FORCEINLINE UClass* GetClass() const
 }
 ```
 
+`Obj->StaticClass` 得到的是当前编译期类型的 `Class`，如果是用 `UObject` 指针指向 `AActor` 对象，调用其 `StaticClass` 得到的会是 `UObject` 的 `Class`
+
+![](Image/001.png)
+
+## Outer
+
+`Outer` 定义在 `UObjectBase` 中，按注释解释就是 **对象所在的地方**
+
+```cpp
+/** Object this object resides in. */
+UObject*						OuterPrivate;
+
+UObjectBase::UObjectBase(UClass* InClass,
+	EObjectFlags InFlags,
+	EInternalObjectFlags InInternalFlags,
+	UObject *InOuter,
+	FName InName,
+	int32 InInternalIndex,
+	int32 InSerialNumber)
+:	ObjectFlags			(InFlags)
+,	InternalIndex		(INDEX_NONE)
+,	ClassPrivate		(InClass)
+,	OuterPrivate		(InOuter)
+{
+    //... do something 
+}
+```
+
+`Outer` 的作用是为了构建层级以及管理资源和序列化
+
+以 `ACharacter` 为例，为什么这四个组件子对象（很重要的一个概念，后面的系列文章会谈到），知道自己应该挂在 `BP_Character` 对象身上呢？因为在构造函数中调用 `CreateDefaultSubobject` 方法创建这四个组件的时候，设置了它们的 `Outer` 就是 `BP_Character` 对象
+
+`ArrowComponent` 和 `Mesh` 的层级与 `CapsuleComponent` 不同，这是因为通过 `SetupAttachment` 设置到 `CapsuleComponent` 中
+
+![](Image/002.png)
+
+那么，假设 `A` 对象，以 `A` 对象为 `Outer` 创建 `B` 对象
+
+如果此时销毁对象 `A`，然后 `ForceGarbageCollection` 强制 GC，此时 A 对象和 B 对象会被怎样？
+
+`B` 对象的生命周期与 `Outer` 也就是 `A` 无关，它的生命周期只与 `Holder` 持有者有关，只要持有者不被销毁，`B` 对象就不会被销毁
+
+`A` 对象会被标记为 `PendingKill`，理论上不可以再被使用，使用 `IsValid` 也会返回 `false`
+
+因为 UE 的 GC 机制是 标记-清除，只要 B 的 `Holder` 是可达的，B 就是可达的，那么 B 就不会被 GC 回收掉
+
+A 对象虽然会被标记为 `PendingKill`，虽然非常不建议，但是仍然可以通过 B 的  `OuterPrivate` 访问到
+
+## CDO
+
+https://zhuanlan.zhihu.com/p/678276293
+
+`GetDefaultObject` 是 `UClass` 的成员函数，`ClassDefaultObject` 是 `UClass` 的成员属性，类型为 `TObjectPtr<UObject>`
+
+```cpp
+UObject* UClass::GetDefaultObject(bool bCreateIfNeeded = true) const
+{
+    if (ClassDefaultObject == nullptr && bCreateIfNeeded)
+    {
+        InternalCreateDefaultObjectWrapper();
+    }
+
+    return ClassDefaultObject;
+}
+```
+
+当我们使用 `NewObject` 创建对象的时候，会直接调用对应类的构造函数，一般来说不会从 CDO 中拷贝数据
+
+如果想要从 CDO 中拷贝数据，可以在 `NewObject` 函数调用时，设置其 `bCopyTransientsFromClassDefaults` 属性为 true
+
+```cpp
+UCLASS()
+class EMPTY53_API AMyCharacter : public ACharacter
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite)
+	int32 Age = 30;
+
+	UPROPERTY(BlueprintReadWrite, config)
+	int32 ConfData = -1;
+};
+```
+
+![](Image/003.png)
+
+> 上述代码没用使用 `bCopyTransientsFromClassDefaults` 属性，不存在主动从 CDO 赋值
+
+`AMyCharacter` 代码内容很简单，就两个属性 `Age` 默认值是 30 和 `ConfData` 默认值是 -1
+
+此时，通过 `StaticClass` 得到 `CDO` 对象，修改其值
+
+然后通过 `NewObject` 创建新的 `AMyCharacter` 后，观察 `Obj` 的属性值
+
+- `Obj->Age` 的值仍然为 30，这就是前面说的一般情况数据不从 CDO 复制
+- `Obj->ConfData` 的值被修改为 100，这是因为 `UPROPERTY` 设置 `config`，也就是从 ini 文件中获取配置值，总不能每次创建对象都读取和解析 ini 文件吧，从 CDO 中获取是最快最合理的
+
+在不使用 `bCopyTransientsFromClassDefaults` 的情况下，只有 `UPROPERTY` 中配置了 `config` 的属性，才会在初始化的时候从 CDO 拷贝属性值，其他属性不会从 CDO 中拷贝属性值
+
 
