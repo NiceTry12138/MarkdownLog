@@ -286,12 +286,12 @@ UObject* Object = (UObject*)ObjectItem->Object;
 ObjectItem->ClearFlags(EInternalObjectFlags::ReachableInCluster);
 ```
 
-- 如果 `UObject` 是一个根对象，直接加入到 `LocalObjectsToSerialize`，如果它属于 **集群** 或者 **集群根** ，也加入到 `KeepClusterRefsList` 
-- 如果 `UObject` 是一个集群对象，并且有 `FastKeepFlags` 也加入到 `LocalObjectsToSerialize` 和 `KeepClusterRefsList`
+- 如果 `UObject` 是一个根对象，直接加入到 `LocalObjectsToSerialize`，如果它属于 **簇** 或者 **簇根** ，也加入到 `KeepClusterRefsList` 
+- 如果 `UObject` 是一个簇对象，并且有 `FastKeepFlags` 也加入到 `LocalObjectsToSerialize` 和 `KeepClusterRefsList`
 
 > `FastKeepFlags = EInternalObjectFlags::GarbageCollectionKeepFlags`
 
-如果 `UObject` 是 **普通对象** 或者 **集群根** 
+如果 `UObject` 是 **普通对象** 或者 **簇根** 
 
 ```cpp
 if (ObjectItem->HasAnyFlags(FastKeepFlags))
@@ -306,7 +306,7 @@ else if (!ObjectItem->IsPendingKill() && KeepFlags != RF_NoFlags && Object->HasA
 
 符合上述条件，就不会被标记为 **不可达**
 
-如果是 `ClusterRoot` 也就是 **集群根** 对象，它是 `PendingKill` 或者 `Garbage`，那么这个集群应该被解散，会被加入到 `ClustersToDissolveList` 数组
+如果是 `ClusterRoot` 也就是 **簇根** 对象，它是 `PendingKill` 或者 `Garbage`，那么这个簇应该被解散，会被加入到 `ClustersToDissolveList` 数组
 
 ```cpp
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
@@ -352,7 +352,7 @@ for (TArray<UObject*>& Objects : ObjectsToSerializeArrays)
 ObjectsToSerializeArrays.Empty();
 ```
 
-将所有的 `ClustersToDissolveList` 中所有的对象，也就是不可达的 **集群根** 对象，将该集群中所有的对象标记为不可达
+将所有的 `ClustersToDissolveList` 中所有的对象，也就是不可达的 **簇根** 对象，将该簇中所有的对象标记为不可达
 
 ```cpp
 TArray<FUObjectItem*> ClustersToDissolve;
@@ -367,15 +367,17 @@ for (FUObjectItem* ObjectItem : ClustersToDissolve)
 }
 ```
 
-针对 `KeepClusterRefsList` 列表，该列表存储集群对象
+针对 `KeepClusterRefsList` 列表，该列表存储簇对象
 
-遍历 `KeepClusterRefsList` 列表对象，如果对象可达，但是对象对应集群的根对象是不可达的，需要 **复活** 整个集群
+遍历 `KeepClusterRefsList` 列表对象，如果对象可达，但是对象对应簇的根对象是不可达的，需要 **复活** 整个簇
 
-顺便通过 `MarkReferencedClustersAsReachable` 通过遍历，将所有与该**集群**相关的**集群**都保留下来，存储到 `InitialObjects` 中
+顺便通过 `MarkReferencedClustersAsReachable` 通过遍历，将所有与该**簇**相关的**簇**都保留下来，存储到 `InitialObjects` 中
 
-##### 可达性分析
+##### 引用关系分析
 
+根据 [UClass文档](../../UClass/README.md) 中对 `UClass` 的介绍，可以发现在编译代码之前就以及将对象信息收集完毕，包括属性的名称、类型、内存偏移等信息
 
+当得到一个 `UObject` 的时候，通过其 `UClass` 可以计算各个属性的内存偏移，计算对象的引用关系也可以通过这种方式进行处理
 
 ```cpp
 FContextPoolScope Pool;
@@ -386,6 +388,8 @@ Context->SetInitialObjectsUnpadded(InitialObjects);
 // 分析 InitialObjects 数组内的对象,它能达到的对象,去掉不可达标签
 PerformReachabilityAnalysisOnObjects(Context, Options);
 ```
+
+是的， `ReachabilityAnalysisFunctions` 又是函数指针，根据不同的 `EGCOptions` 选择不同的模板函数
 
 ```cpp
 virtual void PerformReachabilityAnalysisOnObjects(FWorkerContext* Context, EGCOptions Options) override
@@ -403,8 +407,143 @@ ReachabilityAnalysisFunctions[GetGCFunctionIndex(EGCOptions::None | EGCOptions::
 ReachabilityAnalysisFunctions[GetGCFunctionIndex(EGCOptions::Parallel | EGCOptions::WithPendingKill)] = &FRealtimeGC::PerformReachabilityAnalysisOnObjectsInternal<EGCOptions::Parallel | EGCOptions::WithPendingKill>;
 ```
 
-是的， `ReachabilityAnalysisFunctions` 又是函数指针，根据不同的 `EGCOptions` 选择不同的模板函数
-
 无论如何，最后调用的是 `TFastReferenceCollector::ProcessObjectArray`
 
+在 `ProcessObjectArray` 中通过 `ProcessObjects` 处理对象，并且生成 Token 用于 GC 处理
 
+在 `ProcessObjects` 函数中，遍历 `CurrentObjects` 所有的对象
+
+1. 获取当前类的 `Class` 和 `Other`
+
+```cpp
+UObject* CurrentObject = It.GetCurrentObject();
+UClass* Class = CurrentObject->GetClass();
+UObject* Outer = CurrentObject->GetOuter();
+```
+
+2. 通过 `Class->AssembleReferenceTokenStream()` 计算当前类的 Token 信息，用于简化对象占用内存，提高实时 GC 效率
+
+```cpp
+if (!!(Options & EGCOptions::AutogenerateSchemas) && !Class->HasAnyClassFlags(CLASS_TokenStreamAssembled))
+{			
+	Class->AssembleReferenceTokenStream();
+}
+```
+
+3. 处理 `Class` 和 `Other` 的引用
+
+```cpp
+FSchemaView Schema = Class->ReferenceSchema.Get();
+// 设置当前 Context 中当前处理对象是 CurrentObject
+Dispatcher.Context.ReferencingObject = CurrentObject;
+
+Dispatcher.HandleImmutableReference(Class, EMemberlessId::Class, EOrigin::Other);
+Dispatcher.HandleImmutableReference(Outer, EMemberlessId::Outer, EOrigin::Other);
+```
+
+4. 通过 `Schema` 遍历 `CurrentObject` 的成员属性
+
+```cpp
+Private::VisitMembers(Dispatcher, Schema, CurrentObject);
+```
+
+关于 `UClass` 生成的 `Token` 信息，通过断点可以窥探一斑，存储了 `UPROPERTY` 标记的属性名称、内存偏移、属性类型
+
+![](Image/002.png)
+
+![](Image/003.png)
+
+在 `VisitMembers` 时会根据对象属性的类型 `EMemberType` 不同，调用不同的函数，启动之后会运行 `Run` 函数
+
+![](Image/004.png)
+
+#### 清理对象
+
+##### 收集对象
+
+在 `CollectGarbageImpl` 函数中，在 `GC.PerformReachabilityAnalysis` 标记 GC 之后，调用了 `GatherUnreachableObjects` 函数
+
+函数内容最关键的有两个 
+
+```cpp
+GUnreachableObjects.Append(ThisThreadUnreachableObjects);
+// ... do something 
+GUnreachableObjects.Add(ClusterObjectItem);
+```
+
+`GUnreachableObjects` 是一个全局对象，存储着不可达对象的指针，每次 **标记** 阶段之后都会将标记为 **不可达** 的对象添加进去
+
+##### 删除对象
+
+有一个名为 `FAsyncPurge` 的对象，继承自 `FRunnable`，新起一个线程，专门用于删除垃圾
+
+```cpp
+class FAsyncPurge : public FRunnable {
+	// 一些成员属性
+
+	// 一些成员函数
+	virtual uint32 Run()
+	{
+		AsyncPurgeThreadId = FPlatformTLS::GetCurrentThreadId();
+		
+		while (StopTaskCounter.GetValue() == 0)
+		{
+			if (BeginPurgeEvent->Wait(15, true))
+			{
+				BeginPurgeEvent->Reset();
+				TickDestroyObjects<true>(/* bUseTimeLimit = */ false, /* TimeLimit = */ 0.0f, /* StartTime = */ 0.0);
+				FinishedPurgeEvent->Trigger();
+			}
+		}
+		FinishedPurgeEvent->Trigger();
+		return 0;
+	}
+}
+```
+
+那么真正处理的逻辑，就在 `TickDestroyObjects` 函数中咯
+
+```cpp
+bool TickDestroyObjects(bool bUseTimeLimit, double TimeLimit, double StartTime)
+{
+	// ... do something 
+
+	while (ObjCurrentPurgeObjectIndex < GUnreachableObjects.Num())
+		{
+			FUObjectItem* ObjectItem = GUnreachableObjects[ObjCurrentPurgeObjectIndex];
+			UObject* Object = (UObject*)ObjectItem->Object;
+				
+			{
+				GUObjectArray.LockInternalArray();
+				Object->~UObject();
+				GUObjectArray.UnlockInternalArray();
+				GUObjectAllocator.FreeUObject(Object);
+				GUnreachableObjects[ObjCurrentPurgeObjectIndex] = nullptr;
+			}
+
+			// 如果在游戏线程需要判断是否分帧
+		}
+
+	// ... do something
+}
+```
+
+上述代码逻辑很清晰，根据索引遍历 `UObject`，手动调用其 **析构函数**，然后回收其内存
+
+> `GENERATED_BODY()` 中会定义对象的 **析构函数** 为 **虚函数** ，所以不用担心内存泄漏
+
+顺带，会判断当前是否是单线程的，如果是**单线程**，并且有**时间限制**，会判断当前清理逻辑占用时间，适时的跳出循环，也就是**分帧**，避免一帧占用太多时间影响游戏性能
+
+```cpp
+if (!bMultithreaded && bUseTimeLimit && 
+		(ProcessedObjectsCount == TimeLimitEnforcementGranularityForDeletion) && 
+		(ObjCurrentPurgeObjectIndex < GUnreachableObjects.Num()))
+{
+	ProcessedObjectsCount = 0;
+	if ((FPlatformTime::Seconds() - StartTime) > TimeLimit)
+	{
+		bFinishedDestroyingObjects = false;
+		break;
+	}				
+}
+```
