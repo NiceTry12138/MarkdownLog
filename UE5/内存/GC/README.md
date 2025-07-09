@@ -308,6 +308,8 @@ else if (!ObjectItem->IsPendingKill() && KeepFlags != RF_NoFlags && Object->HasA
 
 如果是 `ClusterRoot` 也就是 **簇根** 对象，它是 `PendingKill` 或者 `Garbage`，那么这个簇应该被解散，会被加入到 `ClustersToDissolveList` 数组
 
+> 手动销毁对象时，会给它添加 PendingKill 的标签
+
 ```cpp
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 else if (ObjectItem->HasAnyFlags(EInternalObjectFlags::PendingKill | EInternalObjectFlags::Garbage) && ObjectItem->HasAnyFlags(EInternalObjectFlags::ClusterRoot))
@@ -547,3 +549,39 @@ if (!bMultithreaded && bUseTimeLimit &&
 	}				
 }
 ```
+
+### 防止 GC
+
+如果不希望某个 `UObject` 被 GC 掉，那么调用 `AddRoot` 将其标记为 根节点，根据 **标记** 阶段的代码可以发现，如果是 根对象 会直接将其设置为可达
+
+如果是非 `UObject` 对象，但是希望其也被 GC 管理，可以继承 `FGCObject` 结构体，该结构体会在构造的将自己注册到 `GGCObjectReferencer` 全局数组中
+
+在 **标记** 阶段，一开始就会将 `GGCObjectReferencer` 加入到待处理数组中
+
+## 命令
+
+```ini
+[/Script/Engine.GarbageCollectionSettings]
+; 开启增量GC，分帧销毁对象，减少卡顿
+gc.IncrementalBeginDestroyEnabled=True
+
+; 并行GC子任务的最小对象数，适当调大提升并行效率
+gc.MinDesiredObjectsPerSubTask=100
+
+; GC触发的对象数量阈值，适当调大减少GC频率
+gc.MaxObjectsNotConsideredByGC=0
+
+; PendingKill对象清理间隔，单位秒，调大减少GC频率
+gc.TimeBetweenPurgingPendingKillObjects=60
+
+; 增量GC重试次数，调大可减少强制GC
+gc.NumRetriesBeforeForcingGC=10
+
+; 每帧最大BeginDestroy对象数，防止单帧销毁过多对象
+gc.IncrementalBeginDestroyObjectsPerFrame=100
+
+; 是否压缩GC堆，减少内存碎片
+gc.AllowParallelGC=True
+```
+
+
