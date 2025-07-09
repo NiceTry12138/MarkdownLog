@@ -1,5 +1,12 @@
 # GC
 
+UE 采用 标记-清除 的方式进行垃圾回收
+
+不使用 **引用计数** 有几个原因
+ 
+1. UE 源码中有特别多裸指针的调用，无法捕获这些指针引用计数
+2. 引用计数要用原子化的计数加减，耗时更大
+
 ## 创建一个新的 UObject
 
 在 `UObject` 的基类是 `UObjectBaseUtility`， `UObjectBaseUtility` 的基类是 `UObjectBase`
@@ -584,4 +591,16 @@ gc.IncrementalBeginDestroyObjectsPerFrame=100
 gc.AllowParallelGC=True
 ```
 
+## 优化
 
+1. 使用 **簇** 也就是 `Cluster`
+
+将 Character、Weapon 等生命周期一致的对象，勾选 `Cluster`
+
+2. 尽量减少 `UObject` 对象的数量
+
+比如减少蓝图中的宏、控制 Actor 数量等
+
+3. 采用对象池，不频繁清理和生成大的对象
+
+最厉害的还是改源码... 比如将标记那块改为无锁的
