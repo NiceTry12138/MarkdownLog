@@ -604,3 +604,79 @@ gc.AllowParallelGC=True
 3. 采用对象池，不频繁清理和生成大的对象
 
 最厉害的还是改源码... 比如将标记那块改为无锁的
+
+## 智能指针
+
+`TWeakObjectPtr` 继承自 `FWeakObjectPtr`，存储 `UObject` 在 `GUObjectArray` 的 `Index` 和 `SerialNumber`，而不是直接引用 `UObject`
+
+```cpp
+void FWeakObjectPtr::operator=(const class UObject *Object)
+{
+	if (Object)
+	{
+		ObjectIndex = GUObjectArray.ObjectToIndex((UObjectBase*)Object);
+		ObjectSerialNumber = GUObjectArray.AllocateSerialNumber(ObjectIndex);
+		checkSlow(SerialNumbersMatch());
+	}
+	else
+	{
+		Reset();
+	}
+}
+```
+
+`TStrongObjectPtr` 自 `FGCObject` 的 `ReferenceCollector`，通过 `FGCObject` 的构造将 `UObject` 添加到 `GGCObjectReferencer` 中
+
+因为 `GGCObjectReferencer` 是 `AddToRoot` 的，所以不会被销毁，那么该智能指针指向的 `UObject` 也不会被销毁，在析构的时候将 `UObject` 从 `GGCObjectReferencer` 销毁即可
+
+```cpp
+void FGCObject::RegisterGCObject()
+{
+	if (!IsEngineExitRequested() && !bReferenceAdded)
+	{
+		StaticInit();
+		GGCObjectReferencer->AddObject(this);
+		bReferenceAdded = true;
+	}
+}
+void FGCObject::StaticInit()
+{
+	if (GGCObjectReferencer == nullptr)
+	{
+		GGCObjectReferencer = NewObject<UGCObjectReferencer>();
+		GGCObjectReferencer->AddToRoot();
+	}
+}
+```
+
+`TSoftObjectPtr` 组合 `FSoftObjectPtr` 使用，既不是强引用指针也不是软引用指针
+
+主要功能在 `TPersistentObjectPtr` 类中实现，该类维护一个 `WeakPtr` 用于记录指向的对象，存储一个 `TObjectID` 也就是 `FSoftObjectPath` 对象用于记录目标对象的资产路径
+
+```cpp
+struct FSoftObjectPtr : public TPersistentObjectPtr<FSoftObjectPath>;
+
+template<class TObjectID>
+struct TPersistentObjectPtr
+{
+private:
+	mutable FWeakObjectPtr	WeakPtr;
+	TObjectID				ObjectID;
+}
+```
+
+通过 `TPersistentObjectPtr` 获取对象可以窥见 `TSoftObjectPtr` 的核心功能
+
+```cpp
+FORCEINLINE UObject* Get() const
+{
+	UObject* Object = WeakPtr.Get();
+	if (!Object && ObjectID.IsValid())
+	{
+		Object = ObjectID.ResolveObject();
+		WeakPtr = Object;
+		return ::GetValid(Object);
+	}
+	return Object;
+}
+```
