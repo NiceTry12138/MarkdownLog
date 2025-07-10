@@ -22,7 +22,7 @@
   - [OpenGL基础学习记录](./图形学/OpenGL学习/README.md)
   - [OpenGL的项目制作](./图形学/OpenGL学习/OpenGLDemo.md)
   - [部分OpenGL的功能实现](./图形学/OpenGL部分功能实现/README.md)
-  - DX部分直接看书就行，
+  - DX部分直接看书就行
 
 - UE引擎的开发记录
   - [虚幻引擎的介绍](./UE5/虚幻介绍/虚幻.md)
@@ -33,12 +33,20 @@
   - [自定义蓝图异步节点](./UE5/引擎开发记录/自定义蓝图异步节点.md)
   - [自定义蓝图节点](./UE5/引擎开发记录/自定义蓝图节点.md)
   - [蓝图模板函数](./UE5/引擎开发记录/蓝图模板函数.md)
+  - [UE5.3的GC](./UE5/内存/GC/README.md)
+  - [UE5.3的内存管理](./UE5/内存/Malloc/README.md)
+  - [UClass介绍](./UE5/UClass/README.md)
+  - [CharacterMovementComponent](./UE5/Movement/README.md)
+  - [GAS](./UE5/GAS/README.md)
+  - [FName](./UE5/FName/README.md)
+
+- AI 相关
+  - [斯坦福小镇，生成式智能体](./AI/GenerativeAgents/README.md)
+  - [漏斗算法](./AI/漏斗算法/README.md)
+  - [Navigation 寻路算法](./AI/Navigation/README.md)
+  - [Delaunay三角刨分](./AI/Delaunay三角刨分/README.md)
 
 - 一些项目的源码阅读，没什么用，仅作了解
   - [BS_thread_pool线程池](./源码解读/BS_thread_pool/README.md)
   - [proxy代理器](./源码解读/proxy/README.md)
-
-- 其他知识
-  - [斯坦福小镇，生成式智能体](./AI/GenerativeAgents/README.md)
-  - [Navigation 寻路算法](./Navigation/README.md)
 
