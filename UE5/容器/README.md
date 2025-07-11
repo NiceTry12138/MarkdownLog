@@ -471,3 +471,46 @@ void Rehash() const
 
 ## TMap
 
+```cpp
+template<typename InKeyType, typename InValueType, typename SetAllocator = FDefaultSetAllocator, typename KeyFuncs = TDefaultMapHashableKeyFuncs<InKeyType, InValueType, false> > class TMap;
+
+template <typename KeyType, typename ValueType, typename SetAllocator, typename KeyFuncs>
+class TMapBase
+{
+	typedef TPair<KeyType, ValueType> ElementType;
+    
+protected:
+	typedef TSet<ElementType, KeyFuncs, SetAllocator> ElementSetType;
+
+	ElementSetType Pairs;
+}
+```
+
+是的，没错，`TMap` 底层就是靠一个 `TSet` 实现
+
+`TSet` 中存储的是一个 `TPair` 的键值对，对应的就是 `TMap` 的键值对
+
+`TSet` 中，获取对象的 `KeyHash` 是通过模板中传入的 `KeyFuncs` 来实现的
+
+`TMap` 底层维护 `TSet` 时，默认设置的是 `TDefaultMapHashableKeyFuncs`，其基类是 `TDefaultMapKeyFuncs`
+
+```cpp
+template<typename KeyType, typename ValueType, bool bInAllowDuplicateKeys>
+struct TDefaultMapKeyFuncs : BaseKeyFuncs<TPair<KeyType, ValueType>, KeyType, bInAllowDuplicateKeys>
+{	
+    static FORCEINLINE KeyInitType GetSetKey(ElementInitType Element)
+	{
+		return Element.Key;
+	}
+	static FORCEINLINE uint32 GetKeyHash(KeyInitType Key)
+	{
+		return GetTypeHash(Key);
+	}
+}
+```
+
+`TMap` 是一个理论上通过 **键** 去查找对象的数据结构，又由于 `TSet` 中存储的是一个 `TPair`
+
+很合理的可以推理出，`TSet` 如果想要获取存储对象 `KeyHash`，序号获取的就是就是 `Element.Key` 
+
+
