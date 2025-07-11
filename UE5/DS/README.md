@@ -86,6 +86,31 @@ https://zhuanlan.zhihu.com/p/684597439
 
 还有很多其他的条件枚举，不一一列举
 
+在 C++ 中如果想要定义某个属性需要被复制，则需要使用 `Replicated`
+
+```cpp
+UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpawnedAttributes, Transient)
+TArray<TObjectPtr<UAttributeSet>>	SpawnedAttributes;
+```
+
+然后使用， 在 `GetLifetimeReplicatedProps` 函数中，定义哪些属性需要网络复制（Replicated）以及如何复制
+
+对于需要复制的属性，通常需要 注册复制属性、配置复制规则
+
+```cpp
+void UAbilitySystemComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+	Params.Condition = COND_None;
+	DOREPLIFETIME_WITH_PARAMS_FAST(UAbilitySystemComponent, SpawnedAttributes, Params);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+```
+
+除了 `DOREPLIFETIME` 之外，还有其他的，比如 `DOREPLIFETIME_WITH_PARAMS` 和 `DOREPLIFETIME_CONDITION` 等。这些宏本质上就是将属性快速注册到 `OutLifetimeProps` 参数中
+
+针对 `SpawnedAttributes`，当从服务器同步属性之后，会触发 `ReplicatedUsing` 配置的 `OnRep_SpawnedAttributes` 函数
+
 ### RPC
 
 RPC 全称 `Remote Procedure Call` 远程过程调用。一个通俗的描述是：客户端在不知道调用细节的情况下，调用存在于远程计算机上的某个对象，就像调用本地应用程序中的对象一样
