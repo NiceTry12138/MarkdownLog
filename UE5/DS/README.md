@@ -143,10 +143,8 @@ void Multiable_DrawDebug();
 | 客户端直接调用 Server_DrawDebug | ![](Image/005.png) | ![](Image/009.png) | 通过 `NewMultiCast` 所有客户端和服务器都执行了 DrawDebug 函数，所以客户端 1、2 都绘制了黑色球体 | 
 | 客户端直接调用 Client_DrawDebug | ![](Image/006.png) | ![](Image/010.png) | 没有经过服务器，完全是本地执行逻辑，所以只有客户端 2 绘制了球体 |
 | 客户端直接调用 Multiable_DrawDebug | ![](Image/007.png) | ![](Image/011.png) | 没有经过服务器，完全是本地执行逻辑，所以只有客户端 2 绘制了球体 |
-| 客户端直接调用 Server_DrawDebug_Client | ![](Image/008.png) | ![](Image/012.png) | 通过服务器 RPC 调用本地函数，由于是 `Client` 类型，所有只有 客户端 1 绘制了球体 |
+| 客户端直接调用 Server_DrawDebug_Client | ![](Image/008.png) | ![](Image/012.png) | 通过服务器 RPC 调用本地函数，由于是 `Client` 类型，所有只有 客户端 2 绘制了球体 |
 
 > 上述所有测试，输入都是在客户端 2 输入
 
 通过上述四种情况对比，可以发现四种不同的情况，对应的四种结果
-
-## 简单使用
