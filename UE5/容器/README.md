@@ -373,7 +373,101 @@ FSetElementId Emplace(ArgsType&& Args, bool* bIsAlreadyInSetPtr = nullptr)
 
 在 `Emplace` 函数中，从 `Elements` 中获取一个内存块，对其调用 `placement new` ，并且对值进行 `Hash` 计算
 
+`KeyFuncs` 就是 `DefaultKeyFuncs`
 
+```cpp
+static FORCEINLINE KeyInitType GetSetKey(ElementInitType Element)
+{
+    return Element;
+}
+static FORCEINLINE uint32 GetKeyHash(KeyInitType Key)
+{
+    return GetTypeHash(Key);
+}
+```
+
+对新建对象求 `hash` 值，至于求 `hash` 的函数 `GetTypeHash` 会通过模板类型自动匹配能够匹配的上的函数
+
+![](./Image/002.png)
+
+调用 `TryReplaceExisting` 判断 hash 值是否存在
+
+- 如果存在相同的，则复制新建的 `Element` 数据到存在的元素内存块中，并删除刚刚通过 `AddUninitialized` 新建的内存块
+- 如果不存在相同的，则通过 `RehashOrLink` 构建连接
+
+### FindOrAddByHash
+
+根据查找逻辑，可以窥探 TSet 的实现方法
+
+```cpp
+template <typename ElementReferenceType>
+ElementType& FindOrAddByHash(uint32 KeyHash, ElementReferenceType&& InElement, bool* bIsAlreadyInSetPtr = nullptr)
+{
+    SizeType ExistingIndex = FindIndexByHash(KeyHash, KeyFuncs::GetSetKey(InElement));
+    // 后续处理
+}
+```
+
+判断 `ExistingIndex` 是否有效，有效表示存在，否则表示不存在执行后续添加逻辑
+
+```cpp
+template <typename ComparableKey>
+SizeType FindIndexByHash(uint32 KeyHash, const ComparableKey& Key) const
+{
+    FSetElementId* HashPtr      = Hash.GetAllocation();
+    SizeType       ElementIndex = HashPtr[KeyHash & (HashSize - 1)].Index;
+    // 后续处理
+}
+```
+
+在 `FindIndexByHash` 函数中，通过取出 `KeyHash` 后几位，来表示对应数据应该在 `Hash` 数组中的序号
+
+`Hash` 表示一个 `FSetElementId` 数组，元素内容仅有一个 `Index` 表示对应 `TParseArray` 的序号
+
+通过 `FindOrAddByHash` 可以知道，**数据** 的 `KeyHash & (HashSize - 1)` 对应的就是 `Hash` 数组中的序号，而 `Hash` 序号对应的数据，存储着 `TParseArray` 的序号，最后可以通过 `TParseArray[Index]` 获取真正的数据 
+
+### Rehash
+
+如果 `TSet` 塞入的数据超过一定限制，导致数组扩容，那么对应的 `HashSize` 也会有所变化，导致计算得到序号出现错误，最后获得错误的结果
+
+所以在 `Reserve` 等操作的时候，在修改完 `HashSize` 后也会去执行 `ReHash` 来重新计算各自的 `Hash` 值
+
+```cpp
+const int32 NewHashSize = Allocator::GetNumberOfHashBuckets(Number);
+if(!HashSize || HashSize < NewHashSize)
+{
+    HashSize = NewHashSize;
+    Rehash();
+}
+```
+
+具体 `Rehash` 的操作比较简单，就是清除 `Hash` 数组中的内容，重新计算 `Elements` 中各个 **对象** 和其 Index 的 `KeyHash` 值
+
+```cpp
+void Rehash() const
+{
+    Hash.ResizeAllocation(0,0,sizeof(FSetElementId));
+
+    int32 LocalHashSize = HashSize;
+    if (LocalHashSize)
+    {
+        checkSlow(FMath::IsPowerOfTwo(HashSize));
+        Hash.ResizeAllocation(0, LocalHashSize, sizeof(FSetElementId));
+        for (int32 HashIndex = 0; HashIndex < LocalHashSize; ++HashIndex)
+        {
+            GetTypedHash(HashIndex) = FSetElementId();
+        }
+
+        for(typename ElementArrayType::TConstIterator ElementIt(Elements);ElementIt;++ElementIt)
+        {
+            HashElement(ElementIt.GetIndex(), *ElementIt);
+        }
+    }
+}
+```
+
+- 第一个 `for` 循环重置 `Hash` 数组中所有的对象
+- 第二个 `for` 循环，重新计算 `Elements` 中所有对象的 `KeyHash` 值，并存入 `Hash` 数组
 
 ## TMap
 
