@@ -299,19 +299,42 @@ FSlateDrawElement::MakeBox(
 
 ![](Image/006.png)
 
+
+## HittestGrid
+
+https://zhuanlan.zhihu.com/p/346460371
+
+用户在屏幕上 Click 一下，如何知道点击的是哪一个控件呢？
+
+如果 UI 控件数量很多，直接是深度优先遍历全部控件，是比较浪费时间的
+
+`FHittestGrid` 是将屏幕划分成多个区域，缓存每个区域中的 控件 信息，在点击时根据点击坐标，从对应区域获取控件即可
+
+在 `SWindow::PaintWindow` 函数调用 `PaintInvalidationRoot` 进行绘制之前重设 `HittestGrid`
+
+由此可见，每个 `SWindow` 中都存储自己的 `HittestGrid`
+
+```cpp
+const bool HittestCleared = HittestGrid->SetHittestArea(GetPositionInScreen(), GetViewportSize());
+```
+
+在每个控件绘制的时候，都会将自己添加到 `HittestGrid` 中
+
+```cpp
+Args.GetHittestGrid().AddWidget(MutableThis, 0, LayerId, FastPathProxyHandle.GetWidgetSortOrder());
+```
+
+也就是说，为了绘制而遍历每个控件的时候，顺便就把 `HittestGrid` 给完成了
+
+当用户点击的时候，会通过 `HittestGrid` 计算对应控件的 `FWidgetPath`
+
+![](Image/008.png)
+
+
+
 ## 事件触发
 
 https://zhuanlan.zhihu.com/p/448050955
-
-以点击事件为例
-
-![](Image/001.jpg)
-
-在 `FSlateApplication::RoutePointerDownEvent` 函数中，传入参数有两个
-
-- `WidgetsUnderPointer` 用于表示特定的 `Widget` 路径，它包含了从最上层的 `SWindow` 到特定 `Widget` 的层次结构、几何信息和虚拟光标位置
-- `PointerEvent` 点输入事件类， 用于处理鼠标以及移动设备的触摸按键
-
 
 
 ## ListView
