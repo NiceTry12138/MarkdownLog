@@ -330,7 +330,20 @@ Args.GetHittestGrid().AddWidget(MutableThis, 0, LayerId, FastPathProxyHandle.Get
 
 ![](Image/008.png)
 
+`HittestGrid` 将每个格子大小设置为 128 * 128
 
+根据传入的点的坐标，直接计算出对应 `Grid` 的序号
+
+```cpp
+const FVector2f CellSize(128.0f, 128.0f);
+
+FIntPoint FHittestGrid::GetCellCoordinate(UE::Slate::FDeprecateVector2DParameter Position) const
+{
+	return FIntPoint(
+		FMath::Min(FMath::Max(FMath::FloorToInt(Position.X / CellSize.X), 0), NumCells.X - 1),
+		FMath::Min(FMath::Max(FMath::FloorToInt(Position.Y / CellSize.Y), 0), NumCells.Y - 1));
+}
+```
 
 ## 事件触发
 
