@@ -502,7 +502,7 @@ ItemsToBeCleanedUp.Remove(InItem);
 ItemsWithGeneratedWidgets.Add(InItem);
 ```
 
-所以，如果使用 `TArray` 自己也保存了一份 Item 的数据信息，在手动更新完 `Item` 中的数据时，需要手动调一下 `RequestRefresh` 触发 `Entry` 更新函数，以此来刷新显示状态
+所以，如果使用 `TArray` 自己也保存了一份 Item 的数据信息，在手动更新完 `Item` 中的数据时，需要手动调一下 `RegenerateAllEntries` 重新生成所有的 `Entry`
 
 ### 其他
 
