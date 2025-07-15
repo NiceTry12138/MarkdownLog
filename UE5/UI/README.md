@@ -352,4 +352,159 @@ https://zhuanlan.zhihu.com/p/448050955
 
 ## ListView
 
-![](Image/003.png)
+### 基本使用
+
+![](Image/009.png)
+
+| 流程 | 示例 |
+| --- | --- |
+| 自定义 Entry 实现接口 | ![](Image/010.png) |
+| ListView 配置 Entry | ![](Image/011.png) |
+| 定义 UObject 作为 Item 存储 Data | ![](Image/012.png) |
+| 向 ListView 中添加数据 | ![](Image/013.png) |
+
+https://zhuanlan.zhihu.com/p/370249957
+
+`ListView` 定义 Item 和 Entry 两个概念， Item 用于存储原始数据，Entry 用于表示实际的 UserWidget 控件
+
+使用 `ListView` 是为了性能优化，在有大量数据的情况下，并不需要创建对应数量的 `UserWidget` 控件，因为屏幕大小有限无法将所有数据全部显示出来
+
+理论上只需要创建屏幕空间最大能显示的 `UserWidget` 数量，再滑动 `ListView` 时将上方移动出显示区域的 `UserWidget` 移动到下方，再将要显示的数据替换到 `UserWidget` 中
+
+> 后面用 `Entry` 替代 `UserWidget`
+
+实际上也是这么做的，当 `Entry` 数据需要更新的时候，会触发接口中的 `OnListItemObjectSet` 函数，并将存储这 `Item` 信息的 `UObject` 作为参数传递
+
+在 `Entry` 中只实现该接口，将传入的 `UObject*` 转换(`Cast`)成 `Item` 的数据类型即可
+
+### AddItem
+
+当使用 `AddItem` 将 `Item` 添加到 `ListView` 的时候，会触发 `RequestRefresh` 函数用于刷新表现效果
+
+不过通常一次性可能会添加很多数据到 `ListView` 中，所以每次添加都全部重新计算是极其危险的行为
+
+```cpp
+void UListView::AddItem(UObject* Item)
+{
+    // ... do something 
+	ListItems.Add(Item);
+    // ... do something 
+	RequestRefresh();
+}
+```
+
+注意函数名称是 `RequestRefresh`，只是请求刷新，并非执行刷新
+
+在真正执行逻辑的接口中是这样的
+
+```cpp
+void STableViewBase::RequestLayoutRefresh()
+{
+	if (!bItemsNeedRefresh)
+	{
+		bItemsNeedRefresh = true;
+		RegisterActiveTimer(0.f, FWidgetActiveTimerDelegate::CreateSP(this, &STableViewBase::EnsureTickToRefresh));
+	}
+
+	if (ItemsPanel.IsValid())
+	{
+		ItemsPanel->SetRefreshPending(true);
+	}
+
+	Invalidate(EInvalidateWidget::Layout);
+}
+```
+
+将 `bItemsNeedRefresh` 设置为 true
+
+在前面 `OnPaint` 函数源码中可以看到，在绘制之前，会根据 `bItemsNeedRefresh` 的值判断是否需要执行 `Tick` 函数
+
+所以，这里的操作就是为了能够记录这一帧是否需要刷新，并在绘制的时候执行 `Tick`，真正的刷新显示效果
+
+![](Image/014.png)
+
+正如上面代码的执行流程，在 `Tick` 函数中执行了 `ReGenerateItems` 对每一个项都进行的刷新
+
+### FWidgetGenerator
+
+`FWidgetGenerator` 是一个用于存放映射关系的容器
+
+```cpp
+SListView<ItemType>* OwnerList;
+TMap< ItemType, TSharedRef<ITableRow>, FDefaultSetAllocator, MapKeyFuncs > ItemToWidgetMap;
+TMap< const ITableRow*, ItemType > WidgetMapToItem;
+
+TArray< ItemType > ItemsWithGeneratedWidgets;
+TArray<ItemType> ItemsToBeCleanedUp;
+```
+
+存储了 `ListView` 的原始指针 `OwnerList` 
+
+存储了 `Entry` 映射 `Item` 的 `WidgetMapToItem`
+
+存储了 `Item` 映射 `Entry` 的 `ItemToWidgetMap`
+
+存储了当前有用所有 `Entry` 的 `ItemsWithGeneratedWidgets`
+
+存储了需要被销毁 `Entry` 的 `ItemsToBeCleanedUp`
+
+### ReGenerateItems
+
+> Update generate Widgets for Items as needed and clean up any Widgets that are no longer needed.
+
+按需更新生成的 Widgets，清理不需要的 Widgets
+
+对每一项进行更新的 `GenerateWidgetForItem` 函数
+
+```cpp
+float GenerateWidgetForItem( const ItemType& CurItem, int32 ItemIndex, int32 StartIndex, float LayoutScaleMultiplier )
+```
+
+- `ItemType` 当钱定义的 Item 的数据类型
+- `CurItem` 当前要显示的数据信息的地址
+- `ItemIndex` 当前 Item 的序号
+- `StartIndex` 当前 ListView 显示的第一个 Item 的序号
+
+`CurItem` 是需要显示的数据，首先就要获取 `Item` 对应的 `Entry`，如果没有则需要创建
+
+```cpp
+TSharedPtr<ITableRow> WidgetForItem = WidgetGenerator.GetWidgetForItem( CurItem );
+if (!WidgetForItem.IsValid())
+{
+    WidgetForItem = this->GenerateNewPinnedWidget(CurItem, ItemIndex, NumPinnedItems);
+}
+```
+
+> `WidgetGenerator` 可以通过 `Item` 的地址，可以映射到对应 `Entry`
+
+更新 `Entry` 对应的信息
+
+```cpp
+WidgetForItem->SetIndexInList(ItemIndex);
+WidgetGenerator.OnItemSeen( CurItem, WidgetForItem.ToSharedRef() );
+```
+
+在 `OnItemSeen` 函数中，会顺便更新映射关系，通过执行 `Private_OnEntryInitialized` 最终会触发接口中更新数据的函数
+
+恰好 `Entry` 继承了这个接口并且实现了这个函数，通过这种方式来更新 `Entry` 中的数据
+
+```cpp
+if ( bWidgetIsNewlyGenerated )
+{
+    ItemToWidgetMap.Add( InItem, InGeneratedWidget );
+    WidgetMapToItem.Add( &InGeneratedWidget.Get(), InItem );
+
+    OwnerList->Private_OnEntryInitialized(InItem, InGeneratedWidget);
+}
+
+// We should not clean up this item's widgets because it is in view.
+ItemsToBeCleanedUp.Remove(InItem);
+ItemsWithGeneratedWidgets.Add(InItem);
+```
+
+所以，如果使用 `TArray` 自己也保存了一份 Item 的数据信息，在手动更新完 `Item` 中的数据时，需要手动调一下 `RequestRefresh` 触发 `Entry` 更新函数，以此来刷新显示状态
+
+### 其他
+
+
+<!-- ![](Image/003.png) -->
