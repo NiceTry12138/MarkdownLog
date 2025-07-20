@@ -49,6 +49,23 @@ https://zhuanlan.zhihu.com/p/684597439
 
 因为 `ENetRole` 在 `AActor` 创建之初并未正确指定， 在构造函数中或者 `BeginPlayEvent` 中可能获取错误的值
 
+除了上述两种方式之外，还有一个 `World->GetNetMode()` 
+
+```cpp
+enum ENetMode
+{
+	NM_Standalone,			// 纯单机运行模式
+	NM_DedicatedServer,		// 专用服务器，无本地玩家参与游戏
+	NM_ListenServer,		// 监听服务器（玩家主机），同时具有服务器和客户端身份
+	NM_Client,				// 纯客户端，连接到远程服务器
+	NM_MAX,
+};
+```
+
+日常开发首选 `GetNetMode`，更加安全可靠，无需空指针检查
+
+使用 `IsServer` 之前，需要判断 `GetNewDriver` 是否为空
+
 ### 属性复制
 
 无论是 `RPC` 还是 **属性赋值** 都需要设置 `Replicates` 属性为 `True`
@@ -173,3 +190,5 @@ void Multiable_DrawDebug();
 > 上述所有测试，输入都是在客户端 2 输入
 
 通过上述四种情况对比，可以发现四种不同的情况，对应的四种结果
+
+

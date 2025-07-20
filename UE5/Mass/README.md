@@ -589,3 +589,340 @@ enum class EMassProcessingPhase : uint8
 采用信号的订阅处理系统来协调 Entity 之间的通信，需要继承 `UMassSignalProcessorBase` 来处理特定信号，这个信号的注册需要依赖 `UMassSignalSubsystem`
 
 具体信号传递的案例可以查看 `UMassStateTreeProcessor` 类，该类并没有重写 `Execute` 函数，而是重写了 `SignalEntities` 函数，因为 `UMassSignalProcessorBase` 基类中处理了本帧收到的信号，并将影响到的 Entity 都通过调用 `SignalEntities` 传递给子类
+
+## 自己看代码
+
+以 `MassZombies` 项目为例
+
+> https://github.com/stopthem/MassZombies
+
+### 配置 AMassSpawner 
+
+![](Image/014.png)
+
+在场景中配置 `AMassSpawner` 用于生成对象 
+
+通过 `EntityTypes` 来配置
+
+```cpp
+
+/**
+ * Describes an entity type to spawn.
+ */
+USTRUCT(BlueprintType)
+struct FMassSpawnedEntityType
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Mass|Spawn")
+	TSoftObjectPtr<UMassEntityConfigAsset> EntityConfig;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Mass|Spawn", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float Proportion = 1.0f;
+};
+```
+
+`FMassSpawnedEntityType` 用于配置一个 `Entity` 
+
+`Proportion` 用于表示一个比例，比如一次性可能需要生成多种类型的 `Entity`，每个类型的 `Entity` 占的比例是多少？这个数量是 `Proportion` 来控制的
+
+> 将 `EntityTypes` 所有 `Entity` 的 `Proportion` 求和并归一化，进而得到每个 `Entity` 的比例
+
+`EntityConfig` 是一个 `UMassEntityConfigAsset`，是一个 `UDataAsset`，用于配置每个 `Entity` 包含的 `FMassFragment` 
+
+> `FMassFragment` 前面解释过，用于表示 `ECS` 中的一个 `Component`，用于存储纯数据
+
+不过 `EntityConfig` 并没有直接配置 `FMassFragment` 而是通过 `UMassEntityTraitBase` 进行配置
+
+以 `UMassLookAtTargetTrait` 为例，通过重写 `BuildTemplate` 将所需的 `FMassFragment` 和 `FMassTag` 添加到 `BuildContext` 中 
+
+```cpp
+UCLASS(meta=(DisplayName="Look At Target"))
+class UMassLookAtTargetTrait : public UMassEntityTraitBase
+{
+	GENERATED_BODY()
+
+protected:
+
+	virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override
+    {
+    	BuildContext.AddTag<FMassLookAtTargetTag>();
+	    BuildContext.AddFragment<FTransformFragment>();
+    }
+};
+```
+
+![](Image/015.png)
+
+在遍历完所有配置的 `Traits` 之后，会将该 `UDataAsset` 的 `GUID` 和 配置的 Traits 信息注册到 `UMassSpawnerSubsystem` 中，并构建出 `FMassEntityTemplate`
+
+```cpp
+UMassSpawnerSubsystem* SpawnerSystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(&World);
+
+// 获取 UDataAsset 文件的 GUID 和 TemplateData
+
+return TemplateRegistry.FindOrAddTemplate(TemplateID, MoveTemp(TemplateData)).Get();
+```
+
+> `FMassEntityConfig::GetOrCreateEntityTemplate` 函数源码
+
+如果该 `GUID` 在 `UMassSpawnerSubsystem` 中保存过，则从缓存中直接得到包含 `Data` 和 `GUID` 的 `FMassEntityTemplate`
+
+那么什么是 `FMassEntityTemplate` ？
+
+核心作用是将实体配置数据 (`FMassEntityTemplateData`) 与运行时实体类型 (`FMassArchetypeHandle`) 进行绑定，创建不可变的、可直接用于生成实体的模板
+
+```cpp
+struct MASSSPAWNER_API FMassEntityTemplate final : public TSharedFromThis<FMassEntityTemplate> 
+{
+private:
+	FMassEntityTemplateData TemplateData;
+	FMassArchetypeHandle Archetype;
+	FMassEntityTemplateID TemplateID;
+}
+```
+
+在构造 `FMassEntityTemplate` 对象的时候，会通过传入 `TemplateID` 和 `TemplateData` 计算得到 `Archetype` 
+
+```cpp
+const FMassArchetypeHandle ArchetypeHandle = EntityManager.CreateArchetype(GetCompositionDescriptor(), FName(GetTemplateName()));
+SetArchetype(ArchetypeHandle);
+```
+
+> `Archetype` 可以理解为原型，`Entity` 的数据构成具体包括哪些 `FMassFragment` 类型，通过 `Archetype` 可以知道一个 `Entity` 所需的内存大小是多少，进而计算得到一个 `Chunk` (内存块) 可以存储多少个 `Entity` 的数据
+
+### UMassProcessor
+
+`ECS` 是由 `Entity` + `Component` + `System` 组成
+
+- `Entity` 表示一个实体
+- `Component` 用于存储实体的数据，通常一个 `Entity` 对应多个 `Component`
+- `System` 用于处理数据
+
+对应 `MassAI` 来说
+
+`FMassArchetypeData` 可以表示 `Entity` 中具有哪些 `Component`，并且存储这些 `Component` 的内容到 `Chunk` 中
+
+> 通常来说，一个 `Chunk` 的大小是 128KB
+
+```cpp
+namespace UE::Mass
+{
+	constexpr int32 ChunkSize = 128*1024;
+}
+```
+
+`FMassFragment` 则表示一个 `Component`，用于存储一个纯信息
+
+那么 `System` 是什么？
+
+在 `MassAI` 中，使用 `UMassProcessor` 来处理数据
+
+> `Processor` 加工; 数据处理器
+
+```cpp
+UCLASS(abstract, EditInlineNew, CollapseCategories, config = Mass, defaultconfig, ConfigDoNotCheckDefaults)
+class MASSENTITY_API UMassProcessor : public UObject
+{
+// 常用函数
+public:
+	virtual void Initialize(UObject& Owner) {}
+	virtual void PostInitProperties() override;
+
+	virtual void DebugOutputDescription(FOutputDevice& Ar, int32 Indent = 0) const;
+	virtual FString GetProcessorName() const { return GetName(); }
+	virtual void ExportRequirements(FMassExecutionRequirements& OutRequirements) const;
+	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context);
+	virtual void ConfigureQueries() override;
+
+// 常用属性
+private:
+	UPROPERTY(EditAnywhere, Category = "Pipeline", meta = (Bitmask, BitmaskEnum = "/Script/MassEntity.EProcessorExecutionFlags"), config)
+	int32 ExecutionFlags;
+
+	UPROPERTY(EditDefaultsOnly, Category = Processor, config)
+	EMassProcessingPhase ProcessingPhase = EMassProcessingPhase::PrePhysics;
+
+    UPROPERTY(EditDefaultsOnly, Category = Processor, config)
+	FMassProcessorExecutionOrder ExecutionOrder;
+
+	TArray<FMassEntityQuery*> OwnedQueries;
+}
+```
+
+| 属性 | 作用 | 使用示例 |
+| --- | --- | --- |
+| ExecutionFlags | 控制 Processor 执行环境，Server、Client、Standalone | ExecutionFlags((int32)(EProcessorExecutionFlags::Server | EProcessorExecutionFlags::Standalone)) |
+| ProcessingPhase  | 定义 Processor 的执行阶段 | EMassProcessingPhase::PrePhysics |
+| ExecutionOrder | 精细控制同阶段内的执行顺序 |  |
+| OwnedQueries | 存储 RegisterQuery  |  |
+
+`ProcessingPhase` 的值，有以下几种类型
+
+> 这个按需修改，通常来说都是 `PrePhysics`
+
+```cpp
+UENUM()
+enum class EMassProcessingPhase : uint8
+{
+	PrePhysics,
+	StartPhysics,
+	DuringPhysics,
+	EndPhysics,
+	PostPhysics,
+	FrameEnd,
+	MAX,
+};
+```
+
+`ExecutionOrder` 的值有以下几种
+
+```cpp
+namespace UE::Mass::ProcessorGroupNames
+{
+	const FName UpdateWorldFromMass = FName(TEXT("UpdateWorldFromMass"));
+	const FName SyncWorldToMass = FName(TEXT("SyncWorldToMass"));
+	const FName Behavior = FName(TEXT("Behavior"));
+	const FName Tasks = FName(TEXT("Tasks"));
+	const FName Avoidance = FName(TEXT("Avoidance"));
+	const FName Movement = FName(TEXT("Movement"));
+}
+```
+
+#### 构造函数
+
+以 `UMoveToPlayerProcessor` 为例
+
+设置 自动注册 （`bAutoRegisterWithProcessingPhases`）
+
+设定执行顺序在 `Avodiance` 和 `Movement` 之前
+
+```cpp
+UMoveToPlayerProcessor::UMoveToPlayerProcessor()
+{
+	// Automatically create a instance
+	bAutoRegisterWithProcessingPhases = true;
+
+	// Execute before avoidance and movement because its best that we set our goal before
+	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
+	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Movement);
+}
+```
+
+除了 `ExecuteBefore` 之外，还有几个
+
+```cpp
+
+USTRUCT()
+struct FMassProcessorExecutionOrder
+{
+	GENERATED_BODY()
+
+	/** Determines which processing group this processor will be placed in. Leaving it empty ("None") means "top-most group for my ProcessingPhase" */
+	UPROPERTY(EditAnywhere, Category = Processor, config)
+	FName ExecuteInGroup = FName();
+
+	UPROPERTY(EditAnywhere, Category = Processor, config)
+	TArray<FName> ExecuteBefore;
+
+	UPROPERTY(EditAnywhere, Category = Processor, config)
+	TArray<FName> ExecuteAfter;
+};
+```
+
+`ExecutionOrder` 的作用主要是为了排序，给各个 Processor 指定执行顺序
+
+#### ConfigureQueries
+
+以 `UMassLookAtProcessor::ConfigureQueries` 为例
+
+```cpp
+void UMassLookAtProcessor::ConfigureQueries()
+{
+	EntityQuery_Conditional.AddRequirement<FMassLookAtFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery_Conditional.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery_Conditional.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery_Conditional.AddRequirement<FMassZoneGraphLaneLocationFragment>(EMassFragmentAccess::ReadOnly, EMassFragmentPresence::Optional);
+	EntityQuery_Conditional.AddRequirement<FMassLookAtTrajectoryFragment>(EMassFragmentAccess::ReadWrite, EMassFragmentPresence::Optional);
+	EntityQuery_Conditional.AddRequirement<FMassZoneGraphShortPathFragment>(EMassFragmentAccess::ReadOnly, EMassFragmentPresence::Optional);
+	EntityQuery_Conditional.AddTagRequirement<FMassMediumLODTag>(EMassFragmentPresence::None);
+	EntityQuery_Conditional.AddTagRequirement<FMassLowLODTag>(EMassFragmentPresence::None);
+	EntityQuery_Conditional.AddTagRequirement<FMassOffLODTag>(EMassFragmentPresence::None);
+	EntityQuery_Conditional.AddChunkRequirement<FMassVisualizationChunkFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery_Conditional.SetChunkFilter(&FMassVisualizationChunkFragment::AreAnyEntitiesVisibleInChunk);
+	EntityQuery_Conditional.AddSubsystemRequirement<UMassNavigationSubsystem>(EMassFragmentAccess::ReadOnly);
+	EntityQuery_Conditional.AddSubsystemRequirement<UZoneGraphSubsystem>(EMassFragmentAccess::ReadOnly);
+}
+```
+
+`FMassEntityQuery` 主要用于高效检索和处理满足特定条件的实体集合。通过声明式查询语法，实现了对海量实体的高性能筛选和处理，是 Mass 框架实现高效数据处理的关键机制
+
+> `MassEntityQuery` 的类型是 `FMassEntityQuery` 
+
+对 `FMassEntityQuery` 的使用，常见于下面这些
+
+| 常用接口 | 作用 |
+| --- | --- |
+| AddRequirement | 设定 `Processor` 对指定类型的 `FMassFragment` 的读写权限 |
+| AddTagRequirement | 设置查找的 FMassFragment 必须包含某些 Tag，根据参数配置进行筛选 |
+| AddChunkRequirement | 设置对 FMassChunkFragment 的读写权限 |
+| SetChunkFilter | 添加 Chunk 的过滤器 |
+| AddConstSharedRequirement | 设定对 FMassSharedFragment 的过滤 |
+| AddSharedRequirement |  |
+| AddSubsystemRequirement | 设置对 Subsystem 的读写权限 |
+| RegisterWithProcessor | 注册这个 FMassEntityQuery  |
+
+通过前面这些对 `Requirement` 的设定，通过 ForEach 操作可以在 `MassEntityManager` 中获取符合条件的 `MassEntity` 并对其进行相应的操作
+
+至于查询条件枚举，内容如下
+
+```cpp
+UENUM()
+enum class EMassFragmentPresence : uint8
+{
+	/** All of the required fragments must be present */
+	All,
+	/** One of the required fragments must be present */
+	Any,
+	/** None of the required fragments can be present */
+	None,
+	/** If fragment is present we'll use it, but it missing stop processing of a given archetype */
+	Optional,
+	MAX
+};
+```
+
+| 枚举类型 | 作用 
+| --- | --- |
+| All | 必须存在 |
+| Any | 至少存在一个 |
+| None | 禁止存在 |
+| Optional | 可选存在，存在时会被使用，不存在不影响匹配 |
+
+#### Execute
+
+```cpp
+const UMassNavigationSubsystem& MassNavSystem = Context.GetSubsystemChecked<UMassNavigationSubsystem>();
+const UZoneGraphSubsystem& ZoneGraphSubsystem = Context.GetSubsystemChecked<UZoneGraphSubsystem>();
+
+const int32 NumEntities = Context.GetNumEntities();
+const TArrayView<FMassLookAtFragment> LookAtList = Context.GetMutableFragmentView<FMassLookAtFragment>();
+const TConstArrayView<FTransformFragment> TransformList = Context.GetFragmentView<FTransformFragment>();
+const TConstArrayView<FMassMoveTargetFragment> MoveTargetList = Context.GetFragmentView<FMassMoveTargetFragment>();
+const TConstArrayView<FMassZoneGraphLaneLocationFragment> ZoneGraphLocationList = Context.GetFragmentView<FMassZoneGraphLaneLocationFragment>();
+const TConstArrayView<FMassZoneGraphShortPathFragment> ShortPathList = Context.GetFragmentView<FMassZoneGraphShortPathFragment>();
+const TArrayView<FMassLookAtTrajectoryFragment> LookAtTrajectoryList = Context.GetMutableFragmentView<FMassLookAtTrajectoryFragment>();
+```
+
+通过 `Context` 参数，可以通过不同的接口，获取不同的内容
+
+- 因为 `FMassLookAtFragment` 的读写权限是 `ReadWrite`，使用 `GetMutableFragmentView` 获取
+
+- 因为 `FTransformFragment` 的读写权限是 `ReadOnly`，使用 `GetFragmentView` 获取
+
+- 因为 `UZoneGraphSubsystem` 的读写权限是 `ReadOnly`，使用 `GetSubsystemChecked` 获取
+
+- 如果 `Subsystem` 的读写权限是 `ReadWrite`，使用 `GetMutableSubsystem` 获取
+
+- 如果想要获取 `Chunk` 也可以通过 `GetChunkFragmentPtr` 和 `GetChunkFragment` 两个接口
+
