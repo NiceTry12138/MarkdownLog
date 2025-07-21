@@ -926,3 +926,129 @@ const TArrayView<FMassLookAtTrajectoryFragment> LookAtTrajectoryList = Context.G
 
 - 如果想要获取 `Chunk` 也可以通过 `GetChunkFragmentPtr` 和 `GetChunkFragment` 两个接口
 
+### Fragment 数据初始化
+
+首先，让 `FMassFragment` 自己在构造函数中进行初始化是不合规矩的，所有的 `FMassFragment` 的初始化都应该在 `Processor` 中进行
+
+这个 `Processor` 就是 `UMassObserverProcessor`
+
+> 官方也是推荐使用 `UMassObserverProcessor` 进行数据初始化
+
+以 `UMassMoveTargetFragmentInitializer` 为例，获取 `FTransformFragment` 的数据，对 `FMassMoveTargetFragment` 进行初始化
+
+```cpp
+void UMassMoveTargetFragmentInitializer::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+{
+	InitializerQuery.ForEachEntityChunk(EntityManager, Context, [](FMassExecutionContext& Context)
+	{
+		const int32 NumEntities = Context.GetNumEntities();
+		const TArrayView<FMassMoveTargetFragment> MoveTargetList = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
+		const TConstArrayView<FTransformFragment> LocationList = Context.GetFragmentView<FTransformFragment>();
+
+		for (int32 EntityIndex = 0; EntityIndex < NumEntities; ++EntityIndex)
+		{
+			FMassMoveTargetFragment& MoveTarget = MoveTargetList[EntityIndex];
+			const FTransformFragment& Location = LocationList[EntityIndex];
+
+			MoveTarget.Center = Location.GetTransform().GetLocation();
+			MoveTarget.Forward = Location.GetTransform().GetRotation().Vector();
+			MoveTarget.DistanceToGoal = 0.0f;
+			MoveTarget.SlackRadius = 0.0f;
+		}
+	});
+}
+```
+
+不过说是通过 `UMassObserverProcessor` 对 `FMassFragment` 中的数据进行初始化
+
+`UMassObserverProcessor` 还有其他作用，毕竟它的名字有一个 `Observer` 观察者
+
+`UMassObserverProcessor` 并不会主动调用 `Execute` 函数，它是在 `FMassObserverManager` 里有条件触发的
+
+例如实体创建结束后会调用 `FMassObserverManager::OnPostEntitiesCreated`，这个函数会提取满足条件的 `UMassObserverProcessor` ，然后通过 `RunProcessorsView` 来执行相关的逻辑
+
+初始化操作还能在一些其他的地方执行，比如前面说过的 `UMassEntityTraitBase`
+
+> 在 `AMassSpawner` 中配置每个 `Entity` 有哪些 `Fragment`
+
+以 `UMassAgentCapsuleCollisionSyncTrait` 为例，在将 `FMassFragment` 设置到 `Context` 之外，还顺便把包含 `FMassFragment` 初始化逻辑的 `lambda` 表达式设置到 `Context` 中
+
+```cpp
+void UMassAgentCapsuleCollisionSyncTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
+{
+	BuildContext.AddFragment<FCapsuleComponentWrapperFragment>();
+	BuildContext.AddFragment<FAgentRadiusFragment>();
+	if (bSyncTransform)
+	{
+		BuildContext.AddFragment<FTransformFragment>();
+	}
+	
+	BuildContext.GetMutableObjectFragmentInitializers().Add([this](UObject& Owner, FMassEntityView& EntityView, const EMassTranslationDirection CurrentDirection)
+		{
+			if (UCapsuleComponent* CapsuleComponent = FMassAgentTraitsHelper::AsComponent<UCapsuleComponent>(Owner))
+			{
+				FCapsuleComponentWrapperFragment& CapsuleFragment = EntityView.GetFragmentData<FCapsuleComponentWrapperFragment>();
+				CapsuleFragment.Component = CapsuleComponent;
+
+				FAgentRadiusFragment& RadiusFragment = EntityView.GetFragmentData<FAgentRadiusFragment>();
+				RadiusFragment.Radius = CapsuleComponent->GetScaledCapsuleRadius();
+
+				if (bSyncTransform)
+				{
+					FTransformFragment& TransformFragment = EntityView.GetFragmentData<FTransformFragment>();
+					TransformFragment.GetMutableTransform() = CapsuleComponent->GetComponentTransform();
+				}
+			}
+		});
+
+	if (bSyncTransform)
+	{
+		if (EnumHasAnyFlags(SyncDirection, EMassTranslationDirection::ActorToMass))
+		{
+			BuildContext.AddTranslator<UMassCapsuleTransformToMassTranslator>();
+		}
+
+		if (EnumHasAnyFlags(SyncDirection, EMassTranslationDirection::MassToActor))
+		{
+			BuildContext.AddTranslator<UMassTransformToActorCapsuleTranslator>();
+		}
+	}
+}
+```
+
+
+### UMassSignalProcessorBase
+
+`ECS` 中 `System` 之间的消息传递是通过事件进行的 
+
+以 `UMassZoneGraphAnnotationTagUpdateProcessor` 为例
+
+在 `UMassZoneGraphAnnotationTagUpdateProcessor::Initialize` 中直接通过 `SubscribeToSignal` 来注册监听信号
+
+```cpp
+void UMassZoneGraphAnnotationTagUpdateProcessor::Initialize(UObject& Owner)
+{
+	Super::Initialize(Owner);
+
+	UMassSignalSubsystem* SignalSubsystem = UWorld::GetSubsystem<UMassSignalSubsystem>(Owner.GetWorld());
+	SubscribeToSignal(*SignalSubsystem, UE::Mass::Signals::CurrentLaneChanged);
+    // 监听一些其他的信号 
+}
+```
+
+当信号触发触发的时候，会触发 `SignalEntities` 函数
+
+```cpp
+void UMassZoneGraphAnnotationTagUpdateProcessor::SignalEntities(FMassEntityManager& EntityManager, FMassExecutionContext& Context, FMassSignalNameLookup& EntitySignals)
+{
+	EntityQuery.ForEachEntityChunk(EntityManager, Context, [this](FMassExecutionContext& Context)
+	{
+        // 获取所有的 FMassZoneGraphLaneLocationFragment 和 FMassZoneGraphAnnotationFragment
+		for (int32 EntityIndex = 0; EntityIndex < NumEntities; ++EntityIndex)
+		{
+            // 遍历 AnnotationTagsList 和 LaneLocationList
+            // 更新内容
+		}
+	});
+}
+```
