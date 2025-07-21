@@ -214,4 +214,108 @@ void FFlowAssetEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& 
 }
 ```
 
+##### Palette
+
+![](Image/002.png)
+
+正如前面所说，`PaletteTab` 在 `RegisterTabSpawners` 函数中注册
+
+```cpp
+InTabManager->RegisterTabSpawner(PaletteTab, FOnSpawnTab::CreateSP(this, &FFlowAssetEditor::SpawnTab_Palette))
+			.SetDisplayName(LOCTEXT("PaletteTab", "Palette"))
+			.SetGroup(WorkspaceMenuCategoryRef)
+			.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "Kismet.Tabs.Palette"));
+```
+
+这里注册了 `PaletteTab` 对应的创建函数是 `FFlowAssetEditor::SpawnTab_Palette`，不过从函数内容来看，其实就是 `SDockTab` 包了个 `Palette` 对象
+
+```cpp
+TSharedRef<SDockTab> FFlowAssetEditor::SpawnTab_Palette(const FSpawnTabArgs& Args) const
+{
+	check(Args.GetTabId() == PaletteTab);
+
+	return SNew(SDockTab)
+		.Label(LOCTEXT("FlowPaletteTitle", "Palette"))
+		[
+			Palette.ToSharedRef()
+		];
+}
+```
+
+`Palette` 对象也很简单
+
+```cpp
+Palette = SNew(SFlowPalette, SharedThis(this));
+```
+
+`SFlowPalette` 的内容很简单
+
+- 使用 `SGraphActionMenu` 作为列表容器，显示 Item，提供 Item 拖拽功能
+- 使用 `STextComboBox` 提供文本输入功能，作为列表筛选
+
+```cpp
+this->ChildSlot
+[
+	SNew(SBorder)
+	.Padding(2.0f)
+	.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+	[
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot() // Filter UI
+			.AutoHeight()
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+					.VAlign(VAlign_Center)
+					[
+						SAssignNew(CategoryComboBox, STextComboBox)
+							.OptionsSource(&CategoryNames)
+							.OnSelectionChanged(this, &SFlowPalette::CategorySelectionChanged)
+							.InitiallySelectedItem(CategoryNames[0])
+					]
+			]
+		+ SVerticalBox::Slot() // Content list
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			[
+				SAssignNew(GraphActionMenu, SGraphActionMenu)
+					.OnActionDragged(this, &SFlowPalette::OnActionDragged)
+					.OnActionSelected(this, &SFlowPalette::OnActionSelected)
+					.OnCreateWidgetForAction(this, &SFlowPalette::OnCreateWidgetForAction)
+					.OnCollectAllActions(this, &SFlowPalette::CollectAllActions)
+					.OnCreateCustomRowExpander_Static(&LocalUtils::CreateCustomExpanderStatic, false)
+					.AutoExpandActionMenu(true)
+			]
+	]
+];
+```
+
+| SGraphActionMenu | 回调接口 |
+| --- | --- |
+| OnActionDragged | 设置动作拖拽事件的处理函数 |
+| OnActionSelected | 选中处理函数 |
+| OnCreateWidgetForAction | 自定义每个 Item 的显示控件 |
+| OnCollectAllActions | 设置菜单数据源收集函数 |
+
+通过 `SFlowPalette::CollectAllActions` 收集到了数据源，核心内容在 `UFlowGraphSchema::GetFlowNodeActions` 中，收集到的数据源是基于 `UFlowNodeBase` 的类，包括 C++ 和 蓝图的
+
+```cpp
+TArray<UClass*> UFlowGraphSchema::NativeFlowNodes;				// 基于 UFlowNodeBase 的 C++ 类
+TMap<FName, FAssetData> UFlowGraphSchema::BlueprintFlowNodes;	// 基于 UFlowNodeBase 的 蓝图类
+```
+
+好奇 `NativeFlowNodes` 和 `BlueprintFlowNodes` 是怎么得到的，核心就是 `GetDerivedClasses`
+
+```cpp
+GetDerivedClasses(FlowNodeBaseClass, FlowNodesOrAddOns);
+```
+
+通过 `GetDerivedClasses` 得到基于 `FlowNodeBaseClass` 的 `TArray<UClass*>`，核心代码大概如下
+
+```cpp
+FUObjectHashTables& ThreadHash = FUObjectHashTables::Get();
+TSet<UClass*>* DerivedClasses = ThreadHash.ClassToChildListMap.Find(ClassToLookFor);
+Results.Append( DerivedClasses->Array() );
+```
+
 
