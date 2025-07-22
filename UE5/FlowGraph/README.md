@@ -120,13 +120,41 @@ protected:
 
 > 其实也很正常，毕竟在 **确定名称** 之后才能真正创建。当你右键创建资产，但是不按回车或者鼠标来设定名称，而是一直按 ESC，资产不会被创建
 
-#### 创建 资产编辑器
+### 定义图表编辑器
+
+> https://blog.csdn.net/u013412391/article/details/107945507
+
+与蓝图编辑器类似，定义类似的编辑器需要
+
+1. UEdGraph 代表图表对象，存储所有的节点
+2. UEdGraphNode 代表图标对象中的一个节点
+3. UEdGraphSchema 定义图表的规则，比如 **鼠标右键点击** 或者 **拖拽一个引脚并释放**
+4. SFlowGraphNode 图表编辑器中具体的 UI 界面
+5. SGraphEditor 封装了图表编辑器的界面
+6. FEdGraphSchemaAction 定义资产编辑器的操作，比如复制、新建节点，添加注释等
+
+### FFlowAssetEditor
+
+当想要打开一个 `Asset` 的时候，会触发下面这个 `CreateFlowAssetEditor` 函数，创建一个 `FFlowAssetEditor` 资产编辑器
+
+```cpp
+TSharedRef<FFlowAssetEditor> FFlowEditorModule::CreateFlowAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UFlowAsset* FlowAsset)
+{
+	TSharedRef<FFlowAssetEditor> NewFlowAssetEditor(new FFlowAssetEditor());
+	NewFlowAssetEditor->InitFlowAssetEditor(Mode, InitToolkitHost, FlowAsset);
+	return NewFlowAssetEditor;
+}
+```
+
+`FFlowAssetEditor` 的定义如下
 
 ```cpp
 class FLOWEDITOR_API FFlowAssetEditor : public FAssetEditorToolkit, public FEditorUndoClient, public FGCObject, public FNotifyHook
 ```
 
 提供了一套完整的框架来处理编辑器的生命周期、UI布局、菜单系统、撤销重做等功能
+
+#### Undo Redo
 
 使用 `FEditorUndoClient` 来实现 Undo 功能
 
@@ -153,6 +181,8 @@ void FFlowAssetEditor::HandleUndoTransaction()
 
 `HandleUndoTransaction` 本质是声明："状态已变，请更新显示"
 
+#### 变化事件
+
 使用 `FNotifyHook` 提供 **属性变化** 接口，也就是 `NotifyPostChange` 和 `NotifyPreChange` 函数
 
 ```cpp
@@ -166,6 +196,8 @@ void FFlowAssetEditor::NotifyPostChange(const FPropertyChangedEvent& PropertyCha
 ```
 
 > 这个属性可能是成员属性，也可能是 Graph 中某个 Node 的配置属性
+
+#### 窗口控件
 
 当然，最重要的应该是基于 `FAssetEditorToolkit` 而实现的接口
 
@@ -214,7 +246,61 @@ void FFlowAssetEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& 
 }
 ```
 
-##### Palette
+注册和绑定资产事件，刷新 `UFlowGraph`
+
+```cpp
+FlowAsset = CastChecked<UFlowAsset>(ObjectToEdit);
+
+UFlowGraph* FlowGraph = Cast<UFlowGraph>(FlowAsset->GetGraph());
+if (IsValid(FlowGraph))
+{
+    // Call the OnLoaded event for the flowgraph that is being edited
+    FlowGraph->OnLoaded();
+}
+
+// 支持撤销和还原
+FlowAsset->SetFlags(RF_Transactional);
+GEditor->RegisterForUndo(this);
+
+UFlowGraphSchema::SubscribeToAssetChanges();
+FlowAsset->OnDetailsRefreshRequested.BindThreadSafeSP(this, &FFlowAssetEditor::RefreshDetails);
+```
+
+#### InitFlowAssetEditor
+
+打开 `Asset` 创建了 `FFlowAssetEditor` 之后，执行的第一个函数就是 `InitFlowAssetEditor` 
+
+这是在 `RegisterTabSpawners` 之前执行的，毕竟 `RegisterTabSpawners` 只是注册了有哪些 Tab 窗口
+
+Tab 窗口如何布局是在 `InitFlowAssetEditor` 中定义的
+
+```cpp
+CreateWidgets();
+
+// 定于布局
+const TSharedRef<FTabManager::FLayout> StandaloneDefaultLayout = FTabManager::NewLayout("FlowAssetEditor_Layout_v5.1")
+    ->AddArea
+    (
+        FTabManager::NewPrimaryArea()
+        ->SetOrientation(Orient_Horizontal)
+        ->Split
+        (
+            // 其他窗口的布局设置
+        )
+        ->Split
+        (
+            FTabManager::NewStack()
+            ->SetSizeCoefficient(0.125f)
+            ->AddTab(PaletteTab, ETabState::OpenedTab)
+        )
+    );
+```
+
+> 注意：`CreateWidgets` 并没有创建 Tab 控件，而是自定义控件，Tab 控件在 `RegisterTabSpawners` 注册之后由系统调用创建
+
+
+
+#### Palette
 
 ![](Image/002.png)
 
@@ -316,6 +402,72 @@ GetDerivedClasses(FlowNodeBaseClass, FlowNodesOrAddOns);
 FUObjectHashTables& ThreadHash = FUObjectHashTables::Get();
 TSet<UClass*>* DerivedClasses = ThreadHash.ClassToChildListMap.Find(ClassToLookFor);
 Results.Append( DerivedClasses->Array() );
+```
+
+#### Graph
+
+![](Image/003.png)
+
+```cpp
+TSharedRef<SDockTab> FFlowAssetEditor::SpawnTab_Graph(const FSpawnTabArgs& Args) const
+{
+	check(Args.GetTabId() == GraphTab);
+
+	TSharedRef<SDockTab> SpawnedTab = SNew(SDockTab)
+		.Label(LOCTEXT("FlowGraphTitle", "Graph"));
+
+	if (GraphEditor.IsValid())
+	{
+		SpawnedTab->SetContent(GraphEditor.ToSharedRef());
+	}
+
+	return SpawnedTab;
+}
+```
+
+通过上述代码创建 Graph 对应的 Tab，具体的控件对象是 `GraphEditor`
+
+```cpp
+void FFlowAssetEditor::CreateGraphWidget()
+{
+	SAssignNew(GraphEditor, SFlowGraphEditor, SharedThis(this))
+		.DetailsView(DetailsView);
+}
+```
+
+> 功能实现是 `SFlowGraphEditor` 完成的
+
+### UEdGraph
+
+在 `InitFlowAssetEditor` 对 `UEdGraph` 进行过一些操作
+
+```cpp
+UFlowGraph* FlowGraph = Cast<UFlowGraph>(FlowAsset->GetGraph());
+if (IsValid(FlowGraph))
+{
+    // Call the OnLoaded event for the flowgraph that is being edited
+    FlowGraph->OnLoaded();
+}
+```
+
+在创建 `SFlowGraphEditor` 也就是 `SGraphEditor`  时，顺便将 `FlowGraph` 也传递进去了
+
+```cpp
+// 创建 SFlowGraphEditor 对象
+SAssignNew(GraphEditor, SFlowGraphEditor, SharedThis(this))
+		.DetailsView(DetailsView);
+
+// 触发 SFlowGraphEditor 构造函数
+void SFlowGraphEditor::Construct(const FArguments& InArgs, const TSharedPtr<FFlowAssetEditor> InAssetEditor)
+{
+	FlowAssetEditor = InAssetEditor;                        // 得到 FFlowAssetEditor
+	FlowAsset = FlowAssetEditor.Pin()->GetFlowAsset();      // 得到 UFlowAsset
+	SGraphEditor::FArguments Arguments;
+	Arguments._GraphToEdit = FlowAsset->GetGraph();         // 得到 UEdGraph
+
+    // 其他参数设置
+	SGraphEditor::Construct(Arguments);
+}
 ```
 
 
