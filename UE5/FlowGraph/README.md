@@ -470,4 +470,117 @@ void SFlowGraphEditor::Construct(const FArguments& InArgs, const TSharedPtr<FFlo
 }
 ```
 
+从上面代码可以发现， `FlowAsset` 中存储了 `UEdGraph` 对象
+
+```cpp
+#if WITH_EDITORONLY_DATA
+
+private:
+	UPROPERTY()
+	TObjectPtr<UEdGraph> FlowGraph;
+```
+
+`UEdGraph` 存储着所有的节点
+
+```cpp
+UCLASS(MinimalAPI)
+class UEdGraph : public UObject
+{
+// ... 其他属性函数定义
+	UPROPERTY()
+	TSubclassOf<class UEdGraphSchema>  Schema;
+
+	UPROPERTY()
+	TArray<TObjectPtr<class UEdGraphNode>> Nodes;
+}
+```
+
+### FEdGraphSchemaAction
+
+下图中每一项都是一个 `FEdGraphSchemaAction`
+
+![](Image/004.png)
+
+![](Image/005.png)
+
+> 函数调用堆栈如上
+
+通过 `UFlowGraphSchema` 来创建 `FEdGraphSchemaAction` 
+
+在 `UFlowGraphSchema` 得到使用 C++ 或者 蓝图 创建的基类是 `UFlowNodeBase` 的 `UClass` 的 `CDO`，并将其全部存储到 `FilteredNodes` 容器中
+
+```cpp
+TArray<UFlowNodeBase*> FilteredNodes = GetFilteredPlaceableNodes(EditedFlowAsset, NativeFlowNodes, BlueprintFlowNodes);
+
+for (const UFlowNodeBase* FlowNodeBase : FilteredNodes)
+{
+	if ((CategoryName.IsEmpty() || CategoryName.Equals(FlowNodeBase->GetNodeCategory())) && !UFlowGraphSettings::Get()->NodesHiddenFromPalette.Contains(FlowNodeBase->GetClass()))
+	{
+		const UFlowNode* FlowNode = CastChecked<UFlowNode>(FlowNodeBase);
+		TSharedPtr<FFlowGraphSchemaAction_NewNode> NewNodeAction(new FFlowGraphSchemaAction_NewNode(FlowNode));
+		ActionMenuBuilder.AddAction(NewNodeAction);
+	}
+}
+```
+
+`FFlowGraphSchemaAction_NewNode` 构造函数如下，是用于创建 Node 节点的，显示某个基类是 `UFlowNodeBase` 的对象
+
+```cpp
+FFlowGraphSchemaAction_NewNode(const UFlowNode* Node)
+	: FEdGraphSchemaAction(FText::FromString(Node->GetNodeCategory()), Node->GetNodeTitle(), Node->GetNodeToolTip(), 0, FText::FromString(Node->GetClass()->GetMetaData("Keywords")))
+	, NodeClass(Node->GetClass())
+{}
+```
+
+它的内容非常简单，通常只有一个 `PerformAction` 函数，在该 Action 被触发时调用
+
+```cpp
+virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+```
+
+比如，在蓝图中，左键选中节点。正如前面所说，右键显示的列表，每个列表都是一个 `FEdGraphSchemaAction`，当你选中列表中一个 项 的时候，就会触发 `PerformAction`
+
+以 `FFlowGraphSchemaAction_NewNode` 为例，它的 `PerformAction` 就是用于创建节点，由于节点对应的 `UClass` 已经通过构造函数传递进去了，所以知道如何创建
+
+```cpp
+UEdGraphNode* FFlowGraphSchemaAction_NewNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode /* = true*/)
+{
+	// prevent adding new nodes while playing
+	if (GEditor->PlayWorld != nullptr)
+	{
+		return nullptr;
+	}
+
+	if (NodeClass)
+	{
+		return CreateNode(ParentGraph, FromPin, NodeClass, Location, bSelectNewNode);
+	}
+
+	return nullptr;
+}
+```
+
+![](Image/006.png)
+
+> 函数调用堆栈如下
+
+通过 `PerformAction`，可以得到 节点 应该创建在哪的编辑器中、与哪个节点相连、坐标在哪
+
+浅浅看一下 `AddNode` 做了什么
+
+1. 创建 `UFlowGraphNode`，它的基类是 `UEdGraphNode`，用于在编辑器显示 Node 节点
+2. 创建 `UFlowNode`，它是自定义的，用于存储真正的运行时数据
+3. 将 `UFlowGraphNode` 和 `UFlowNode` 关联起来
+
+```cpp
+UFlowGraphNode* NewGraphNode = NewObject<UFlowGraphNode>(ParentGraph, GraphNodeClass, NAME_None, RF_Transactional);
+NewGraphNode->CreateNewGuid();
+ParentGraph->AddNode(NewGraphNode, false, bSelectNewNode);
+
+UFlowNode* FlowNode = FlowAsset->CreateNode(NodeClass, NewGraphNode);
+NewGraphNode->SetNodeTemplate(FlowNode);
+
+// 后续其他设置，比如 节点坐标 等属性
+```
+
 
