@@ -299,6 +299,300 @@ FSlateDrawElement::MakeBox(
 
 ![](Image/006.png)
 
+### FSlateDrawElement
+
+参考 SButton 和 SSlate 在 `OnPaint` 的操作
+
+通过 `FSlateDrawElement::MakeBox` 向 `OutDrawElements` 中添加绘制命令
+
+除了 `MakeBox` 外，还提供一些其他的接口
+
+| 接口 | 作用 |
+| --- | --- |
+| MakeBox | 创建九宫格（9-slice）样式盒子 |
+| MakeRotatedBox | 创建可旋转的九宫格盒子 |
+| MakeText | 渲染简单字符串 |
+| MakeShapedText | 渲染复杂文本（支持双向文本/字体变体） |
+| MakeGradient | 创建线性渐变区域 |
+| MakeSpline | 绘制 Hermite 插值样条 |
+| MakeCubicBezierSpline | 绘制 三次贝塞尔曲线 |
+| MakeDrawSpaceSpline | 在 屏幕空间 绘制样条 |
+| MakeLines |绘制多段连续折线 |
+| MakeViewport | 嵌入外部渲染内容（如 3D 场景） |
+| MakeCustom | 注入底层图形 API 调用 |
+| MakeCustomVerts | 直接提交顶点/索引数据 |
+| MakePostProcessPass | 应用屏幕后处理效果 |
+
+
+## 自定义样条线
+
+如果想要绘制一个样条曲线 `SSplineTest` ，应该如何使用实现？
+
+```cpp
+class SSplineWithHandles : public SCompoundWidget
+```
+
+### 定义属性
+
+一个最简单的样条线，需要定义四个点，分别表示 起点、终点 和 两个控制点
+
+需要在类中使用 `SLATE_BEGIN_ARGS` 来定义属性
+
+```cpp
+SLATE_BEGIN_ARGS(SSplineWithHandles)
+: _P0(FVector2f(0.f,32.f))
+, _P1(FVector2f(100.f, 32.f))
+, _P2(FVector2f(0.f,132.f))
+, _P3(FVector2f(100.f,132.f))
+, _SplineThickness(1.0f)
+{}
+	SLATE_ARGUMENT(FVector2f, P0)
+	SLATE_ARGUMENT(FVector2f, P1)
+	SLATE_ARGUMENT(FVector2f, P2)
+	SLATE_ARGUMENT(FVector2f, P3)
+	SLATE_ATTRIBUTE(float, SplineThickness)
+SLATE_END_ARGS()
+```
+
+那么什么是 `SLATE_BEGINE_ARGS` ？
+
+看宏定义
+
+```cpp
+#define SLATE_BEGIN_ARGS( InWidgetType ) \
+	public: \
+	struct FArguments : public TSlateBaseNamedArgs<InWidgetType> \
+	{ \
+		typedef FArguments WidgetArgsType; \
+		typedef InWidgetType WidgetType; \
+		FORCENOINLINE FArguments()
+```
+
+定义了基于 `TSlateBaseNamedArgs` 的内部结构体，名为 `FArguments`
+
+`TSlateBaseNamedArgs` 定义了很多通用属性：`ToolTipText`、`ToolTip`、`IsEnabled` 等
+
+那么，上面的代码就很好理解了
+
+首先就是下面这段代码，定义了一个名为 `FArguments` 的内部结构体，顺便在构造函数中把属性初始化
+
+```cpp
+SLATE_BEGIN_ARGS(SSplineWithHandles)
+: _P0(FVector2f(0.f,32.f))
+, _P1(FVector2f(100.f, 32.f))
+, _P2(FVector2f(0.f,132.f))
+, _P3(FVector2f(100.f,132.f))
+, _SplineThickness(1.0f)
+{}
+```
+
+如果没有需要初始化的属性，一般这么写
+
+```cpp
+SLATE_BEGIN_ARGS(SSplineWithHandles){}
+```
+
+接下来是定义属性，通常两种定义方式 `SLATE_ARGUMENT` 和 `SLATE_ATTRIBUTE`
+
+`SLATE_ARGUMENT` 是单纯的定义了一个变量
+
+```cpp
+#define SLATE_PRIVATE_ARGUMENT_VARIABLE( ArgType, ArgName ) \
+		ArgType _##ArgName
+
+
+#define SLATE_PRIVATE_ARGUMENT_FUNCTION( ArgType, ArgName ) \
+		WidgetArgsType& ArgName( ArgType InArg ) \
+		{ \
+			_##ArgName = InArg; \
+			return static_cast<WidgetArgsType*>(this)->Me(); \
+		}
+```
+
+比如 `SLATE_SLATE(FVector2f, P0)` 
+- 定义了一个类型为 `FVector2f` 属性名为 `_P0` 的变量
+- 定义了一个返回值为 `WidgetArgsType&` 函数名为 `P0` 的函数
+
+> `WidgetArgsType` 类型就是 `FArguments`
+
+为什么 `P0` 函数需要返回 `WidgetArgsType&` ？
+
+这是为了连续赋值，比如 `Arguments.P0(1).P2(1).P3(1)` 这种方式来连续赋值
+
+`SLATE_ATTRIBUTE` 与 `SLATE_ARGUMENT` 类似，不同的是它定义的是类型是 `TAttribute<>`
+
+```cpp
+#define SLATE_PRIVATE_ATTRIBUTE_VARIABLE( AttrType, AttrName ) \
+		TAttribute< AttrType > _##AttrName
+```
+
+如果定义的是一个普通属性，仅在控件构造时设置，后续不可更改，可以直接使用 `SLATE_ARGUMENT`
+
+如果定义的是一个属性，需要运行时修改并触发 UI 刷新，则需要使用 `SLATE_ATTRIBUTE`
+
+比如这里使用 `SLATE_ATTRIBUT` 定义了 `SplineThickness` 属性
+
+如果想要动态设置该值，则可以这么做 `SplineThickness.Bind( this, &SSplineWithHandles::GetContentScale )`
+
+除了定义属性，还可以定义事件，使用 `SLATE_EVENT`
+
+```cpp
+// 定义事件
+DECLARE_DELEGATE_RetVal_TwoParams(
+	FReply, FPointerEventHandler,
+	const FGeometry&,
+	const FPointerEvent&)
+
+// 定义事件绑定
+SLATE_BEGIN_ARGS(SSplineWithHandles){}
+	SLATE_EVENT(FPointerEventHandler, OnMouseButtonDown)
+SLATE_END_ARGS()
+
+// 绑定事件
+SNew( SSplineWithHandles ).OnMouseButtonDown( this, &SElementTesting::TestBoxElement ) 
+```
+
+还有一个 `SLATE_NAMED_SLOT` 用于定义插槽
+
+### 鼠标事件
+
+在所有控件的基类 `SWidget` 中定义了很多函数用于处理输入事件
+
+| 积累函数接口 | 作用 |
+| --- | --- |
+| OnFocusReceived | 控件获取焦点 |
+| OnFocusLost | 焦点离开控件 |
+| OnFocusChanging | 焦点转移前拦截 |
+| OnKeyChar | 处理字符输入 |
+| OnPreviewKeyDown | 按键预处理器，优先于 `OnKeyDown` |
+| OnKeyDown | 主按键处理 |
+| OnKeyUp | 按键释放处理 |
+| OnAnalogValueChanged | 处理模拟输入，摇杆/手柄输入变化 |
+| OnMouseButtonDown | 鼠标按下主处理 |
+| OnPreviewMouseButtonDown | 鼠标按下拦截器，优先于 OnMouseButtonDown |
+| OnMouseButtonUp | 鼠标释放处理 |
+| OnMouseMove | 鼠标移动处理 |
+| OnMouseEnter | 鼠标进入控件 |
+| OnMouseLeave | 鼠标离开控件 |
+| OnMouseWheel | 滚轮事件处理 |
+| OnCursorQuery | 动态设置鼠标光标 |
+
+当鼠标在控制点按下之后，控制点需要跟随鼠标移动，直到鼠标松开为止
+
+那么在 `OnMouseButtonDown` 的时候，需要判断鼠标是否在控制点上，在控制点上会锁定鼠标
+
+- 如果在控制点上，返回 `FReply::Handled` 来捕获鼠标，不让事件向更低层级的控件传递
+- 如果不在控制点上，返回 `FReply::UnHandled` 让事件向更低层级的控件传递
+
+在 `OnMouseButtonUp` 的时候，如果之前锁定过，则取消对鼠标的锁定
+
+在 `OnMouseMove` 的时候，同步修改点击时绑定的控制点坐标
+
+```cpp
+virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (MouseEvent.GetEffectingButton()==EKeys::LeftMouseButton)
+	{
+		const FVector2f LocalCursorPos = UE::Slate::CastToVector2f(MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition()));
+		PointBeingDragged = PointIndexFromCursorPos(BezierPoints, LocalCursorPos, 2*BezierPointRadius.X*2*BezierPointRadius.X);
+		if (PointBeingDragged != INDEX_NONE)
+		{
+			return FReply::Handled().CaptureMouse(SharedThis(this));
+		}
+	}
+
+	return FReply::Unhandled();
+}
+
+virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (PointBeingDragged != INDEX_NONE && MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		PointBeingDragged = INDEX_NONE;
+		return FReply::Handled().ReleaseMouseCapture();
+	}
+	else
+	{
+		return FReply::Unhandled();
+	}
+}
+
+virtual FReply OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (PointBeingDragged != INDEX_NONE)
+	{
+		const FVector2f LocalCursorPos = UE::Slate::CastToVector2f(MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition()));
+		BezierPoints[PointBeingDragged] = LocalCursorPos;
+		return FReply::Handled();
+	}
+
+	return FReply::Unhandled();
+}
+```
+
+注意 `OnMouseButtonDown` 函数中，对 `FReply::Handled()` 进行了 `CaptureMouse` 操作，用于捕获鼠标，防止其他控件抢夺鼠标事件，直到 `ReleaseMouseCapture` 为止
+
+### OnPaint
+
+绘制命令使用 `FSlateDrawElement::Make*****` 创建进行绘制命令
+
+比如，绘制 `Spline` 对应的命令是 `FSlateDrawElement::MakeSpline`
+
+```cpp
+FSlateDrawElement::MakeSpline(InParams.OutDrawElements, InParams.Layer, InParams.Geometry.ToPaintGeometry(), Start, StartDir, End, EndDir, InParams.Geometry.Scale, InParams.bEnabled ? ESlateDrawEffect::None : ESlateDrawEffect::DisabledEffect, FColor::White );
+```
+
+> 传入起点、起点朝向、终点、终点朝向，可以计算整个 Spline 曲线的样式
+
+得到的效果是 
+
+![](Image/015.png)
+
+比如，绘制 直线 对应的命令是 `FSlateDrawElement::MakeLines`
+
+```cpp
+TArray<FVector2f> LinePoints;
+TArray<FLinearColor> LineColors;
+LinePoints.Add(LineStart); LineColors.Add(FLinearColor::Red);
+LinePoints.Add( LineStart + FVector2f( 100.0f, 50.0f ) );
+LinePoints.Add( LineStart + FVector2f( 200.0f, 10.0f ) );
+LinePoints.Add( LineStart + FVector2f( 300.0f, 50.0f ) );
+LinePoints.Add( LineStart + FVector2f( 400.0f, 10.0f ) );
+
+
+FSlateDrawElement::MakeLines(InParams.OutDrawElements, InParams.Layer, InParams.Geometry.ToPaintGeometry(), LinePoints, InParams.bEnabled ? ESlateDrawEffect::None : ESlateDrawEffect::DisabledEffect, FColor::White, true, InParams.Geometry.Scale);
+// 调用相同接口，修改 Y 轴高度
+```
+
+> `LinePoints` 存储点的坐标，会将这些点连接起来
+
+得到的结果如下
+
+![](Image/016.png)
+
+虽然 `MakeLines` 创建的是直线，但是如果点非常密集，可以模拟曲线的效果
+
+```cpp
+static float CurTime = 0; 
+CurTime += FSlateApplication::Get().GetDeltaTime();
+CurTime = FMath::Fmod(CurTime, 2*PI);
+for( float I = 0; I < 10*PI; I+=.1f)
+{
+	LinePoints.Add( LineStart + FVector2f( I*15 , 15*FMath::Sin( I + CurTime) ) );
+}
+
+static FColor Color = FColor::MakeRandomColor();
+FSlateDrawElement::MakeLines(InParams.OutDrawElements, InParams.Layer+1, InParams.Geometry.ToPaintGeometry(), LinePoints, InParams.bEnabled ? ESlateDrawEffect::NoPixelSnapping : ESlateDrawEffect::NoPixelSnapping|ESlateDrawEffect::DisabledEffect, Color, true, InParams.Geometry.Scale);
+// 调用相同接口，修改 Y 轴高度
+```
+
+> 使用 `CurTime` 来模拟曲线根据时间移动的效果
+
+得到的结果如下
+
+![](Image/017.png)
+
+
 
 ## HittestGrid
 
@@ -506,5 +800,5 @@ ItemsWithGeneratedWidgets.Add(InItem);
 
 ### 其他
 
-
+https://gwb.tencent.com/community/detail/113852
 <!-- ![](Image/003.png) -->
