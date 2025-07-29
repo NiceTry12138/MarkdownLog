@@ -24,9 +24,11 @@ const bool bLoaded = BTManager->LoadTree(TreeAsset, RootNode, InstanceMemorySize
 
 通过 `LoadTree` 函数或者该行为树实例所占内存大小 `InstanceMemorySize` 和根节点 `Root`
 
-通过 `UBehaviorTreeComponent::LoadedTemplates` 缓存加载过的 `UBehaviorTree` 资产信息，如果加载过直接从缓存中获取 `InstanceMemorySize` 和 `Root`
+通过 `UBehaviorTreeManager::LoadedTemplates` 缓存加载过的 `UBehaviorTree` 资产信息，如果加载过直接从缓存中获取 `InstanceMemorySize` 和 `Root`
 
 如果没有加载过该 `UBehaviorTree` 资产，则开始加载
+
+> 由于一个 `World` 的 `UBehaviorTreeManager` 是唯一的，所以理论上来说每个资产只会被加载一次
 
 首先通过 `InitializeNodeHelper` 来缓存所有节点信息
 
