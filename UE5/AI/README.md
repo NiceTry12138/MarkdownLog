@@ -283,11 +283,15 @@ UBTNode* UBTNode::GetNodeInstance(const UBehaviorTreeComponent& OwnerComp, uint8
 3. 在 `FBehaviorTreeInstance` 中初始化 `InstanceMemory` 连续内存
    - 根据 `bCreateNodeInstance` 的值，内存块中存储着自定义数据 和 对应 `NodeInstances` 数组的索引序号
 
-实际上每次遍历的仍然是 `BTManager::LoadedTemplated` 中复制的行为树
+实际上每次运行的行为树，仍然是 `BTManager::LoadedTemplated` 中复制的 Asset 的行为树
 
-但是在执行节点逻辑的时候，根据 `bCreateNodeInstance` 的值
+但是在执行节点逻辑的时候，根据 `bCreateNodeInstance` 的值来决定执行节点
 
-- 如果实例化 Node，从 `UBehaviorTreeComponnet` 中获取实例化的节点
+- 如果实例化 Node，通过从 `FBehaviorTreeInstances` 的连续内存中获取 `UBehaviorTreeComponent::NodeInstances` 的数组序号，进而数组中获取实例化的节点
 - 如果不实例化 Node，则直接行为 `LoadedTemplated` 中的行为树节点
 
+注意 `GetNodeInstance` 函数，由于运行时会将 BTComponent 和 数据内存 都传入，又由于每个行为树是固定的，所以每个 BTNode 的内存数据偏移也都是固定的
 
+通过 数据内存 和 内存偏移 可以得到当前 BTNode 存放数据的内存块的地址，就可以获取 bCrateNodeInstance 创建的实例化 BTNode 在 BTComponent::NodeInstances 数组的序号，进而获取到真正执行的 BTNode
+
+> 遍历行为树的节点，并不一定就是执行的节点，这个需要区分
