@@ -268,8 +268,6 @@ UBTNode* UBTNode::GetNodeInstance(const UBehaviorTreeComponent& OwnerComp, uint8
 
 ![](Image/004.png)
 
-> 上图有一个问题，根据 bCreateNodeInstance 创建 BTNode 是根据 BTManager 中拷贝的 行为树，而不是 Asset 中的行为树
-
 综上所述，代码的执行顺序大致如下
 
 1. 通过 `BTManager->LoadTree` 将 `UBehaviorTree` 从 Asset 拷贝到 `LoadedTemplateds` 数组中
