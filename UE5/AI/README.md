@@ -294,3 +294,106 @@ UBTNode* UBTNode::GetNodeInstance(const UBehaviorTreeComponent& OwnerComp, uint8
 通过 数据内存 和 内存偏移 可以得到当前 BTNode 存放数据的内存块的地址，就可以获取 bCrateNodeInstance 创建的实例化 BTNode 在 BTComponent::NodeInstances 数组的序号，进而获取到真正执行的 BTNode
 
 > 遍历行为树的节点，并不一定就是执行的节点，这个需要区分
+
+### 一个 Task 的执行
+
+想要行为树能够驱动角色运动起来，还得是通过 `UBTTaskNode` 来实现
+
+当搜索到可以执行的 UBTTaskNode 的时候，通过 `ExecuteTask` 来执行节点
+
+![](Image/005.png)
+
+#### ExecuteTask
+
+首先将关联的 `UBTService` 激活，遍历 `UBTTaskNode` 下所有的 Service
+
+```cpp
+ServiceNode->WrappedOnBecomeRelevant(*this, NodeMemory);
+```
+
+然后执行 `UBTServie` 的 `Tick`，遍历当前 UBTTaskNode 绑定的所有的 Service
+
+```cpp
+ServiceNode->WrappedTickNode(*this, NodeMemory);
+```
+
+接下来就是执行 `UBTTaskNode` 本体，得到运行的结果 `TaskResult`
+
+```cpp
+EBTNodeResult::Type TaskResult;
+{
+	SCOPE_CYCLE_UOBJECT(TaskNode, TaskNode);
+	uint8* NodeMemory = (uint8*)(TaskNode->GetNodeMemory<uint8>(ActiveInstance));
+	TaskResult = TaskNode->WrappedExecuteTask(*this, NodeMemory);
+}
+```
+
+`TaskResult` 是一个枚举，有四个值
+
+| 枚举值 | 含义 |
+| --- | --- |
+| Succeeded | 运行成功 |
+| Failed | 运行失败 |
+| Aborted | 被打断 |
+| InProgress | 正在运行中 |
+
+`UBTTask_BlueprintBase` 是最经常使用的行为树 Task 节点，用于蓝图中实现任务节点功能
+
+在 `UBTTask_BlueprintBase::ExecuteTask` 函数中，会判断是否存在 `AIOwner`，以此判断执行 `ReceiveExecuteAI` 还是 `ReceiveExecute`
+
+![](Image/006.png)
+
+```cpp
+EBTNodeResult::Type UBTTask_BlueprintBase::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	CurrentCallResult = (ReceiveExecuteImplementations != 0 || ReceiveTickImplementations != 0) ? EBTNodeResult::InProgress : EBTNodeResult::Failed;
+	bIsAborting = false;
+
+	bStoreFinishResult = true;
+	// 执行 ReceiveExecuteAI 或者 ReceiveExecute
+	bStoreFinishResult = false;
+
+	return CurrentCallResult;
+}
+```
+
+`ExecutTask` 返回的是 `CurrentCallResult`，这个值通常来说默认是 `InProgress`
+
+如果在 `ReceiveExecuteAI` 接口中调用了 `FinishExecute` 接口，则会根据输入的 `bSuccess` 来重新设置 `CurrentCallResult` 为 `Succeeded` 或者 `Failed`
+
+在执行节点逻辑之前，会设置 `bStoreFinishResult` 为 true，这样如果 Task 是同步执行结束的，就直接修改 `CurrentCallResult` 的值即可，直接返回运行结果
+
+如果 Task 的执行内容是异步的，那么 `ExecutTask` 默认返回 `InProgress`，等 `FinishExecute` 的时候再通过 `FinishLatentTask` 通知 UBTComonent
+
+```cpp
+void UBTTask_BlueprintBase::FinishExecute(bool bSuccess)
+{
+	UBehaviorTreeComponent* OwnerComp = Cast<UBehaviorTreeComponent>(GetOuter());
+	const EBTNodeResult::Type NodeResult(bSuccess ? EBTNodeResult::Succeeded : EBTNodeResult::Failed);
+
+	if (bStoreFinishResult)
+	{
+		CurrentCallResult = NodeResult;
+	}
+	else if (OwnerComp && !bIsAborting)
+	{
+		FinishLatentTask(*OwnerComp, NodeResult);
+	}
+}
+```
+
+> 在执行 ReceiveExecuteAI 之前 bStoreFinishResult 值为 true，也就是说如果 ReceiveExecuteAI 函数中调用了 FinishExecute 会修改 CurrentCallResult 的值，并直接作为 ExecuteTask 函数返回值返回回去
+
+当 `UBTTaskNode` 执行完毕之后，通常会调用 `FinishLatentTask`，通知 UBTComponent 该节点运行完毕，该去查找下一个可用节点了
+
+```cpp
+void UBTTaskNode::FinishLatentTask(UBehaviorTreeComponent& OwnerComp, EBTNodeResult::Type TaskResult) const
+{
+	UBTTaskNode* TemplateNode = (UBTTaskNode*)OwnerComp.FindTemplateNode(this);
+	OwnerComp.OnTaskFinished(TemplateNode, TaskResult);
+}
+```
+
+### 查找可执行的 Task
+
+
