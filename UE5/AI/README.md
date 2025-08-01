@@ -4,6 +4,8 @@
 
 https://zhuanlan.zhihu.com/p/608864183
 
+![](Image/014.png)
+
 ### 运行行为树之前
 
 #### LoadTree
@@ -394,6 +396,237 @@ void UBTTaskNode::FinishLatentTask(UBehaviorTreeComponent& OwnerComp, EBTNodeRes
 }
 ```
 
+### 一个 Decorator 的执行
+
+`UBTDecorator` 作为装饰器，表示当前节点及其子节点能否运行
+
+#### FlowAbortMode 类型
+
+`UBTDecorator` 可以打断自身节点、低优先级节点的运行
+
+| 打断类型 | 作用 |
+| --- | --- |
+| None | 不打断 |				
+| LowerPriority | 打断低优先级 |		
+| Self | 打断自身 |				
+| Both | 打断自身并且打断低优先级 |				
+
+> 行为树节点从左到右，优先级从高到低
+
+`CompositeNode` 常用的是两种：`Sequence` 和 `Selector`，还有一个 `SimpleParallel` 
+
+| Sequence 中的 Observer aborts | Selector 中的 Observer aborts |
+| --- | --- |
+| ![](Image/007.png) | ![](Image/008.png) |
+
+- `Sequence` 中不能使用 `LowerPriority` 和 `Both`，因为 `Sequence` 是顺序执行所有节点，必须完成当前任务才能继续下一个，中断会破坏的连续性
+- `Selector` 没有 `LowerPriority` 和 `Both` 的限制
+
+那么如何实现 `UBTDecorator` 在不同的 CompositeNode 中，显示不同的 `Observer aborts` 选项
+
+答案是通过 `FBehaviorDecoratorDetails` 自定义细节面板和 `CompositeNode` 的成员函数 `CanAbortLowerPriority`、 `CanAbortSelf`
+
+```cpp
+UBTCompositeNode* MyParentNode = MyDecorator ? MyDecorator->GetParentNode() : NULL;
+
+const bool bAllowAbortNone = MyDecorator == NULL || MyDecorator->bAllowAbortNone;
+const bool bAllowAbortSelf = (MyDecorator == NULL || MyDecorator->bAllowAbortChildNodes) && (MyParentNode == NULL || MyParentNode->CanAbortSelf());
+const bool bAllowAbortLowerPriority = (MyDecorator == NULL || MyDecorator->bAllowAbortLowerPri) && (MyParentNode == NULL || MyParentNode->CanAbortLowerPriority());
+```
+
+`UBTDecorator` 并没有 `Observer aborts` 属性，属性数值的绑定当然也是通过自定义细节面板实现的
+
+```cpp
+// 显示名称
+FText AbortModeDesc = LOCTEXT("ObserverTitle","Observer aborts");
+// 获取属性
+ModeProperty = DetailLayout.GetProperty(GET_MEMBER_NAME_CHECKED(UBTDecorator, FlowAbortMode));
+// 设置属性显示名称
+ModeProperty->CreatePropertyNameWidget(AbortModeDesc)
+```
+
+> `Observer aborts` 本质上还是修改 `FlowAbortMode` 属性
+
+| Sequence | Selector | Simple_Parallel|
+| --- | --- | --- |
+| ![](Image/009.png) | 没有重写，都可以 | ![](Image/010.png) |
+
+除了 `CompositeNode` 限制了 `FlowAbortMode` 之外，每个 `UBTDecorator` 也可以自行通过设置属性参数来限制 `FlowAbortMode`
+
+| 属性 | 作用 |
+| --- | --- |
+| bAllowAbortNone | 是否允许 Abort None |
+| bAllowAbortLowerPri | 是否允许 Abort Low Priority |
+| bAllowAbortChildNodes | 是否允许 打断子节点 也就是 Self |
+
+> 这些属性默认都是 true，即全部允许
+
+比如 `UBTDecorator_TimeLimit` 的构造函数中设置了 `bAllowAbortLowerPri` 和 `bAllowAbortNone` 为 false
+
+因为 `UBTDecorator_TimeLimit` 设计的目的就是为了限制自身的运行时间，所以它的 `FlowAbortMode` 只能是 `Self`
+
+#### CalculateRawConditionValue
+
+判断能否执行的核心逻辑
+
+以 `UBTDecorator_Cooldown` 为例，获取当前时间和上次执行时间，判断时间差值是否符合CD需求
+
+```cpp
+bool UBTDecorator_Cooldown::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+{
+	FBTCooldownDecoratorMemory* DecoratorMemory = CastInstanceNodeMemory<FBTCooldownDecoratorMemory>(NodeMemory);
+	const double TimePassed = (OwnerComp.GetWorld()->GetTimeSeconds() - DecoratorMemory->LastUseTimestamp);
+	return TimePassed >= CoolDownTime;
+}
+```
+
+也不是所有的 `Decorator` 都是通过 `CalculateRawConditionValue` 来中断行为树运行的，比如 `UBTDecorator_TimeLimit`
+
+`UBTDecorator_TimeLimit` 直接没有重写 `CalculateRawConditionValue` 让其返回默认的 true，设置自己的 `FlowAbortMode` 为 Self，在倒计时结束之后直接调用 `OwnerComp.RequestExecution` 来中断节点的执行
+
+```cpp
+void UBTDecorator_TimeLimit::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	OwnerComp.RequestExecution(this);
+}
+```
+
+不过，通常来说 蓝图 通过继承 `UBTDecorator_BlueprintBase` 实现功能
+
+```cpp
+bool UBTDecorator_BlueprintBase::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+{
+	bool CurrentCallResult = false;
+	// 根据是否是 AIOwner 执行 PerformConditionCheckAI 或者 PerformConditionCheck
+	return CurrentCallResult;
+}
+```
+
+如果 `UBTDecorator` 的 `FlowAbortMode` 不是 `None`，表示该节点存在打断行为
+
+`FlowAbortMode` 值为 `None`，表示只在判断是否激活节点的时候进行一次判断。如果 `FlowAbortMode` 为其他值，会在 `TickNode` 中再次触发 `CalculateRawConditionValue` 判断当前运行的节点能否继续运行
+
+> 注意：这里 **当前运行的节点** 并不一定是该 `UBTDecorator` 的子节点，也可能是低优先级节点
+
+![](Image/012.png)
+
+```cpp
+if (FlowAbortMode == EBTFlowAbortMode::None)
+{
+	return EAbortType::NoAbort;
+}
+
+EAbortType AbortType = EAbortType::NoAbort;
+if (bIsOnActiveBranch)
+{
+	if ((FlowAbortMode == EBTFlowAbortMode::Self || FlowAbortMode == EBTFlowAbortMode::Both) && CalculateRawConditionValue(OwnerComp, /*NodeMemory*/nullptr) == IsInversed())
+	{
+		AbortType = EAbortType::DeactivateBranch;
+	}
+}
+else 
+{
+	if ((FlowAbortMode == EBTFlowAbortMode::LowerPriority || FlowAbortMode == EBTFlowAbortMode::Both) && CalculateRawConditionValue(OwnerComp, /*NodeMemory*/nullptr) != IsInversed())
+	{
+		AbortType = EAbortType::ActivateBranch;
+	}
+}
+```
+- 如果 `UBTDecorator` 的 `FlowAbortMode` 是 `None` 直接 `return` 掉
+- 如果 `UBTDecorator` 在当前正在运行的节点上，通过 `CalculateRawConditionValue` 判断当前节点能否继续运行
+- 如果 `UBTDecorator` 不在正在运行的节点上，通过 `CalculateRawConditionValue` 判断是否中断正在运行的节点并切换到自己的节点
+
+![](Image/013.png)
+
+> `BTD_Test` 的 `Check` 永远返回 true
+
+上面这种情况的执行情况是怎样的呢？
+
+1. 运行 `BT_Task` 
+2. 通过 `BTD_Test` 的 `Check`，执行 `Wait A`
+3. 执行 `Wait B`
+4. 触发 `BTD_Test` 的 `TickNode`，进而触发 `Check`，打断 `Wait B` 执行 `Wait A`
+5. 重复执行 3 ~ 4 
+
+#### 生命周期函数
+
+![](Image/011.png)
+
+执行顺序是
+
+1. Activated
+2. Start
+3. Deactivated
+4. Finish
+
+`Start` 和 `Finish` 是一定会调用的， 但是 `Activated` 和 `Deactivated` 不是每次激活都会调用
+
 ### 查找可执行的 Task
+
+查找并执行可执行的节点，分为两部分 `RequestExecution` 和  `ProcessExecutionRequest`
+
+通过 `RequestExecution` 节点的查找范围，并发起请求。只是发起请求，不是真正的开始执行
+
+真正执行是在 `TickComponent` 中调用 `ProcessExecutionRequest` 来执行的
+
+#### RequestExecution
+
+```cpp
+AIMODULE_API void RequestExecution(const UBTCompositeNode* RequestedOn, const int32 InstanceIdx, 
+	const UBTNode* RequestedBy, const int32 RequestedByChildIndex,
+	const EBTNodeResult::Type ContinueWithResult, bool bStoreForDebugger = true);
+
+void RequestExecution(const UBTDecorator* RequestedBy) { check(RequestedBy); RequestBranchEvaluation(*RequestedBy); }
+
+void RequestExecution(EBTNodeResult::Type ContinueWithResult) { RequestBranchEvaluation(ContinueWithResult); }
+```
+
+> 后两个重载的方法，最后还是会调到第一个 RequestExecution
+
+| 形式参数 | 作用 |
+| --- | --- | 
+| RequestedOn | 发起请求节点父节点 |
+| InstanceIdx | FBehaviorTreeInstance 在 UBTComponent::InstanceStack 中的序号 |
+| RequestedBy | 发起请求的节点，可能是 Task、Decorator、CompositeNode |
+| RequestedByChildIndex | 发起请求节点的序号 |
+| ContinueWithResult | 发起请求的原因 |
+
+> 常规调用方法，例如： RequestExecution(RequestedBy.GetParentNode(), InstanceIdx, &RequestedBy, RequestedBy.GetChildIndex(), EBTNodeResult::Aborted);
+
+`RequestExecution` 函数主要的作用为了填充 `ExecutionRequest` 的成员属性
+
+```cpp
+struct FBTNodeExecutionInfo
+{
+	FBTNodeIndex SearchStart;
+	FBTNodeIndex SearchEnd;
+	const UBTCompositeNode* ExecuteNode;
+	uint16 ExecuteInstanceIdx;
+	TEnumAsByte<EBTNodeResult::Type> ContinueWithResult;
+	uint8 bTryNextChild : 1;
+	uint8 bIsRestart : 1;
+};
+```
+
+它本质上是一个执行指令包，告诉行为树组件
+
+1. 从哪里开始搜索（SearchStart）
+2. 到哪里结束搜索（SearchEnd）
+3. 从哪个节点开始执行（ExecuteNode）
+4. 如何继续执行（ContinueWithResult + 标志位）
+
+通过 `SearchStart` 和 `SearchEnd` 来限定行为树的搜索范围，避免全树扫描，实现局部搜索优化，只检查特定分支
+
+- 在中断场景中，限定只搜索高优先级分支
+- 在组合节点中，限定只搜索当前子分支
+
+----------------------------
+
+```cpp
+const bool bSwitchToHigherPriority = (ContinueWithResult == EBTNodeResult::Aborted);
+const bool bAlreadyHasRequest = (ExecutionRequest.ExecuteNode != NULL);
+```
+
+根据 `ContinueWithResult` 是否是 `Aborted` 来判断是否应该切换到更高优先级节点
 
 
