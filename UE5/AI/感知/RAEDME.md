@@ -644,4 +644,6 @@ for (AIPerception::FListenerMap::TIterator ListenerIt(ListenersMap); ListenerIt;
 }
 ```
 
+除了类似 `UAISense_Hearing` 通过 `RegisterDelayedStimulus` 注册刺激信息之外
 
+还可以参考 `UAISense_Sight`，直接通过 `Listener.RegisterStimulus` 向 `AIPerceptionComponent` 注册刺激信息
