@@ -622,6 +622,10 @@ struct FBTNodeExecutionInfo
 
 ----------------------------
 
+由于同一帧可能存在多次 `RequestExecution` 会与上次计算缓存的 ExecutionRequest 进行优先级对比
+
+> 根据 InstanceIdnex 大小 和 ExecutionIndex 大小 进行比较，值越小优先级越高
+
 ```cpp
 const bool bSwitchToHigherPriority = (ContinueWithResult == EBTNodeResult::Aborted);
 const bool bAlreadyHasRequest = (ExecutionRequest.ExecuteNode != NULL);
@@ -629,4 +633,65 @@ const bool bAlreadyHasRequest = (ExecutionRequest.ExecuteNode != NULL);
 
 根据 `ContinueWithResult` 是否是 `Aborted` 来判断是否应该切换到更高优先级节点
 
+```cpp
+if(bSwitchToHigherPriority)
+{
+	// 找到 RequestOn 和 ActiveInstance.ActiveNode 的共同父节点
+	// ExecutionRequest.ExecuteNode = 共同父节点
+}
+else {
+	// 如果 RequestedOn 能正常执行
+	// ExecutionRequest.ExecuteNode = RequestedOn
+}
+```
 
+![](Image/015.png)
+
+比如上面这种情况，ExecutionRequest.ExecuteNode 的值为 Sequence 这个 CompositeNode
+
+#### ProcessExecutionRequest
+
+在 `TickComponent` 中进行判断是否执行
+
+如果当前 当前执行的节点 和 ExecutionRequest.ExecuteNode 请求执行节点不同，那么先将当前执行节点 `Deactive` 掉，通过 `DeactivateUpTo` 函数
+
+> 当前执行节点是 InstanceStack[ActiveInstanceIdx].ActiveNode
+
+将 `ExecutionRequest` 信息同步更新到 `SearchData` 中
+
+```cpp
+UBTTaskNode* NextTask = NULL;
+const UBTCompositeNode* TestNode = ExecutionRequest.ExecuteNode;
+```
+
+接下来通过 while 循环，不停更新 NextTask 和 TestNode 的值，直到找到能够执行的那个
+
+```cpp
+while (TestNode && NextTask == NULL)
+{
+	const int32 ChildBranchIdx = TestNode->FindChildToExecute(SearchData, NodeResult);
+	const UBTNode* StoreNode = TestNode;
+
+	if (SearchData.bPostponeSearch)
+	{
+		// break out of current search loop
+		TestNode = NULL;
+		bIsSearchValid = false;
+	}
+	else if(ChildBranchIdx == BTSpecialChild::ReturnToParent)
+	{
+
+	}
+	else if (TestNode->Children.IsValidIndex(ChildBranchIdx))
+	{
+		NextTask = TestNode->Children[ChildBranchIdx].ChildTask;
+		TestNode = TestNode->Children[ChildBranchIdx].ChildComposite;
+	}
+}
+```
+
+> 还记得吗 ChildTask 和 ChildComposite 只有一个是有效的
+
+通过 `TestNode->FindChildToExecute` 找到可以执行的节点
+
+最后调用 `ProcessPendingExecution` 去执行 `ExecuteTask`

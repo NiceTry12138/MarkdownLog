@@ -10,6 +10,8 @@ AI 感知系统分为五个部分
 4. AIStimulus: 感知系统中的刺激
 5. AIPerceptionComponent: 配置 AISenseConfig
 
+![](Image/006.png)
+
 ![](Image/003.png)
 
 大概内容如上图所展示
