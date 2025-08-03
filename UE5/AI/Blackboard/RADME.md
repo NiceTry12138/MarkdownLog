@@ -25,9 +25,62 @@ private:
 	UPROPERTY()
 	uint32 bHasSynchronizedKeys : 1;
 
+	FBlackboard::FKey FirstKeyID;		// 得到 BlackboardData 第一个 Key 对应的 ID / 序号
+
     // 其他工具函数
 }
 ```
+
+这里 `FirstKeyID` 的值，可以通过 `UpdateKeyIDs` 函数来窥探一二
+
+`FirstKeyID` 赋值为 `Parent` 的 Key 的数量
+
+```cpp
+void UBlackboardData::UpdateKeyIDs()
+{
+	const int32 FirstKeyIDInt = Parent ? Parent->GetNumKeys() : 0;
+	FirstKeyID = FBlackboard::FKey(FirstKeyIDInt);
+}
+```
+
+![](Image/003.png)
+
+如果 `Paren` 有 5 个 Key，那么 Self 的 FirstKeyID 值为 5
+
+对于这种 BlackboardData，获取序号为 6 的 Key，也就是 Self 的 Key2
+
+判断 6 是否大于 FirstKeyID，大于表示是自己的 Key，小于表示是 Parent 的 Key
+
+```cpp
+const FBlackboardEntry* UBlackboardData::GetKey(FBlackboard::FKey KeyID) const
+{
+	if (KeyID != FBlackboard::InvalidKey)
+	{
+		if ((int32)KeyID >= (int32)FirstKeyID)
+		{
+			return &Keys[(int32)KeyID - (int32)FirstKeyID];
+		}
+		else if (Parent)
+		{
+			return Parent->GetKey(KeyID);
+		}
+	}
+
+	return NULL;
+}
+```
+
+所谓的 `FKey`，其实就是一个存储 int16 表示该属性在 BlackboardData 中的序号 
+
+```cpp
+struct FKey
+{
+	uint16 Key = static_cast<uint16>(-1);
+	// 其他工具函数
+}
+```
+
+### FBlackboardEntry
 
 `FBlackboardEntry` 存储着 `EntryName` 表示显示名称，`KeyType` 存储着数据类型
 
@@ -216,3 +269,83 @@ bool UBlackboardKeyType_Name::TestTextOperation(const UBlackboardComponent& Owne
 	return false;
 }
 ```
+
+## UBlackboardComponent
+
+### 属性
+
+`KeyInstances` 数组存储着实例化的 `UBlackboardKeyType`
+
+```cpp
+TArray<TObjectPtr<UBlackboardKeyType>> KeyInstances;
+```
+
+`ValueOffsets` 数组序号代表着 FKey ，其对应的值为 内存偏移值
+
+```cpp
+TArray<uint16> ValueOffsets;
+```
+
+`ValueMemory` 存储一个连续内存块，所有行为树的数据都是通过该 内存块 + 内存偏移 计算得到对应的 黑板值 或者 KeyInstances 的序号
+
+```cpp
+TArray<uint8> ValueMemory;
+```
+
+### InitializeBlackboard
+
+初始化行为树
+
+1. 通过递归，初始化所有父节点，设置所有 BlackboardData 的 FirstKey
+
+```cpp
+void UBlackboardComponent::InitializeParentChain(UBlackboardData* NewAsset)
+{
+	if (NewAsset)
+	{
+		InitializeParentChain(NewAsset->Parent);
+		NewAsset->UpdateKeyIDs();
+	}
+}
+```
+
+2. 调用所有 `UBlackboardKeyType` 的 `PreInitialize`
+
+3. 计算 `ValueOffsets` 和 `ValueMemory`
+
+```cpp
+// InitList 存储着 FKey 和 其所占用内存大小的 ValueSize
+InitList.Sort(FBlackboardInitializationData::FMemorySort());
+uint16 MemoryOffset = 0;
+for (int32 Index = 0; Index < InitList.Num(); Index++)
+{
+	ValueOffsets[InitList[Index].KeyID] = MemoryOffset;
+	MemoryOffset += InitList[Index].DataSize;
+}
+ValueMemory.AddZeroed(MemoryOffset);
+```
+
+> Sort 会按照内存从大到小进行排序，用于优化 CPU 读取速度，提高 Cache 命中率
+
+| 黑板内容 | InitList |
+| --- | --- |
+| ![](Image/005.png) | ![](Image/006.png) |
+
+> 这里 ValueMemory 初始化大小为 25 字节
+
+4. 调用所有 `FBlackboardEntry` 的 `InitializeKey`
+   - 如果是 bCreateKeyInstance 为 true，则创建新的 UBlackboardKeyType，对其初始化，并保存在 UBlackboardComponent::KeyInstances 中
+   - 如果 bCreateKeyInstance 为 false，则直接通过现有的 UBlackboardKeyType 对 RowData 进行初始化
+
+### 基本结构
+
+![](Image/007.png)
+
+大概结构如上图
+
+根据 `bCreateKeyInstance` 决定一个 `UBlackboardKeyType` 在 `ValueMemory` 中内存偏移的对应内存块的具体内容是什么
+
+- 如果 bCreateKeyInstance 为 true，那么对应内存块存储着实例化的 UBlackboardKeyType 在 UBlackboardComponent::KeyInstances 数组中的序号
+- 如果 bCreateKeyInstance 为 false，那么对应内存块存储着 真实数据，通过 GetValue/SetValue 来对数据进行操作
+
+
