@@ -292,6 +292,13 @@ TArray<uint16> ValueOffsets;
 TArray<uint8> ValueMemory;
 ```
 
+`Observers` 帮助支持外部 UObject 监听 FKey 数据修改事件
+
+```cpp
+mutable TMultiMap<FBlackboard::FKey, FOnBlackboardChangeNotificationInfo> Observers;
+mutable TMultiMap<const UObject*, FDelegateHandle> ObserverHandles;
+```
+
 ### InitializeBlackboard
 
 初始化行为树
