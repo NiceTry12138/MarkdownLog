@@ -171,6 +171,114 @@ bool JPSPathPlanner::_forceNeighborDetect(int dir, int cur_id, std::vector<int>&
   - 如果 **当前节点** 的 **左节点** 是 **障碍物**，那么 **当前节点** 的 **左上角** 节点是 **强制邻居**
   - 如果 **当前节点** 的 **下节点** 是 **障碍物**，那么 **当前节点** 的 **右下角** 节点是 **强制邻居**
 
-注意，需要判断 **强制邻居** 不能是 **障碍物**
+> 注意，需要判断 **强制邻居** 不能是 **障碍物**
 
-### _checkStraightLine
+如果是斜向时，强制邻居的 id 是 `cur_id + 2 * delta_obs[i] + dir`，仍然以上述情况为例子
+
+移动方向是 **右上角**，**当前节点** 的 **左节点** 是 **障碍物**，那么 **当前节点** 的 **左上角** 节点是 **强制邻居**
+
+此时 `delta_obs[i]` 表示 左方向， cur_id + 左方向 * 2 + 右上 得到的就是 左上角
+
+### _checkStraightLine 和 _checkSlashLine
+
+> _checkStraightLine 检查所有 竖直 或者 水平 方向  
+> _checkSlashLine 检查所有 斜向
+
+JPS 查询一个点，是先查询这个点的斜向
+
+比如样例代码中，先查询起点的 左上方向 和 右下方向，再查询 左下方向 和 右上方向
+
+```cpp
+// initialization
+for (int i = 4; i < 6; i++)
+{  // explore left-top and right-bottom from current
+  _checkSlashLine(dirs_[i], start_, open_list_);
+}
+for (int i = 6; i < 8; i++)
+{  // explore left-bottom and right-top from next
+  _checkSlashLine(dirs_[i], start_, open_list_, false);
+}
+```
+
+在斜向查询的时候，会分解斜向向量，比如如果是 右上方向查询，会将查询区分为 右 和 上 两个方向，并一直查询下去，直到遇到 **障碍物**、**终点**、**强制邻居**
+
+
+
+![](Image/005.png)
+
+> 先查找当前点 **上方向** 所有点，再查询 **右方向** 所有点
+
+当 当前节点 的 右方向 和 上方向 全部遍历完毕之后，沿着当前节点的 右上角 移动，再判断新节点的 右方向 和 上方向 全部节点
+
+### _jump
+
+因为 `_checkStraightLine` 和 `_checkSlashLine` 遍历节点时，遇到 **强制邻居** 就会停止搜索，导致后续节点可能没有搜索完毕
+
+通过 parent_Id 和自己的 ID，沿着未搜索完的方向继续搜索
+
+```cpp
+int dir = calDir(node.id(), node.pid());
+if (dir == 1 || dir == -1 || dir == nx_ || dir == -nx_)
+{
+  _checkStraightLine(dir, node, open_list);
+}
+else
+{
+  _checkSlashLine(dir, node, open_list);
+}
+```
+
+然后沿着 强制邻居 方向继续搜索
+
+```cpp
+if (node.fid() != -1)
+{
+  int f_dir = calDir(node.fid(), node.id());
+  _checkSlashLine(f_dir, node, open_list, false);
+}
+```
+
+这 `_jump` 函数中，仍然会向 `open_list` 中添加新的节点
+
+### plan
+
+首先从 `start_` 起点开始，初始化 `open_list_` 的内容
+
+```cpp  
+// initialization
+for (int i = 4; i < 6; i++)
+{  // explore left-top and right-bottom from current
+  _checkSlashLine(dirs_[i], start_, open_list_);
+}
+for (int i = 6; i < 8; i++)
+{  // explore left-bottom and right-top from next
+  _checkSlashLine(dirs_[i], start_, open_list_, false);
+}
+```
+
+然后对 `open_list_` 进行遍历，通过 `_jump` 对跳点进行处理
+
+```cpp
+while (!open_list_.empty())
+{
+  // pop current node from open list
+  auto current = open_list_.top();
+  open_list_.pop();
+
+  // current node do not exist in closed list
+  if (closed_list_.find(current.id()) != closed_list_.end())
+    continue;
+
+  closed_list_.insert(std::make_pair(current.id(), current));
+  expand.emplace_back(current.x(), current.y());
+
+  // goal found
+  if (current == goal_)
+  {
+    // 找到目标点
+  }
+
+  // 对跳点进行处理
+  _jump(current, open_list_);
+}
+```
