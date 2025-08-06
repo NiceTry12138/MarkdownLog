@@ -441,8 +441,139 @@ struct FLYINGNAVSYSTEM_API FSVORawGeometryElement
 
 ##### RasteriseLayerOne
 
+此阶段负责将场景几何体转换为体素表示，分为两个层次：Layer1（第一层节点）和叶子层（Layer0）
+
 用于八叉树（Octree）第一层节点的光栅化（Rasterise）过程，主要功能是生成并筛选八叉树第一层中与特定几何体相交的节点
 
-只保留与几何体（如导航网格）相交的节点，并将它们的Morton码（空间位置编码）存入SortedMortonCodes
+只保留与几何体（如导航网格）相交的节点，并将它们的 Morton 码（空间位置编码）存入SortedMortonCodes
 
+#### FSVOGenerator::BuildAsync
 
+如果光栅化后 Layer1 没有节点，表示没有几何体，创建一个占位根节点，然后退出
+
+如果光栅化后 Layer1 有节点，则循环生成 Layer2 直到根节点
+
+```cpp
+for (int32 Layer = 2; Layer <= SVOData->NumNodeLayers; Layer++)
+{
+	GenerateSVOLayer(Layer);
+}
+```
+
+为每一层的每一个节点生成 6 个方向的邻居链接，通过 Morton码 计算相邻位置，如果相邻位置有节点则记录链接
+
+```cpp
+for (int32 Layer = 1; Layer <= SVOData->NumNodeLayers; Layer++)
+{
+	GenerateNeighbourLinks(Layer);
+}
+```
+
+使用 `FindConnectedComponents` 使用广搜，遍历所有节点，将连通的节点标记为同一个连接区域
+
+## 接入 UE
+
+项目中跟 UE 相关的内容很多
+
+```cpp
+struct FLYINGNAVSYSTEM_API FFlyingNavigationPath : FNavigationPath
+
+class FLYINGNAVSYSTEM_API AFlyingNavigationData : public ANavigationData
+
+class FLYINGNAVSYSTEM_API FFlyingNavigationDataGenerator: public FNavDataGenerator
+```
+
+在 `NavigationSystem` 的 `Tick` 函数中，如果不存在时间片任务，会直接调用 `TickAsyncBuild`
+
+```cpp
+for (ANavigationData* NavData : NavDataSet)
+{
+	if (NavData)
+	{
+		NavData->TickAsyncBuild(DeltaSeconds);
+	}
+}
+```
+
+进入 `FFlyingNavigationDataGenerator::TickAsyncBuild` 
+
+```cpp
+void FFlyingNavigationDataGenerator::TickAsyncBuild(float DeltaSeconds)
+{
+	// Create new task if we need to
+	if (bIsPendingBuild && !bIsBuilding)
+	{
+		bIsBuilding = true;
+		bIsPendingBuild = false;
+
+		GeneratorTask = MakeUnique<FSVOGeneratorTask>(*this);
+	}
+
+	if (GeneratorTask.IsValid())
+	{
+		// Check completion
+		if (GeneratorTask->IsFinished())
+		{
+			bIsBuilding = false;
+			GeneratorTask.Reset();
+
+			DestFlyingNavData->OnOctreeGenerationFinished();
+		} else
+		{
+			GeneratorTask->RasteriseTick();
+		}
+	}
+}
+```
+
+在 `GeneratorTask` 任务完成之后，可以直接清理掉
+
+在 `AFlyingNavigationData` 中除了维护可配置数据，还持有一线管理对象
+
+```cpp
+class FLYINGNAVSYSTEM_API AFlyingNavigationData : public ANavigationData
+{
+protected:
+	// 稀疏体素八叉树引用
+	FSVODataRef SVOData;
+	// 正在构建的 稀疏体素八叉树 的引用
+	FSVODataRef BuildingSVOData;
+
+	// 邻居关系 预计算的节点连接关系 加速A*算法的邻居获取
+	TUniquePtr<const FSVOGraph> NeighbourGraph;
+	// 同步路径查找 用于游戏线程即时路径计算 简单场景快速响应
+	TUniquePtr<FSVOPathfindingGraph> SyncPathfindingGraph;
+	// 异步路径查找 专用工作线程使用的结构 复杂路径的后台计算
+	TUniquePtr<FSVOPathfindingGraph> AsyncPathfindingGraph;
+
+	// 导航生成系统
+	TSharedPtr<FFlyingNavigationDataGenerator, ESPMode::ThreadSafe> FlyingNavGenerator;
+
+	// 路径请求的唯一ID 和 计算状态
+	TMap<uint32, ENavPathUpdateType::Type> CurrentlyCalculatingPaths;
+}
+```
+
+参考 `AFlyingNavigationData::FindPath` 函数，可以直到如何进行寻路
+
+根据是否是同步查找，选择 `SyncPathfindingGraph` 还是 `AsyncPathfindingGraph`
+
+```cpp
+Result.Result = NavigationGraph->FindPath(StartLocation, EndLocation, QuerySettings, PathPoints, bPartialSolution);
+```
+
+可以通过 `FSVOPathfindingGraph::FindSVOPath` 查找到路径，通过配置可以选择算法：`A*`、`Theta*`、`Lazt Theta*`
+
+```cpp
+switch (QuerySettings.PathfindingAlgorithm)
+{
+case EPathfindingAlgorithm::AStar:
+	ProcessNode = &FSVOPathfindingGraph::ProcessSingleAStarNode;
+	break;
+case EPathfindingAlgorithm::LazyThetaStar:
+	ProcessNode = &FSVOPathfindingGraph::ProcessSingleLazyThetaStarNode;
+	break;
+case EPathfindingAlgorithm::ThetaStar:
+	ProcessNode = &FSVOPathfindingGraph::ProcessSingleThetaStarNode;
+}
+```
