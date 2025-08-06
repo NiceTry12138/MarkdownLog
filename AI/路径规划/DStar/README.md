@@ -20,6 +20,12 @@ DStar 也称 D* 算法
 
 ### Node 结构
 
+每个节点有三种状态
+
+- New: 从未被遍历查找过
+- OPEN: 节点被查找中，正在 OpenList 中
+- CLOSED: 节点从 OpenList 中被移除
+
 ```cpp
 class DNode : public Node
 {
@@ -51,6 +57,12 @@ private:
 int t_;     // DNode's tag among enum Tag
 double k_;  // DNode's k_min in history
 };
+```
+
+默认情况下，每个节点的 k、h、g 都是 infinite， t 是 `DNode::New`
+
+```cpp
+new DNode(i, j, std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), grid2Index(i, j), -1, DNode::NEW, std::numeric_limits<double>::max());
 ```
 
 
