@@ -140,6 +140,16 @@ ULocalPlayer 代表本地玩家，包含输入设备关联、视口配置等信�
 
 ```cpp
 class ULocalPlayer : public UPlayer
+{
+	FUniqueNetIdRepl CachedUniqueNetId;     // 
+	TObjectPtr<class UGameViewportClient> ViewportClient;       
+	FVector2D Origin;                       // 上一帧 主视口区域 在归一化坐标空间中左上角的位置
+	FVector2D Size;                         // 上一帧 主视口区域 在归一化坐标空间中的尺寸
+	FVector LastViewLocation;               // 上一帧 玩家的摄像机位置
+	TEnumAsByte<enum EAspectRatioAxisConstraint>        AspectRatioAxisConstraint;              // 当前游戏视口的宽高比与项目设置不同时，如何调整视场角
+	TSubclassOf<class APlayerController>        PendingLevelPlayerControllerClass;      // 关卡切换过程中临时存储将要生成的 APlayerController 类
+	uint32 bSentSplitJoin:1;                // 是否已发送分屏加入请求
+}
 ```
 
 #### UNetConnection
