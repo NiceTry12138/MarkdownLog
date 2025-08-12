@@ -67,6 +67,93 @@ while(true)
 
 是一个比较重要的网络管理类，可以简单看下其结构
 
+```cpp
+class UNetDriver : public UObject, public FExec
+{
+public:
+    ENGINE_API virtual bool InitBase(bool bInitAsClient, FNetworkNotify* InNotify, const FURL& URL, bool bReuseAddressAndPort, FString& Error);
+    ENGINE_API virtual bool InitConnect(class FNetworkNotify* InNotify, const FURL& ConnectURL, FString& Error ) PURE_VIRTUAL( UNetDriver::InitConnect, return true;);
+    ENGINE_API virtual bool InitListen(class FNetworkNotify* InNotify, FURL& ListenURL, bool bReuseAddressAndPort, FString& Error) PURE_VIRTUAL( UNetDriver::InitListen, return true;);
+
+    // 其他函数
+
+public:
+    UPROPERTY()
+	TObjectPtr<class UNetConnection> ServerConnection;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UNetConnection>> ClientConnections;
+
+    // 其他属性
+}
+```
+
+| UNetDriver 派生类 | 作用 |
+| --- | --- |
+| UWebSocketNetDriver | 用于实现 WebSocket 协议的网络通信 |
+| UIpNetDriver | 用于实现基于 IP 的网络通信 |
+| USteamSocketsNetDriver | 利用Steam新网络协议层的网络插件，从 Steamworks SDK 1.46版起 |
+| UDemoNetDriver | 用来支持游戏录像和回放 |
+
+在 `UWorld` 中存储着 `NetDriver` 用于网络信息处理，同时也有一个 `DemoNetDriver` 来支持游戏录像和回放
+
+注意 `UNetDriver` 中维护着两个数组：`ServerConnection` 和 `ClientConnections`
+
+- 如果当前属于 Server，那么使用 `ClientConnections` 来存储 Server 与 Client 的连接信息
+- 如果当前属于 Client，那么使用 `ServerConnection` 来存储该 Client 与 Server 的连接信息
+
+客户端通过调用 `UNetDriver::InitConnect` 来创建 `ServerConnection` 并初始化数据
+
+服务器通过调用 `UNetDriver::InitListen` 来初始化服务端数据
+
+`UNetDriver` 会监听 `TickDispatch` 和 `TickFlush`，驱动整个网络系统的更新循环
+
+![](Image/007.png)
+
+### UPlayer 和 UNetConnection
+
+#### UPlayer
+
+`UPlayer` 是 UE 中表示玩家的实体。并不直接与游戏场景中的对象关联，而是用于封装玩家的输入来源
+
+这个 UPlayer 可以是一个本地人类玩家(Local Player)、一个网络连接的远程玩家 (NetConnection)，甚至在某些情况下可以代表一个模拟玩家的 AI
+
+```cpp
+class UPlayer : public UObject, public FExec
+{
+	TObjectPtr<class APlayerController> PlayerController;
+	int32 CurrentNetSpeed;          // 表示当前用于该玩家网络连接的实际带宽限制
+	int32 ConfiguredInternetSpeed;  // 为该类型玩家连接预设的最大带宽限制
+	int32 ConfiguredLanSpeed;       // 在局域网环境下，为该类型玩家连接预设的最大带宽限制
+}
+```
+
+作为输入信号的发起者， `UPlayer` 代表了从本地或网络设备传递到游戏的所有输入
+
+`UPlayer` 与 `PlayerController` 关联，帮助将玩家的输入转化为游戏中的动作和反馈，同时支持多种输入方式：键盘、手柄、网络信号
+
+`UPlayer` 的设计核心是解耦输入处理与具体的游戏兑现，更关注玩家的输入行为，而非具体的游戏场景
+
+#### ULocalPlayer
+
+ULocalPlayer 代表本地玩家，包含输入设备关联、视口配置等信息
+
+```cpp
+class ULocalPlayer : public UPlayer
+```
+
+#### UNetConnection
+
+`UNetConnection` 就是抽象出来的连接，用于管理玩家与服务器，或其他客户端之间的网络通信
+
+负责 接收 和 发送 玩家的输入数据，使网络玩家能够在游戏中进行互动
+
+```cpp
+class UNetConnection : public UPlayer
+{
+
+}
+```
 
 
 ## 初始化流程
