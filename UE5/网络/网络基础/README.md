@@ -2,6 +2,8 @@
 
 ## 基本类型
 
+> https://www.cnblogs.com/lawliet12/p/17332897.html
+
 ### FSocket
 
 代码太多了，直接贴文件路径吧 
@@ -128,15 +130,9 @@ class UPlayer : public UObject, public FExec
 }
 ```
 
-作为输入信号的发起者， `UPlayer` 代表了从本地或网络设备传递到游戏的所有输入
-
-`UPlayer` 与 `PlayerController` 关联，帮助将玩家的输入转化为游戏中的动作和反馈，同时支持多种输入方式：键盘、手柄、网络信号
-
-`UPlayer` 的设计核心是解耦输入处理与具体的游戏兑现，更关注玩家的输入行为，而非具体的游戏场景
-
 #### ULocalPlayer
 
-ULocalPlayer 代表本地玩家，包含输入设备关联、视口配置等信息
+ULocalPlayer 代表本地玩家，包含视口配置等信息
 
 ```cpp
 class ULocalPlayer : public UPlayer
@@ -152,6 +148,19 @@ class ULocalPlayer : public UPlayer
 }
 ```
 
+参考 `APlayerController` 对 `LocalPlayer` 的使用
+
+```cpp
+void APlayerController::CreateTouchInterface()
+{
+    ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+    // ... do something else
+    LocalPlayer->ViewportClient->AddViewportWidgetContent(VirtualJoystick.ToSharedRef());
+}
+```
+
+在 `APlayerController` 中大部分都是通过 `Player` 来进行视口操作
+
 #### UNetConnection
 
 `UNetConnection` 就是抽象出来的连接，用于管理玩家与服务器，或其他客户端之间的网络通信
@@ -161,40 +170,226 @@ class ULocalPlayer : public UPlayer
 ```cpp
 class UNetConnection : public UPlayer
 {
+	TArray<TObjectPtr<class UChildConnection>> Children;    // 管理子连接（多用于分屏多人游戏）
+	TObjectPtr<class UNetDriver> Driver;	    // 所属的网络驱动实例
+	TSubclassOf<UPackageMap> PackageMapClass;   // 
+	TObjectPtr<class UPackageMap> PackageMap;   // 
+	TArray<TObjectPtr<class UChannel>> OpenChannels;    // 网络传输通道 特定类型的信息通过特定的 Channel 传输
+	TArray<TObjectPtr<class AActor>> SentTemporaries;   // 标记为 bNetTemporary 的 Actor，表示 仅初始复制一次 不参加后续增量更新的 Actor
+	TObjectPtr<class AActor> ViewTarget;    // 
+	TObjectPtr<class AActor> OwningActor;   // 通常是 PlayerController
+	int32	MaxPacket;	    // 最大数据包大小
 
-}
+    FActorChannelMap ActorChannels; // Key 是 Actor Value 是 ActorChannel，通过 Actor 找到与之对应的 ActorChannel
+    // 其他 属性 和 函数
+} 
 ```
 
+从上面代码可以看到，`UNetConnection` 维护着一个 `UChannel` 的数组
 
-## 初始化流程
+### UChannel
 
-### Server 的初始化流程
+Channel 的核心作用：
+- 数据分类传输：将网络数据按类型隔离到不同通道
+- 可靠性控制：提供可靠/不可靠两种传输模式
+- 流量管理：控制数据发送频率和顺序
+- 连接维护：管理通道生命周期（打开/关闭/休眠）
 
-![](Image/005.png)
+所以 UChannel 中维护这一堆状态属性，用于记录 Channel是否打开、是否休眠、是否损坏等状态
 
-在 `Listen` 函数中会创建 `NetDriver`、`Socket` 并绑定
+```cpp
+uint32  OpenAcked:1;
+uint32  Closing:1;	
+uint32  Dormant:1;	will close but the client will not destroy
+uint32  bIsReplicationPaused:1;
+uint32  OpenTemporary:1;	.
+uint32  Broken:1;
+uint32  bTornOff:1;
+uint32  bPendingDormancy:1;
+uint32  bIsInDormancyHysteresis:1;
+uint32  bPausedUntilReliableACK:1;
+uint32  SentClosingBunch:1;
 
-`InURL` 配置如下，监听接口为 17777
+class FInBunch*		InRec;				// 输入可靠数据队列
+class FOutBunch*	OutRec;				// 输出可靠数据队列
+class FInBunch*		InPartialBunch;		// 部分接收的数据块
+```
+
+常见的 `UChannel` 有 `UActorChannel` 、`UControlChannel` 和 `UVoiceChannel`
+
+- `UActorChannel` 是在服务器和客户端之间同步 Actor 状态的通道，确保所有客户端上 Actor 的状态相同
+- `UControlChannel` 是特殊的网络通道，主负责处理底层的网络连接和控制消息，通常不传输游戏数据，主要用于维护网络连接状态、通知连接事件、传入核心控制信息等
+  - 连接的建立和断开，比如当客户端与服务器建立连接时，UControlChannel会发送和接收连接请求和响应，以便双方建立通信
+  - 心跳检测，为了确保连接保持活跃，`UControlChannel` 会定期发送和接收心跳消息
+  - 通道管理，比如需要创建一个新的 UActorChannel 传输游戏数据时，通过 `UControlChannel` 发送相应的打开、关闭通道请求
+  - 控制消息，比如暂停、回复游戏等
+- `UVoiceChannel` 主要处理语音数据
+
+### UNetDriver、UNetConnection、UChannel
+
+通过上述代码可以发现
+
+`UNetDriver` 管理多个 `UNetConnection`； `UNetConnection` 管理多个 `UChannel`
+
+`UNetConnection` 本质是 客户端-服务器 的逻辑连接通道，用于管理所有的关联的 `UChannel`、处理数据包路由、维护连接状态
+
+- 服务器的启动流程
+
+![](Image/001.png)
+
+- 客户端连接流程
+
+![](Image/002.png)
+
+- 双向握手协议
 
 ![](Image/006.png)
 
-`Listen` 代码的执行流程如下
+### Bunch 和 Packet
 
-![](Image/007.png)
+> https://zhuanlan.zhihu.com/p/606905438
 
-### Client 的初始化流程
+![](Image/007.jpg)
 
-![](Image/008.png)
+在 `UChannel` 存储着 `FInBunch` 和 `FOutBunch`，分别对应接收数据和发送数据
 
-默认创建下面这些 `Channel`，都是继承自 `UChannel` 基类，用于表示传递某种类型的信息
+`FInBunch` 表示接收数据
 
-| Name | 对象 |
-| --- | --- |
-| Control | UControlChannel |
-| Voice | UVoiceChannel |
-| DataStream | UDataStreamChannel |
-| Actor | UActorChannel |
+```cpp
+class FInBunch : public FNetBitReader
+{
+public:
+	int32				PacketId;	//         
+	FInBunch *			Next;       // 
+	UNetConnection *	Connection; //     
+	int32				ChIndex;    //     
+	FName				ChName;     // 
+	int32				ChSequence; //
+    
+    // 其他 属性 函数
+};
 
-![](Image/009.png)
+class FOutBunch : public FNetBitWriter
+{
+public:
+	FOutBunch *				Next;       // 
+	UChannel *				Channel;    // 所属网络通道的指针
+	double					Time;       // 数据块创建的时间戳
+	int32					ChIndex;    // 通道在连接中的唯一索引
+	FName					ChName;     // 通道类型名称标识符
+	int32					ChSequence; // 通道内数据块的序列号
+	int32					PacketId;   // 数据包在网络连接中的全局ID
+    
+    // 其他 属性 函数
+}
+```
+
+`FNetBitReader` 的基类是 `FBitReader`， `FBitReader` 维护着 `TArray<uint8>` 字节数组，用于存储数据
+
+Bunch 偏向上层游戏业务，承载属性同步、rpc 等重要功能
+
+Actor 在执行属性同步，或调用rpc后，会生成一个 OutBunch ，并向其中写入数据
+
+通过 `UActorChannel::ReplicateActor` 可以窥探到如何设置一个 `FOutBunch` 的值
+
+通过 `ActorReplicator->ReplicateProperties` 
+
+```cpp
+const bool bCanSkipUpdate = ActorReplicator->CanSkipUpdate(RepFlags);
+
+if (UE::Net::bPushModelValidateSkipUpdate || !bCanSkipUpdate)
+{
+    bWroteSomethingImportant |= ActorReplicator->ReplicateProperties(Bunch, RepFlags);
+}
+```
+
+在准备好一个 `Bunch` 之后，通过 `UChannel::SendBunch` 来发送这个 `Bunch`
+
+在 `SendBunch` 函数中会对 `Bunch` 进行一些处理
+
+1. 如果 Bunch 超过一定大小，需要拆分成多个 Bunch
+2. 如果两个 Bunch 符合条件，也可以合并
+
+然后通过 `UChannel::SendRawBunch` 将数据传输给 `UNetConnection::SendRawBunch`
+
+最终将 `Bunch` 中的数据写入到 `SendBuffer` 中
+
+```cpp
+Bunch.PacketId = WriteBitsToSendBufferInternal(SendBunchHeader.GetData(), BunchHeaderBits, Bunch.GetData(), BunchBits, EWriteBitsDataType::Bunch);
+```
+
+`Bunch.PacketId` 值为 `OutPacketId`， 每次发送数据都会是的 `OutPacketId` 值加一
+
+```cpp
+void UNetConnection::FlushNet(bool bIgnoreSimulation)
+{
+    // 一些操作
+    ++OutPackets;
+    ++OutPacketsThisFrame;
+    ++OutTotalPackets;
+    ++OutPacketId;
+    // 一些操作
+}
+```
+
+`UNetConnection::FlushNet` 是发送数据的函数，该函数有两个执行点
+
+1. 如果一帧中 `SendBuffer` 容量超过一定大小，则直接调用 `FlushNet`
+2. 在 `Tick` 中调用 `FlushNet`
+
+![](Image/008.jpg)
+
+-----------------------
+
+反过来看，如果想要接收数据呢？
+
+在 `UNetDriver::TickDispatch` 中会遍历上一帧所有获取的 `Packet`，然后交给 `UNetConnection::ReceivedRawPacket` 进行数据处理
+
+```cpp
+void UNetConnection::ReceivedRawPacket( void* InData, int32 Count )
+{
+    // 数据处理
+
+    ++InPackets;
+	++InPacketsThisFrame;
+	++InTotalPackets;
+
+    // 数据处理
+    ReceivedPacket(Reader);
+}
+
+void UNetConnection::ReceivedPacket( FBitReader& Reader, bool bIsReinjectedPacket, bool bDispatchPacket )
+{
+    // 数据处理
+    if (IsInternalAck())
+	{
+		++InPacketId;
+	}	
+	else
+    {
+        // 数据处理
+        UChannel* Channel = Channels[Bunch.ChIndex];
+        Channel->ReceivedRawBunch(Bunch, bLocalSkipAck);
+    }
+}
+```
+
+> 注意 每次确认接收到 Packet 都会让 InPacketId 自增
+
+通过 `Bunch.ChIndex` 找到对应的 `UChannel`，具体数据怎么操作，由 `UChannel` 自己决定
+
+## 异常情况处理
+
+### UDP 中数据包序列异常
+
+在 `UNetConnection::ReceivedPacket` 对 Packet 进行处理时，通过 `PacketNotify` 和 当前 Packet 进行序号对比
+
+```cpp
+const int32 PacketSequenceDelta = PacketNotify.GetSequenceDelta(Header);
+```
+
+比如之前接收到的 Packet 的序号是 100，当前 Packet 的序号是 102，那么就出现了**丢包**，因为我们期望的序号是 101
+
+再比如之前收到的 Packet 的序号是 100，当前 Packet 的序号是 100，那么出现了**乱序**（重复或者旧包）
 
 
