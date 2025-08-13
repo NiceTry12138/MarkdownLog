@@ -62,4 +62,13 @@ void UAbilitySystemComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProper
 
 针对 `SpawnedAttributes`，当从服务器同步属性之后，会触发 `ReplicatedUsing` 配置的 `OnRep_SpawnedAttributes` 函数
 
+## 同步流程
+
+1. 收集所有的 Actor
+2. 属性对比，对比哪些属性发生了变化
+3. 遍历 Component 并进行属性对比
+4. 遍历所有的 UActorChannel 
+
+引擎通过引入 `ReplicationGraph` 和 `NetDormancy` 减少了 收集 Actor 阶段处理的 Actor 数量；通过 `PushModel` 减少了属性对比的执行次数
+
 
