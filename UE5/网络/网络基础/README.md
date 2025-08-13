@@ -378,6 +378,8 @@ void UNetConnection::ReceivedPacket( FBitReader& Reader, bool bIsReinjectedPacke
 
 通过 `Bunch.ChIndex` 找到对应的 `UChannel`，具体数据怎么操作，由 `UChannel` 自己决定
 
+
+
 ## 异常情况处理
 
 ### UDP 中数据包序列异常
@@ -429,3 +431,52 @@ if (PacketSequenceDelta > 0)
 直接丢包即可，并且看情况创建环形缓冲
 
 ![](Image/009.jpg)
+
+### Ack 和 Nak
+
+- 使用 Ack 来标记某个 Packet 已经被收到了
+- 使用 Nak 标记某个 Packet 没有被收到
+
+接收方的特点为只处理新 Seq 的 Packet ，后面收到旧 Seq 的 Packet 会直接丢弃，缓存乱序 Packet 机制也是在此规则下工作的。因此接收方可以在收到 Packet 后立即产生对应的 Ack
+
+这些通过 `ReceivedAck` 和 `ReceivedNak` 进行处理
+
+在 `UNetConnection::ReceivedPacket` 函数中
+
+```cpp
+auto HandlePacketNotification = [&Header, &ChannelsToClose, this](FNetPacketNotify::SequenceNumberT AckedSequence, bool bDelivered)
+{
+    // do some functions
+    
+    if (bDelivered)
+    {
+        ReceivedAck(LastNotifiedPacketId, ChannelsToClose);
+    }
+    else
+    {
+        ReceivedNak(LastNotifiedPacketId);
+    };
+};
+
+PacketNotify.Update(Header, HandlePacketNotification);
+```
+
+对 `UActorChannel` 来说，属性同步的数据被 Nak 之后，需要被标记重发
+
+```cpp
+void UActorChannel::ReceivedNak( int32 NakPacketId )
+{
+	UChannel::ReceivedNak(NakPacketId);	
+	for (auto CompIt = ReplicationMap.CreateIterator(); CompIt; ++CompIt)
+	{
+		CompIt.Value()->ReceivedNak(NakPacketId);
+	}
+}
+
+void FObjectReplicator::ReceivedNak( int32 NakPacketId )
+{
+    // ... some code
+    HistoryItem.Resend = true;
+    // ... some code
+}
+```
