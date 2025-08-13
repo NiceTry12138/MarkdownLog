@@ -480,3 +480,69 @@ void FObjectReplicator::ReceivedNak( int32 NakPacketId )
     // ... some code
 }
 ```
+
+## 角色网络权限
+
+![](Image/002.jpg)
+
+https://zhuanlan.zhihu.com/p/684597439
+
+> 红色 表示服务器；绿色表示 客户端
+
+| 数据类型 | C-S 存储 |
+| --- | --- |
+| GameInstance | 服务器和每个客户端都存在一个独立的 GameInstance |
+| GameMode | 只有服务器中存储 GameMode，用于设定游戏规则 |
+| PlayerController | 每个客户端都有自己的 PlayerController。服务器和关联客户端之间的 PlayerController 会进行复制，但不会复制到其他客户端。服务器可以获取所有客户端的 PlayerController | 
+| GameState | 存在于客户端和服务器上，因此服务器可以在 GameState 上使用复制，让所有客户端保持最新的游戏数据。通常是服务器上改变变量的值，客户端去读取。一般存储游戏中共有的数据。比如 LOL 中玩家的战绩等 |
+| PlayerState | 服务器和客户端上存在与游戏项链的每个玩家的 PlayerState，存储玩家数据。比如 LOL 中玩家的金币数量 |
+| Pawn | Pawn 和 Character 也存在于服务器和所有客户端上，可以复制变量和事件 |
+
+在游戏运行中，对角色定义有三种
+
+| 枚举值 | 含义 |
+| --- | --- |
+| ROLE_None | Actor在网络游戏中无角色，不会复制 |
+| ROLE_SimulatedProxy | 只有模拟权，只是单纯把服务器的状态同步下来，无法直接改变其状态 |
+| ROLE_AutonomousProxy | 自治权，一方面把服务器状态同步过来，另一方面能通过一些方式（属性同步和RPC）去改变服务器上的状态，再同步回自身 |
+| ROLE_Authority | 	服务器或者单机游戏的客户端中，Actor的Role都为Authority。表示有完全控制权 |
+
+> `enum ENetRole : int`
+
+例如
+
+- `Client1` 客户端上，`PlayerCharacter1` 拥有 `ROLE_AutonomousProxy`
+- `Client2` 客户端上，`PlayerCharacter2` 拥有 `ROLE_AutonomousProxy`
+- `Client1` 客户端上，`PlayerCharacter2` 仅拥有 `ROLE_SimulatedProxy`
+- `Client2` 客户端上, `PlayerCharacter1` 仅拥有 `ROLE_SimulatedProxy`
+
+在 `CharacterMovementComponent` 中，对不同的权限，执行不同的操作
+
+角色的 `ENetRole` 不同，在 **属性同步** 和 `RPC` 中会有不同的表现
+
+在多人网络游戏中，同一段逻辑可能会在服务器执行、本地客户端执行、其他客户端执行
+
+例如一个在服务器创建的，具有网络复制属性的 `Pawn`，其 `BeginPlayEvent` 会在各个服务器和客户端中执行
+
+有的时候，需要区分不同地方执行不同的逻辑，一方面可以通过前面的 `ENetRole` 枚举来判断，也可以使用 `IsServer` 和 `IsLocallyControlled` 函数来判断
+
+更常见方法是 `IsServer` 和 `IsLocallyControlled` 函数来做判断
+
+因为 `ENetRole` 在 `AActor` 创建之初并未正确指定， 在构造函数中或者 `BeginPlayEvent` 中可能获取错误的值
+
+除了上述两种方式之外，还有一个 `World->GetNetMode()` 
+
+```cpp
+enum ENetMode
+{
+    NM_Standalone,			// 纯单机运行模式
+    NM_DedicatedServer,		// 专用服务器，无本地玩家参与游戏
+    NM_ListenServer,		// 监听服务器（玩家主机），同时具有服务器和客户端身份
+    NM_Client,				// 纯客户端，连接到远程服务器
+    NM_MAX,
+};
+```
+
+日常开发首选 `GetNetMode`，更加安全可靠，无需空指针检查
+
+使用 `IsServer` 之前，需要判断 `GetNewDriver` 是否为空
