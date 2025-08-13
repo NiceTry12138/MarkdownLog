@@ -392,4 +392,40 @@ const int32 PacketSequenceDelta = PacketNotify.GetSequenceDelta(Header);
 
 再比如之前收到的 Packet 的序号是 100，当前 Packet 的序号是 100，那么出现了**乱序**（重复或者旧包）
 
+-------------------
 
+针对 **丢包** 的情况
+
+如果 `PacketSequenceDelta` 值大于 1，表示存在丢包的情况
+
+比如 100 和 102 的差值大于 1，表示序号为 101 的 Packet 没有收到。可能 101 很快就能收到，所以先把 102 存在 PacketOrderCache 这个循环缓冲区中
+
+如果 `PacketSequenceDelta` 值等于 1，表示当前 Packet 就是我们需要的，此时顺便检查一下缓冲区，看缓冲区中有没有连续的 Packet。比如 先收到了 102，后收到了 101，那么在处理 101 的时候顺便也把循环缓冲区中的 102 取出来处理了
+
+如果 `PacketSequenceDelta` 值特别大（`MaxMissingPackets`），表示中间丢的包太多了，这个包直接就不要了，后面走重传算了
+
+```cpp
+if (PacketSequenceDelta > 0)
+{
+    const int32 MissingPacketCount = PacketSequenceDelta - 1;
+
+    // MissingPacketCount 小于 MaxMissingPackets 时
+    {
+        TUniquePtr<FBitReader>& CurCachePacket = PacketOrderCache.GetValue()[CircularCacheIdx];
+        CurCachePacket = MakeUnique<FBitReader>(Reader);
+        ResetReaderMark.Pop(*CurCachePacket);
+    }
+    // MissingPacketCount 大于 10 时
+    {
+        UE_LOG(LogNetTraffic, Verbose, TEXT("High single frame packet loss. PacketsLost: %i %s" ), MissingPacketCount, *Describe());
+    }
+}
+```
+
+> 在 `ReceivedPacket` 函数之后紧跟着就执行了 `FlushPacketOrderCache` 来处理循环缓冲区中的数据
+
+针对 **乱序** 的情况
+
+直接丢包即可，并且看情况创建环形缓冲
+
+![](Image/009.jpg)
