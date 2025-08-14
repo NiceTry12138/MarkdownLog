@@ -367,6 +367,70 @@ int main()
 
 > Base实例被放在整个对象末尾，通过指针偏移访问
 
+如果此时再加上一个虚函数呢？
+
+这种情况下，虚函数表的指针就不一定在对象的首地址了
+
+```cpp
+#include <iostream>
+
+class Base {
+    public:
+        virtual void foo() { std::cout << "hello" << std::endl; }
+    public:
+		int x = 1;
+};
+class A : public virtual Base {
+    public:
+		int XX = 2;
+};
+class B : public virtual Base {
+    public:
+		int YY = 3;
+};
+class C : public A, public B {
+    public:
+		int ZZ = 4;
+};
+
+typedef void(*fun)(C* a);
+
+int main() {
+    std::cout << "sizeof(Base) " << sizeof(Base) << std::endl;
+    std::cout << "sizeof(A) " << sizeof(A) << std::endl;
+    std::cout << "sizeof(B) " << sizeof(B) << std::endl;
+    std::cout << "sizeof(C) " << sizeof(C) << std::endl;
+
+    std::cout << "offsetof ZZ " << offsetof(C, ZZ) << std::endl;
+
+    C* c = new C();
+    
+    for(int i = 0; i < sizeof(C); i += 4)
+    {
+        std::cout << "i = " << i << " value = " << *(int*)((char*)c + i) << std::endl;
+    }
+    /*
+    | 虚基类指针（8字节） | XX（4字节） | 占位（4字节） |
+    | 虚基类指针（8字节） | YY（4字节） | ZZ  （4字节） |
+    | 虚函数指针（8字节） | x （4字节） | 占位（4字节） |
+    */
+    
+    fun f0 = (fun)(*(long*)*(long*)c);
+    fun f1 = (fun)(*(long*)*(long*)(((char*)c + 16)));
+    fun f2 = (fun)(*(long*)*(long*)(((char*)c + 32)));
+    // f0(c);
+    // f1(c);
+    f2(c);
+    
+    std::cout << "XX = " << *(int*)((char*)c + sizeof(void*)) << std::endl;
+    std::cout << "YY = " << *(int*)((char*)c + sizeof(void*) * 2 + sizeof(int) * 2) << std::endl;
+    std::cout << "x = " << *(int*)((char*)c + sizeof(void*) * 3 + sizeof(int) * 4) << std::endl;
+    std::cout << "ZZ = " << *(int*)((char*)c + sizeof(void*) * 2 + sizeof(int) * 3) << std::endl;
+
+    return 0;
+}
+```
+
 ### 空类的内存模型
 
 ```cpp
