@@ -71,4 +71,73 @@ void UAbilitySystemComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProper
 
 引擎通过引入 `ReplicationGraph` 和 `NetDormancy` 减少了 收集 Actor 阶段处理的 Actor 数量；通过 `PushModel` 减少了属性对比的执行次数
 
+### 收集 Actor
+
+在当前 `UWorld::SpawnActor` 的时候，会调用在最后调用 `UWorld::AddNetworkActor` 函数就该 `Actor` 通知给 `UNetDriver` 
+
+```cpp
+ForEachNetDriver(GEngine, this, [Actor](UNetDriver* const Driver)
+{
+	if (Driver != nullptr)
+	{
+		Driver->AddNetworkActor(Actor);
+	}
+});
+```
+
+最后所有的 Actor 都会存储在 `UNetDriver` 的 `NetworkObjects` 容器中
+
+```cpp
+GetNetworkObjectList().FindOrAdd(Actor, this);
+if (ReplicationDriver)
+{
+	ReplicationDriver->AddNetworkActor(Actor);
+}
+```
+
+> `ReplicationDriver` 需要开启 Iris 才能使用，否则为 nullptr
+
+> https://dev.epicgames.com/documentation/zh-cn/unreal-engine/iris-replication-system-in-unreal-engine
+
+
+### 开始处理复制
+
+#### 过滤/更新 ActorInfo
+
+在 `UNetDriver::TickFlush` 时会调用 `ServerReplicateActors` 开启属性复制流程
+
+首先通过 `ServerReplicateActors_BuildConsiderList` 对 `GetNetworkObjectList` 中缓存的 Actor 进行过滤，剔除无效或者不用复制的 Actor
+
+1. 过滤 不强制更新 并且 ActorInfo->NextUpdateTime 时间未到到的 ActorInfo
+2. 过滤 PendingKill 的 Actor，会从 NetworkObjects 容器中删除
+3. 过滤 RemoteRole 为 ROLE_None 的 Actor，会从 NetworkObjects 容器中删除
+4. 过滤与当前运行的 NetDriver 不一直的 Actor
+5. 过滤还没有 Initialize 的 Actor
+6. 过滤 Actor 所属的 Level 正处于 In 或者 Out 的 Actor
+7. 过滤没有被唤醒的 Actor
+
+每个 `Actor` 都被封装在 `FNetworkObjectInfo` 结构体中，除了 `Actor` 之外还有一些其他信息
+
+| FNetworkObjectInfo 属性 | 作用 |
+| --- | --- |
+| Actor，WeakActor | 对 Actor 的强引用和软引用 |
+| NextUpdateTime | 下一次更新时间 |
+| LastNetReplicateTime | 上一次复制时间 |
+| OptimalNetUpdateDelta | 期望的复制间隔 |
+| LastNetUpdateTimestamp | 上一次基于 NextUpdateTime 进入 要考虑复制 状态时的内部时间戳 |
+
+通过前面过滤，得到有效的 Actor 之后，对 Actor 所属的 ActorInfo 进行数据处理
+
+1. 通过 `LastNetReplicateTime` 计算更新频率，更新后短期内保持高频更新，长期不更新则降低频率
+2. 计算 `ActorInfo->NextUpdateTime` 下一次更新时间
+3. 通知 `Actor->CallPreReplication` 要开始复制了
+
+#### 处理 NetConnection 
+
+核心处理函数是
+
+1. 优先级排序，ServerReplicateActors_PrioritizeActors
+2. 同步处理，ServerReplicateActors_ProcessPrioritizedActorsRange
+3. 标记相关Actor，ServerReplicateActors_MarkRelevantActors
+
 
