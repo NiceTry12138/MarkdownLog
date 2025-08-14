@@ -349,21 +349,108 @@ public:
 
 int main()
 {
-		auto t = new C();
-		t->x = 10;
-		t->XX = 11;
-		t->YY = 12;
-		t->ZZ =13;
-		std::cout << (*(int*)((void *)t + 8)) << std::endl;           // 11
-		std::cout << (*(int*)((void *)t + 16 + 8)) << std::endl;      // 12
-		std::cout << (*(int*)((void *)t + 16 + 8 + 4)) << std::endl;  // 13
-		std::cout << (*(int*)((void *)t + 16 + 16)) << std::endl;     // 10
-		std::cout << sizeof(C) << std::endl;                          // 40
-		return 0;
+    std::cout << "sizeof(Base) " << sizeof(Base) << std::endl;
+    std::cout << "sizeof(A) " << sizeof(A) << std::endl;
+    std::cout << "sizeof(B) " << sizeof(B) << std::endl;
+    std::cout << "sizeof(C) " << sizeof(C) << std::endl;
+
+    std::cout << "offsetof ZZ " << offsetof(C, ZZ) << std::endl;
+
+    C* c = new C();
+    
+    std::cout << "XX = " << *(int*)((char*)c + sizeof(void*)) << std::endl;
+    std::cout << "YY = " << *(int*)((char*)c + sizeof(A) + sizeof(void*)) << std::endl;
+    std::cout << "x = "  << *(int*)((char*)c + sizeof(A) + sizeof(B)) << std::endl;
+    std::cout << "ZZ = " << *(int*)((char*)c + sizeof(A) + sizeof(void*) + sizeof(int)) << std::endl;
 }
 ```
 
 > Base实例被放在整个对象末尾，通过指针偏移访问
+
+如果此时再加上一个虚函数呢？
+
+这种情况下，虚函数表的指针就不一定在对象的首地址了
+
+```cpp
+#include <iostream>
+
+class Base {
+    public:
+        virtual void foo() { std::cout << "hello" << std::endl; }
+    public:
+		int x = 1;
+};
+class A : public virtual Base {
+    public:
+		int XX = 2;
+};
+class B : public virtual Base {
+    public:
+		int YY = 3;
+};
+class C : public A, public B {
+    public:
+		int ZZ = 4;
+};
+
+typedef void(*fun)(C* a);
+
+int main() {
+    std::cout << "sizeof(Base) " << sizeof(Base) << std::endl;
+    std::cout << "sizeof(A) " << sizeof(A) << std::endl;
+    std::cout << "sizeof(B) " << sizeof(B) << std::endl;
+    std::cout << "sizeof(C) " << sizeof(C) << std::endl;
+
+    std::cout << "offsetof ZZ " << offsetof(C, ZZ) << std::endl;
+
+    C* c = new C();
+    
+    for(int i = 0; i < sizeof(C); i += 4)
+    {
+        std::cout << "i = " << i << " value = " << *(int*)((char*)c + i) << std::endl;
+    }
+    /*
+    | 虚基类指针（8字节） | XX（4字节） | 占位（4字节） |
+    | 虚基类指针（8字节） | YY（4字节） | ZZ  （4字节） |
+    | 虚函数指针（8字节） | x （4字节） | 占位（4字节） |
+    */
+    
+    fun f0 = (fun)(*(long*)*(long*)c);
+    fun f1 = (fun)(*(long*)*(long*)(((char*)c + 16)));
+    fun f2 = (fun)(*(long*)*(long*)(((char*)c + 32)));
+    // f0(c);
+    // f1(c);
+    f2(c);
+    
+    std::cout << "XX = " << *(int*)((char*)c + sizeof(void*)) << std::endl;
+    std::cout << "YY = " << *(int*)((char*)c + sizeof(void*) * 2 + sizeof(int) * 2) << std::endl;
+    std::cout << "x = " << *(int*)((char*)c + sizeof(void*) * 3 + sizeof(int) * 4) << std::endl;
+    std::cout << "ZZ = " << *(int*)((char*)c + sizeof(void*) * 2 + sizeof(int) * 3) << std::endl;
+
+    return 0;
+}
+```
+
+优化一下虚函数执行的写法，使用 `std::uintptr_t` 来表示指针大小，使用 `vtable[0]` 这种数组方式来更加安全的读取函数指针
+
+```cpp
+// 读 vptr（对象开头的第一个指针）
+std::uintptr_t vptr = *reinterpret_cast<std::uintptr_t*>(b);
+
+// 把 vptr 当作指向“函数地址数组”的指针
+auto vtable = reinterpret_cast<std::uintptr_t const*>(vptr);
+
+// 取前三个虚函数地址并调用
+Fn f0 = reinterpret_cast<Fn>(vtable[0]); // A::fun
+Fn f1 = reinterpret_cast<Fn>(vtable[1]); // B::fun1 (override)
+Fn f2 = reinterpret_cast<Fn>(vtable[2]); // B::fun2
+
+f0(b);
+f1(b);
+f2(b);
+
+delete b;
+```
 
 ### 空类的内存模型
 
