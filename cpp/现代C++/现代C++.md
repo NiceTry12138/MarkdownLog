@@ -349,17 +349,19 @@ public:
 
 int main()
 {
-		auto t = new C();
-		t->x = 10;
-		t->XX = 11;
-		t->YY = 12;
-		t->ZZ =13;
-		std::cout << (*(int*)((void *)t + 8)) << std::endl;           // 11
-		std::cout << (*(int*)((void *)t + 16 + 8)) << std::endl;      // 12
-		std::cout << (*(int*)((void *)t + 16 + 8 + 4)) << std::endl;  // 13
-		std::cout << (*(int*)((void *)t + 16 + 16)) << std::endl;     // 10
-		std::cout << sizeof(C) << std::endl;                          // 40
-		return 0;
+    std::cout << "sizeof(Base) " << sizeof(Base) << std::endl;
+    std::cout << "sizeof(A) " << sizeof(A) << std::endl;
+    std::cout << "sizeof(B) " << sizeof(B) << std::endl;
+    std::cout << "sizeof(C) " << sizeof(C) << std::endl;
+
+    std::cout << "offsetof ZZ " << offsetof(C, ZZ) << std::endl;
+
+    C* c = new C();
+    
+    std::cout << "XX = " << *(int*)((char*)c + sizeof(void*)) << std::endl;
+    std::cout << "YY = " << *(int*)((char*)c + sizeof(A) + sizeof(void*)) << std::endl;
+    std::cout << "x = "  << *(int*)((char*)c + sizeof(A) + sizeof(B)) << std::endl;
+    std::cout << "ZZ = " << *(int*)((char*)c + sizeof(A) + sizeof(void*) + sizeof(int)) << std::endl;
 }
 ```
 
