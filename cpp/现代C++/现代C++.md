@@ -431,6 +431,27 @@ int main() {
 }
 ```
 
+优化一下虚函数执行的写法，使用 `std::uintptr_t` 来表示指针大小，使用 `vtable[0]` 这种数组方式来更加安全的读取函数指针
+
+```cpp
+// 读 vptr（对象开头的第一个指针）
+std::uintptr_t vptr = *reinterpret_cast<std::uintptr_t*>(b);
+
+// 把 vptr 当作指向“函数地址数组”的指针
+auto vtable = reinterpret_cast<std::uintptr_t const*>(vptr);
+
+// 取前三个虚函数地址并调用
+Fn f0 = reinterpret_cast<Fn>(vtable[0]); // A::fun
+Fn f1 = reinterpret_cast<Fn>(vtable[1]); // B::fun1 (override)
+Fn f2 = reinterpret_cast<Fn>(vtable[2]); // B::fun2
+
+f0(b);
+f1(b);
+f2(b);
+
+delete b;
+```
+
 ### 空类的内存模型
 
 ```cpp
