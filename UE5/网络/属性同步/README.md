@@ -333,4 +333,14 @@ PriorityActors[k]->ActorInfo->bPendingNetUpdate = true;
 
 属性复制的核心逻辑就在 `Channel->ReplicateActor()` 中
 
+核心做的事情就是：收集并序列化这个 Actor 及其子对象需要复制的属性、RPC 等，组装成一个或多个 FOutBunch，调用 SendBunch 入队，最终由连接发送到远端
 
+![](Image/007.png)
+
+其中序列化属性中的属性又分成三类: Actor自身属性 + ActorComponent 属性 + SubObject 属性
+
+每类属性的序列化都会调用同一个函数:  FObjectReplicator::ReplicateProperties
+
+![](Image/008.png)
+
+![](Image/009.png)
