@@ -62,7 +62,7 @@ void UAbilitySystemComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProper
 
 针对 `SpawnedAttributes`，当从服务器同步属性之后，会触发 `ReplicatedUsing` 配置的 `OnRep_SpawnedAttributes` 函数
 
-## 同步流程
+## NetDriver 同步流程
 
 1. 收集所有的 Actor
 2. 属性对比，对比哪些属性发生了变化
@@ -102,6 +102,8 @@ if (ReplicationDriver)
 
 ### 开始处理复制
 
+![](Image/005.jpg)
+
 #### 过滤/更新 ActorInfo
 
 在 `UNetDriver::TickFlush` 时会调用 `ServerReplicateActors` 开启属性复制流程
@@ -139,5 +141,196 @@ if (ReplicationDriver)
 1. 优先级排序，ServerReplicateActors_PrioritizeActors
 2. 同步处理，ServerReplicateActors_ProcessPrioritizedActorsRange
 3. 标记相关Actor，ServerReplicateActors_MarkRelevantActors
+
+不过对 `NetConnection` 进行处理需要满足条件
+
+1. `if (i >= NumClientsToTick)`
+2. `if (Connection->ViewTarge)`
+
+由于 `NetDriver` 中包含多个 `NetConnection`，i 就是遍历 `NetConnection` 的序号，`NumClientsToTick` 表示本次 `Tick` 更新多少个 `NetConnection`，这是为了解决服务器性能不足时跳过部分客户端
+
+由于决定哪些 Actor 需要被赋值时，需要 `ViewTarget`，所以会要求 `ViewTarget` 有效
+
+通过 `UNetConnection` 来构建 `FNetViewer`，计算得到 视图源点的世界坐标位置 和 视图方向的单位向量
+
+```cpp
+FNetViewer::FNetViewer(UNetConnection* InConnection, float DeltaSeconds) :
+	Connection(InConnection),
+	InViewer(InConnection->PlayerController ? InConnection->PlayerController : InConnection->OwningActor),
+	ViewTarget(InConnection->ViewTarget),
+{
+	APlayerController* ViewingController = InConnection->PlayerController;
+
+	// Get viewer coordinates.
+	ViewLocation = ViewTarget->GetActorLocation();
+	if (ViewingController)
+	{
+		FRotator ViewRotation = ViewingController->GetControlRotation();
+		ViewingController->GetPlayerViewPoint(ViewLocation, ViewRotation);
+		ViewDir = ViewRotation.Vector();
+	}
+}
+```
+
+| FNetViewer 属性 | 作用 |
+| --- | --- |
+| Connection | 当前视图关联的网络连接对象 |
+| InViewer | 控制网络视图的 Actor（通常是 PlayerController） |
+| ViewTarget | 实际用于观察的对象 Actor，比如 PlayerCharacter |
+| ViewLocation | 视图源点的世界坐标位置 |
+| ViewDir | 视图方向的单位向量 |
+
+通过 `NetConnection` 和其 `ChildConnection` 得到 `TArray<FNetViewer>`
+
+```cpp
+const bool bProcessConsiderListIsBound = OnProcessConsiderListOverride.IsBound();
+
+if (bProcessConsiderListIsBound)
+{
+	// 通过事件，转发给 DisplayClusterReplication 进行处理
+	OnProcessConsiderListOverride.Execute( { DeltaSeconds, Connection, bCPUSaturated }, Updated, ConsiderList );
+}
+
+if (!bProcessConsiderListIsBound)
+{
+	// 执行常规复制流程 
+	// ServerReplicateActors_PrioritizeActors
+	// ServerReplicateActors_ProcessPrioritizedActorsRange
+	// ServerReplicateActors_MarkRelevantActors
+}
+```
+
+通过前面一系列操作，已经收集到这些信息
+
+- `TArray<FNetworkObjectInfo*> ConsiderList` 存储着本帧需要被处理的对象
+- `TArray<FNetViewer>& ConnectionViewers` 存储着本 `NetConnection` 关联的视角信息
+
+##### ServerReplicateActors_PrioritizeActors
+
+主要是对 `ConsiderList` 和 `DestroyedStartupOrDormantActors` 进行处理
+
+`DestroyedStartupOrDormantActors` 主要是用于记录和管理 启动状态下被销毁 和 休眠状态下被销毁的 Actor 
+
+针对 `ConsiderList`
+
+通过 `AActor::IsNetRelevantFor` 筛选出与当前 `NetConnection` 相关的 `Actor`
+
+- `bAlwaysRelevant` 强制相关开关
+- 该 `Actor` 的 `Owner` 或者 `Instigator` 是 `ViewTarget` 或者 `InViewer`
+- 该 `Actor` 的 `Owner` 的 `IsNetRelevantFor` 返回值，向 `Owner` 递归
+- 该 `Actor` 的 `RootComponent` 的 `AttachParetn` 的 `Owner` 的 `IsNetRelevantFor` 
+- 距离判断，`Actor` 与 `ViewTarget` 距离不嫩超过 `NetCullDistanceSquared` 
+
+如果全局变量设置为允许休眠 也就是 `GSetNetDormancyEnabled`，需要判断 `Actor` 能否休眠 
+
+```cpp
+/** 如果需要休眠 返回 true */
+ENGINE_API virtual bool GetNetDormancy(const FVector& ViewPos, const FVector& ViewDir, class AActor* Viewer, AActor* ViewTarget, UActorChannel* InChannel, float Time, bool bLowBandwidth);
+```
+
+> 需要子类重写该函数， `Actor` 默认函数返回 `false`
+
+将符合条件的 `Actor` 封装到 `FActorPriority` 中
+
+```cpp
+OutPriorityList[FinalSortedCount] = FActorPriority( PriorityConnection, Channel, ActorInfo, ConnectionViewers, bLowNetBandwidth );
+```
+
+最后对 `OutPriorityList` 进行根据 `Priority` 属性大小，从大到小进行排序
+
+```cpp
+Algo::SortBy(MakeArrayView(OutPriorityActors, FinalSortedCount), &FActorPriority::Priority, TGreater<>());
+```
+
+`FActorPriority` 在构造的时候会计算 `Priority` 也就是优先级
+
+```cpp
+Priority = 0;
+const float Time = Channel ? (InConnection->Driver->GetElapsedTime() - Channel->LastUpdateTime) : InConnection->Driver->SpawnPrioritySeconds;
+for (int32 i = 0; i < Viewers.Num(); i++)
+{
+	Priority = FMath::Max<int32>(Priority, FMath::RoundToInt(65536.0f * ActorInfo->Actor->GetNetPriority(Viewers[i].ViewLocation, Viewers[i].ViewDir, Viewers[i].InViewer, Viewers[i].ViewTarget, InChannel, Time, bLowBandwidth)));
+}
+```
+
+如果是新的 `Actor` 它没有 `Channel`，则使用 `SpawnPrioritySeconds` 配置进行赋值；否则使用当前时间减去上次更新时间的差值
+
+然后调用 `AActor::GetNetPriority` 进行优先级计算
+
+1. 自己就是 ViewTarget 则 Time * 4
+2. 如果在 ViewTarget 后方，距离 ViewTarget 超过远距离 则 Time * 0.2；超过近距离 则 Time * 0.4
+3. 如果在 ViewTarget 前方，距离 ViewTarget 不超过一定数值，且与角色夹角小于一定数值，则 Time * 2
+4. 如果在 ViewTarget 前方，距离 VieTarget 超过一定数值，则 Time * 0.4
+5. 其他情况 Time 不变
+
+最后将 `Time * AActor::NetPriority` 得到该 `Actor` 真正的优先级
+
+可见，一个 `Actor` 的复制优先级，是根据 `Actor` 在 `ViewTarget` 的 **视角** 和 **距离** 进行评判
+
+如果想要手动设置 `Actor` 的优先级，可以直接其 `NetPriority` 属性的大小
+
+> `NetPriority` 是 `BlueprintReadWrite` 的
+
+##### ServerReplicateActors_ProcessPrioritizedActorsRange
+
+按 **优先级顺序** 对一段 `Actors` 子集进行复制
+
+- 传入 ActorsIndexRange 表示数组子区间
+- 传入 bIgnoreSaturation 表示忽略带宽饱和，默认 false
+- 输出 OutUpdated 计数
+
+```cpp
+FNetworkObjectInfo*	ActorInfo = PriorityActors[j]->ActorInfo;
+```
+
+PriorityActors 中包含需要被删除的 Actor
+
+在处理一个 FNetworkObjectInfo 时，先判断其是否是要被销毁的 Actor 判断条件就是 `ActorInfo == NULL && PriorityActors[j]->DestructionInfo`
+
+```cpp
+// 发送销毁信息
+SendDestructionInfo(Connection, PriorityActors[j]->DestructionInfo);
+```
+
+其他情况表示需要同步 Actor
+
+如果 Actor 没有对应的 Channel 则创建对应的 Channel 并绑定 Actor
+
+```cpp
+Channel = (UActorChannel*)Connection->CreateChannelByName( NAME_Actor, EChannelCreateFlags::OpenedLocally );
+if ( Channel )
+{
+	Channel->SetChannelActor(Actor, ESetChannelActorFlags::None);
+}
+```
+
+设置本次复制的一些信息：`OptimalNetUpdateDelta` 、`LastNetReplicateTime` 、`RelevantTime` 用于以后的一些条件判断
+
+在检查通道带宽之后，开始 **进行复制**
+
+```cpp
+// 检查 通道是否饱和
+if ( Channel->IsNetReady( 0 ) || bIgnoreSaturation)
+{
+	// do something
+	if(Channel->ReplicateActor())	// 真正复制 Actor 数据 并 发送数据
+	{
+		// do something
+	}
+	// do somehting
+}
+```
+
+##### ServerReplicateActors_MarkRelevantActors
+
+网络带宽不足时，智能标记那些需要在下帧优先处理的 Actor
+
+```cpp
+PriorityActors[k]->ActorInfo->bPendingNetUpdate = true;
+```
+
+## ReplicateActor
+
+属性复制的核心逻辑就在 `Channel->ReplicateActor()` 中
 
 
