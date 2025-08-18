@@ -384,4 +384,51 @@ public:
 
 在不使用 `bCopyTransientsFromClassDefaults` 的情况下，只有 `UPROPERTY` 中配置了 `config` 的属性，才会在初始化的时候从 CDO 拷贝属性值，其他属性不会从 CDO 中拷贝属性值
 
+## FField 和 FProperty
+
+```cpp
+class FField
+{
+	UE_NONCOPYABLE(FField);
+	FFieldClass* ClassPrivate;  // 指向该字段的类型描述符
+
+public:
+	FFieldVariant Owner;    // 标识字段的所有者
+	FField* Next;           // 单链表指针，连接同属一个作用域的字段
+	FName NamePrivate;      // 字段的名称标识符
+	EObjectFlags FlagsPrivate;  // 字段的行为标志位
+}
+```
+
+- FField 运行时
+
+![](Image/004.png) 
+
+- FFieldClass 运行时
+
+![](Image/005.png) 
+
+```cpp
+class FProperty : public FField
+{
+	DECLARE_FIELD_API(FProperty, FField, CASTCLASS_FProperty, COREUOBJECT_API)
+
+	int32			ArrayDim;       // 定义属性数组维度，比如 int32 Value[10] 那么 ArrayDim 值为 10
+	int32			ElementSize;    // 单个元素的字节大小
+	EPropertyFlags	PropertyFlags;  // 属性的核心行为特征
+	uint16			RepIndex;       // 网络复制时的唯一标识符
+	TEnumAsByte<ELifetimeCondition> BlueprintReplicationCondition;  // 蓝图属性的网络复制条件
+	int32		Offset_Internal;        // 属性在所属对象内存块中的偏移量
+	FProperty*	PropertyLinkNext;       // 按声明顺序链接属性（从派生类到基类）
+	FProperty*  NextRef;                // 链接所有含 UObject 引用的属性
+	FProperty*	DestructorLinkNext;     // 链接需要显式析构的非平凡类型
+	FProperty*	PostConstructLinkNext;  // 链接需要后置构造处理的属性
+	FName		RepNotifyFunc;          // 存储复制通知函数名称
+}
+```
+
+![](Image/006.png)
+
+![](Image/007.png)
+
 

@@ -344,3 +344,175 @@ PriorityActors[k]->ActorInfo->bPendingNetUpdate = true;
 ![](Image/008.png)
 
 ![](Image/009.png)
+
+## FObjectReplicator
+
+每一个同步的 UObject，都对应着一个 FObjectReplicator 对象，这个对象负责了属性的对比，同步属性的提取，RepState的维护，丢包的处理，属性同步可靠的处理等等
+
+在创建 `UActorChannel` 并通过 `SetChannelActor` 设置 `Actor` 的时候，就会初始化 `ActorReplicator` 对象
+
+### FRepLayout
+
+`FRepLayout` 对象，该对象存储了对象中所有需要网络复制的属性（标记为CPF_Net）的布局信息，包括属性类型、内存偏移、复制条件等
+
+通过 `FRepLayout::CreateFromClass` 创建 `FRepLayout`，并通过 `FRepLayout::InitFromClass` 初始化 `FRepLayout`
+
+在 `FObjectReplicator` 中就包含着 `FRepLayout` 的成员属性
+
+通过 `InObjectClass->SetUpRuntimeReplicationData()` 初始化 `UClass` 中所有网络相关的属性，并保存在 `UClass::ClassReps` 数组中
+
+通过遍历 `UClass::ClassReps` 数组，初始化 `FRepLayout::Parents` 数组
+
+随后调用 CDO 的 `GetLifetimeReplicatedProps` 函数构建 `LifetimeProps` 数组
+
+```cpp
+TArray<FLifetimeProperty> LifetimeProps;
+LifetimeProps.Reserve(Parents.Num());
+
+UObject* Object = InObjectClass->GetDefaultObject();
+
+Object->GetLifetimeReplicatedProps(LifetimeProps);
+```
+
+`GetLifetimeReplicatedProps` 需要子类重写，该函数主要用于定义需要复制的属性、复制属性的条件等
+
+最后通过遍历 `LifetimeProps` 数组，将手动设置的属性的 `Condition` 复制到 `Parents` 数组中
+
+```cpp
+Parents[ParentIndex].Condition = LifetimeProps[i].Condition;
+Parents[ParentIndex].RepNotifyCondition = LifetimeProps[i].RepNotifyCondition;
+```
+
+> 通过这段代码，可以知道 `GetLifetimeReplicatedProps` 是在构建 `FRepLayout` 时执行的
+
+由于每个类型的 UClass 是固定的，所以每个 UClass 只需要创建一个对应的 FRepLayout 即可
+
+```cpp
+TSharedPtr<FRepLayout>* RepLayoutPtr = RepLayoutMap.Find(Class);
+```
+
+> `RepLayoutMap` 是 `UNetDriver` 的属性，全局唯一
+
+### InitWithObject
+
+`FObjectReplicator::InitWithObject` 初始化 `FObjectReplicator`
+
+```cpp
+ObjectClass = InObject->GetClass();
+Connection = InConnection;
+RemoteFunctions = nullptr;
+RepLayout = Connection->Driver->GetObjectClassRepLayout(ObjectClass);
+// 其他属性初始化
+
+// 缓存当前属性状态，为后面比较数值是否变化
+InitRecentProperties(Source);
+```
+
+### ReplicateProperties_r
+
+1. 更新 `ChangelistMgr` 
+
+```cpp
+const ERepLayoutResult UpdateResult = FNetSerializeCB::UpdateChangelistMgr(*RepLayout, SendingRepState, *ChangelistMgr, Object, Connection->Driver->ReplicationFrame, RepFlags, OwningChannel->bForceCompareProperties || bUseCheckpointRepState);
+```
+
+2. 属性对比 并写入 `Writer`
+
+```cpp
+const bool bHasRepLayout = RepLayout->ReplicateProperties(SendingRepState, ChangelistMgr->GetRepChangelistState(), (uint8*)Object, ObjectClass, OwningChannel, Writer, RepFlags);
+```
+
+3. 写入自定义数据数据到 `Writer` 中
+
+```cpp
+ReplicateCustomDeltaProperties(Writer, RepFlags, bSkippedPropertyCondition);
+```
+
+4. 写入 Unreliable 的 RPC 数据
+
+```cpp
+Writer.SerializeBits( RemoteFunctions->GetData(), RemoteFunctions->GetNumBits() );
+```
+
+5. 写入 Bunch
+
+```cpp
+OwningChannel->WriteContentBlockPayload( Object, Bunch, bHasRepLayout, Writer );
+```
+
+## 客户端接收
+
+在 `UActorChannel::ReceivedBunch` 中判断 `Bunch` 当前能否处理
+
+在 `UActorChannel::ReceivedBunch` 中真正处理 `Bunch`
+
+```cpp
+// Bunch 没有到末尾 Connection 有效且没有被关闭
+while ( !Bunch.AtEnd() && Connection != NULL && Connection->GetConnectionState() != USOCK_Closed )
+{
+	// 有效性判断
+	
+	// 处理 Bunch
+	if ( !Replicator->ReceivedBunch( Reader, RepFlags, bHasRepLayout, bHasUnmapped ) )
+	{
+		// 是否跳过
+	}
+}
+
+// 通知 Actor 初次网络同步完成，只有第一次调用
+if (Actor && bSpawnedNewActor)
+{
+	SCOPE_CYCLE_COUNTER(Stat_PostNetInit);
+	Actor->PostNetInit();
+}
+```
+
+通过 `FObjectReplicator::ReceivedBunch` 来处理 `Bunch` 中的数据
+
+从 `Bunch` 中得到
+
+- `FieldCache` 元数据
+- `Reader` 字段数据
+
+```cpp
+// 处理 非自定义增量的属性/结构体 
+if (!LocalRepLayout.ReceiveProperties(OwningChannel, ObjectClass, RepState->GetReceivingRepState(), Object, Bunch, bLocalHasUnmapped, bGuidsChanged, ReceivePropFlags))
+{
+	UE_LOG(LogRep, Error, TEXT( "RepLayout->ReceiveProperties FAILED: %s" ), *Object->GetFullName());
+	return false;
+}
+
+// 读取 Bunch 中的数据
+if (!OwningChannel->ReadFieldHeaderAndPayload(Object, ClassCache, NetFieldExportGroup, Bunch, &FieldCache, Reader))
+{
+	break;
+}
+
+// Handle property
+if (FStructProperty* ReplicatedProp = CastField<FStructProperty>(FieldCache->Field.ToField()))
+{
+	// 处理自定义结构体的属性复制
+}
+// Handle function call
+else if ( Cast< UFunction >( FieldCache->Field.ToUObject() ) )
+{
+	// 处理 Unreliable 的 RPC 调用
+}
+```
+
+当处理完毕之后，统一触发属性修改的回调函数
+
+```cpp
+FObjectReplicator::PostReceivedBunch()
+```
+
+在 `RepState` 中存储着需要被 Notify 的属性，遍历触发即可
+
+```cpp
+for (FProperty* RepProperty : RepState->RepNotifies)
+{
+	// ... do something
+	UFunction* RepNotifyFunc = Object->FindFunction(RepProperty->RepNotifyFunc);
+	Object->ProcessEvent(RepNotifyFunc, nullptr);
+}
+```
