@@ -259,12 +259,21 @@ class FInBunch*		InPartialBunch;		// 部分接收的数据块
 class FInBunch : public FNetBitReader
 {
 public:
-	int32				PacketId;	//         
-	FInBunch *			Next;       // 
-	UNetConnection *	Connection; //     
-	int32				ChIndex;    //     
-	FName				ChName;     // 
-	int32				ChSequence; //
+   int32           PacketId;  // Note this must stay as first member variable in FInBunch for FInBunch(FInBunch, bool) to work  
+   FInBunch *       Next;  
+   UNetConnection *   Connection;   // 属于哪个 Connection
+   int32           ChIndex;         // channel 的下标
+   int32           ChType;          // channel 的类型
+   FName           ChName;          // channel 的名称
+   int32           ChSequence;      // Channel 的 Seqid
+   uint8           bOpen:1;         // 是否是 Channel 的首包
+   uint8           bClose:1;        // 是否是 Channel 的结束包
+   uint8           bDormant:1;      // 是否处于休眠
+   uint8           bIsReplicationPaused:1;       // 复制同步是否被暂停了
+   uint8           bReliable:1;             // 是否为可靠的 Bunch
+   uint8           bPartial:1;              // 该 Bunch 是否被拆分
+   uint8           bPartialInitial:1;       // 是不是分片传输中的第一个 Bunch
+   uint8           bPartialFinal:1;         // 是不是分片传输中的最后一个 Bunch
     
     // 其他 属性 函数
 };
@@ -272,14 +281,14 @@ public:
 class FOutBunch : public FNetBitWriter
 {
 public:
-	FOutBunch *				Next;       // 
-	UChannel *				Channel;    // 所属网络通道的指针
-	double					Time;       // 数据块创建的时间戳
-	int32					ChIndex;    // 通道在连接中的唯一索引
-	FName					ChName;     // 通道类型名称标识符
-	int32					ChSequence; // 通道内数据块的序列号
-	int32					PacketId;   // 数据包在网络连接中的全局ID
-    
+	FOutBunch *		Next;       // 
+	UChannel *		Channel;    // 所属网络通道的指针
+	double			Time;       // 数据块创建的时间戳
+	int32			ChIndex;    // 通道在连接中的唯一索引
+	FName			ChName;     // 通道类型名称标识符
+	int32			ChSequence; // 通道内数据块的序列号
+	int32			PacketId;   // 数据包在网络连接中的全局ID
+    uint8           ReceivedAck:1;  // 标记这个数据包是否已经被确认，以避免重复发送
     // 其他 属性 函数
 }
 ```
