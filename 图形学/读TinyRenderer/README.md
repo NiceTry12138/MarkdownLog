@@ -68,51 +68,74 @@ vec3 barycentric(const vec2 tri[3], const vec2 P) {
 在坐标点通过 MVP 矩阵变化到屏幕空间中，会将 P 点的 UV 坐标设置为 `(1/2, 1/2)`，最终导致显示问题
 
 可以通过 **顶点的世界坐标** 和 **目标点的屏幕坐标**，计算得到目标点对应平面上的 **世界坐标**
-
-首先考虑 **二维** 的情况，由简入繁
-
-![](Image/005.jpg)
-
-通过相似计算
+三角形 ABC 中的某个点 P 在透视分割后会变换为点 P'
 
 $$
-\frac{n}{1-n} = \frac{|AG|}{|BK|} = \frac{|A'P'| * \frac{Z_1}{c}}{|B'P'|\frac{Z_2}{c}} = \frac{m*Z_1}{(1-m)*Z_2} 
+p = \begin{bmatrix}
+x \\
+y \\
+z
+\end{bmatrix} p' = \frac{1}{z * r + 1} * \begin{bmatrix}
+x \\
+y \\
+z
+\end{bmatrix}
 $$
 
-对左右两边取倒
+r 是一个固定参数，决定 w 对 z 的依赖程度，本质上与相机的几何参数（焦距/投影平面位置）有关
+
+点 P' 相对于三角形 A'B'C' 的重心坐标
 
 $$
-\frac{1}{n} - 1 = \frac{(1-m)*Z_2}{m*Z_1} 
+P' = \left [ A' B' C' \right ]  * \begin{bmatrix}
+\alpha' \\
+\beta' \\
+\gamma'
+\end{bmatrix}
 $$
 
-$$
-n = \frac{m*Z_1}{(1-m)*Z_2 + m*Z_1}
-$$
-
-由于 A'、B'、P' 都是已知的屏幕坐标点，所以可以很轻松的计算得到 m 的值，进而计算得到 n 的值
-
-P 的坐标可以通过 P = (1-n) * A + n * B 得到，进而得到 P 的坐标计算公式
-
-假设 A 点坐标为 (0, Y1, Z1) ，B 点坐标为 (0, Y2, Z2)
+已知屏幕空间坐标 A'B'C' 和 P' 相对于 A'B'C' 的重心坐标，接下来需要找到 P 相对于原始三角形 ABC 的重心坐标
 
 $$
-Z_n = (1-n) * Z_1 + n * Z_2 
+P = \left [ A B C \right ]  * \begin{bmatrix}
+\alpha \\
+\beta \\
+\gamma
+\end{bmatrix}
 $$
 
-$$
-Z_n = \frac{(1-m) * Z_2}{(1-m)*Z_2 + m*Z_1} * Z_1 + \frac{m*Z_1}{(1-m)*Z_2 + m*Z_1} * Z_2
-$$
+推理 P' 的表达方式
 
 $$
-Z_n = \frac{1}{\frac{1-m}{Z_1} + \frac{m}{Z_2}}
+P' = \left [ A' B' C' \right ]  * \begin{bmatrix}
+\alpha' \\
+\beta' \\
+\gamma'
+\end{bmatrix} = P * \frac{1}{r P.z + 1} = \left [ A * \frac{1}{r A.z + 1} B* \frac{1}{r B.z + 1} C* \frac{1}{r C.z + 1} \right ]  * \begin{bmatrix}
+\alpha' \\
+\beta' \\
+\gamma'
+\end{bmatrix}
 $$
 
-带入到三维场景中
+根据
 
 $$
-Z_n = \frac{1}{\frac{1-u-v}{Z_1} + \frac{u}{Z_2} + \frac{v}{Z_3}}
+P * \frac{1}{r P.z + 1} = \left [ A * \frac{1}{r A.z + 1} B* \frac{1}{r B.z + 1} C* \frac{1}{r C.z + 1} \right ]  * \begin{bmatrix}
+\alpha' \\
+\beta' \\
+\gamma'
+\end{bmatrix}
 $$
 
-u、v 满足 P = (1-u-v)*A + u*B + v*C
+两边乘以 `rP.z + 1` 
+
+$$
+P = \left [ A B C \right ] * \begin{bmatrix}
+\alpha' / (r A.z + 1) \\
+\beta'  / (r B.z + 1) \\
+\gamma' / (r C.z + 1)
+\end{bmatrix} * (r P.z + 1)
+$$
 
 
