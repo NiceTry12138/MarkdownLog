@@ -50,7 +50,8 @@ vec3 barycentric(const vec2 tri[3], const vec2 P) {
 
 | 参考文章 | 链接 |
 | --- | --- |
-| 透视矫正插值 | https://zhuanlan.zhihu.com/p/403259571 |
+| 透视矫正插值 | https://zhuanlan.zhihu.com/p/1929932158643996005
+ |
 | Perspective Correct Interpolation | https://www.cs.ucr.edu/~craigs/courses/2018-fall-cs-130/lectures/perspective-correct-interpolation.pdf |
 
 | 贴图 | 渲染效果 |
