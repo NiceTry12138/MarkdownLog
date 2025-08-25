@@ -1446,3 +1446,95 @@ for (const FGameplayEffectSpecHandle& TargetSpec : ConditionalEffectSpecs)
 
 Spec.Def->OnExecuted(*this, Spec, PredictionKey);
 ```
+
+## GameplayAbility
+
+- 编写具体的技能逻辑
+- 提供执行条件检测
+  - CD
+  - 消耗 Cost（蓝量、体力值等属性检查）
+  - 根据 Tag 检查
+  - 通过重写 CanActivateAbility 自定义其他检查
+- 提供网络预测和网络复制
+- 实例化选项 InstancingPolicy
+  - NonInstanced 提供非实例化，每次执行都使用 CDO
+  - InstancedPerActor 同一角色所有相同的 GA 共用一个实例
+  - InstancedPerExecution 每次激活都有实例 GA，彼此不干扰
+- 提供输入绑定
+- 提供赋予/移除 GA
+
+<!-- ![](Image/014.jpg) -->
+
+GA 中比较重要的几个函数
+
+- `CanActivateAbility`
+
+用于检查当前 GA 是否满足执行条件，在 C++ 中会检查 CD、Cost，可以通过重写 `K2_CanActivateAbility` 来添加自定义判定条件
+
+- `TryActivateAbility`
+
+定义在 ASC (技能组件) 中，由外界调用
+
+会依次进行 `CanActivateAbility` 检查、处理 GA 的实例化、网络预测
+
+并在最后调用 GA 的 `CallActivateAbility` 函数
+
+- `CallActivateAbility`
+
+依次执行 `PreActivate` 和 `ActivateAbility`
+
+`PreActivate` 是虚函数，在 GA 执行之前执行，可以重写来添加自己的执行顺序
+
+- `ActivateAbility`
+
+执行 GA 逻辑的地方，是虚函数，可以子类重写
+
+如果没有重写，会根据蓝图是否还有数据分别执行 `K2_ActivateAbilityFromEvent` 和 `K2_ActivateAbility`
+
+如果蓝图中没有实现对应的执行函数，则报错，并且直接执行 `EndAbility` 结束 GA
+
+- `CommitAbility` 
+
+> Commit 提交
+
+用于提交资源，也就是扣除 蓝量、体力值，并且更新 CD 的地方
+
+在 GA 执行过程中，需要自行根据执行时机调用该函数，也可以不调用
+
+会通过 `CommitCheck` 检查一遍资源，之后通过 `CommitExecute` 设置 CD 和扣除 Cost
+
+`CommitAbility` 是虚函数，可以自行重写
+
+`CommitExecute` 也是虚函数，自行重写，对蓝图暴露 `K2_CommitExecute` 添加自定义资源消耗或者做其他事情
+
+除此之外提供 `CommitAbilityCooldown` 只设置 CD 和 `CommitAbilityCost` 只扣除 Cost
+
+但是只有 `CommitAbility` 函数会触发 ASC 的 `AbilityCommittedCallbacks` 事件
+
+- `CancelAbility` 
+
+用于外部打断、取消 GA，比如停止 montage 或者 jump
+
+> 参考 GameplayAbility_CharacterJump 的实现
+
+会通过 `CanBeCanceled` 检查当前 GA 能否被 Cancel，可以重写该函数自定义逻辑
+
+会触发 GA 的 `OnGameplayAbilityCancelled` 事件，并且调用 EndAbility 来停止 GA
+
+- `EndAbility`
+
+使用 `K2_OnEndAbility` 通知蓝图执行对应逻辑
+
+清理所有相关的 Timer；清理所有的 Task；通知 ASC 清理相关的 GC 和 Tag
+
+执行 `OnGameplayAbilityEnded` 和 `OnGameplayAbilityEndedWithData` 事件
+
+![](Image/015.png)
+
+通过前面这些函数，大概能够整理出一个 GA 执行的周期
+
+### UGameplayAbility
+
+与 GE 类似，用于配置一个 GA
+
+
