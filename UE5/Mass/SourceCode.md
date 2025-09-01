@@ -101,6 +101,10 @@ void UMassStateTreeTrait::ValidateTemplate(FMassEntityTemplateBuildContext& Buil
 
 ### 构建并注册 FMassEntityTemplateData
 
+![](Image/018.png)
+
+> 大概流程
+
 `PostRegisterAllComponents` 是 `Actor` 创建流程的一个阶段，执行顺序大致是
 
 - UObject::PostLoad
@@ -299,4 +303,104 @@ for (FMassArchetypeFragmentConfig& FragmentData : FragmentConfigs)
 
 > 没有画出空白内存
 
+### 创建 Entity
 
+```cpp
+FFinishedGeneratingSpawnDataSignature Delegate = FFinishedGeneratingSpawnDataSignature::CreateUObject(this, &AMassSpawner::OnSpawnDataGenerationFinished, &Generator);
+Generator.GeneratorInstance->Generate(*this, EntityTypes, SpawnCount, Delegate);
+```
+
+在 `Generator` 计算完需要生成的坐标对象坐标之后，会触发 `OnSpawnDataGenerationFinished` 函数，最后会调到 `SpawnGeneratedEntities` 函数
+
+```cpp
+UMassSpawnerSubsystem* SpawnerSystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(GetWorld());
+
+// 一些其他的计算
+
+const FMassEntityTemplate& EntityTemplate = EntityConfig->GetOrCreateEntityTemplate(*World);
+if (EntityTemplate.IsValid())
+{
+	FSpawnedEntities& SpawnedEntities = AllSpawnedEntities.AddDefaulted_GetRef();
+	SpawnedEntities.TemplateID = EntityTemplate.GetTemplateID();
+	SpawnerSystem->SpawnEntities(EntityTemplate.GetTemplateID(), Result.NumEntities, Result.SpawnData, Result.SpawnDataProcessor, SpawnedEntities.Entities);
+}
+```
+
+通过 `UMassSpawnerSubsystem` 来创建 `Entity`
+
+```cpp
+// 创建 Chunk 和 Entity
+TArray<FMassEntityHandle> SpawnedEntities;
+TSharedRef<FMassEntityManager::FEntityCreationContext> CreationContext = EntityManager->BatchCreateEntities(EntityTemplate.GetArchetype(), EntityTemplate.GetSharedFragmentValues(), NumToSpawn, SpawnedEntities);
+
+// 设置值
+TConstArrayView<FInstancedStruct> FragmentInstances = EntityTemplate.GetInitialFragmentValues();
+EntityManager->BatchSetEntityFragmentsValues(CreationContext->GetEntityCollection(), FragmentInstances);
+```
+
+在 `FMassEntityManager::BatchCreateReservedEntities` 函数中
+
+初始化 `OutEntities` 数组，这个是返回给外界的数组
+
+```cpp
+// TArray<FMassEntityHandle>& OutEntities
+int32 Index = OutEntities.Num();
+OutEntities.Reserve(Index + Count);
+for (int32 Counter = 0; Counter < Count; ++Counter)
+{
+	OutEntities.Add(ReserveEntity());
+}
+```
+
+注意一下 `ReserveEntity` 函数的实现，该函数用来构建 `FMassEntityHandle`
+
+这里存在两个 `FMassEntityManager` 的属性 `Entities` 和 `EntityFreeIndexList`
+
+- `EntityFreeIndexList` 保存着可以使用的 EntityIndex，当一个 Entity 被 Destroy 的时候会将被 Destroy 的 Entity 的 EntityIndex 添加到 EntityFreeIndexList 中用于后续复用
+- `Entities` 保存着所有的 `FEntityData`，可以通过 EntityIndex 获取 `Entities` 中的数
+
+```cpp
+FMassEntityHandle FMassEntityManager::ReserveEntity()
+{
+	FMassEntityHandle Result;
+	Result.Index = (EntityFreeIndexList.Num() > 0) ? EntityFreeIndexList.Pop(/*bAllowShrinking=*/ false) : Entities.Add();
+	Result.SerialNumber = SerialNumberGenerator.fetch_add(1);
+	Entities[Result.Index].SerialNumber = Result.SerialNumber;
+
+	return Result;
+}
+```
+
+通过 `InternalBatchCreateReservedEntities` 真正创建 `Entity`
+
+```cpp
+FMassArchetypeData* ArchetypeData = FMassArchetypeHelper::ArchetypeDataFromHandle(ArchetypeHandle);
+for (FMassEntityHandle Entity : ReservedEntities)
+{
+	FEntityData& EntityData = Entities[Entity.Index];
+	EntityData.CurrentArchetype = ArchetypeHandle.DataPtr;
+	EntityData.SerialNumber = Entity.SerialNumber;
+
+	ArchetypeData->AddEntity(Entity, SharedFragmentValues);
+}
+```
+
+通过前面 `FMassArchetypeData` 内存结构可以直到，每个 Archetype 都独自管理着自己的 Chunk，也相当于管理着所有派生自自己的 Entity
+
+通过 `FMassArchetypeData::AddEntityInternal` 
+
+1. 查找 或 创建 Chunk
+2. 将 EntityHandle 保存到 Chunk 中
+3. 将 EntityHandle 的 Index 与其数据在 Chunk 中的 AbsoluteIndex 映射关系保存到 EntityMap 中
+4. 返回可以保存 Entity 数据的 Chunk 序号 ChunkIndex
+
+通过 AbsoluteIndex 和 Archetype 从 Chunk 中获取对应数据的内存块，并初始化数据
+
+```cpp
+FMassArchetypeChunk& Chunk = Chunks[ChunkIndex];
+for (const FMassArchetypeFragmentConfig& FragmentConfig : FragmentConfigs)
+{
+	void* FragmentPtr = FragmentConfig.GetFragmentData(Chunk.GetRawMemory(), IndexWithinChunk);
+	FragmentConfig.FragmentType->InitializeStruct(FragmentPtr);
+}
+```
