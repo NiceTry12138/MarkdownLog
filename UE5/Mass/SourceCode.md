@@ -404,3 +404,46 @@ for (const FMassArchetypeFragmentConfig& FragmentConfig : FragmentConfigs)
 	FragmentConfig.FragmentType->InitializeStruct(FragmentPtr);
 }
 ```
+
+#### FMassEntityHandle
+
+![](Image/019.png)
+
+通过前面的代码可以知道 `FMassEntityHandle` 是什么
+
+- 通过 Handle 可以从 FMassEntityManager 的 Entities 中获取对应的 FEntityData
+- 通过 Handle 可以从 FMassArchetypeData 的 EntityMap 中反查 Entity 的序号，进而查找其真实数据的内存地址
+
+先看看 FEntityData 是什么
+
+FEntityData 结构非常简单，一个验证用的 SerialNumber 和一个指向 FMassArchetypeData 的指针
+
+```cpp
+struct FEntityData
+{
+	TSharedPtr<FMassArchetypeData> CurrentArchetype;
+	int32 SerialNumber = 0;
+}
+```
+
+也就是说通过 Handle 可以从 FMassEntityManager::Entities 中获取该 Entity 对应的 Archetype 信息
+
+通过 FMassArchetypeData::EntityMap 可以反查 Entity 的序号 AbsoluteIndex
+
+```cpp
+const int32 AbsoluteIndex = EntityMap.FindAndRemoveChecked(Entity.Index);
+const int32 ChunkIndex = AbsoluteIndex / NumEntitiesPerChunk;
+const int32 IndexWithinChunk = AbsoluteIndex % NumEntitiesPerChunk;
+```
+
+比如，一个 Archetype 有 2 个 Chunk，每个 Chunk 可以放入 3 个 Entity 的数据
+
+此时通过 Handle 反查到该 Entity 的 AbsoluteIndex 是 4
+
+那么可以倒推得出，该 Entity 所属的 Chunk 序号为 1，并且在序号为 1 的 Chunk 的 1 号位 （从 0 开始数）
+
+![](Image/020.png)
+
+于是乎，通过一个 Handle 和两次查询，可以得到一个 Entity 真实的数据内存块
+
+
