@@ -1,0 +1,532 @@
+# UE 资源管理与资源加载方式
+
+## 资源概念
+
+1. 顶层
+   - 游戏逻辑代码/蓝图
+   - 配置 `UAssetManager` (Primary Asset Types、扫描路径、规则)
+2. 中层(逻辑资源管理)
+   - `UAssetManager` (Primary Assets / Bundle / Chunk / Rule)
+   - `AssetRegistry` (FAssetData + 依赖信息 + Tag)
+3. 加载控制层
+   - `FStreamableManager` (按软引用路径调度加载、生成 FStreamableHandle)
+   - `FStreamableHandle` (一次加载请求的声明周期控制)
+4. 底层(`Package` / `IO` / `AsyncLoadingThread`)
+   - `UPackage` / `LinkerLoad` / `FAsyncLoadingThrea`
+   - 实际读 `pak` / `file` 系统，解析 `.uasset``/.umap`、构造 `UObject`、修复引用、`PostLoad`、`Preload` 等
+
+- UObject / UClass
+  - UE 中所有资产的基类 UObject
+  - 类型信息通过 UClass (反射系统) 获取
+- Asset （资产）
+  - 底层就是一个 UObject 或 一组对象 持久化到磁盘
+  - 常见累心： UTexture2D、UStaticMesh、UBlueprint、UWorld 等
+- Package
+  - 抽象概念：一组相关联对象的容器，逻辑上对应一个 `.uasset` 或 `.umap` 文件（`cook` 后可能合并到 `.pak`）
+  - 每个 UObject 必须属于一个 UPackage （Outer 链的最外层）
+  - Package 有唯一的 **完全限定名** (/Game/Path/PackageName)，和对应的磁盘文件路径
+- Map/Level （世界/关卡）
+  - 实际上是一个特殊的 UPackage 里的 UWorld 对象及其子对象
+  - `.umap` 是一种特定类型的 Package 资源文件
+- Primary Asset / Non-primary Asset
+  - Primary Asset：被 `UAssetManager` 标记为 主资源 的资产，如地图、某类配置 Asset、角色定义 Asset
+  - 等
+  - Non-primary：其他普通资产（贴图、网格、动画等），通常是被 Primary Asset 间接引用
+
+### 资源层级结构
+
+- 磁盘 / Packeg 层级
+  
+1. 文件系统/Pak 层
+   1. Cook 后的项目通常被打包到一个或多个 `.pak` 文件
+   2. 每个 `.pak` 中包含许多 `.uasset`、`.umap`、`.ubulk`、`.uptnl` 等文件
+2. Package 层 (UPackage)
+   1. 每个 `.uasset` 或 `.umap` 对应一个 `UPackage` 
+   2. 一个 Package 可以有多个 `UObject`，例如
+      1. 主资产对象 (例如：UStaticMesh)
+      2. 内嵌对象 (例如：UStaticMesh::RenderData 等)
+      3. 字资源、默认子对象等
+
+- 逻辑/引用 层级
+
+1. Primary Asset 层 (游戏逻辑入口)
+   1. 例如：某个 `UPrimaryDataAsset`，代表一个 关卡配置、关卡组、角色模板 等
+   2. 在 `DefaultEngine.ini` 的 `[/Script/Engine.AssetManagerSettings]` 中配置 PrimaryAssetType 和 扫描规则
+   3. `UAssetManager` 会扫描并维护 `PrimaryAssetId -> FSoftObjectPath` 的映射表
+2. Bundle / Chunk / Tag 层 (管理视角)
+   1. Primary Asset 可以定义多个 Bundle
+      1. GamepalyBundle、MenuBundle、CinematicsBundle 等
+      2. 每个 Bundle 是一组 FSoftObjectPath
+   2. Chunk 用于打包分块，指定哪些包属于哪个 Chunk，方便下载和按需安装
+3. 资源依赖层
+   1. Primary Asset 通过 软引用/硬引用 只想各种资源：Mesh、AnimBP、Texture、DataTable 等
+   2. Assetregistry 里会记录 Package 的依赖关系，加载 PrimaryAsset 及其 Bundle 时， UAssetManager 会递归展开依赖
+
+### UPackage
+
+`UPackage` 通常作为
+
+1. 容器 (Outer 根)
+   1. 所有持久化在某个 `.uasset` / `.umap` 文件里的对象的最外层 Outer
+   2. 例如某个贴图 `/Game/Textures/T_Logo.T_Logo` 是 `UTexture2D` 的，其 `GetOutermost` 就是对应的 `UPackage`
+2. 持久化单元、序列化单元
+   1. 保存、加载都是基于 UPackage 为单位，`UPackage` + `FLinker` / `FLinkerSave` 配合做序列化 
+   2. `ESavePackageResult`、`FSavePackageResultStruct` 都是围绕 Packge 保存结果定义的
+3. 编辑器 & 构建流水线的元信息载体
+   1. 包含 Dirty 状态、`Cook Chunk IDs`、`PersistentGuid`、缩略图、`WorldTile` 信息等，大部分在 `WITH_EDITORONLY_DATA` 里
+4. 版本/兼容性控制点
+   1. 每个 Package 关联
+      1. FPackageFileVersion 引擎版本
+      2. Licensee Version
+      3. FCustomVersionContainer 自定义版本
+   2. PostLoad 等函数会根据这些版本信息做兼容处理
+
+`UPackage` 常用属性
+
+| 属性名称 | 作用 |
+| --- | --- |
+| bDirty | 是否已修改，但是未保存 |
+| bHasBeenFullyLoaded | Package 在某一时刻，包中所有对象都加载进内存 |
+| bCanbeImported | 是否是可被导入的包，基本对应磁盘上是否存在对应文件 |
+| bLoadedByEditorPropertiesOnly | 标记 Packge 只在编辑器中被使用，不会被 cook 到游戏里面 |
+| bHasBeenEndLoaded | 标识该包是否完成了 EndLoad 阶段（序列化和 PostLoad 之后） |
+| LoadTime | 记录上一次完全加载这个包所花时间 |
+| FolderName | 旧版 Content Browser 的包分类用，现在推荐用 FPackageName::GetLongPackagePath 解析路径 |
+| PersistentGuid | 持久包 GUID，从磁盘读取时获得，在多次保存之间保持不变，用作资产追踪/对比、重命名/重定向时的唯一标识 |
+| ChunkIDs | 该包被放入哪些 Streaming Install Chunk |
+| Guid | 旧式“包 GUID”，每次保存会变化，所以已废弃 |
+| PackageFlagsPrivate | 按位存储各种 PKG_* 标志，控制和描述包的特征 |
+| FPackageId | 运行期唯一标识一个 Package 的 ID，相比名称字符串更适合用于 IO、异步加载系统里的哈希索引 |
+| LoadedPath | 保存包是从什么物理路径加载来的 |
+| LinkerLoad | FLinkerLoad 是负责从磁盘读取并反序列化包中对象的核心类 |
+| LinkerPackageVersion、LinkerLicenseeVersion 、LinkerCustomVersion | 表示这个包被序列化时所使用的 UE 引擎版本和 Licensee 自定义版本 |
+| FileSize | 该包磁盘上文件大小 |
+| ThumbnailMap | 包内各对象的缩略图数据 |
+| MetaData | 对应 UMetaData 对象，存储：各对象/属性上注释、分类、Editor-only 标记等 |
+| PIEInstanceID | 表示这个 Package 属于哪个 PIE 实例 |
+| WorldTileInfo | 描述某个地图块的偏移、裁剪、流式加载设置等 |
+| Delegates | 热重载时，包里注册的一些回调/代理函数，用于在代码重新编译时同步状态 |
+
+`UPackage` 的关键函数
+
+| 函数名称 | 作用 |
+| --- | --- |
+| PostInitProperties | 构造之后、属性初始化之后调用，可用于初始化某些运行时状态 |
+| Serialize | 负责序列化包内元信息（不是具体对象导出，那部分在 Linker 中），保存/加载时都会调用 |
+| IsAsset  | 返回 false，UPackage 自己并不被当成一个“可被浏览器显示的 Asset”，它只是容器 |
+| SetDirtyFlag | 会触发 PackageDirtyStateChangedEvent / PackageMarkedDirtyEvent，编辑器监听这些事件来更新“需要保存”的列表、提示 Source Control 检出等 |
+| ClearDirtyFlag | 清零但不产生事务 |
+| FullyLoad | 会强制把当前包内所有对象都加载进内存 |
+| IsFullyLoaded | 通过 bHasBeenFullyLoaded 和对象标记判断，如果没有对应磁盘文件（强制导出包），也会返回 true |
+
+还有一些其他 Package 的状态、用途标志
+
+### FLinkerLoad
+
+```cpp
+class FLinkerLoad : public FLinker, public FArchiveUObject
+```
+
+FLinkerLoad 持有该 UPackage 的 Import/Export 表、版本信息、底层 IO Archive 等
+
+- 继承自 FLinker：Linker 基类，封装 ImportMap/ExportMap 等结构
+- 继承自 FArchiveUObject：一个 FArchive 子类，负责对象序列化时和 UObject 系统交互
+
+UPackage 时 **包对象**，FLinkerLoad 是 **负责从磁盘把这个包都进来的读取器/状态机**
+
+1. 持有
+   1. PackagePath 和 迪岑 FArchieve* Loader
+   2. ImportMap/ExportMap 在基类 FLinker 中
+   3. 版本信息
+   4. PackageTrailer
+   5. InstanceingContext 等
+2. 提供
+   1. `Import`/`Export` 查找与修正
+   2. `Preload(UObject*)` 把对象数据从磁盘反序列化到内存
+   3. `LoadAllObjects` 整包加载
+   4. `BulkData` 序列化
+   5. 依赖遍历（`GatherExportDependencies`/`ImportDependencies`）
+   6. 异步加载控制（时间切片、外部依赖回调）
+
+单个包的完整加载流程
+
+1. 创建 `UPackage` & `FLinkerLoad`
+   - UPackage* Package = CreatePackage(PackageName)
+   - FLinkerLoad* Linker = FLinkerLoad::CreateLinker(LoadContext, Package, PackagePath, LoadFlags)
+   - Linker 读取 Package Summary，构建 ImportMap / ExportMap，填充到基类 FLinker 中
+2. 构造 `Export` 对象 (`CreateExport`)
+   - 对于 ExportMap 中的每条记录，Linker 会按需要构造一个 UObject 实例
+     - 确定 Class
+     - 确定 Outer
+     - 创建对象实例
+   - 此时对象存在但还没从磁盘读数据（类似“空壳对象”）
+3. `Preload` （序列化对象数据）
+   - 当某个对象第一次被用到时（或调用 LoadAllObjects/Preload），Linker：
+     - 定位其 `Export` 的 `SerialOffset`
+     - `Loader->Seek` 到该偏移
+     - 调用 `Object->Serialize(*this)`
+   - 在对象的 `Serialize` 函数中，通过 `FArchive` 的 `<<` 操作符逐字段读入，遇到引用时调用 `Linker` 的 `Import/Export` 解析逻辑
+4. `PostLoad` / `EndLoad`
+   - 所有对象数据被反序列化后，会调用它们的 `PostLoad()`
+   - 包层次会标记 `bHasBeenFullyLoaded = true`
+   - `UPackage::SetHasBeenEndLoaded(true)` 也会被设置
+5. `Linker` 生命周期
+   - 在编辑器中，Linker 通常会在包 open 期间存在
+   - 当保存/关闭时，Linker 会被销毁
+   - 对象仍然留在内存中，之后如果再加载该包，新的 Linker 可以通过 `FindExistingExport` 复用已有对象
+
+## 资源管理系统概览
+
+UE 的 资源管理系统 分为几个四个核心层次
+
+1. 资源注册表(Asset Registry) - 资源元数据管理
+2. 资源管理器(Aseet Manager) - 主资源生命周期管理
+3. 流式管理器(Streamable Manger) - 异步/同步加载控制
+4. 底层加载系统(Package Loader) - 实际包加载执行
+
+- **资源注册表系统** `Asset Registry`
+
+维护所有资源的元数据，提供资源查询、依赖关系追踪、资源过滤等功能
+
+| 文件路径 | 主要类/结构 | 功能描述 |
+| --- | --- | --- |
+| IAssetRegistry.h | IAssetRegistry | 	资源注册表核心接口，提供资源查询、依赖查询API |
+| AssetRegistryState.h | FAssetRegistryState | 资源注册表状态数据存储 |
+| AssetRegistryModule.h | FAssetRegistryModule | 	资源注册表模块入口 |
+| AssetRegistryHelpers.h | UAssetRegistryHelpers | 	Blueprint可用的辅助函数 |
+| AssetRegistry.h | UAssetRegistryImpl | 	资源注册表具体实现 |
+| AssetData.h | FAssetData | 单个资源的元数据结构 |
+| ARFilter.h | FARFilter, FARCompiledFilter | 资源过滤器结构 |
+| AssetBundleData.h | FAssetBundleData | 资源包Bundle数据 |
+
+核心功能
+
+1. GetAssets 按过滤条件查询资源
+2. GetDependencies 获取资源依赖
+3. GetReferecers 获取资源引用
+4. ScanPathsSynchronous 同步扫描资源路径
+
+- **资源管理器** `Asset Mana`
+
+功能: 管理 `Primary Assets` 的生命周期，控制资源加载、卸载、Bundle状态等
+
+| 文件路径 | 主要类/结构 | 功能描述 |
+| --- | --- | --- |
+| AssetManager.h | UAssetManager | 全局资源管理器单例 |
+| AssetManagerTypes.h | FPrimaryAssetType, FPrimaryAssetId, FPrimaryAssetRules | 主资源类型定义 |
+| AssetManagerSettings.h | UAssetManagerSettings | 资源管理器配置 |
+
+核心功能
+
+```cpp
+// 加载主资源
+LoadPrimaryAsset(AssetId, LoadBundles, Delegate);
+LoadPrimaryAssets(AssetIds, LoadBundles, Delegate);
+LoadPrimaryAssetsWithType(Type, LoadBundles, Delegate);
+
+// 卸载主资源
+UnloadPrimaryAsset(AssetId);
+UnloadPrimaryAssets(AssetIds);
+
+// 预加载资源
+PreloadPrimaryAssets(AssetIds, LoadBundles, bLoadRecursive, Delegate);
+
+// 获取StreamableManager
+UAssetManager::GetStreamableManager();
+```
+
+- **流式管理器** `Streamable Manger`
+
+功能: 提供资源的异步/同步加载控制，管理加载句柄的生命周期
+
+| 文件路径 | 主要类/结构 | 功能描述 |
+| --- | --- | --- |
+| StreamableManager.h | FStreamableManager | 流式资源管理核心 |
+| StreamableManager.h | FStreamableHandle | 加载操作句柄 |
+
+核心加载方式
+
+```cpp
+// 1. 异步加载 - 带回调
+TSharedPtr<FStreamableHandle> RequestAsyncLoad(
+    TArray<FSoftObjectPath> TargetsToStream,
+    FStreamableDelegate DelegateToCall,
+    TAsyncLoadPriority Priority = DefaultAsyncLoadPriority,
+    bool bManageActiveHandle = false,
+    bool bStartStalled = false,
+    FString DebugName = TEXT("ArrayDelegate")
+);
+
+// 2. 异步加载 - Lambda回调
+TSharedPtr<FStreamableHandle> RequestAsyncLoad(
+    const FSoftObjectPath& TargetToStream,
+    TFunction<void()>&& Callback,
+    TAsyncLoadPriority Priority = DefaultAsyncLoadPriority
+);
+
+// 3. 同步加载 - 返回句柄
+TSharedPtr<FStreamableHandle> RequestSyncLoad(
+    TArray<FSoftObjectPath> TargetsToStream,
+    bool bManageActiveHandle = false,
+    FString DebugName = TEXT("RequestSyncLoad Array")
+);
+
+// 4. 同步加载 - 返回对象
+UObject* LoadSynchronous(const FSoftObjectPath& Target, bool bManageActiveHandle = false);
+
+// 模板版本
+template<typename T>
+T* LoadSynchronous(const TSoftObjectPtr<T>& Target);
+```
+
+句柄操作
+
+```cpp
+// 等待加载完成
+Handle->WaitUntilComplete(Timeout);
+
+// 检查状态
+Handle->HasLoadCompleted();
+Handle->IsLoadingInProgress();
+Handle->WasCanceled();
+
+// 获取加载结果
+Handle->GetLoadedAsset();
+Handle->GetLoadedAssets(LoadedAssets);
+
+// 取消/释放
+Handle->CancelHandle();
+Handle->ReleaseHandle();
+```
+
+- **软引用与路径系统** `Soft Object Reference`
+
+功能: 提供资源的软引用类型，允许延迟加载
+
+| 文件路径 | 主要类/结构 | 功能描述 |
+| --- | --- | --- |
+| SoftObjectPath.h | FSoftObjectPath | 资源软路径 |
+| SoftObjectPtr.h | FSoftObjectPtr, TSoftObjectPtr<T>, TSoftClassPtr<T> | 软对象指针 |
+| TopLevelAssetPath.h | FTopLevelAssetPath | 顶级资源路径 |
+
+使用示例
+
+```cpp
+// 软对象路径
+FSoftObjectPath AssetPath("/Game/MyAsset.MyAsset");
+UObject* LoadedAsset = AssetPath.TryLoad();
+UObject* ResolvedAsset = AssetPath.ResolveObject();
+
+// 类型化软指针
+TSoftObjectPtr<UTexture2D> TextureRef;
+TextureRef = TSoftObjectPtr<UTexture2D>(TexturePath);
+UTexture2D* Texture = TextureRef.LoadSynchronous();
+
+// 类软指针
+TSoftClassPtr<AActor> ActorClassRef;
+TSubclassOf<AActor> ActorClass = ActorClassRef.LoadSynchronous();
+```
+
+- **底层包加载系统** `Package Loader`
+
+功能: 执行实际的包文件读取和反序列化
+
+| 文件路径 | 主要类/结构 | 功能描述 |
+| --- | --- | --- |
+| UObjectGlobals.h | LoadObject, LoadPackage, LoadPackageAsync | 全局加载函数 |
+| AsyncPackageLoader.h | IAsyncPackageLoader, FAsyncLoadingThreadSettings | 异步包加载接口 |
+| LinkerLoad.h  | FLinkerLoad | 链接器加载实现 |
+| AsyncLoading.h | FAsyncPackage | 异步包对象 |
+| AsyncLoadingThread.h	 | FAsyncLoadingThread | 异步加载线程 |
+| AsyncLoading2.h | FAsyncLoadingThread2 | 异步加载2.0 (IO Store) |
+
+核心加载函数
+
+```cpp
+// 同步加载单个对象
+template<class T>
+T* LoadObject(UObject* Outer, const TCHAR* Name, const TCHAR* Filename = nullptr, uint32 LoadFlags = LOAD_None);
+
+// 同步加载包
+UPackage* LoadPackage(UPackage* InOuter, const TCHAR* InLongPackageName, uint32 LoadFlags);
+
+// 异步加载包
+int32 LoadPackageAsync(
+    const FString& InName,
+    FLoadPackageAsyncDelegate InCompletionDelegate,
+    TAsyncLoadPriority InPackagePriority = 0
+);
+
+// 等待异步加载完成
+void FlushAsyncLoading(TConstArrayView<int32> RequestIds = TConstArrayView<int32>());
+```
+
+- **对象句柄系统** `Object Handle`
+
+功能: 提供对象引用的懒加载和序列化支持
+
+| 文件路径 | 主要类/结构 | 功能描述 |
+| --- | --- | --- |
+| ObjectHandle.h | FObjectHandle | 对象句柄 |
+| ObjectPtr.h | TObjectPtr<T>, FObjectPtr | 对象指针包装 |
+| ObjectHandleTracking.h | 回调函数 | 对象句柄跟踪 |
+| ObjectRef.h | FObjectRef | 对象引用 |
+
+## 资源加载方式
+
+- 同步加载
+
+```cpp
+// 方式1: LoadObject - 直接同步加载对象
+UTexture2D* Texture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/MyTexture"));
+
+// 方式2: StreamableManager同步加载
+FStreamableManager& SM = UAssetManager::GetStreamableManager();
+UObject* Asset = SM.LoadSynchronous(SoftObjectPath);
+
+// 方式3: FSoftObjectPath直接加载
+FSoftObjectPath Path("/Game/MyAsset");
+UObject* Asset = Path.TryLoad();
+
+// 方式4: TSoftObjectPtr加载
+TSoftObjectPtr<UMyClass> SoftPtr;
+UMyClass* Obj = SoftPtr.LoadSynchronous();
+```
+
+- 异步加载
+
+```cpp
+// 方式1: StreamableManager异步加载 (推荐)
+FStreamableManager& SM = UAssetManager::GetStreamableManager();
+TSharedPtr<FStreamableHandle> Handle = SM.RequestAsyncLoad(
+    PathsToLoad,
+    FStreamableDelegate::CreateUObject(this, &UMyClass::OnLoadComplete)
+);
+
+// 方式2: Lambda回调
+Handle = SM.RequestAsyncLoad(PathToLoad, [this]() {
+    // 加载完成处理
+});
+
+// 方式3: AssetManager加载Primary Asset
+UAssetManager::Get().LoadPrimaryAsset(
+    PrimaryAssetId,
+    BundleNames,
+    FStreamableDelegate::CreateLambda([](){ /* done */ })
+);
+
+// 方式4: 底层LoadPackageAsync
+LoadPackageAsync(PackageName, FLoadPackageAsyncDelegate::CreateLambda(
+    [](const FName& PackageName, UPackage* Package, EAsyncLoadingResult::Type Result) {
+        // 包加载完成
+    })
+);
+```
+
+- 预加载/ Bundle 加载
+
+```cpp
+// Bundle状态切换
+UAssetManager::Get().ChangeBundleStateForPrimaryAssets(
+    AssetsToChange,
+    AddBundles,
+    RemoveBundles
+);
+
+// 预加载(不正式加载，释放Handle后资源会被回收)
+TSharedPtr<FStreamableHandle> PreloadHandle = UAssetManager::Get().PreloadPrimaryAssets(
+    AssetsToPreload,
+    BundleNames,
+    bLoadRecursive,
+    OnCompleteDelegate
+);
+```
+
+## 加载流程
+
+从输入`/Game/Texture/T_Logo_T.T_Logo_T`，到输出 UTexture2D 对象
+
+```cpp
+FString Path = "/Game/Texture/T_Logo_T.T_Logo_T";
+TSoftObjectPtr<UTexture2D> LogoTex = TSoftObjectPtr<UTexture2D>(Path);
+UAssetManager::GetStreamableManager().RequestAsyncLoad(
+    LogoTex.ToSoftObjectPath(),
+    [](){ /* 使用 LogoTex.Get() */ }
+);
+```
+
+大致分为七个步骤
+
+1. 发起请求（软路径解析 & 交给 StreamableManager）
+2. StreamableManager 组织请求并交给底层异步加载系统
+3. Async Loading 打开包文件，创建 UPackage & FLinkerLoad，读取包头 和 Import/Export 结构
+4. 创建导出对象骨架 (包括 UTexture2D 实例)
+5. 预加载（Preload）：从磁盘反序列化 UTexture2D 数据
+6. PostLoad、依赖修复、资源初始化（GPU等）
+7. 回调触发 & 最终得到 UTexture2D 指针
+
+### 发起加载请求，解析路径
+
+`TSoftObjectPtr<UTexture2D>` 内部本质是 `FSoftObjectPath`
+
+```cpp
+FSoftObjectPath Path("/Game/Texture/T_Logo_T.T_Logo_T");
+```
+
+这个字符串有两层信息
+
+- 包名（PackageName）：`/Game/Texture/T_Logo_T`
+- 对象民（ObjectName）：`T_Logo_T`
+
+在 `FSoftObjectPath` 内部，`FName AssetPathName` 形如 `/Game/Texture/T_Logo_T.T_Logo_T`，可以被拆分成 `GetLongPackageName()` 和 `GetAssetName()`
+
+然后交给 `FStreamableManager`，在 `UAssetManager::GetStreamableManager().RequestAsyncLoad` 中会做几件事
+
+1. 收集传入的所有 `FSoftObjectPath`
+2. 对每个路径提取报名，并放入内部 待加载资产列表
+3. 未这次请求创建一个 FStreamableHandle 对象，用来追踪进度、保存强引用、接收完成回调
+
+> 这一步还没有触及磁盘，只是在内存组织中记录，我要加载哪些对象
+
+### StreamableManager -> 异步加载系统
+
+`FStreamableManager` 内部会把这次请求和其他可能相同的请求合并，并最终将 **需要的 Package 列表** 交给异步加载系统 (`FAsyncLoadingThread2` / `FAsyncPackage2` 等)
+
+这次的操作是以 Package 为单位驱动加载，而不是以单个对象为单位
+
+需要注意 一个 UPackage 中可能包含多个 Export 对象：比如一个 Texture、一个 Material、一些内部对象等
+
+但是在真正开始加载之前，会先查看 UPackage 是否已经加载，具体查看 `FStreamableManager::StreamInternal` 函数
+
+1. 从 `StreamableItems` 查看有无同名的 TargetName
+2. 通过 `FindInMemory` 检查资源是否已经在内存中，如果在内存中，那么 Existing->Target 就是对应 UObject*
+3. 根据请跨执行 `StaticLoadObject` **同步加载** 或者 `LoadPackageAsync` **异步加载**
+
+> 最后 `FAsyncLoadingThread::QueuePackage` 添加到队列中
+
+### 创建 UPackage 和 FLinkerLoad 打开 uasset
+
+通过 `StaticTick` 函数，调用 `ProcessAsyncLoading`，进而触发 `GetAsyncPackageLoader().ProcessLoading` 函数
+
+通过查看 ProcessLoading 函数中，最大的 do-while 循环体，可以看到资源的加载步骤
+
+1. LoadingState = CreateLinker()，在函数中先 CreatePackage 创建 UPackage，再获取 Linker
+2. LoadingState = FinishLinker()，完成 Linker 的异步初始化
+3. LoadingState = LoadImports()
+4. LoadingState = CreateImports()，加载并创建导入对象
+5. LoadingState = CreateMetaData()，如果是编辑器构建，且包中有 UMetaData，会在此阶段创建并预加载 MetaData 包
+6. LoadingState = CreateExports()，为 ExportMap 中对象构造骨架
+7. LoadingState = PreLoadObjects()，调用 Preload，完成数据序列化
+8. CallCompletionCallbacks(bInternalCallbacks, bLoadHasFailed ? EAsyncLoadingResult::Failed : EAsyncLoadingResult::Succeeded)，为了保证“依赖包的数据已经 ready”，避免 PostLoad 时遇到未完全初始化的对象
+9. FinishExternalReadDependencies()，等待 BulkData 等外部 IO
+10. PostLoadObjects()，对每个对象调用 PostLoad
+11. EndAsyncLoad()
+12. FinishObjects()，收尾 & 清理状态
+
+通过 `CreateLinker` 创建完 `Linker` 之后，在 `CreateExport` 函数中基于 `ExportMap` 创建 `Texture2D` 实例对象
+
+此时只是在内存有一个 `UTexture2D` 实例，但它的成员还没有从磁盘中填充，也就是 new 出来了，但是还没有 InitData
+
+然后通过 `Linker->Preload` 反序列化 Texture2D 数据
+
+
