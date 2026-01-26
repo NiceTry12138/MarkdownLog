@@ -120,4 +120,66 @@ TArray<FName> CompressionMethods;
 
 这是 Pak 文件中**每一个存文件记录**的描述
 
+| 属性 | 作用 |
+| --- | --- |
+| Offset | 该文件在 Pak 中的起始偏移（注意和版本相关：有 相对/绝对 两种语义） |
+| Size | 压缩后在 Pak 中占用的字节数 |
+| UncompressedSize | 解压后的原始大小 |
+| Hash[20] | 文件内容的哈希值 |
+| CompressionBlocks | 压缩块信息，每块对应 Pak 内压缩数据区的一段  |
+| CompressionBlockSize | 单个压缩块大小（未压缩时为 0 或 没用） |
+| CompressionMethodIndex | 指向 FPakInfo::CompressionMethods 中的索引，（0 表示不压缩） |
+| Flags |  |
+| Verified | 运行时状态，是否已经验证过头部，不序列化 |
+
+FPakCompressedBlock 的结构比较简单，就两个属性：CompressedStart 和 CompressedEnd 用于描述此文件数据在其压缩块区域中每个块的起止位置
+
+在 Pak 的语义里，一个 FPakEntry 对应一个逻辑文件（`.umap` 或者 `.uasset`），对于某个 **路径字符串**，索引里会挂一个 `FPakEntry`，描述它在 pak 里的 位置 和 压缩信息
+
+在 `FPakEntry` 中
+
+- 如果 CompressionMethodIndex == 0 表示不压缩，读取时从 Offset 直接读 Size 字节
+- 如果 CompressionMethodIndex != 0 表示压缩存储，`CompressionBlockSize` 一般是 64KB
+  - 比如某个大资源压缩后有 100KB，那么逻辑上会被分成 64k + 36K 两块
+- `FPakCompressedBlock` 存储的是两个相对与该 FPakEntry 的压缩数据区起始位置
+  - 通常的起始位置是 `DataOffset = PakEntry.Offset + PakEntry.GetSerializedSize(Version)`
+  - 每个块在磁盘上的大小是 `CompressedEnd - CompressedStart`，但是解压之后大小通常是 `CompressionBlockSize`
+
+> 在 `IPlatformFilePak.cpp` 文件中有 `FileEntry.CompressionBlockSize = 65536;` 字段
+
+> 起始位置的计算在 FPakReaderPolicy 的构造函数中
+
+## 加载一个资产
+
+加载一个资产最后都会走到 `StaticLoadObjectInternal` 函数中
+
+> UObjectGlobals.cpp 文件
+
+该函数的逻辑简化之后就是
+
+1. 解析 `InName` (类似：`/Game/Texture/T_Logo.T_Logo`)，拆成包名 (`/Game/Texture/T_Logo`) 和对象名 (`T_Logo`)
+2. 在当前内存对象集中查找，通过 `StaticFindObjectFast` 查找 `InName`，如果找到了返回现有对象，不触发 IO，也就不去读取 Pak 文件
+3. 如果 `Outer` 对应的包没有加载，则调用 `LoadPackage` 进行加载
+
+在 `LoadPackage` 加载资产时
+
+1. 解析包路径，将 `/Game/Texture/T_Logo` 这样的长包名转换成 `FPackagePath`
+2. 然后调用重载之后的 `LoadPackage`
+3. 在进行一系列检查之后，最后调用到 `LoadPackageInternal`
+
+在 `LoadPackageInternal` 函数中
+
+- 创建/查找 `UPackage` 对象
+- 调用 `CreateLinker` 或异步加载接口创建 `FLinkerLoad`
+- `FLinkerLoad` 决定用哪个底层 `loader` (**传统 Pak**/**IoStore**/**本地文件**) 去读字节
+
+那么在 `FLinkerLoad` 中应该存在对应的打开文件/容器的逻辑
+
+1. 通过 `FPlatformFileManager::Get().GetPlatformFile()` 获取当前平台文件对象，返回的是 `IPlatformFile` 类型
+2. 如果当前是 Pak 文件类型，则调用的是 `FPakPlatformFile::OpenRead`
+
+在 `FPakPlatformFile::OpenRead` 函数中
+
+1. 查找文件对应的 `Pak` 和 `FPakEntry`，通过 `FindFileInPakFiles` 函数去遍历 `FPakListEntry` 数组，对每个 `Pak` 都调用 `FPakFile::Find` 来查找，如果找到了则填充 `FPakFile` 和 `FPakEntry`
+2. 构建 `IFileHandle`
 
