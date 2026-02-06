@@ -140,3 +140,4 @@
 | 好书推荐 | https://www.zhihu.com/question/1937248651517863299/answer/1965859088261940533 |
 | AIAgent | https://github.com/ginobefun/agentic-design-patterns-cn |
 
+下载旧版本VS:`widget install "Microsoft.VisualStudio.2022.Community" -v 17.7.6`
