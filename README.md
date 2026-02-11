@@ -89,7 +89,8 @@
 | Unreal 动画系统原理机制源码剖析 | https://zhuanlan.zhihu.com/p/637996539 |
 | UE的runtime资产管理 | https://zhuanlan.zhihu.com/p/17972602309 |
 | 《UE4 Notes》网络同步相关（一） | https://zhuanlan.zhihu.com/p/655089296 |
-| UFSH2025 UE5通用对象池解决方案 | zttps://zhuanlan.zhihu.com/p/1976642186813646332 |  
+| UFSH2025 UE5通用对象池解决方案 | ttps://zhuanlan.zhihu.com/p/1976642186813646332 |  
+| UMG 渲染合批原理 | https://zhuanlan.zhihu.com/p/698497695 |
 
 ## UE 项目 
 | 项目名 | 连接 |
