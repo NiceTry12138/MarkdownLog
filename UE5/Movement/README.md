@@ -144,6 +144,15 @@
 | LineDist | LineTrace查询到地面的距离 | 
 | HitResult | 跟地面的FHitResult | 
 
+- 使用 `IsWalkable` 判断某个命中面能不能行走
+- 使用 `ComputeFloorDist` 判断脚下有没有地、离地多远
+
+`FindFloor` 通过使用上面两个函数，最终得到这一帧角色脚下的可行走地板结果，并在必要时进一步处理 缓存分局用 和 Perch 边缘站立
+
+当前面正常地板检测得到的胶囊体地盘看起来不够稳定，或者常规 floor 结果不够理想时， 会尝试用用 **更小的有效支撑半径** 重新判断 **角色是否仍然可以站在平台边缘**，这块逻辑就是 `Perch`
+
+`Perch` 不是普通的**找地板**，而是 **边缘栖息/边缘站立能力判定**，看 **缩小后的内圈地盘** 是否仍然能支撑角色站在边缘
+
 #### ComputeFloorDist
 
 一般情况下，只需要一次垂直向下 `Sweep` 检测就可以计算出 `FloorDist`
@@ -156,11 +165,175 @@
 
 此时检测的 `bStartPenetration` 是 true
 
-需要缩小叫能提，重新向下 `Sweep` 计算出来的 `FloorDist - ShrinkHeight` 就是原胶囊体跟地面的距离
+需要缩小胶囊体，重新向下 `Sweep` 计算出来的 `FloorDist - ShrinkHeight` 就是原胶囊体跟地面的距离
 
 所有缩小的胶囊体 `Sweep` 让然出现了穿透的情况，需要修改使用 `Line Trace` 并且从胶囊体中心向下检测胶囊体的半高，如何检测到了 `Hit`，则可以计算陷入地面以下的高度
 
 无论是 `Sweep` 还是 `LineTrace`，单次调整的高度 `MaxPenetrationAdjust` 最大只能是胶囊体的半径，如果陷入地面的深度大于高度，无法一次调整到地面上，需要多帧处理
+
+对应函数的执行步骤如下
+
+```bash
+ComputeFloorDist
+│
+├─ 1. 清空 OutFloorResult，读取胶囊尺寸
+│
+├─ 2. 如果外部已经给了 DownwardSweepResult
+│   ├─ 检查它是否真的是“垂直向下”的 sweep
+│   ├─ 检查命中点是否不在胶囊边缘
+│   ├─ 若可用，先写入 OutFloorResult
+│   └─ 若它还是 walkable，直接返回
+│
+├─ 3. 检查 SweepDistance >= LineDistance
+│   └─ 否则直接返回（参数非法）
+│
+├─ 4. 做向下胶囊 Sweep
+│   ├─ 先用“缩短高度”的胶囊扫一次
+│   ├─ 若结果是穿透或边缘命中
+│   │   └─ 再用“更小半径、更短高度”的胶囊扫一次
+│   ├─ 把 sweep 命中时间换算成真实 FloorDist
+│   └─ 若命中可行走地板且距离合法，直接返回
+│
+├─ 5. 如果 sweep 什么都没命中，且不是起始穿透
+│   └─ 直接认为地板至少在 SweepDistance 之外，返回
+│
+├─ 6. 做向下 LineTrace
+│   ├─ 把 line 命中时间换算成真实 LineDist
+│   └─ 若命中可行走地板且距离合法，写入结果并返回
+│
+└─ 7. 走到最后说明没有可接受地板
+    └─ OutFloorResult.bWalkableFloor = false
+```
+
+一开始需要使用 胶囊体 的 Sweep，而不是 LineTrace，因为 Character 是一个胶囊体
+
+使用 `IsWithinEdgeTolerance` 函数来检查胶囊体是不是边缘蹭到了
+
+从顶视图可以看到为什么要做边缘检测
+
+```basah
+      胶囊底部允许支撑区域（圆）
+         ┌───────────┐
+         │    ○      │   ○ = 胶囊中心轴
+         │           │
+         └───────────┘
+```
+
+> 如果命中点太靠外圈，就认为这是 **边缘擦碰**，不是稳定地板
+
+第一次 Sweep 的时候，先把胶囊提高度缩短一点
+
+1. 避免 刚好贴地起始 时， Sweep 结果怪异
+2. 允许处理轻微穿透，缩小后允许得到合理的负举例，便于后续把角色从地里拉出来
+
+如果第一次 Sweep 结果不好，做修正之后第二次 Sweep
+
+- 两种坏情况
+  1. Hit.bStartPenetrating 表示 Sweep 一开始就已经穿进物体里
+  2. 命中点不在边缘容差内，说明命中太靠近胶囊体边缘，很可能不是脚下稳定地板，二十侧边曾到的几何
+
+- 做以下调整
+  1. 缩小半径，第一次 Sweep 出现边缘问题，缩小半径更强调 底部核心支撑区域，弱化边缘影响
+  2. 缩短高度
+
+> 第一次 Sweep 可能扫到边缘干扰物，所以把胶囊体 往里缩一圈，再向下重新找真正的地面
+
+当 Sweep 的结果满足下面三个条件时，判定为可行走地板
+
+1. 确实有有效阻挡命中，对应 **有碰撞**
+2. 命中表面 IsWalkable，对应 **角度可行走**
+3. 举例没有超过本次 Sweep 的合法检查范围，对应 **距离合理**
+
+有的时候会添加 LineTrace 做补充计算，比如下面这些情况
+
+1. Sweep 得到的是边缘命中
+2. Sweep 只适合体积判断，不够精确
+3. 还想知道中心点正下方的精确垂直距离
+
+从胶囊体沿重力向下打一条射线，对 Hit 做 IsWalkable 判断，检查是否合法
+
+#### IsWalkable
+
+主要做两件事情
+
+1. 如果 **地面法线** 在 重力局部控件 中的 Z 分量足够大
+   - 地面不太陡
+   - 可行走
+2. 如果 Z 分量太小
+   - 地面太陡 或 接近垂直
+   - 不可行走
+
+```bash
+IsWalkable(Hit)
+│
+├─ 1. Hit 是否是有效阻挡命中？
+│   ├─ 否 -> false
+│   └─ 是
+│
+├─ 2. 把 ImpactNormal 转到重力局部空间
+│
+├─ 3. 法线 Z 是否 <= 0（近似垂直/朝下）？
+│   ├─ 是 -> false
+│   └─ 否
+│
+├─ 4. 取默认 WalkableFloorZ
+│
+├─ 5. 命中组件是否覆写了坡度规则？
+│   ├─ 是 -> 用组件 override 修改阈值
+│   └─ 否 -> 用默认阈值
+│
+├─ 6. 法线 Z 是否 < 最终阈值？
+│   ├─ 是 -> false（坡太陡）
+│   └─ 否 -> true
+```
+
+#### Perch
+
+Perch 不是一个函数，而是 FindFloor 最后一个阶段
+
+用于处理 角色站在平台边缘、正常胶囊体底部有一部分已经悬空、常规 Floor 检测不理想，但是从玩法角度仍然希望角色能够站住
+
+> Floor 检测不理想包括：支撑不足、命中边缘法线不理想、地面不可行走
+
+```bash
+        正常胶囊底盘（半径 PawnRadius）
+             ┌───────────────┐
+          ┌──┘               └──┐
+         │         内圈           │
+         │    (ValidPerchRadius)  │
+         │           ○            │   ○ = 胶囊中心轴
+          └──┐               ┌──┘
+             └───────────────┘
+```
+
+设角色胶囊地盘的俯视是一个圆
+
+- 外圈半径是 PawnRadius
+- 内圈半径是 ValidPerchRadius = PawnRadius - PerchRadiusThreshold
+
+普通 Floor 检测更接近看整个地盘，Perch 检测则是在问 **虽然外圈可能已经悬出去一部分，但内圈是不是还稳稳的压在可行走地面上？**
+
+如果没有 Perch 角色在平台边缘会表现得很硬
+
+- 稍微踩出一点边，就立即判定没有地板
+- 被边缘命中法线干扰，突然变成不可行走
+- floor 高度在边缘频繁抖动
+
+通过 Perch 来判定，只要核心支撑区域还在地面上，就允许站住
+
+- 通过 `GetPerchRadiusThreshold` 函数得到 Perch 缩圈阈值
+- 通过 `GetValidPerchRadius` 函数得到真正用于 Perch 的有效半径
+- 通过 `ShouldComputePerchResult` 函数决定当前是否值得做 Patch
+
+在 FindFloor 的最后阶段进行 Perch 检测
+
+```cpp
+if (bNeedToValidateFloor && OutFloorResult.bBlockingHit && !OutFloorResult.bLineTrace)
+```
+
+- bNeedToValidateFloor 说明是新鲜计算出来的，而不是缓存复用
+- bBlockingHit 说明有碰撞，否则没得 Perch
+- !bLineTrace 必须是 Sweep 的结果，因为 Perch 本质上是 底盘支撑区域缩圈判断，具有体积含义， LineTrace 只有一条线而已
 
 ## UE 的移动组件
 
