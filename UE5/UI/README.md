@@ -802,3 +802,8 @@ ItemsWithGeneratedWidgets.Add(InItem);
 
 https://gwb.tencent.com/community/detail/113852
 <!-- ![](Image/003.png) -->
+
+注意使用 InvalidationBox 和 RetainerBox 来优化 UMG 性能
+
+- RetainerBox 缓存渲染效果，下次直接使用
+- InvalidationBox 缓存渲染命令，下次无需计算
