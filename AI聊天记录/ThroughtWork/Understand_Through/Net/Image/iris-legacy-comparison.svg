@@ -1,0 +1,106 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 624" width="960" height="624">
+  <rect x="0" y="0" width="960" height="624" fill="white"/>
+  <!-- Title -->
+  <rect x="0" y="0" width="960" height="46" fill="#1E293B"/>
+  <text x="480" y="30" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="bold" fill="white">Legacy 复制系统 vs Iris 复制系统 架构对比</text>
+  <!-- Column headers -->
+  <rect x="0" y="46" width="135" height="38" fill="#334155"/>
+  <text x="68" y="70" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#CBD5E1">对比维度</text>
+  <rect x="135" y="46" width="365" height="38" fill="#92400E"/>
+  <text x="317" y="70" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="white">Legacy（GenericReplication）</text>
+  <rect x="500" y="46" width="460" height="38" fill="#065F46"/>
+  <text x="730" y="70" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="white">Iris（UReplicationSystem）</text>
+  <!-- ROW 0 -->
+  <rect x="0" y="84" width="960" height="76" fill="#F8FAFC"/>
+  <rect x="4" y="88" width="127" height="68" rx="3" fill="#E2E8F0"/>
+  <text x="68" y="116" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">主驱动</text>
+  <text x="68" y="132" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748B">入口函数</text>
+  <rect x="138" y="88" width="358" height="68" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+  <text x="317" y="108" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#92400E">ServerReplicateActors()</text>
+  <text x="317" y="126" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">线性遍历，Actor × Connection 双重循环</text>
+  <text x="317" y="143" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">复杂度 O(Actors × Connections)</text>
+  <rect x="502" y="88" width="454" height="68" rx="3" fill="#ECFDF5" stroke="#10B981" stroke-width="1"/>
+  <text x="729" y="108" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#065F46">ReplicationSystem::PreSendUpdate()</text>
+  <text x="729" y="126" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">分阶段批量处理：Filter → Poll → Prio → Write</text>
+  <text x="729" y="143" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">各阶段独立，架构分层清晰，可独立优化</text>
+  <!-- ROW 1 -->
+  <rect x="0" y="160" width="960" height="76" fill="#FFFFFF"/>
+  <rect x="4" y="164" width="127" height="68" rx="3" fill="#E2E8F0"/>
+  <text x="68" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">对象管理</text>
+  <text x="68" y="208" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748B">句柄/通道</text>
+  <rect x="138" y="164" width="358" height="68" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+  <text x="317" y="184" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#92400E">UActorChannel（重量级）</text>
+  <text x="317" y="201" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">每 Actor × 每 Connection 各自独立实例</text>
+  <text x="317" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">含完整序列化状态 / ChangelistMgr 等</text>
+  <rect x="502" y="164" width="454" height="68" rx="3" fill="#ECFDF5" stroke="#10B981" stroke-width="1"/>
+  <text x="729" y="184" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#065F46">FNetRefHandle（16 字节轻量句柄）</text>
+  <text x="729" y="201" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">全局共享 NetRefHandleManager，对象独立于连接</text>
+  <text x="729" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">FReplicationInfo 仅 16 字节/对象/连接（极小）</text>
+  <!-- ROW 2 -->
+  <rect x="0" y="236" width="960" height="76" fill="#F8FAFC"/>
+  <rect x="4" y="240" width="127" height="68" rx="3" fill="#E2E8F0"/>
+  <text x="68" y="268" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">类型元数据</text>
+  <text x="68" y="284" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748B">属性描述</text>
+  <rect x="138" y="240" width="358" height="68" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+  <text x="317" y="260" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#92400E">FRepLayout（运行期反射）</text>
+  <text x="317" y="277" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">每次序列化遍历 FProperty 链，虚函数派发</text>
+  <text x="317" y="294" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">比较与序列化均依赖运行期 UProperty 反射</text>
+  <rect x="502" y="240" width="454" height="68" rx="3" fill="#ECFDF5" stroke="#10B981" stroke-width="1"/>
+  <text x="729" y="260" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#065F46">FReplicationProtocol（编译期元数据）</text>
+  <text x="729" y="277" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">ChangeMaskBitCount 固定，偏移编译期确定</text>
+  <text x="729" y="294" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">FNetSerializer 静态函数指针，零虚函数开销</text>
+  <!-- ROW 3 -->
+  <rect x="0" y="312" width="960" height="76" fill="#FFFFFF"/>
+  <rect x="4" y="316" width="127" height="68" rx="3" fill="#E2E8F0"/>
+  <text x="68" y="344" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">脏属性检测</text>
+  <text x="68" y="360" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748B">变化感知</text>
+  <rect x="138" y="316" width="358" height="68" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+  <text x="317" y="336" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#92400E">memcmp ShadowBuffer</text>
+  <text x="317" y="353" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">每帧全量比较（N_actors × N_conns 次）</text>
+  <text x="317" y="370" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">属性不变也必须执行，无法跳过</text>
+  <rect x="502" y="316" width="454" height="68" rx="3" fill="#ECFDF5" stroke="#10B981" stroke-width="1"/>
+  <text x="729" y="336" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#065F46">FDirtyNetObjectTracker（全局 BitArray）</text>
+  <text x="729" y="353" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">Push Model：只有脏标记对象才进入轮询</text>
+  <text x="729" y="370" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">AccumulatedDirtyNetObjects 跨帧累积</text>
+  <!-- ROW 4 -->
+  <rect x="0" y="388" width="960" height="76" fill="#F8FAFC"/>
+  <rect x="4" y="392" width="127" height="68" rx="3" fill="#E2E8F0"/>
+  <text x="68" y="420" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">序列化</text>
+  <text x="68" y="436" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748B">编码方式</text>
+  <rect x="138" y="392" width="358" height="68" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+  <text x="317" y="412" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#92400E">FArchive 泛型序列化</text>
+  <text x="317" y="429" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">运行期类型分发，每属性走虚函数路径</text>
+  <text x="317" y="446" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">Quantize 与 Serialize 耦合，N 连接重复量化</text>
+  <rect x="502" y="392" width="454" height="68" rx="3" fill="#ECFDF5" stroke="#10B981" stroke-width="1"/>
+  <text x="729" y="412" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#065F46">FNetSerializer（类型专用）</text>
+  <text x="729" y="429" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">Quantize 每对象每帧一次；Serialize 每连接一次</text>
+  <text x="729" y="446" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">SerializeDelta 内建属性级 Delta 压缩</text>
+  <!-- ROW 5 -->
+  <rect x="0" y="464" width="960" height="76" fill="#FFFFFF"/>
+  <rect x="4" y="468" width="127" height="68" rx="3" fill="#E2E8F0"/>
+  <text x="68" y="494" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">过滤/优先级</text>
+  <text x="68" y="512" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748B">调度策略</text>
+  <rect x="138" y="468" width="358" height="68" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+  <text x="317" y="488" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#92400E">IsNetRelevantFor() + FActorPriority</text>
+  <text x="317" y="505" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">每帧每连接遍历所有 Actor 判断相关性</text>
+  <text x="317" y="522" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">Algo::SortBy 全量排序，无批量优化</text>
+  <rect x="502" y="468" width="454" height="68" rx="3" fill="#ECFDF5" stroke="#10B981" stroke-width="1"/>
+  <text x="729" y="488" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#065F46">FilterPrePoll + FilterPostPoll + Prioritize()</text>
+  <text x="729" y="505" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">BitArray AND 位运算 O(N/64)；两段分离过滤</text>
+  <text x="729" y="522" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">批量 Prioritize + 部分排序 Top-128</text>
+  <!-- ROW 6 -->
+  <rect x="0" y="540" width="960" height="76" fill="#F8FAFC"/>
+  <rect x="4" y="544" width="127" height="68" rx="3" fill="#E2E8F0"/>
+  <text x="68" y="572" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#334155">Delta 压缩</text>
+  <text x="68" y="588" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748B">增量编码</text>
+  <rect x="138" y="544" width="358" height="68" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+  <text x="317" y="564" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#92400E">FRepChangedHistory 环形缓冲</text>
+  <text x="317" y="581" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">仅用于 NAK 重发，非真正 Delta 压缩</text>
+  <text x="317" y="598" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#78350F">每次发送完整属性值，无基线比对</text>
+  <rect x="502" y="544" width="454" height="68" rx="3" fill="#ECFDF5" stroke="#10B981" stroke-width="1"/>
+  <text x="729" y="564" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#065F46">FDeltaCompressionBaselineManager</text>
+  <text x="729" y="581" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">每对象保存 2 个已确认基线；SerializeDelta 发差值</text>
+  <text x="729" y="598" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#047857">net.Iris.EnableDeltaCompression CVar 控制</text>
+  <!-- Bottom border -->
+  <rect x="0" y="616" width="960" height="8" fill="#1E293B"/>
+</svg>

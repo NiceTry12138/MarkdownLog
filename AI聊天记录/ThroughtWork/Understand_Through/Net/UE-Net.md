@@ -1,4 +1,4 @@
-# UE 网络同步深度解析
+﻿# UE 网络同步深度解析
 
 > **版本**：Unreal Engine 5.4.4  
 > **源码路径**：`Engine/Source/Runtime/Engine/Private/`（NetDriver.cpp, NetConnection.cpp, DataChannel.cpp, DataReplication.cpp, RepLayout.cpp, IpNetDriver.cpp）  
@@ -14,7 +14,8 @@
 4. [客户端接收路径详解](#四客户端接收路径详解)
 5. [异常数据包处理](#五异常数据包处理)
 6. [网络同步优化模块](#六网络同步优化模块)
-7. [附录：关键数据结构速查](#附录关键数据结构速查)
+7. [Iris 复制系统深度解析](#七iris-复制系统深度解析)
+8. [附录：关键数据结构速查](#附录关键数据结构速查)
 
 ---
 
@@ -1961,6 +1962,328 @@ Ar.SerializeBits(&StateInt, 3);  // vs 默认 8 bit
 | RTS / MOBA 类型游戏 | 帧同步 + 定点数（6.11.9）|
 | 数百人同场景 MMO | 空间分区 + 网络 LOD（6.11.5）|
 | 极致带宽压缩（离线分析）| 熵编码 Zstandard（6.11.8）|
+
+---
+
+## 七、Iris 复制系统深度解析
+
+> **源码路径**：`Engine/Source/Runtime/Experimental/Iris/Core/`  
+> **状态**：UE 5.1 引入，5.4 仍为 Experimental，与 Legacy 系统并行，可按需切换  
+> **命名空间**：`UE::Net` / `UE::Net::Private`
+
+---
+
+### 7.1 Iris 是什么
+
+**Legacy 系统的痛点**：`UNetDriver::ServerReplicateActors()` 是单一巨型循环，每帧对 **每个 Actor × 每个 Connection** 做完整的 memcmp + FArchive 序列化。连接数一多，CPU 呈 O(Actors × Connections) 爆炸。
+
+**Iris 的定位**：彻底重写的复制管线，核心目标是：
+1. **解耦复制阶段** — 将脏检测、过滤、优先级、序列化拆成独立子系统，便于独立优化
+2. **编译期类型信息** — 用 `FReplicationProtocol`（编译期元数据）替代运行期 `FRepLayout`（UProperty 反射），消除反射开销
+3. **Quantize 与 Serialize 分离** — 量化（压缩源数据为 POD）每对象每帧最多一次，序列化（写入位流）每连接一次，N 连接不重复量化
+4. **全局 BitArray 脏追踪** — `FDirtyNetObjectTracker` 替代全量 memcmp，只有标记脏的对象进入轮询
+
+**开启方式**：
+
+```ini
+; DefaultEngine.ini
+[/Script/Engine.NetworkSettings]
+bUseIrisReplication=True
+```
+
+或命令行 `-UseIrisReplication`，运行时调用 `UE::Net::SetUseIrisReplication(true)`。
+
+**关键模块目录**：
+
+```
+Source/Runtime/Experimental/Iris/Core/
+├── Public/Iris/
+│   ├── ReplicationSystem/        # API：UReplicationSystem, FNetRefHandle, ReplicationBridge
+│   └── Serialization/            # FNetSerializer 接口定义, 内置序列化器
+└── Private/Iris/
+    ├── ReplicationSystem/        # 核心实现
+    │   ├── Polling/              # FObjectPoller（条件轮询）
+    │   ├── Filtering/            # FReplicationFiltering（两段过滤）
+    │   ├── Prioritization/       # FReplicationPrioritization（批量优先级）
+    │   ├── DeltaCompression/     # FDeltaCompressionBaselineManager
+    │   ├── DirtyNetObjectTracker.h
+    │   ├── ReplicationWriter.h   # 写入端核心
+    │   └── ReplicationReader.h   # 读取端核心
+    └── Serialization/
+```
+
+---
+
+### 7.2 核心架构：Legacy vs Iris 横向对比
+
+![Legacy vs Iris 架构对比](Image/iris-legacy-comparison.svg)
+---
+
+### 7.3 Iris 完整数据处理管线
+
+![Iris 数据处理管线](Image/iris-pipeline-flow.svg)
+
+---
+
+### 7.4 数据收集阶段：脏标记与条件轮询
+
+#### 7.4.1 全局脏追踪器 FDirtyNetObjectTracker
+
+```
+// DirtyNetObjectTracker.h
+class FDirtyNetObjectTracker
+{
+    FNetBitArray AccumulatedDirtyNetObjects; // 跨帧累积脏对象 BitArray
+    FNetBitArray ForceNetUpdateObjects;      // 强制更新对象（ForceNetUpdate() 调用）
+    StorageType* DirtyNetObjectContainer;    // 当帧脏对象（帧末清零）
+    FGlobalDirtyNetObjectTracker::FPollHandle GlobalDirtyTrackerPollHandle;
+};
+```
+
+**运作方式**：
+- 游戏线程调用 `MARK_PROPERTY_DIRTY_FROM_NAME()` → 全局追踪器置位
+- `UpdateDirtyNetObjects()` 把全局追踪器内容合并进 `AccumulatedDirtyNetObjects`
+- `ReconcilePolledList()` 清除已被轮询处理的 bit（防止 bit 永远不清）
+
+**关键设计**：用 `LockExternalAccess()` / `AllowExternalAccess()` 保证线程安全；`FDirtyObjectsAccessor` RAII 访问器防止并发写入。
+
+#### 7.4.2 FObjectPoller：条件轮询与量化分离
+
+```cpp
+// ObjectPoller.h
+class FObjectPoller
+{
+    void PreUpdatePass(const FNetBitArrayView& ObjectsConsideredForPolling);
+    // ↑ 调用 AActor::PreReplication()（仅在需要时，由 NeedsLegacyCallbacks 标志控制）
+
+    void PollAndCopyObjects(const FNetBitArrayView& ObjectsConsideredForPolling);
+    // 对 BitArray 中每个置位对象：
+    //   - ForcePollObject()：无条件轮询（未启用 Push Model 时）
+    //   - PushModelPollObject()：仅 Push Model 标记脏时才轮询
+    //   - 然后调用 FNetSerializer::Quantize()：SourceType → QuantizedType（POD）
+};
+```
+
+**Quantize 分离的意义**：
+
+| 比较项 | Legacy | Iris |
+|--------|--------|------|
+| 量化时机 | 每连接序列化时各自量化 | 每对象每帧最多一次 |
+| 10 个连接 | Quantize × 10 | Quantize × 1（结果共享） |
+| 量化成本 | O(Objects × Connections) | O(DirtyObjects) |
+
+---
+
+### 7.5 数据处理阶段：两段过滤与批量优先级
+
+#### 7.5.1 两段式过滤设计
+
+```
+// ReplicationFiltering.h
+void FReplicationFiltering::FilterPrePoll()
+{
+    // 1. NetObjectGroups 组过滤（group-based exclusion → GroupExcludedObjects BitArray）
+    // 2. Owner 过滤（bOnlyRelevantToOwner 等）
+    // 3. Connection 属性过滤（bAlwaysRelevant 等静态属性）
+    // 结果：每连接 ObjectsInScope = GlobalScope AND NOT Excluded
+}
+
+void FReplicationFiltering::FilterPostPoll()
+{
+    // 只执行 fragment-based 动态过滤器（依赖 WorldLocations 等位置信息）
+    // 这类过滤器需要 Quantize 后的最新位置，因此必须在 Poll 之后执行
+    // 进一步裁剪 ObjectsInScope
+}
+```
+
+**两段分离的原因**：静态属性（Owner、Group）不依赖位置，在 Poll 前执行减少不必要轮询；空间距离过滤（NetCullDistance）依赖量化后的位置，必须在 Poll 后执行。
+
+#### 7.5.2 批量优先级计算
+
+```cpp
+// ReplicationPrioritization.h
+void FReplicationPrioritization::Prioritize(
+    const FNetBitArrayView& ConnectionsToSend,
+    const FNetBitArrayView& DirtyObjectsThisFrame)
+{
+    NotifyPrioritizersOfDirtyObjects(DirtyObjectsThisFrame);
+    // 只通知脏对象 → 只有脏对象更新优先级分数
+
+    for (uint32 ConnId : ConnectionsToSend)
+        PrioritizeForConnection(ConnId, BatchHelper, ScopedObjects);
+    // FPrioritizerBatchHelper 批量处理同一 Prioritizer 的多个对象
+    // 相比逐对象调用，改善 cache locality
+}
+
+// 每连接状态
+struct FPerConnectionInfo {
+    TArray<float> Priorities;   // 一个 float/对象，直接用 index 访问
+    uint32 NextObjectIndexToProcess;
+};
+```
+
+静态优先级（`SetStaticPriority()`）直接赋值，不走 Prioritizer；ViewTarget 对象直接设 `ViewTargetHighPriority = 1.0E7f`。
+
+---
+
+### 7.6 数据发送阶段：调度、Delta压缩、序列化
+
+#### 7.6.1 FReplicationWriter 状态机与部分排序
+
+**FReplicationInfo（16 字节/对象/连接）**：
+
+```cpp
+// ReplicationWriter.h
+struct FReplicationInfo  // static_assert(sizeof == 16)
+{
+    FChangeMaskStorageOrPointer ChangeMaskOrPtr;  // changemask 存储（≤64bit 内联）
+    union {
+        uint64 Value;
+        struct {
+            uint64 ChangeMaskBitCount        : 16;  // 编译期固定，缓存避免重新查找
+            uint64 State                     : 5;   // EReplicatedObjectState（最多32种）
+            uint64 HasDirtySubObjects        : 1;
+            uint64 HasDirtyChangeMask        : 1;   // 0则 changemask 全零，直接跳过
+            uint64 HasAttachments            : 1;   // 有待发 RPC 时置位
+            uint64 IsDeltaCompressionEnabled : 1;
+            uint64 LastAckedBaselineIndex    : 2;   // 已确认基线 index（0/1）
+            uint64 PendingBaselineIndex      : 2;   // 待确认基线 index
+            // ...
+        };
+    };
+};
+```
+
+**对象状态机**（`EReplicatedObjectState`）：
+
+```
+PendingCreate
+    ↓ 发送 CreateMsg + 初始属性
+WaitOnCreateConfirmation
+    ↓ 收到 ACK
+Created  ←── 正常同步状态（绝大多数时间在此）
+    ↓ TearOff / Destroy 触发
+PendingTearOff / PendingDestroy
+    ↓ 等待确认
+WaitOnDestroyConfirmation
+    ↓ 收到 ACK
+Destroyed → PermanentlyDestroyed
+```
+
+**部分排序（Partial Sort）优化**：
+
+```cpp
+// ReplicationWriter.h
+static const uint32 PartialSortObjectCount = 128u;
+// 每帧每连接只对 Top-128 对象做完整排序
+// 剩余对象放入 ScheduledObjectInfos 数组但不排序
+// 填满 Top-128 后继续写下一帧，无需全量重排
+```
+
+Legacy 每帧对全部 Actor 做 `Algo::SortBy`（O(N logN)）；Iris 用部分堆排序 O(128 × log N)，N 较大时节省显著。
+
+#### 7.6.2 Delta 压缩基线管理
+
+```cpp
+// DeltaCompressionBaselineManager.h
+class FDeltaCompressionBaselineManager
+{
+    enum : uint32 { MaxBaselineCount = 2 };         // 最多同时 2 个 in-flight 基线
+    enum : uint32 { BaselineIndexBitCount = 2 };    // 2 bit 编码基线 index
+
+    // 每帧 PreSendUpdate：
+    //   - 创建新基线（如满足策略：变化频率足够低、基线槽位有空）
+    //   - 用 FDeltaCompressionBaselineInvalidationTracker 失效过期基线
+    //   - 基线条件变化（conditional changemask 改变）也触发失效
+
+    // 发送时：
+    //   FReplicationWriter 读 LastAckedBaselineIndex
+    //   有可用基线 → 调用 FNetSerializer::SerializeDelta(baseline, current)
+    //   无基线 → 回退到 FNetSerializer::Serialize(current) 全量发送
+};
+```
+
+**2 个基线的意义**：允许 1 个基线在飞行（等待 ACK），1 个已确认可用。若只有 1 个基线且 ACK 前丢包，则无法发送增量，需等待或全量重发。2 个基线提高了增量发送的稳定性。
+
+#### 7.6.3 FNetSerializer：Quantize/Serialize 分离
+
+```cpp
+// NetSerializer.h（示例接口）
+struct FExampleNetSerializer
+{
+    typedef FVector    SourceType;     // 原始类型（非 POD，含构造/析构）
+    typedef FIntVector QuantizedType;  // POD 量化类型（直接 memcmp）
+
+    // Quantize：每对象每帧一次，将 SourceType 转为 QuantizedType
+    static void Quantize(FNetSerializationContext&, const FNetQuantizeArgs&);
+    // Dequantize：接收端恢复 SourceType
+    static void Dequantize(FNetSerializationContext&, const FNetDequantizeArgs&);
+
+    // Serialize：写入位流（每连接一次，使用 QuantizedType）
+    static void Serialize(FNetSerializationContext&, const FNetSerializeArgs&);
+    // SerializeDelta：与基线对比，相同值仅写 1 bit（bUseDefaultDelta=true 默认实现）
+    static void SerializeDelta(FNetSerializationContext&, const FNetSerializeDeltaArgs&);
+    static void DeserializeDelta(FNetSerializationContext&, const FNetDeserializeDeltaArgs&);
+
+    // EReplicationProtocolTraits::HasConnectionSpecificSerialization = false
+    // → 编译器知道此序列化器无连接特定逻辑，可优化调用路径
+};
+```
+
+`bUseDefaultDelta = true`（默认）：SerializeDelta 先写 1 bit 表示"是否与基线相同"，相同则不写值，节省整个属性的位数。这是属性级 Delta 压缩，比 Legacy 的 changedMask 粒度更细。
+
+---
+
+### 7.7 FReplicationProtocol：编译期类型系统
+
+```cpp
+// ReplicationProtocol.h
+struct FReplicationProtocol
+{
+    const FReplicationStateDescriptor** ReplicationStateDescriptors;  // 属性组描述符数组
+    uint32 ReplicationStateCount;       // 状态分组数
+    uint32 InternalTotalSize;           // 存储完整状态需要的总字节数
+    uint32 ChangeMaskBitCount;          // 全对象 changemask 总位数（编译期确定）
+    uint32 InternalChangeMasksOffset;   // changemask 在内存块中的偏移
+    FReplicationProtocolIdentifier ProtocolIdentifier;  // 类型唯一 ID
+
+    EReplicationProtocolTraits Traits;  // 编译期 trait 位域：
+    // HasDynamicState / HasLifetimeConditionals / SupportsDeltaCompression ...
+};
+
+// 实例级协议（每对象实例一个，存储外部数据指针）
+struct FReplicationInstanceProtocol
+{
+    FReplicationFragment* const* Fragments;  // 属性分组片段数组
+    uint16 FragmentCount;
+    EReplicationInstanceProtocolTraits InstanceTraits;
+    // NeedsPoll / NeedsLegacyCallbacks / HasFullPushBasedDirtiness ...
+};
+```
+
+**与 FRepLayout 的本质差异**：
+
+| | FRepLayout | FReplicationProtocol |
+|--|--|--|
+| 构建时机 | 运行期，首次序列化时 | 模块加载时（可静态生成）|
+| 属性遍历 | 运行期 FProperty 链迭代 | 编译期 Descriptor 数组 |
+| 序列化函数 | FProperty::NetSerializeItem 虚函数 | FNetSerializer 静态函数指针 |
+| changemask | 运行期计算 bit 数 | 编译期 `ChangeMaskBitCount` |
+
+---
+
+### 7.8 Iris 关键优化总结
+
+| 优化点 | Legacy 问题 | Iris 方案 | 性能收益 |
+|--------|------------|-----------|----------|
+| **脏检测** | 全量 memcmp × N_conns | 全局 BitArray，仅脏对象进轮询 | CPU 节省 ∝ 未变化 Actor 比例 |
+| **量化** | 每连接各自量化 | Quantize 全局一次，结果复用 | 节省 (N_conns-1) 次量化 |
+| **类型分发** | FProperty 虚函数链 | 静态函数指针，编译期内联 | 消除虚函数调用开销 |
+| **Delta 压缩** | 无（仅 NAK 重发）| 2 基线 SerializeDelta | 属性不变时节省该属性全部位 |
+| **过滤** | O(N×M) 遍历 | BitArray AND O(N/64) | 64× 位操作加速 |
+| **排序** | O(N logN) 全量 | 部分排序 Top-128 | 大 N 场景显著降低排序时间 |
+| **对象元数据** | FObjectReplicator（重） | FReplicationInfo 16字节 | 内存节省，cache 友好 |
+| **RPC** | 独立 Bunch 路径 | NetObjectAttachment，统一进 Writer | 统一调度，不再绕过优先级 |
 
 ---
 
