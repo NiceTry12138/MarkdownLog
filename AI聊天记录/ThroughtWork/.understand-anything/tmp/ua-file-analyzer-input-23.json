@@ -1,0 +1,35 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/_package-lock.json",
+      "language": "json",
+      "sizeLines": 2493,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/_package.json",
+      "language": "json",
+      "sizeLines": 32,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/tsconfig.json",
+      "language": "json",
+      "sizeLines": 21,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/tslint.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/_package-lock.json": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/_package.json": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/tsconfig.json": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Server/tslint.json": []
+  }
+}

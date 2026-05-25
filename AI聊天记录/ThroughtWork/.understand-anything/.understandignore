@@ -1,0 +1,106 @@
+# .understandignore — Unreal Engine 5.4 full-engine analysis
+# Aggressive exclusions are required for the deterministic compute-batches
+# script to finish; without them the import-graph clustering on the full
+# UE checkout (~187k source files) does not converge.
+
+# --- Build artifacts / generated code ---
+*.generated.h
+*.gen.cpp
+*.pb.h
+*.pb.cpp
+Binaries/
+Intermediate/
+DerivedDataCache/
+Saved/
+**/Intermediate/
+**/Binaries/
+**/DerivedDataCache/
+**/Saved/
+
+# --- ThirdParty (external libraries, not engine source) ---
+ThirdParty/
+**/ThirdParty/
+
+# --- Auxiliary directories not part of engine architecture ---
+Documentation/
+Extras/
+Programs/
+Build/
+Shaders/
+
+# --- Module/plugin resource & content subdirs (icons, samples) ---
+**/Resources/
+**/Content/
+**/Config/Localization/
+
+# --- Binary / asset / media file types ---
+*.uasset
+*.umap
+*.pak
+*.pem
+*.der
+*.crt
+*.key
+*.p12
+*.pfx
+*.dll
+*.pdb
+*.lib
+*.exp
+*.a
+*.so
+*.dylib
+*.exe
+*.obj
+*.o
+*.tga
+*.exr
+*.hdr
+*.bmp
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.psd
+*.tif
+*.tiff
+*.fbx
+*.stl
+*.wav
+*.mp3
+*.ogg
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# --- Shader source (separate language, large) ---
+*.usf
+*.ush
+
+# --- Inline implementations / template instantiations ---
+*.inl
+
+# --- UBT artifacts ---
+*.target
+*.modules
+*.version
+
+# --- Lock / log / large data ---
+*.lock
+*.log
+*.xml
+*.csv
+*.tsv
+
+# --- Editor cruft ---
+.idea/
+.vs/
+.vscode/
+.git/
+
+# --- Analysis output ---
+ThroughtWork/
+.understand-anything/

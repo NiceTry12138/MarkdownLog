@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="540" viewBox="0 0 860 540">
+  <rect width="860" height="540" fill="#12121f"/>
+  <text x="430" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">BlueprintThreadSafeUpdateAnimation：线程模型</text>
+
+  <!-- Thread A: Game Thread -->
+  <rect x="20" y="60" width="380" height="420" rx="8" fill="#1a2a1a" stroke="#4a804a" stroke-width="2"/>
+  <text x="210" y="82" text-anchor="middle" font-size="14" font-weight="bold" fill="#80c080" font-family="Arial, sans-serif">游戏主线程（Game Thread）</text>
+
+  <!-- GT Step 1 -->
+  <rect x="40" y="96" width="340" height="46" rx="4" fill="#1e3a1e" stroke="#408040" stroke-width="1"/>
+  <text x="210" y="115" text-anchor="middle" font-size="11" fill="#80e080" font-family="Arial, sans-serif">UWorld::Tick()</text>
+  <text x="210" y="130" text-anchor="middle" font-size="10" fill="#509050" font-family="Arial, sans-serif">调度 SkeletalMeshComponent::TickComponent</text>
+
+  <line x1="210" y1="142" x2="210" y2="157" stroke="#408040" stroke-width="1.5" marker-end="url(#arrowGT)"/>
+
+  <!-- GT Step 2 -->
+  <rect x="40" y="159" width="340" height="46" rx="4" fill="#1e3a1e" stroke="#408040" stroke-width="1"/>
+  <text x="210" y="178" text-anchor="middle" font-size="11" fill="#80e080" font-family="Arial, sans-serif">AnimInstance::UpdateAnimation(DeltaTime)</text>
+  <text x="210" y="193" text-anchor="middle" font-size="10" fill="#509050" font-family="Arial, sans-serif">BlueprintUpdateAnimation() ← 主线程执行</text>
+
+  <line x1="210" y1="205" x2="210" y2="220" stroke="#408040" stroke-width="1.5" marker-end="url(#arrowGT)"/>
+
+  <!-- GT Step 3: Dispatch -->
+  <rect x="40" y="222" width="340" height="60" rx="4" fill="#1e3a2a" stroke="#40a060" stroke-width="1.5"/>
+  <text x="210" y="243" text-anchor="middle" font-size="11" font-weight="bold" fill="#60e080" font-family="Arial, sans-serif">FParallelAnimationTask 派发</text>
+  <text x="210" y="260" text-anchor="middle" font-size="10" fill="#409060" font-family="Arial, sans-serif">bUseMultiThreadedAnimationUpdate = true</text>
+  <text x="210" y="273" text-anchor="middle" font-size="10" fill="#409060" font-family="Arial, sans-serif">将 Proxy.UpdateAnimation_WithRoot 推到工作线程</text>
+
+  <!-- GT barrier -->
+  <line x1="210" y1="350" x2="210" y2="380" stroke="#408040" stroke-width="1.5" marker-end="url(#arrowGT)"/>
+  <rect x="40" y="382" width="340" height="46" rx="4" fill="#1e3a1e" stroke="#408040" stroke-width="1"/>
+  <text x="210" y="401" text-anchor="middle" font-size="11" fill="#80e080" font-family="Arial, sans-serif">等待工作线程完成（Task Fence）</text>
+  <text x="210" y="416" text-anchor="middle" font-size="10" fill="#509050" font-family="Arial, sans-serif">FTaskGraphInterface::TriggerEventWhenTasksComplete</text>
+
+  <line x1="210" y1="428" x2="210" y2="444" stroke="#408040" stroke-width="1.5" marker-end="url(#arrowGT)"/>
+  <rect x="40" y="446" width="340" height="18" rx="4" fill="#1e3a1e" stroke="#408040" stroke-width="1"/>
+  <text x="210" y="459" text-anchor="middle" font-size="10" fill="#60a060" font-family="Arial, sans-serif">RefreshBoneTransforms → GPU submit</text>
+
+  <!-- Thread B: Worker Thread -->
+  <rect x="450" y="60" width="380" height="420" rx="8" fill="#1a1a2a" stroke="#404080" stroke-width="2"/>
+  <text x="640" y="82" text-anchor="middle" font-size="14" font-weight="bold" fill="#8080c0" font-family="Arial, sans-serif">工作线程（Worker Thread）</text>
+
+  <!-- WT steps -->
+  <rect x="470" y="96" width="340" height="46" rx="4" fill="#1e1e3a" stroke="#404080" stroke-width="1"/>
+  <text x="640" y="115" text-anchor="middle" font-size="11" fill="#a0a0e0" font-family="Arial, sans-serif">FAnimInstanceProxy::UpdateAnimation_WithRoot</text>
+  <text x="640" y="130" text-anchor="middle" font-size="10" fill="#607090" font-family="Arial, sans-serif">整个函数在工作线程执行</text>
+
+  <line x1="640" y1="142" x2="640" y2="157" stroke="#404080" stroke-width="1.5" marker-end="url(#arrowWT)"/>
+
+  <!-- WT: NativeThreadSafe -->
+  <rect x="470" y="159" width="340" height="46" rx="4" fill="#1e1e3a" stroke="#6060c0" stroke-width="1.5"/>
+  <text x="640" y="178" text-anchor="middle" font-size="11" font-weight="bold" fill="#c0c0ff" font-family="Arial, sans-serif">① NativeThreadSafeUpdateAnimation()</text>
+  <text x="640" y="193" text-anchor="middle" font-size="10" fill="#8080c0" font-family="Arial, sans-serif">C++ 重写，完全由用户控制，须线程安全</text>
+
+  <line x1="640" y1="205" x2="640" y2="220" stroke="#404080" stroke-width="1.5" marker-end="url(#arrowWT)"/>
+
+  <!-- WT: BlueprintThreadSafe -->
+  <rect x="470" y="222" width="340" height="60" rx="4" fill="#2a1e3a" stroke="#8060c0" stroke-width="1.5"/>
+  <text x="640" y="243" text-anchor="middle" font-size="11" font-weight="bold" fill="#e0a0ff" font-family="Arial, sans-serif">② BlueprintThreadSafeUpdateAnimation()</text>
+  <text x="640" y="260" text-anchor="middle" font-size="10" fill="#a070c0" font-family="Arial, sans-serif">BP函数：meta=(BlueprintThreadSafe) 标记</text>
+  <text x="640" y="274" text-anchor="middle" font-size="10" fill="#a070c0" font-family="Arial, sans-serif">编译器校验只能调用 ThreadSafe 函数</text>
+
+  <line x1="640" y1="282" x2="640" y2="297" stroke="#404080" stroke-width="1.5" marker-end="url(#arrowWT)"/>
+
+  <!-- WT: Graph update -->
+  <rect x="470" y="299" width="340" height="46" rx="4" fill="#1e1e3a" stroke="#404080" stroke-width="1"/>
+  <text x="640" y="318" text-anchor="middle" font-size="11" fill="#a0a0e0" font-family="Arial, sans-serif">③ UpdateAnimationNode(): RootNode→Update_AnyThread</text>
+  <text x="640" y="333" text-anchor="middle" font-size="10" fill="#607090" font-family="Arial, sans-serif">遍历 AnimGraph 节点 Update</text>
+
+  <line x1="640" y1="345" x2="640" y2="360" stroke="#404080" stroke-width="1.5" marker-end="url(#arrowWT)"/>
+
+  <!-- WT: TickAssetPlayers -->
+  <rect x="470" y="362" width="340" height="46" rx="4" fill="#1e1e3a" stroke="#404080" stroke-width="1"/>
+  <text x="640" y="381" text-anchor="middle" font-size="11" fill="#a0a0e0" font-family="Arial, sans-serif">④ Sync.TickAssetPlayerInstances()</text>
+  <text x="640" y="396" text-anchor="middle" font-size="10" fill="#607090" font-family="Arial, sans-serif">推进所有 Asset Player 时间（BlendSpace 等）</text>
+
+  <!-- WT finish -->
+  <rect x="470" y="430" width="340" height="34" rx="4" fill="#1e1e3a" stroke="#4040a0" stroke-width="1"/>
+  <text x="640" y="452" text-anchor="middle" font-size="11" fill="#6060a0" font-family="Arial, sans-serif">Task 完成，通知 Game Thread 栅栏</text>
+
+  <!-- Horizontal connecting arrow (Dispatch) -->
+  <line x1="380" y1="250" x2="450" y2="250" stroke="#80c040" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#arrowDispatch)"/>
+  <text x="415" y="244" text-anchor="middle" font-size="10" fill="#80c040" font-family="Arial, sans-serif">派发</text>
+
+  <!-- Bottom note -->
+  <rect x="20" y="492" width="820" height="38" rx="4" fill="#1a1a1a" stroke="#444" stroke-width="1"/>
+  <text x="430" y="508" text-anchor="middle" font-size="11" fill="#888" font-family="Arial, sans-serif">BlueprintThreadSafeUpdateAnimation 使用禁忌：禁止访问 UObject 属性（线程不安全）、</text>
+  <text x="430" y="523" text-anchor="middle" font-size="11" fill="#888" font-family="Arial, sans-serif">禁止调用非 ThreadSafe 函数 / 修改 Actor，只允许读写 AnimInstance 上的局部变量和 PropertyAccess 安全属性</text>
+
+  <defs>
+    <marker id="arrowGT" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#408040"/></marker>
+    <marker id="arrowWT" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#404080"/></marker>
+    <marker id="arrowDispatch" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#80c040"/></marker>
+  </defs>
+</svg>

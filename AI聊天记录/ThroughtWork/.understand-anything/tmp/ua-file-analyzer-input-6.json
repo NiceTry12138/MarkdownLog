@@ -1,0 +1,49 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/Mac/BaseMacEngine.ini",
+      "language": "config",
+      "sizeLines": 63,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Mac/BaseMacInput.ini",
+      "language": "config",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Mac/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 148,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Mac/MacEditorPerProjectUserSettings.ini",
+      "language": "config",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Mac/MacGame.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Mac/Mac_SDK.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/Mac/BaseMacEngine.ini": [],
+    "Config/Mac/BaseMacInput.ini": [],
+    "Config/Mac/DataDrivenPlatformInfo.ini": [],
+    "Config/Mac/MacEditorPerProjectUserSettings.ini": [],
+    "Config/Mac/MacGame.ini": [],
+    "Config/Mac/Mac_SDK.json": []
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeExecutionContext.cpp",
+      "language": "cpp",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeSchema.cpp",
+      "language": "cpp",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeSubsystem.cpp",
+      "language": "cpp",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeTypes.cpp",
+      "language": "cpp",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassZoneGraphAnnotationFragments.cpp",
+      "language": "cpp",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassZoneGraphAnnotationProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassZoneGraphAnnotationTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassClaimSmartObjectTask.cpp",
+      "language": "cpp",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassFindSmartObjectTask.cpp",
+      "language": "cpp",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassLookAtTask.cpp",
+      "language": "cpp",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassUseSmartObjectTask.cpp",
+      "language": "cpp",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphFindEscapeTarget.cpp",
+      "language": "cpp",
+      "sizeLines": 140,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphFindSmartObjectTarget.cpp",
+      "language": "cpp",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphPathFollowTask.cpp",
+      "language": "cpp",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphStandTask.cpp",
+      "language": "cpp",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/Conditions/ZoneGraphTagConditions.h",
+      "language": "c",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/Evaluators/MassComponentHitEvaluator.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/Evaluators/MassZoneGraphAnnotationEvaluator.h",
+      "language": "c",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/IMassAIBehaviorModule.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassAIBehaviorTypes.h",
+      "language": "c",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassBehaviorSettings.h",
+      "language": "c",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassComponentHitSubsystem.h",
+      "language": "c",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassComponentHitTypes.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeExecutionContext.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeSchema.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeSubsystem.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeTrait.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassStateTreeTypes.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassZoneGraphAnnotationFragments.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassZoneGraphAnnotationProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassZoneGraphAnnotationTrait.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassClaimSmartObjectTask.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassFindSmartObjectTask.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassLookAtTask.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassUseSmartObjectTask.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphFindEscapeTarget.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphFindSmartObjectTarget.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphPathFollowTask.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Tasks/MassZoneGraphStandTask.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/Conditions/ZoneGraphTagConditions.h": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/Evaluators/MassComponentHitEvaluator.h": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/Evaluators/MassZoneGraphAnnotationEvaluator.h": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/IMassAIBehaviorModule.h": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassAIBehaviorTypes.h": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassBehaviorSettings.h": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassComponentHitSubsystem.h": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Public/MassComponentHitTypes.h": []
+  }
+}

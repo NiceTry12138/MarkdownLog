@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="680" viewBox="0 0 960 680">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#89b4fa"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#a6e3a1"/>
+    </marker>
+    <marker id="arrow-yellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f9e2af"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="680" fill="#1e1e2e"/>
+
+  <!-- Title -->
+  <text x="480" y="32" fill="#cdd6f4" font-family="monospace" font-size="18" font-weight="bold" text-anchor="middle">SGraphEditor 架构与内部组成</text>
+  <text x="480" y="52" fill="#6c7086" font-family="monospace" font-size="12" text-anchor="middle">Source/Editor/UnrealEd/Public/GraphEditor.h</text>
+
+  <!-- ===== LEFT: Widget Hierarchy ===== -->
+  <!-- Section label -->
+  <text x="20" y="80" fill="#89b4fa" font-family="monospace" font-size="13" font-weight="bold">Widget 层次结构</text>
+
+  <!-- SGraphEditor box -->
+  <rect x="20" y="90" width="300" height="54" rx="6" fill="#313244" stroke="#89b4fa" stroke-width="2"/>
+  <text x="170" y="112" fill="#89b4fa" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">SGraphEditor</text>
+  <text x="170" y="130" fill="#a6adc8" font-family="monospace" font-size="10" text-anchor="middle">: SCompoundWidget  (UnrealEd 模块)</text>
+
+  <!-- Arrow down -->
+  <line x1="170" y1="144" x2="170" y2="162" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="178" y="157" fill="#6c7086" font-family="monospace" font-size="10">持有 Implementation</text>
+
+  <!-- SGraphEditorImpl box -->
+  <rect x="20" y="164" width="300" height="54" rx="6" fill="#313244" stroke="#74c7ec" stroke-width="2"/>
+  <text x="170" y="186" fill="#74c7ec" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">SGraphEditorImpl</text>
+  <text x="170" y="204" fill="#a6adc8" font-family="monospace" font-size="10" text-anchor="middle">Private/SGraphEditorImpl.h  (真正实现)</text>
+
+  <!-- Arrow down -->
+  <line x1="170" y1="218" x2="170" y2="236" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="178" y="231" fill="#6c7086" font-family="monospace" font-size="10">子 Widget</text>
+
+  <!-- SGraphPanel box -->
+  <rect x="20" y="238" width="300" height="54" rx="6" fill="#313244" stroke="#cba6f7" stroke-width="2"/>
+  <text x="170" y="260" fill="#cba6f7" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">SGraphPanel</text>
+  <text x="170" y="278" fill="#a6adc8" font-family="monospace" font-size="10" text-anchor="middle">Public/SGraphPanel.h  (节点画布/滚动/缩放)</text>
+
+  <!-- Arrow down -->
+  <line x1="170" y1="292" x2="170" y2="310" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="178" y="305" fill="#6c7086" font-family="monospace" font-size="10">按需创建 (×N)</text>
+
+  <!-- SGraphNode box -->
+  <rect x="20" y="312" width="300" height="54" rx="6" fill="#313244" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="170" y="334" fill="#a6e3a1" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">SGraphNode</text>
+  <text x="170" y="352" fill="#a6adc8" font-family="monospace" font-size="10" text-anchor="middle">Public/SGraphNode.h  (单节点 Widget, ×N)</text>
+
+  <!-- Arrow down -->
+  <line x1="170" y1="366" x2="170" y2="384" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- SGraphPin box -->
+  <rect x="20" y="386" width="300" height="54" rx="6" fill="#313244" stroke="#f9e2af" stroke-width="2"/>
+  <text x="170" y="408" fill="#f9e2af" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">SGraphPin</text>
+  <text x="170" y="426" fill="#a6adc8" font-family="monospace" font-size="10" text-anchor="middle">Public/SGraphPin.h  (引脚 Widget, ×N)</text>
+
+  <!-- Module note -->
+  <rect x="20" y="455" width="300" height="36" rx="4" fill="#181825" stroke="#45475a" stroke-width="1"/>
+  <text x="170" y="469" fill="#6c7086" font-family="monospace" font-size="10" text-anchor="middle">SGraphEditor 是壳：仅转发调用给 Implementation</text>
+  <text x="170" y="483" fill="#6c7086" font-family="monospace" font-size="10" text-anchor="middle">允许 GraphEditor 模块热重载，壳持续有效</text>
+
+  <!-- ===== MIDDLE: FGraphEditorEvents ===== -->
+  <text x="360" y="80" fill="#f38ba8" font-family="monospace" font-size="13" font-weight="bold">FGraphEditorEvents (事件回调)</text>
+
+  <rect x="360" y="90" width="280" height="380" rx="6" fill="#181825" stroke="#f38ba8" stroke-width="1.5"/>
+
+  <!-- Events list -->
+  <text x="372" y="112" fill="#cba6f7" font-family="monospace" font-size="11" font-weight="bold">选择 / 焦点</text>
+  <text x="372" y="130" fill="#cdd6f4" font-family="monospace" font-size="10">OnSelectionChanged</text>
+  <text x="372" y="146" fill="#a6adc8" font-family="monospace" font-size="9">  → (FGraphPanelSelectionSet&amp;)</text>
+  <text x="372" y="164" fill="#cdd6f4" font-family="monospace" font-size="10">OnFocused</text>
+  <text x="372" y="180" fill="#a6adc8" font-family="monospace" font-size="9">  → (TSharedRef&lt;SGraphEditor&gt;&amp;)</text>
+
+  <line x1="372" y1="193" x2="628" y2="193" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="210" fill="#cba6f7" font-family="monospace" font-size="11" font-weight="bold">节点交互</text>
+  <text x="372" y="228" fill="#cdd6f4" font-family="monospace" font-size="10">OnNodeDoubleClicked</text>
+  <text x="372" y="244" fill="#a6adc8" font-family="monospace" font-size="9">  → (UEdGraphNode*)</text>
+  <text x="372" y="262" fill="#cdd6f4" font-family="monospace" font-size="10">OnNodeSingleClicked</text>
+  <text x="372" y="278" fill="#a6adc8" font-family="monospace" font-size="9">  → (UObject*)</text>
+  <text x="372" y="296" fill="#cdd6f4" font-family="monospace" font-size="10">OnVerifyTextCommit / OnTextCommitted</text>
+
+  <line x1="372" y1="309" x2="628" y2="309" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="326" fill="#cba6f7" font-family="monospace" font-size="11" font-weight="bold">右键菜单</text>
+  <text x="372" y="344" fill="#cdd6f4" font-family="monospace" font-size="10">OnCreateActionMenu</text>
+  <text x="372" y="360" fill="#a6adc8" font-family="monospace" font-size="9">  → 空白区右键，返回 FActionMenuContent</text>
+  <text x="372" y="378" fill="#cdd6f4" font-family="monospace" font-size="10">OnCreateNodeOrPinMenu</text>
+  <text x="372" y="394" fill="#a6adc8" font-family="monospace" font-size="9">  → 节点/引脚右键</text>
+
+  <line x1="372" y1="407" x2="628" y2="407" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="424" fill="#cba6f7" font-family="monospace" font-size="11" font-weight="bold">连接 / 快捷键</text>
+  <text x="372" y="442" fill="#cdd6f4" font-family="monospace" font-size="10">OnDisallowedPinConnection</text>
+  <text x="372" y="458" fill="#a6adc8" font-family="monospace" font-size="9">  → (UEdGraphPin*, UEdGraphPin*)</text>
+
+  <!-- ===== RIGHT: SLATE_ARGS + Key Methods ===== -->
+  <text x="660" y="80" fill="#a6e3a1" font-family="monospace" font-size="13" font-weight="bold">SLATE_BEGIN_ARGS 参数</text>
+
+  <rect x="660" y="90" width="280" height="220" rx="6" fill="#181825" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="672" y="110" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">必填</text>
+  <text x="672" y="127" fill="#cdd6f4" font-family="monospace" font-size="10">_GraphToEdit</text>
+  <text x="672" y="142" fill="#a6adc8" font-family="monospace" font-size="9">  UEdGraph*  要显示的数据图</text>
+
+  <text x="672" y="162" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">常用可选</text>
+  <text x="672" y="179" fill="#cdd6f4" font-family="monospace" font-size="10">_IsEditable</text>
+  <text x="672" y="194" fill="#a6adc8" font-family="monospace" font-size="9">  TAttribute&lt;bool&gt;  是否可编辑</text>
+  <text x="672" y="212" fill="#cdd6f4" font-family="monospace" font-size="10">_Appearance</text>
+  <text x="672" y="227" fill="#a6adc8" font-family="monospace" font-size="9">  FGraphAppearanceInfo  角标文字/图片</text>
+  <text x="672" y="245" fill="#cdd6f4" font-family="monospace" font-size="10">_GraphEvents</text>
+  <text x="672" y="260" fill="#a6adc8" font-family="monospace" font-size="9">  FGraphEditorEvents  所有事件回调</text>
+  <text x="672" y="278" fill="#cdd6f4" font-family="monospace" font-size="10">_AdditionalCommands</text>
+  <text x="672" y="293" fill="#a6adc8" font-family="monospace" font-size="9">  TSharedPtr&lt;FUICommandList&gt;</text>
+
+  <!-- Key Methods box -->
+  <text x="660" y="332" fill="#89dceb" font-family="monospace" font-size="13" font-weight="bold">常用方法</text>
+  <rect x="660" y="342" width="280" height="230" rx="6" fill="#181825" stroke="#89dceb" stroke-width="1.5"/>
+
+  <text x="672" y="362" fill="#cba6f7" font-family="monospace" font-size="10" font-weight="bold">视图控制</text>
+  <text x="672" y="378" fill="#cdd6f4" font-family="monospace" font-size="10">SetViewLocation(Location, Zoom)</text>
+  <text x="672" y="394" fill="#cdd6f4" font-family="monospace" font-size="10">GetViewLocation(OutLoc, OutZoom)</text>
+  <text x="672" y="410" fill="#cdd6f4" font-family="monospace" font-size="10">ZoomToFit(bOnlySelection)</text>
+
+  <text x="672" y="430" fill="#cba6f7" font-family="monospace" font-size="10" font-weight="bold">节点导航</text>
+  <text x="672" y="446" fill="#cdd6f4" font-family="monospace" font-size="10">JumpToNode(Node, bRename)</text>
+  <text x="672" y="462" fill="#cdd6f4" font-family="monospace" font-size="10">JumpToPin(Pin)</text>
+  <text x="672" y="478" fill="#cdd6f4" font-family="monospace" font-size="10">GetBoundsForNode(Node, Rect)</text>
+
+  <text x="672" y="498" fill="#cba6f7" font-family="monospace" font-size="10" font-weight="bold">选择操作</text>
+  <text x="672" y="514" fill="#cdd6f4" font-family="monospace" font-size="10">GetSelectedNodes() → TSet&lt;UObject*&gt;</text>
+  <text x="672" y="530" fill="#cdd6f4" font-family="monospace" font-size="10">SetNodeSelection(Node, bSelect)</text>
+  <text x="672" y="546" fill="#cdd6f4" font-family="monospace" font-size="10">ClearSelectionSet()</text>
+  <text x="672" y="562" fill="#cdd6f4" font-family="monospace" font-size="10">NotifyGraphChanged()</text>
+
+  <!-- Creation code example -->
+  <text x="20" y="510" fill="#f9e2af" font-family="monospace" font-size="12" font-weight="bold">创建示例</text>
+  <rect x="20" y="520" width="620" height="90" rx="4" fill="#11111b" stroke="#45475a" stroke-width="1"/>
+  <text x="32" y="540" fill="#a6e3a1" font-family="monospace" font-size="11">TSharedRef&lt;SGraphEditor&gt; GraphEditor = SNew(SGraphEditor)</text>
+  <text x="32" y="558" fill="#cdd6f4" font-family="monospace" font-size="11">    .GraphToEdit(MyUEdGraph)</text>
+  <text x="32" y="576" fill="#cdd6f4" font-family="monospace" font-size="11">    .IsEditable(true)</text>
+  <text x="32" y="594" fill="#cdd6f4" font-family="monospace" font-size="11">    .GraphEvents(MyEvents);   // FGraphEditorEvents</text>
+
+  <!-- Module dependency note -->
+  <rect x="20" y="620" width="920" height="44" rx="4" fill="#181825" stroke="#6c7086" stroke-width="1"/>
+  <text x="40" y="638" fill="#fab387" font-family="monospace" font-size="11" font-weight="bold">模块依赖：</text>
+  <text x="130" y="638" fill="#a6adc8" font-family="monospace" font-size="11">Build.cs 中需要 "GraphEditor" 模块（含 SGraphPanel/SGraphNode/SGraphPin）和 "UnrealEd" 模块（含 GraphEditor.h）</text>
+  <text x="40" y="654" fill="#6c7086" font-family="monospace" font-size="10">SGraphEditor::Construct() 通过 FModuleManager 加载 GraphEditorModule，再调用 PRIVATE_MakeGraphEditor() 创建真正的 SGraphEditorImpl</text>
+</svg>

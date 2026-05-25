@@ -1,0 +1,49 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/_package.json",
+      "language": "json",
+      "sizeLines": 40,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/config.json",
+      "language": "json",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/package.json",
+      "language": "json",
+      "sizeLines": 40,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/start.bat",
+      "language": "batch",
+      "sizeLines": 22,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/start.sh",
+      "language": "shell",
+      "sizeLines": 28,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/tsconfig.json",
+      "language": "json",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/_package.json": [],
+    "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/config.json": [],
+    "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/package.json": [],
+    "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/start.bat": [],
+    "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/start.sh": [],
+    "Plugins/Experimental/Web/WebAPI/WebAPIGeneratorApp/tsconfig.json": []
+  }
+}

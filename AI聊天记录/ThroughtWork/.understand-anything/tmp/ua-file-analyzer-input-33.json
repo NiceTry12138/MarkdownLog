@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/FlipbookEditor/STimelineTrack.h",
+      "language": "c",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/GroupedSpriteDetailsCustomization.cpp",
+      "language": "cpp",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/GroupedSpriteDetailsCustomization.h",
+      "language": "c",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/PaperGroupedSpriteUtilities.cpp",
+      "language": "cpp",
+      "sizeLines": 239,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/PaperGroupedSpriteUtilities.h",
+      "language": "c",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/LevelEditorMenuExtensions/Paper2DLevelEditorExtensions.cpp",
+      "language": "cpp",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/LevelEditorMenuExtensions/Paper2DLevelEditorExtensions.h",
+      "language": "c",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/MeshPainting/MeshPaintSpriteAdapter.cpp",
+      "language": "cpp",
+      "sizeLines": 282,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/MeshPainting/MeshPaintSpriteAdapter.h",
+      "language": "c",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/Paper2DEditorLog.h",
+      "language": "c",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/Paper2DEditorModule.cpp",
+      "language": "cpp",
+      "sizeLines": 404,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorCommands.cpp",
+      "language": "cpp",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorCommands.h",
+      "language": "c",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/AssetEditorSelectedItem.h",
+      "language": "c",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SocketEditing.cpp",
+      "language": "cpp",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SocketEditing.h",
+      "language": "c",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditCommands.cpp",
+      "language": "cpp",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditCommands.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditing.cpp",
+      "language": "cpp",
+      "sizeLines": 1114,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditing.h",
+      "language": "c",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditMode.cpp",
+      "language": "cpp",
+      "sizeLines": 648,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditMode.h",
+      "language": "c",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorViewportClient.cpp",
+      "language": "cpp",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorViewportClient.h",
+      "language": "c",
+      "sizeLines": 77,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookActorFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/FlipbookEditor/STimelineTrack.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/GroupedSpriteDetailsCustomization.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/GroupedSpriteDetailsCustomization.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/PaperGroupedSpriteUtilities.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/GroupedSprites/PaperGroupedSpriteUtilities.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/LevelEditorMenuExtensions/Paper2DLevelEditorExtensions.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/LevelEditorMenuExtensions/Paper2DLevelEditorExtensions.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/MeshPainting/MeshPaintSpriteAdapter.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/MeshPainting/MeshPaintSpriteAdapter.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/Paper2DEditorLog.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/Paper2DEditorModule.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorCommands.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorCommands.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/AssetEditorSelectedItem.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SocketEditing.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SocketEditing.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditCommands.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditCommands.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditing.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditing.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditMode.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorShared/SpriteGeometryEditMode.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorViewportClient.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperEditorViewportClient.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookActorFactory.cpp": []
+  }
+}

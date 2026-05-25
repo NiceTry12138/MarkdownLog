@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+  <defs>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4A90D9"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="900" height="620" fill="#1e1e2e" rx="12"/>
+  <text x="450" y="36" text-anchor="middle" fill="#cdd6f4" font-size="20" font-weight="bold" font-family="Arial">UE 编辑器整体框架架构</text>
+
+  <!-- ======= 层1: 平台抽象 / 引擎核心 ======= -->
+  <!-- row y=65, height=55 -->
+  <rect x="30" y="55" width="840" height="55" rx="8" fill="#313244" stroke="#585b70" stroke-width="1.5"/>
+  <text x="450" y="75" text-anchor="middle" fill="#a6adc8" font-size="12" font-family="Arial">【层1】引擎核心</text>
+  <!-- 3 boxes -->
+  <rect x="50" y="82" width="170" height="22" rx="4" fill="#45475a"/>
+  <text x="135" y="97" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">Core / CoreUObject</text>
+  <rect x="240" y="82" width="170" height="22" rx="4" fill="#45475a"/>
+  <text x="325" y="97" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">UObject 反射系统</text>
+  <rect x="430" y="82" width="200" height="22" rx="4" fill="#45475a"/>
+  <text x="530" y="97" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">内存/GC/序列化/容器</text>
+  <rect x="650" y="82" width="200" height="22" rx="4" fill="#45475a"/>
+  <text x="750" y="97" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">RHI / Renderer / RenderCore</text>
+
+  <!-- ======= 层2: Slate UI 系统 ======= -->
+  <rect x="30" y="125" width="840" height="55" rx="8" fill="#1e3a5f" stroke="#4A90D9" stroke-width="1.5"/>
+  <text x="450" y="144" text-anchor="middle" fill="#89b4fa" font-size="12" font-family="Arial">【层2】Slate UI 框架（Source/Runtime/Slate + SlateCore）</text>
+  <rect x="50" y="150" width="190" height="22" rx="4" fill="#2a4a6f"/>
+  <text x="145" y="165" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">SWidget → SCompoundWidget</text>
+  <rect x="260" y="150" width="160" height="22" rx="4" fill="#2a4a6f"/>
+  <text x="340" y="165" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">SlotBase / FSlateRect</text>
+  <rect x="440" y="150" width="160" height="22" rx="4" fill="#2a4a6f"/>
+  <text x="520" y="165" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">SWindow / SDockTab</text>
+  <rect x="620" y="150" width="220" height="22" rx="4" fill="#2a4a6f"/>
+  <text x="730" y="165" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">FTabManager / FLayoutManager</text>
+
+  <!-- ======= 层3: UnrealEd 框架 ======= -->
+  <rect x="30" y="195" width="840" height="80" rx="8" fill="#1a3d2e" stroke="#40a857" stroke-width="1.5"/>
+  <text x="450" y="215" text-anchor="middle" fill="#a6e3a1" font-size="12" font-family="Arial">【层3】编辑器框架（Source/Editor/UnrealEd + EditorFramework + MainFrame）</text>
+  <!-- Row 1 -->
+  <rect x="50" y="220" width="200" height="22" rx="4" fill="#264d37"/>
+  <text x="150" y="235" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">GEditor / UEditorEngine</text>
+  <rect x="265" y="220" width="180" height="22" rx="4" fill="#264d37"/>
+  <text x="355" y="235" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">FToolkits / IToolkitHost</text>
+  <rect x="460" y="220" width="190" height="22" rx="4" fill="#264d37"/>
+  <text x="555" y="235" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">AssetEditorToolkit (FAESubsystem)</text>
+  <rect x="665" y="220" width="185" height="22" rx="4" fill="#264d37"/>
+  <text x="757" y="235" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">FWorkflowCentricApplication</text>
+  <!-- Row 2 -->
+  <rect x="50" y="248" width="200" height="22" rx="4" fill="#264d37"/>
+  <text x="150" y="263" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">LevelEditor / LevelViewport</text>
+  <rect x="265" y="248" width="180" height="22" rx="4" fill="#264d37"/>
+  <text x="355" y="263" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">PropertyEditor (Details)</text>
+  <rect x="460" y="248" width="190" height="22" rx="4" fill="#264d37"/>
+  <text x="555" y="263" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">ContentBrowser + AssetRegistry</text>
+  <rect x="665" y="248" width="185" height="22" rx="4" fill="#264d37"/>
+  <text x="757" y="263" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">SceneOutliner / WorldBrowser</text>
+
+  <!-- ======= 层4: 具体编辑器 ======= -->
+  <rect x="30" y="290" width="840" height="100" rx="8" fill="#3d1a1a" stroke="#e06c75" stroke-width="1.5"/>
+  <text x="450" y="310" text-anchor="middle" fill="#f38ba8" font-size="12" font-family="Arial">【层4】具体资产编辑器（Source/Editor/Kismet  MaterialEditor  StaticMeshEditor ...）</text>
+  <!-- Column 1: Blueprint -->
+  <rect x="50" y="316" width="178" height="66" rx="6" fill="#4d2a2a"/>
+  <text x="139" y="332" text-anchor="middle" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">蓝图编辑器</text>
+  <text x="139" y="346" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FBlueprintEditor</text>
+  <text x="139" y="360" text-anchor="middle" fill="#a6adc8" font-size="9" font-family="Arial">(Source/Editor/Kismet)</text>
+  <text x="139" y="375" text-anchor="middle" fill="#a6adc8" font-size="9" font-family="Arial">KismetCompiler</text>
+  <!-- Column 2: Material -->
+  <rect x="243" y="316" width="162" height="66" rx="6" fill="#4d2a2a"/>
+  <text x="324" y="332" text-anchor="middle" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">材质编辑器</text>
+  <text x="324" y="346" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FMaterialEditor</text>
+  <text x="324" y="360" text-anchor="middle" fill="#a6adc8" font-size="9" font-family="Arial">(Source/Editor/MaterialEditor)</text>
+  <!-- Column 3: StaticMesh -->
+  <rect x="420" y="316" width="165" height="66" rx="6" fill="#4d2a2a"/>
+  <text x="502" y="332" text-anchor="middle" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">静态网格编辑器</text>
+  <text x="502" y="346" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FStaticMeshEditor</text>
+  <text x="502" y="360" text-anchor="middle" fill="#a6adc8" font-size="9" font-family="Arial">(Source/Editor/StaticMeshEditor)</text>
+  <!-- Column 4: BehaviorTree -->
+  <rect x="600" y="316" width="250" height="66" rx="6" fill="#4d2a2a"/>
+  <text x="725" y="332" text-anchor="middle" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">行为树/动画等专用编辑器</text>
+  <text x="725" y="346" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FBehaviorTreeEditor / FAnimBlueprintEditor</text>
+  <text x="725" y="360" text-anchor="middle" fill="#a6adc8" font-size="9" font-family="Arial">(Source/Editor/BehaviorTreeEditor ...)</text>
+
+  <!-- ======= 层5: 关键子系统 ======= -->
+  <rect x="30" y="405" width="840" height="80" rx="8" fill="#2a1a3d" stroke="#cba6f7" stroke-width="1.5"/>
+  <text x="450" y="425" text-anchor="middle" fill="#cba6f7" font-size="12" font-family="Arial">【层5】关键编辑器子系统</text>
+  <rect x="50" y="431" width="178" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="139" y="446" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">GraphEditor (节点图)</text>
+  <rect x="243" y="431" width="162" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="324" y="446" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">Sequencer (时序)</text>
+  <rect x="420" y="431" width="165" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="502" y="446" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">SceneViewport (渲染)</text>
+  <rect x="600" y="431" width="250" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="725" y="446" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">ToolMenus (菜单注册系统)</text>
+  <!-- row 2 -->
+  <rect x="50" y="459" width="178" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="139" y="474" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">AssetDefinition (资产类型)</text>
+  <rect x="243" y="459" width="162" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="324" y="474" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">SourceControl</text>
+  <rect x="420" y="459" width="165" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="502" y="474" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">EditorSubsystem</text>
+  <rect x="600" y="459" width="250" height="22" rx="4" fill="#3d2a5f"/>
+  <text x="725" y="474" text-anchor="middle" fill="#cdd6f4" font-size="11" font-family="Arial">WorkspaceMenuStructure (菜单位置)</text>
+
+  <!-- Arrows between layers -->
+  <line x1="450" y1="110" x2="450" y2="125" stroke="#4A90D9" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="450" y1="180" x2="450" y2="195" stroke="#40a857" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <line x1="450" y1="275" x2="450" y2="290" stroke="#e06c75" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <line x1="450" y1="390" x2="450" y2="405" stroke="#cba6f7" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- Legend -->
+  <rect x="30" y="500" width="840" height="110" rx="8" fill="#181825" stroke="#45475a" stroke-width="1"/>
+  <text x="50" y="522" fill="#a6adc8" font-size="12" font-family="Arial" font-weight="bold">关键设计原则</text>
+  <text x="50" y="542" fill="#cdd6f4" font-size="11" font-family="Arial">• 编辑器与运行时分离：Editor 模块仅在编辑器构建中存在，运行时不含编辑器代码</text>
+  <text x="50" y="558" fill="#cdd6f4" font-size="11" font-family="Arial">• 模块化设计：每个编辑器功能独立为 UE Module（.Build.cs），通过接口依赖而非直接耦合</text>
+  <text x="50" y="574" fill="#cdd6f4" font-size="11" font-family="Arial">• Workflow-Centric：FWorkflowCentricApplication 提供多 Mode（如蓝图的 Graph/Components/Defaults）切换</text>
+  <text x="50" y="590" fill="#cdd6f4" font-size="11" font-family="Arial">• TabManager 布局：所有面板通过 FTabManager::NewLayout() 定义 Dockable Tab，用户可自由拖动</text>
+  <text x="50" y="606" fill="#cdd6f4" font-size="11" font-family="Arial">• ToolMenus：菜单栏、工具栏通过 UToolMenus::Get()->RegisterMenu() 全局注册，支持运行时扩展</text>
+</svg>

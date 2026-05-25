@@ -1,0 +1,49 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/Linux/BaseLinuxEngine.ini",
+      "language": "config",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Linux/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 27,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Linux/LinuxEditorGameAgnostic.ini",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Linux/LinuxEngine.ini",
+      "language": "config",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Linux/LinuxGame.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Linux/Linux_SDK.json",
+      "language": "json",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/Linux/BaseLinuxEngine.ini": [],
+    "Config/Linux/DataDrivenPlatformInfo.ini": [],
+    "Config/Linux/LinuxEditorGameAgnostic.ini": [],
+    "Config/Linux/LinuxEngine.ini": [],
+    "Config/Linux/LinuxGame.ini": [],
+    "Config/Linux/Linux_SDK.json": []
+  }
+}

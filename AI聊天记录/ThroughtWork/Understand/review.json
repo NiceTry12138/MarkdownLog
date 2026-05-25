@@ -1,0 +1,24 @@
+{
+  "issueCount": 0,
+  "warningCount": 1,
+  "issues": [],
+  "warnings": [
+    "35420 orphan nodes (no edges)."
+  ],
+  "stats": {
+    "totalNodes": 60401,
+    "totalEdges": 29633,
+    "totalLayers": 12,
+    "tourSteps": 11,
+    "orphanNodes": 35420,
+    "nodeTypes": {
+      "config": 278,
+      "file": 60066,
+      "document": 57
+    },
+    "edgeTypes": {
+      "imports": 29630,
+      "tested_by": 3
+    }
+  }
+}

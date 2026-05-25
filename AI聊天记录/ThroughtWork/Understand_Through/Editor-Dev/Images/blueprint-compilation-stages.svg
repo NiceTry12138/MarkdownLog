@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="680" viewBox="0 0 900 680">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#89b4fa"/>
+    </marker>
+  </defs>
+  <rect width="900" height="680" fill="#1e1e2e" rx="12"/>
+  <text x="450" y="32" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold" font-family="Arial">蓝图编译管线（16 阶段）</text>
+  <text x="450" y="50" text-anchor="middle" fill="#a6adc8" font-size="11" font-family="Arial">FBlueprintCompilationManagerImpl::FlushCompilationQueueImpl()  —  BlueprintCompilationManager.cpp</text>
+
+  <!-- Stage flow: 2 columns of 8 each -->
+  <!-- Left column: stages 1-8 -->
+  <!-- Stage I -->
+  <rect x="30" y="65" width="400" height="40" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="1.5"/>
+  <text x="60" y="82" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">STAGE I: GATHER</text>
+  <text x="60" y="97" fill="#a6adc8" font-size="10" font-family="Arial">收集所有需要编译的 Blueprint（QueuedRequests）</text>
+
+  <line x1="230" y1="105" x2="230" y2="118" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage II -->
+  <rect x="30" y="118" width="400" height="40" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="1.5"/>
+  <text x="60" y="135" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">STAGE II: FILTER</text>
+  <text x="60" y="150" fill="#a6adc8" font-size="10" font-family="Arial">过滤无需重编的 BP（依赖未变化时跳过）</text>
+
+  <line x1="230" y1="158" x2="230" y2="171" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage III -->
+  <rect x="30" y="171" width="400" height="40" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="1.5"/>
+  <text x="60" y="188" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">STAGE III: SORT（拓扑排序）</text>
+  <text x="60" y="203" fill="#a6adc8" font-size="10" font-family="Arial">按 Parent→Child 依赖关系排序，父类先编译</text>
+
+  <line x1="230" y1="211" x2="230" y2="224" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage IV -->
+  <rect x="30" y="224" width="400" height="40" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="60" y="241" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">STAGE IV: SET TEMPORARY FLAGS</text>
+  <text x="60" y="256" fill="#a6adc8" font-size="10" font-family="Arial">标记 Blueprint 为编译中状态（BeingCompiled flag）</text>
+
+  <line x1="230" y1="264" x2="230" y2="277" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage V -->
+  <rect x="30" y="277" width="400" height="40" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="60" y="294" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">STAGE V: VALIDATE</text>
+  <text x="60" y="309" fill="#a6adc8" font-size="10" font-family="Arial">ValidateVariableNames / ValidateComponentClassOverrides</text>
+
+  <line x1="230" y1="317" x2="230" y2="330" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage VI -->
+  <rect x="30" y="330" width="400" height="40" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="60" y="347" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">STAGE VI: PURGE (LOAD ONLY)</text>
+  <text x="60" y="362" fill="#a6adc8" font-size="10" font-family="Arial">清理仅加载（未编译）的 Blueprint 旧类数据</text>
+
+  <line x1="230" y1="370" x2="230" y2="383" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage VII -->
+  <rect x="30" y="383" width="400" height="40" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="60" y="400" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">STAGE VII: DISCARD SKELETON CDO</text>
+  <text x="60" y="415" fill="#a6adc8" font-size="10" font-family="Arial">丢弃旧 Skeleton 类的 CDO，为重建做准备</text>
+
+  <line x1="230" y1="423" x2="230" y2="436" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage VIII -->
+  <rect x="30" y="436" width="400" height="40" rx="6" fill="#3d1a3d" stroke="#cba6f7" stroke-width="1.5"/>
+  <text x="60" y="453" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">STAGE VIII: RECOMPILE SKELETON</text>
+  <text x="60" y="468" fill="#a6adc8" font-size="10" font-family="Arial">FastGenerateSkeletonClass() — 生成包含变量/函数签名的骨架类</text>
+
+  <!-- Right column: stages 9-16 -->
+  <!-- Stage IX -->
+  <rect x="470" y="65" width="400" height="40" rx="6" fill="#3d1a3d" stroke="#cba6f7" stroke-width="1.5"/>
+  <text x="500" y="82" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">STAGE IX: RECONSTRUCT NODES</text>
+  <text x="500" y="97" fill="#a6adc8" font-size="10" font-family="Arial">重建节点引用，替换 Deprecated 节点</text>
+
+  <line x1="670" y1="105" x2="670" y2="118" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage X -->
+  <rect x="470" y="118" width="400" height="40" rx="6" fill="#3d1a3d" stroke="#cba6f7" stroke-width="1.5"/>
+  <text x="500" y="135" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">STAGE X: CREATE REINSTANCER</text>
+  <text x="500" y="150" fill="#a6adc8" font-size="10" font-family="Arial">创建 FBlueprintCompileReinstancer，丢弃旧 Class</text>
+
+  <line x1="670" y1="158" x2="670" y2="171" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage XI -->
+  <rect x="470" y="171" width="400" height="40" rx="6" fill="#3d2a1a" stroke="#fab387" stroke-width="1.5"/>
+  <text x="500" y="188" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">STAGE XI: CREATE CLASS HIERARCHY</text>
+  <text x="500" y="203" fill="#a6adc8" font-size="10" font-family="Arial">建立更新后的类继承层次（ParentClass 指针修正）</text>
+
+  <line x1="670" y1="211" x2="670" y2="224" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage XII - KEY -->
+  <rect x="470" y="224" width="400" height="50" rx="6" fill="#3d1a1a" stroke="#f38ba8" stroke-width="2"/>
+  <text x="500" y="242" fill="#f38ba8" font-size="11" font-weight="bold" font-family="Arial">STAGE XII: COMPILE CLASS LAYOUT ★</text>
+  <text x="500" y="258" fill="#a6adc8" font-size="10" font-family="Arial">FKismetCompilerContext::CompileClassLayout()</text>
+  <text x="500" y="270" fill="#a6adc8" font-size="10" font-family="Arial">生成属性(FProperty)，设定类的内存布局</text>
+
+  <line x1="670" y1="274" x2="670" y2="287" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage XIII - KEY -->
+  <rect x="470" y="287" width="400" height="60" rx="6" fill="#3d1a1a" stroke="#f38ba8" stroke-width="2"/>
+  <text x="500" y="305" fill="#f38ba8" font-size="11" font-weight="bold" font-family="Arial">STAGE XIII: COMPILE FUNCTIONS ★</text>
+  <text x="500" y="321" fill="#a6adc8" font-size="10" font-family="Arial">FKismetCompilerContext::CompileFunctions()</text>
+  <text x="500" y="337" fill="#a6adc8" font-size="10" font-family="Arial">节点→FBlueprintCompiledStatement→字节码(EExprToken)</text>
+  <text x="500" y="340" fill="#a6adc8" font-size="10" font-family="Arial">ConsolidatedEventGraph (Ubergraph) 合并所有事件图</text>
+
+  <line x1="670" y1="347" x2="670" y2="360" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage XIV -->
+  <rect x="470" y="360" width="400" height="40" rx="6" fill="#3d2a1a" stroke="#fab387" stroke-width="1.5"/>
+  <text x="500" y="377" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">STAGE XIV: REINSTANCE</text>
+  <text x="500" y="392" fill="#a6adc8" font-size="10" font-family="Arial">将旧类实例迁移到新类（属性数据拷贝）</text>
+
+  <line x1="670" y1="400" x2="670" y2="413" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage XV -->
+  <rect x="470" y="413" width="400" height="40" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="500" y="430" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">STAGE XV: POST CDO COMPILED</text>
+  <text x="500" y="445" fill="#a6adc8" font-size="10" font-family="Arial">广播 OnBlueprintCompiled 委托，刷新依赖</text>
+
+  <line x1="670" y1="453" x2="670" y2="466" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage XVI -->
+  <rect x="470" y="466" width="400" height="40" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="500" y="483" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">STAGE XVI: CLEAR TEMPORARY FLAGS</text>
+  <text x="500" y="498" fill="#a6adc8" font-size="10" font-family="Arial">清除 BeingCompiled 标志，编译完成</text>
+
+  <!-- Middle arrow connecting two columns  -->
+  <line x1="430" y1="476" x2="470" y2="85" stroke="#585b70" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arr)"/>
+  <text x="440" y="290" fill="#585b70" font-size="9" font-family="Arial">继续</text>
+
+  <!-- 底部说明 -->
+  <rect x="30" y="500" width="840" height="170" rx="8" fill="#181825" stroke="#45475a" stroke-width="1"/>
+  <text x="50" y="520" fill="#a6adc8" font-size="11" font-weight="bold" font-family="Arial">关键术语说明</text>
+  <text x="50" y="540" fill="#cdd6f4" font-size="10" font-family="Arial">Skeleton Class（骨架类）: 只含属性/函数签名，不含函数体字节码。IDE补全、类型检查依赖它。</text>
+  <text x="50" y="557" fill="#cdd6f4" font-size="10" font-family="Arial">CDO (Class Default Object): 每个 UClass 的默认实例，保存属性默认值。重编译时旧 CDO 会被替换。</text>
+  <text x="50" y="574" fill="#cdd6f4" font-size="10" font-family="Arial">Reinstancing: 旧类的所有存活实例（在Level中的Actor等）会通过 TObjectIterator 找到并迁移到新类。</text>
+  <text x="50" y="591" fill="#cdd6f4" font-size="10" font-family="Arial">Ubergraph: 所有 EventGraph 合并成一张大图，每个事件是其中一段字节码，通过 ComputedGoto 区分入口。</text>
+  <text x="50" y="608" fill="#cdd6f4" font-size="10" font-family="Arial">字节码存储: UFunction::Script (TArray&lt;uint8&gt;) — 运行时 FFrame::Step() 执行这些 EExprToken 指令。</text>
+  <text x="50" y="625" fill="#cdd6f4" font-size="10" font-family="Arial">同步编译: FBlueprintCompilationManager::CompileSynchronously() — 立即执行16阶段。</text>
+  <text x="50" y="642" fill="#cdd6f4" font-size="10" font-family="Arial">延迟编译: FBlueprintCompilationManager::QueueCompileBlueprint() — 将 BP 入队，在帧尾批量编译。</text>
+  <text x="50" y="660" fill="#f38ba8" font-size="10" font-family="Arial">注意: 节点在运行时不存在！编译只是将节点图翻译成字节码，运行时直接执行 UFunction::Script 字节数组。</text>
+</svg>

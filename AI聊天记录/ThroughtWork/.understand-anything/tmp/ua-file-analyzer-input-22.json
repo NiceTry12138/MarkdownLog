@@ -1,0 +1,28 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Client/_package-lock.json",
+      "language": "json",
+      "sizeLines": 16551,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Client/_package.json",
+      "language": "json",
+      "sizeLines": 57,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Client/tsconfig.json",
+      "language": "json",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Client/_package-lock.json": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Client/_package.json": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Client/tsconfig.json": []
+  }
+}

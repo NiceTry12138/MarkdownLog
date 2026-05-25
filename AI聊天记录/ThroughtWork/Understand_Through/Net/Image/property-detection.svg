@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="580" viewBox="0 0 980 580">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#444"/>
+    </marker>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#27AE60"/>
+    </marker>
+  </defs>
+
+  <rect width="980" height="580" fill="#F8FAFB" rx="8"/>
+  <text x="490" y="28" font-family="Microsoft YaHei,sans-serif" font-size="17" font-weight="bold"
+        text-anchor="middle" fill="#1A1A2E">属性变化检测机制（ChangelistMgr + RepLayout）</text>
+
+  <!-- ===== LEFT: Object Memory (Current State) ===== -->
+  <text x="160" y="56" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold"
+        text-anchor="middle" fill="#1A5276">Actor 当前内存（Object Data）</text>
+
+  <rect x="40" y="65" width="240" height="200" fill="#EBF5FB" rx="6" stroke="#2980B9" stroke-width="1.5"/>
+  <!-- Properties -->
+  <rect x="55" y="80" width="210" height="28" fill="#2980B9" rx="4"/>
+  <text x="160" y="99" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">Health = 75 (changed)</text>
+
+  <rect x="55" y="116" width="210" height="28" fill="#5DADE2" rx="4"/>
+  <text x="160" y="135" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">Location = (100,200,0)</text>
+
+  <rect x="55" y="152" width="210" height="28" fill="#5DADE2" rx="4"/>
+  <text x="160" y="171" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">bAlive = true</text>
+
+  <rect x="55" y="188" width="210" height="28" fill="#2980B9" rx="4"/>
+  <text x="160" y="207" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">Score = 1500 (changed)</text>
+
+  <rect x="55" y="224" width="210" height="28" fill="#5DADE2" rx="4"/>
+  <text x="160" y="243" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">TeamID = 1</text>
+
+  <!-- ===== MIDDLE: Shadow Buffer ===== -->
+  <text x="490" y="56" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold"
+        text-anchor="middle" fill="#7D6608">Shadow Buffer（上次已发送状态的副本）</text>
+
+  <rect x="370" y="65" width="240" height="200" fill="#FEF9E7" rx="6" stroke="#F39C12" stroke-width="1.5"/>
+  <rect x="385" y="80" width="210" height="28" fill="#F39C12" rx="4"/>
+  <text x="490" y="99" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">Health = 100 (旧值)</text>
+
+  <rect x="385" y="116" width="210" height="28" fill="#F9D36E" rx="4"/>
+  <text x="490" y="135" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="#7D6608">Location = (100,200,0)</text>
+
+  <rect x="385" y="152" width="210" height="28" fill="#F9D36E" rx="4"/>
+  <text x="490" y="171" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="#7D6608">bAlive = true</text>
+
+  <rect x="385" y="188" width="210" height="28" fill="#F39C12" rx="4"/>
+  <text x="490" y="207" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">Score = 800 (旧值)</text>
+
+  <rect x="385" y="224" width="210" height="28" fill="#F9D36E" rx="4"/>
+  <text x="490" y="243" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="#7D6608">TeamID = 1</text>
+
+  <!-- ===== Compare arrows ===== -->
+  <!-- Arrow for Health: different -->
+  <line x1="265" y1="94" x2="370" y2="94" stroke="#E74C3C" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="317" y="90" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E74C3C">≠ 变化</text>
+
+  <!-- Arrow for Location: same -->
+  <line x1="265" y1="130" x2="370" y2="130" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-g)"/>
+  <text x="317" y="126" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">= 相同</text>
+
+  <!-- Arrow for bAlive: same -->
+  <line x1="265" y1="166" x2="370" y2="166" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-g)"/>
+  <text x="317" y="162" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">= 相同</text>
+
+  <!-- Arrow for Score: different -->
+  <line x1="265" y1="202" x2="370" y2="202" stroke="#E74C3C" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="317" y="198" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E74C3C">≠ 变化</text>
+
+  <!-- Arrow for TeamID: same -->
+  <line x1="265" y1="238" x2="370" y2="238" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-g)"/>
+  <text x="317" y="234" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">= 相同</text>
+
+  <!-- ===== RIGHT: Changed list output ===== -->
+  <text x="810" y="56" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold"
+        text-anchor="middle" fill="#145A32">Changed 索引列表</text>
+
+  <rect x="700" y="65" width="240" height="200" fill="#EAFAF1" rx="6" stroke="#27AE60" stroke-width="1.5"/>
+  <text x="820" y="92" font-family="Consolas,monospace" font-size="12" text-anchor="middle" fill="#145A32">Changed = [ 0, 3 ]</text>
+  <text x="820" y="112" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="#555">属性句柄 0 = Health</text>
+  <text x="820" y="130" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="#555">属性句柄 3 = Score</text>
+  <text x="820" y="158" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="#888">只有变化的属性才</text>
+  <text x="820" y="174" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="#888">会被写入 Bunch</text>
+  <text x="820" y="200" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="#888">大幅减少每帧发送</text>
+  <text x="820" y="216" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="#888">数据量</text>
+
+  <!-- Arrow from shadow to changed -->
+  <line x1="610" y1="120" x2="700" y2="110" stroke="#27AE60" stroke-width="1.5" marker-end="url(#arr-g)"/>
+  <line x1="610" y1="206" x2="700" y2="120" stroke="#E74C3C" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ===== Bottom: ChangelistMgr flow ===== -->
+  <text x="490" y="296" font-family="Microsoft YaHei,sans-serif" font-size="13" font-weight="bold"
+        text-anchor="middle" fill="#333">FRepChangelistMgr 更新流程（UpdateChangelistMgr）</text>
+
+  <!-- Flow boxes -->
+  <rect x="40" y="312" width="200" height="50" fill="#7B68EE" rx="5"/>
+  <text x="140" y="333" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="white" font-weight="bold">Push Model 检查</text>
+  <text x="140" y="350" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E0D8FF">IsPropertyDirty() 快速判断</text>
+  <line x1="240" y1="337" x2="270" y2="337" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="270" y="312" width="200" height="50" fill="#2C3E50" rx="5"/>
+  <text x="370" y="333" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="white" font-weight="bold">逐属性内存比较</text>
+  <text x="370" y="350" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#BDC3C7">Object Data ↔ StaticBuffer</text>
+  <line x1="470" y1="337" x2="500" y2="337" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="500" y="312" width="200" height="50" fill="#E67E22" rx="5"/>
+  <text x="600" y="333" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="white" font-weight="bold">写入 ChangeHistory</text>
+  <text x="600" y="350" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#FDEBD0">循环缓冲区 ChangeHistory[]</text>
+  <line x1="700" y1="337" x2="730" y2="337" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="730" y="312" width="210" height="50" fill="#27AE60" rx="5"/>
+  <text x="835" y="333" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="white" font-weight="bold">MergeChangeLists</text>
+  <text x="835" y="350" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E8F8F5">合并多帧未确认变更 → 写入 Bunch</text>
+
+  <!-- ACK mechanism explanation -->
+  <rect x="40" y="386" width="900" height="80" fill="#F4F6F7" rx="6" stroke="#D5DBDB"/>
+  <text x="490" y="404" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">可靠性保证：NAK 与历史记录</text>
+  <text x="55" y="422" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● ChangeHistory 保存最近 FSendingRepState::MAX_CHANGE_HISTORY（32）帧的变更历史
+  </text>
+  <text x="55" y="438" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● 当某个 Bunch 被 NAK（接收方告知未收到）时，RepState.NumNaks++ → 下次发送时把该 Bunch 携带的属性合并回 Changed 列表重发
+  </text>
+  <text x="55" y="454" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● 已 ACK 的历史记录从 HistoryStart 滑动删除，节省内存；连接关闭前未 ACK 的属性会在下次重连时重新发送
+  </text>
+
+  <!-- Shadow buffer update note -->
+  <rect x="40" y="480" width="900" height="80" fill="#EBF5FB" rx="6" stroke="#AED6F1"/>
+  <text x="490" y="498" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1A5276">Shadow Buffer 何时更新？</text>
+  <text x="55" y="516" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● 比较时：UE 同步读取 Object Data 与 StaticBuffer（Shadow），找到差异后把当前值写回 Shadow（在 CompareProperties_r 内部完成）
+  </text>
+  <text x="55" y="532" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● 目的：下次比较时，已写入 Shadow 的属性以新值为基准，避免重复标记已经发过的变化
+  </text>
+  <text x="55" y="548" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● Push Model 优化：开发者在代码中手动调用 MARK_PROPERTY_DIRTY 标记，比较时跳过未标记属性，大幅减少 CPU 比较开销
+  </text>
+</svg>

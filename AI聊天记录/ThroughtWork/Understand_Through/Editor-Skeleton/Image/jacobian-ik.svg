@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="520" viewBox="0 0 860 520">
+  <rect width="860" height="520" fill="#12121f"/>
+  <text x="430" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">Jacobian Transpose IK 原理（多关节多变量）</text>
+
+  <!-- ===== Left: Jacobian geometry ===== -->
+  <rect x="20" y="55" width="360" height="340" rx="6" fill="#181828" stroke="#333"/>
+  <text x="200" y="76" text-anchor="middle" font-size="13" font-weight="bold" fill="#8080b0" font-family="Arial, sans-serif">机械臂末端位置的雅可比矩阵</text>
+
+  <!-- Chain: 3 joints -->
+  <circle cx="130" cy="300" r="10" fill="#2060a0" stroke="#60a0e0" stroke-width="2"/>
+  <text x="105" y="304" text-anchor="end" font-size="11" fill="#60a0e0" font-family="Arial, sans-serif">θ₁</text>
+
+  <line x1="130" y1="290" x2="180" y2="230" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="180" cy="230" r="9" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+  <text x="192" y="228" font-size="11" fill="#5090c0" font-family="Arial, sans-serif">θ₂</text>
+
+  <line x1="180" y1="221" x2="250" y2="175" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="250" cy="175" r="9" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+  <text x="262" y="173" font-size="11" fill="#5090c0" font-family="Arial, sans-serif">θ₃</text>
+
+  <line x1="250" y1="166" x2="300" y2="130" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="300" cy="130" r="9" fill="#60a040" stroke="#a0e060" stroke-width="2"/>
+  <text x="312" y="128" font-size="11" fill="#a0e060" font-family="Arial, sans-serif">End e(θ)</text>
+
+  <!-- Target -->
+  <circle cx="250" cy="110" r="10" fill="none" stroke="#ff6060" stroke-width="2.5" stroke-dasharray="3,2"/>
+  <line x1="240" y1="110" x2="260" y2="110" stroke="#ff6060" stroke-width="2"/>
+  <line x1="250" y1="100" x2="250" y2="120" stroke="#ff6060" stroke-width="2"/>
+  <text x="268" y="108" font-size="11" fill="#ff6060" font-family="Arial, sans-serif">Target t</text>
+
+  <!-- Error vector delta e -->
+  <line x1="300" y1="130" x2="250" y2="110" stroke="#ffff30" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrowYellow3)"/>
+  <text x="290" y="116" font-size="11" fill="#ffff30" font-family="Arial, sans-serif">Δe = t - e</text>
+
+  <!-- Partial derivative arrows (Jacobian columns) -->
+  <line x1="130" y1="300" x2="145" y2="295" stroke="#ff8040" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
+  <text x="100" y="338" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₁</text>
+
+  <line x1="180" y1="230" x2="196" y2="222" stroke="#ff8040" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
+  <text x="195" y="253" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₂</text>
+
+  <line x1="250" y1="175" x2="267" y2="168" stroke="#ff8040" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
+  <text x="268" y="192" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₃</text>
+
+  <!-- Jacobian matrix visual -->
+  <rect x="30" y="340" width="340" height="46" rx="4" fill="#1e1e2d" stroke="#4060a0" stroke-width="1"/>
+  <text x="200" y="360" text-anchor="middle" font-size="11" fill="#a0a0e0" font-family="Arial, sans-serif">J(θ) = [ ∂e/∂θ₁ | ∂e/∂θ₂ | ∂e/∂θ₃ ]  ∈ R^(3×n)</text>
+  <text x="200" y="378" text-anchor="middle" font-size="10" fill="#6060a0" font-family="Arial, sans-serif">每列 = 该关节角微小变化引起末端位移（偏导数）</text>
+
+  <!-- ===== Right: Jacobian Transpose update rule ===== -->
+  <rect x="400" y="55" width="440" height="460" rx="8" fill="#1e1e2d" stroke="#5060a0" stroke-width="1.5"/>
+  <text x="620" y="78" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0ff" font-family="Arial, sans-serif">Jacobian Transpose 方法（JT-IK）</text>
+
+  <text x="415" y="100" font-size="12" fill="#c0c0ff" font-family="Arial, sans-serif">问题：已知误差向量 Δe，如何更新关节角 Δθ？</text>
+
+  <!-- Methods comparison -->
+  <rect x="410" y="110" width="415" height="90" rx="4" fill="#2a2a1a" stroke="#8a8a40" stroke-width="1"/>
+  <text x="618" y="130" text-anchor="middle" font-size="11" font-weight="bold" fill="#e0e080" font-family="Arial, sans-serif">伪逆法（J† = JᵀW/(JJᵀ)）vs 转置法</text>
+  <text x="418" y="150" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• 伪逆法：精确，但 J·Jᵀ 求逆计算量大，O(n³)</text>
+  <text x="418" y="167" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• 转置法：近似，但只用矩阵乘法，O(n)，适合实时</text>
+  <text x="418" y="184" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• UE 的 SplineIK/AnimDynamics 采用基于梯度下降思想</text>
+
+  <!-- Transpose formula -->
+  <rect x="410" y="212" width="415" height="120" rx="4" fill="#2a1a1a" stroke="#8a4a4a" stroke-width="1"/>
+  <text x="618" y="233" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff8080" font-family="Arial, sans-serif">Jacobian Transpose 更新公式</text>
+  <text x="425" y="255" font-size="13" fill="#e08080" font-family="monospace">Δθ = α · Jᵀ · Δe</text>
+  <text x="425" y="278" font-size="11" fill="#c06060" font-family="Arial, sans-serif">其中 α 为步长（学习率），需满足：</text>
+  <text x="440" y="296" font-size="12" fill="#e08080" font-family="monospace">         Δeᵀ · J · Jᵀ · Δe</text>
+  <text x="440" y="314" font-size="12" fill="#e08080" font-family="monospace">α_opt = ─────────────────────</text>
+  <text x="440" y="320" font-size="11" fill="#c06060" font-family="Arial, sans-serif">（自适应步长）</text>
+  <text x="440" y="325" font-size="12" fill="#e08080" font-family="monospace">         (J·Jᵀ·Δe)ᵀ(J·Jᵀ·Δe)</text>
+
+  <!-- Direct IK vs FK -->
+  <rect x="410" y="346" width="415" height="90" rx="4" fill="#1a2a1a" stroke="#4a8a4a" stroke-width="1"/>
+  <text x="618" y="368" text-anchor="middle" font-size="12" font-weight="bold" fill="#80e080" font-family="Arial, sans-serif">FK vs IK 对比</text>
+  <text x="418" y="388" font-size="11" fill="#60c060" font-family="Arial, sans-serif">FK（正向运动学）：给定关节角 θ → 用变换矩阵乘积求末端位置</text>
+  <text x="418" y="406" font-size="11" fill="#60c060" font-family="Arial, sans-serif">              e = T₁(θ₁) · T₂(θ₂) · … · Tₙ(θₙ) · p₀</text>
+  <text x="418" y="424" font-size="11" fill="#60c060" font-family="Arial, sans-serif">IK（逆向运动学）：给定目标位置 t → 反求 θ（Jacobian 方法）</text>
+
+  <!-- UE note -->
+  <rect x="410" y="448" width="415" height="56" rx="4" fill="#1a1a1a" stroke="#444" stroke-width="1"/>
+  <text x="618" y="468" text-anchor="middle" font-size="11" font-weight="bold" fill="#888" font-family="Arial, sans-serif">UE 中的实现说明</text>
+  <text x="418" y="486" font-size="10" fill="#666" font-family="Arial, sans-serif">UE5 使用 CCDIK 和 TwoBoneIK 作为主要运行时 IK；</text>
+  <text x="418" y="499" font-size="10" fill="#666" font-family="Arial, sans-serif">Full-body Jacobian IK 在 IK Retargeter / IK Rig 中更完整（UE5.0+ 新系统）</text>
+
+  <defs>
+    <marker id="arrowYellow3" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#ffff30"/></marker>
+    <marker id="arrowOrange2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#ff8040"/></marker>
+  </defs>
+</svg>

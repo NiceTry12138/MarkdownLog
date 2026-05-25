@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="550" viewBox="0 0 900 550">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#89b4fa"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a6e3a1"/>
+    </marker>
+    <marker id="arrOrange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#fab387"/>
+    </marker>
+  </defs>
+  <rect width="900" height="550" fill="#1e1e2e" rx="12"/>
+  <text x="450" y="32" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold" font-family="Arial">编辑器扩展三种模式</text>
+
+  <!-- ====== 1: 添加菜单项 ====== -->
+  <rect x="20" y="52" width="860" height="150" rx="8" fill="#1e3a5f" stroke="#4A90D9" stroke-width="2"/>
+  <text x="450" y="72" text-anchor="middle" fill="#89b4fa" font-size="13" font-weight="bold" font-family="Arial">模式 1：给已有菜单（如 Window 菜单）添加一项</text>
+
+  <!-- Step 1 -->
+  <rect x="40" y="82" width="185" height="58" rx="6" fill="#2a4a6f"/>
+  <text x="132" y="99" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">① 获取/注册菜单</text>
+  <text x="132" y="114" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">UToolMenus::Get()</text>
+  <text x="132" y="129" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">  ->ExtendMenu("LevelEditor</text>
+  <text x="132" y="140" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">    .MainMenu.Window")</text>
+
+  <line x1="225" y1="111" x2="255" y2="111" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 2 -->
+  <rect x="255" y="82" width="185" height="58" rx="6" fill="#2a4a6f"/>
+  <text x="347" y="99" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">② 添加 Section</text>
+  <text x="347" y="116" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FToolMenuSection&amp; Section</text>
+  <text x="347" y="131" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial"> = Menu->FindOrAdd</text>
+  <text x="347" y="142" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">   Section("MySection")</text>
+
+  <line x1="440" y1="111" x2="470" y2="111" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 3 -->
+  <rect x="470" y="82" width="185" height="58" rx="6" fill="#2a4a6f"/>
+  <text x="562" y="99" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">③ 添加菜单项</text>
+  <text x="562" y="116" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">Section.AddMenuEntry(</text>
+  <text x="562" y="131" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">  "MyItem",</text>
+  <text x="562" y="142" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">  LOCTEXT("..."), Action)</text>
+
+  <line x1="655" y1="111" x2="685" y2="111" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 4 -->
+  <rect x="685" y="82" width="175" height="58" rx="6" fill="#2a4a6f"/>
+  <text x="772" y="99" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">④ 绑定命令</text>
+  <text x="772" y="116" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FUIAction(FExecuteAction</text>
+  <text x="772" y="131" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">::CreateLambda(</text>
+  <text x="772" y="142" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">  [](){ DoWork(); }))</text>
+
+  <text x="450" y="185" text-anchor="middle" fill="#585b70" font-size="10" font-family="Arial">注意: 菜单在 FLevelEditorModule::StartupModule() 中注册，或通过 UToolMenus::RegisterStartupCallback() 延迟注册</text>
+
+  <!-- ====== 2: 新资产类型 ====== -->
+  <rect x="20" y="215" width="860" height="145" rx="8" fill="#1a3d2e" stroke="#40a857" stroke-width="2"/>
+  <text x="450" y="234" text-anchor="middle" fill="#a6e3a1" font-size="13" font-weight="bold" font-family="Arial">模式 2：添加新资产类型（Content Browser 右键 → New ...）</text>
+
+  <rect x="40" y="244" width="185" height="70" rx="6" fill="#264d37"/>
+  <text x="132" y="261" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">① 定义 UObject 资产</text>
+  <text x="132" y="277" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">UCLASS()</text>
+  <text x="132" y="292" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">class UMyAsset : public UObject</text>
+  <text x="132" y="307" text-anchor="middle" fill="#a6adc8" font-size="9" font-family="Arial">(Runtime 模块，不含Editor代码)</text>
+
+  <line x1="225" y1="279" x2="255" y2="279" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+
+  <rect x="255" y="244" width="185" height="70" rx="6" fill="#264d37"/>
+  <text x="347" y="261" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">② 定义 AssetDefinition</text>
+  <text x="347" y="277" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">UCLASS()</text>
+  <text x="347" y="292" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">class UAssetDefinition_MyAsset</text>
+  <text x="347" y="307" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">  : public UAssetDefinitionDefault</text>
+
+  <line x1="440" y1="279" x2="470" y2="279" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+
+  <rect x="470" y="244" width="185" height="70" rx="6" fill="#264d37"/>
+  <text x="562" y="261" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">③ 重写关键方法</text>
+  <text x="562" y="277" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">GetAssetDisplayName()</text>
+  <text x="562" y="292" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">GetAssetColor()</text>
+  <text x="562" y="307" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">OpenAssets() → 打开编辑器</text>
+
+  <line x1="655" y1="279" x2="685" y2="279" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+
+  <rect x="685" y="244" width="175" height="70" rx="6" fill="#264d37"/>
+  <text x="772" y="261" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">④ 工厂类</text>
+  <text x="772" y="277" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">UMyAssetFactory</text>
+  <text x="772" y="292" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">  : public UFactory</text>
+  <text x="772" y="307" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FactoryCreateNew() 覆写</text>
+
+  <text x="450" y="350" text-anchor="middle" fill="#585b70" font-size="10" font-family="Arial">AssetDefinition 类通过 CDO 自动注册，无需手动注册。UFactory 控制 Content Browser 右键 "New Asset" 选项。</text>
+
+  <!-- ====== 3: 自定义编辑器 ====== -->
+  <rect x="20" y="368" width="860" height="170" rx="8" fill="#2a1a3d" stroke="#cba6f7" stroke-width="2"/>
+  <text x="450" y="388" text-anchor="middle" fill="#cba6f7" font-size="13" font-weight="bold" font-family="Arial">模式 3：为资产创建专属编辑器窗口（仿蓝图编辑器）</text>
+
+  <rect x="40" y="398" width="180" height="120" rx="6" fill="#3d2a5f"/>
+  <text x="130" y="415" text-anchor="middle" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">① 编辑器类</text>
+  <text x="50" y="432" fill="#cdd6f4" font-size="10" font-family="Arial">class FMyEditor</text>
+  <text x="50" y="447" fill="#cdd6f4" font-size="10" font-family="Arial">  : public FAssetEditorToolkit</text>
+  <text x="50" y="462" fill="#a6adc8" font-size="9" font-family="Arial">// 覆写:</text>
+  <text x="50" y="476" fill="#cdd6f4" font-size="10" font-family="Arial">GetToolkitName()</text>
+  <text x="50" y="491" fill="#cdd6f4" font-size="10" font-family="Arial">RegisterTabSpawners()</text>
+  <text x="50" y="506" fill="#cdd6f4" font-size="10" font-family="Arial">InitMyEditor(...)</text>
+
+  <line x1="220" y1="458" x2="255" y2="458" stroke="#cba6f7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="255" y="398" width="185" height="120" rx="6" fill="#3d2a5f"/>
+  <text x="347" y="415" text-anchor="middle" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">② 初始化 Layout</text>
+  <text x="270" y="432" fill="#cdd6f4" font-size="10" font-family="Arial">FTabManager::NewLayout(</text>
+  <text x="270" y="447" fill="#cdd6f4" font-size="10" font-family="Arial">  "MyEditor_Layout")</text>
+  <text x="270" y="462" fill="#cdd6f4" font-size="10" font-family="Arial">->AddArea(SplitterArea)</text>
+  <text x="270" y="477" fill="#cdd6f4" font-size="10" font-family="Arial">  ->Split(ViewportTab)</text>
+  <text x="270" y="492" fill="#cdd6f4" font-size="10" font-family="Arial">  ->Split(DetailsTab)</text>
+  <text x="270" y="508" fill="#a6adc8" font-size="9" font-family="Arial">FAssetEditorToolkit::InitAssetEditor()</text>
+
+  <line x1="440" y1="458" x2="470" y2="458" stroke="#cba6f7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="470" y="398" width="185" height="120" rx="6" fill="#3d2a5f"/>
+  <text x="562" y="415" text-anchor="middle" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">③ Tab 工厂</text>
+  <text x="485" y="432" fill="#cdd6f4" font-size="10" font-family="Arial">struct FMyDetailsSummoner</text>
+  <text x="485" y="447" fill="#cdd6f4" font-size="10" font-family="Arial">  : FWorkflowTabFactory</text>
+  <text x="485" y="462" fill="#cdd6f4" font-size="10" font-family="Arial">CreateTabBody() 返回</text>
+  <text x="485" y="477" fill="#cdd6f4" font-size="10" font-family="Arial">  SNew(SDetailsView)</text>
+  <text x="485" y="492" fill="#cdd6f4" font-size="10" font-family="Arial">  .Object(EditingAsset)</text>
+  <text x="485" y="508" fill="#a6adc8" font-size="9" font-family="Arial">每个 Tab 有单独的 Summoner</text>
+
+  <line x1="655" y1="458" x2="685" y2="458" stroke="#cba6f7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="685" y="398" width="175" height="120" rx="6" fill="#3d2a5f"/>
+  <text x="772" y="415" text-anchor="middle" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">④ 模块注册</text>
+  <text x="700" y="432" fill="#cdd6f4" font-size="10" font-family="Arial">OpenAssets() 中:</text>
+  <text x="700" y="447" fill="#cdd6f4" font-size="10" font-family="Arial">FMyEditorModule</text>
+  <text x="700" y="462" fill="#cdd6f4" font-size="10" font-family="Arial">  ::CreateMyEditor(</text>
+  <text x="700" y="477" fill="#cdd6f4" font-size="10" font-family="Arial">    EToolkitMode::Standalone</text>
+  <text x="700" y="492" fill="#cdd6f4" font-size="10" font-family="Arial">    , ToolkitHost</text>
+  <text x="700" y="507" fill="#cdd6f4" font-size="10" font-family="Arial">    , MyAsset)</text>
+</svg>

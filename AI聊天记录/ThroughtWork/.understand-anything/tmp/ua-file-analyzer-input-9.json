@@ -1,0 +1,28 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Platforms/VisionOS/Config/BaseVisionOSEngine.ini",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Platforms/VisionOS/Config/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Platforms/VisionOS/Config/VisionOS_SDK.json",
+      "language": "json",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Platforms/VisionOS/Config/BaseVisionOSEngine.ini": [],
+    "Platforms/VisionOS/Config/DataDrivenPlatformInfo.ini": [],
+    "Platforms/VisionOS/Config/VisionOS_SDK.json": []
+  }
+}

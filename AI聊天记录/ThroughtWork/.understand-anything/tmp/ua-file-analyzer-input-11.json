@@ -1,0 +1,56 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/Compression/OodleNetwork/BatchDebugDump.bat",
+      "language": "batch",
+      "sizeLines": 77,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Compression/OodleNetwork/BuildDictionary.bat",
+      "language": "batch",
+      "sizeLines": 56,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Compression/OodleNetwork/BuildDictionary_Generic.bat",
+      "language": "batch",
+      "sizeLines": 76,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Compression/OodleNetwork/BuildDictionary_TestCompression.bat",
+      "language": "batch",
+      "sizeLines": 56,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Compression/OodleNetwork/DumpOodleSDKPackets.bat",
+      "language": "batch",
+      "sizeLines": 56,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Compression/OodleNetwork/ExtractAllArchives.bat",
+      "language": "batch",
+      "sizeLines": 31,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Compression/OodleNetwork/FirstRun.bat",
+      "language": "batch",
+      "sizeLines": 75,
+      "fileCategory": "script"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/Compression/OodleNetwork/BatchDebugDump.bat": [],
+    "Plugins/Compression/OodleNetwork/BuildDictionary.bat": [],
+    "Plugins/Compression/OodleNetwork/BuildDictionary_Generic.bat": [],
+    "Plugins/Compression/OodleNetwork/BuildDictionary_TestCompression.bat": [],
+    "Plugins/Compression/OodleNetwork/DumpOodleSDKPackets.bat": [],
+    "Plugins/Compression/OodleNetwork/ExtractAllArchives.bat": [],
+    "Plugins/Compression/OodleNetwork/FirstRun.bat": []
+  }
+}

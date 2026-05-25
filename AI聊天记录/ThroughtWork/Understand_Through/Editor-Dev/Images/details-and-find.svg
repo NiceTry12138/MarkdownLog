@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#89b4fa"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a6e3a1"/>
+    </marker>
+  </defs>
+  <rect width="900" height="480" fill="#1e1e2e" rx="12"/>
+  <text x="450" y="30" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold" font-family="Arial">Details 面板数据流 + Find 功能架构</text>
+
+  <!-- ====== TOP HALF: Details 面板 ====== -->
+  <text x="450" y="55" text-anchor="middle" fill="#89b4fa" font-size="13" font-weight="bold" font-family="Arial">Details 面板数据流</text>
+
+  <!-- Step 1: User selects -->
+  <rect x="30" y="65" width="160" height="50" rx="6" fill="#313244" stroke="#585b70" stroke-width="1.5"/>
+  <text x="110" y="85" text-anchor="middle" fill="#cdd6f4" font-size="11" font-weight="bold" font-family="Arial">用户选中对象</text>
+  <text x="110" y="101" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">Component/Variable/Node</text>
+
+  <line x1="190" y1="90" x2="220" y2="90" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 2: FBlueprintEditor -->
+  <rect x="220" y="65" width="185" height="50" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="2"/>
+  <text x="312" y="85" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">FBlueprintEditor</text>
+  <text x="312" y="101" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">SetUISelectionState()</text>
+
+  <line x1="405" y1="90" x2="435" y2="90" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 3: SKismetInspector -->
+  <rect x="435" y="65" width="195" height="50" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="2"/>
+  <text x="532" y="85" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">SKismetInspector</text>
+  <text x="532" y="101" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">ShowDetailsForObjects(Objs)</text>
+
+  <line x1="630" y1="90" x2="660" y2="90" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 4: IDetailsView -->
+  <rect x="660" y="65" width="205" height="50" rx="6" fill="#2a1a3d" stroke="#cba6f7" stroke-width="2"/>
+  <text x="762" y="85" text-anchor="middle" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">IDetailsView</text>
+  <text x="762" y="101" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">SetObjects(Array&lt;UObject*&gt;)</text>
+
+  <!-- Step 5: Customization -->
+  <rect x="660" y="130" width="205" height="65" rx="6" fill="#3d2a1a" stroke="#fab387" stroke-width="2"/>
+  <text x="762" y="148" text-anchor="middle" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">IDetailCustomization</text>
+  <text x="762" y="163" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">CustomizeDetails(IDetailLayout)</text>
+  <text x="762" y="178" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">注册: RegisterCustom</text>
+  <text x="762" y="190" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">ClassLayout(UMyClass,...)</text>
+  <line x1="762" y1="115" x2="762" y2="130" stroke="#cba6f7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 6: Property Change -->
+  <rect x="435" y="130" width="195" height="65" rx="6" fill="#264d37" stroke="#40a857" stroke-width="2"/>
+  <text x="532" y="148" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">用户修改属性值</text>
+  <text x="532" y="163" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FPropertyChangedEvent</text>
+  <text x="532" y="178" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">NotifyPreChange()</text>
+  <text x="532" y="190" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">→ NotifyPostChange()</text>
+  <line x1="660" y1="163" x2="630" y2="163" stroke="#40a857" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+
+  <!-- Arrow to Blueprint dirty -->
+  <rect x="220" y="130" width="185" height="65" rx="6" fill="#3d1a1a" stroke="#f38ba8" stroke-width="1.5"/>
+  <text x="312" y="148" text-anchor="middle" fill="#f38ba8" font-size="11" font-weight="bold" font-family="Arial">Blueprint 标记脏</text>
+  <text x="312" y="163" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">FBlueprintEditorUtils</text>
+  <text x="312" y="178" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">::MarkBlueprintAsModified</text>
+  <text x="312" y="192" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">→ 触发自动编译(可选)</text>
+  <line x1="435" y1="163" x2="405" y2="163" stroke="#f38ba8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ====== DIVIDER ====== -->
+  <line x1="30" y1="215" x2="870" y2="215" stroke="#45475a" stroke-width="1" stroke-dasharray="8,4"/>
+
+  <!-- ====== BOTTOM HALF: Find ====== -->
+  <text x="450" y="235" text-anchor="middle" fill="#a6e3a1" font-size="13" font-weight="bold" font-family="Arial">Find 查找功能架构</text>
+
+  <!-- SFindInBlueprints -->
+  <rect x="30" y="248" width="180" height="50" rx="6" fill="#313244" stroke="#585b70" stroke-width="1.5"/>
+  <text x="120" y="267" text-anchor="middle" fill="#cdd6f4" font-size="11" font-weight="bold" font-family="Arial">SFindInBlueprints</text>
+  <text x="120" y="283" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">用户输入搜索词</text>
+
+  <line x1="210" y1="273" x2="240" y2="273" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- FFindInBlueprintSearchManager -->
+  <rect x="240" y="248" width="205" height="50" rx="6" fill="#1a3d2e" stroke="#40a857" stroke-width="2"/>
+  <text x="342" y="267" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">FFindInBlueprintSearchManager</text>
+  <text x="342" y="283" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">单例, StartSearchQuery()</text>
+
+  <line x1="445" y1="273" x2="475" y2="273" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- FStreamSearch -->
+  <rect x="475" y="248" width="175" height="50" rx="6" fill="#1a3d2e" stroke="#40a857" stroke-width="2"/>
+  <text x="562" y="267" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">FStreamSearch</text>
+  <text x="562" y="283" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">:FRunnable (后台线程)</text>
+
+  <line x1="650" y1="273" x2="680" y2="273" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ImaginaryBlueprintData -->
+  <rect x="680" y="248" width="185" height="50" rx="6" fill="#2a1a3d" stroke="#cba6f7" stroke-width="2"/>
+  <text x="772" y="267" text-anchor="middle" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">ImaginaryBlueprintData</text>
+  <text x="772" y="283" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">JSON 搜索索引 (预序列化)</text>
+
+  <!-- Results flow back -->
+  <line x1="772" y1="298" x2="772" y2="330" stroke="#cba6f7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Results -->
+  <rect x="590" y="330" width="275" height="50" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="727" y="350" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">GetSearchResults()</text>
+  <text x="727" y="367" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">树形结果，含 NodeGuid / PinName</text>
+
+  <!-- Jump to result -->
+  <line x1="590" y1="355" x2="520" y2="355" stroke="#40a857" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+
+  <rect x="315" y="330" width="205" height="50" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="1.5"/>
+  <text x="417" y="350" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">用户点击结果</text>
+  <text x="417" y="367" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">JumpToHyperlink(NodeGuid)</text>
+
+  <!-- Graph focus -->
+  <line x1="315" y1="355" x2="245" y2="355" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="30" y="330" width="215" height="50" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="1.5"/>
+  <text x="137" y="350" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">聚焦图中对应节点</text>
+  <text x="137" y="367" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">SGraphEditor::JumpToNode()</text>
+
+  <!-- 索引说明 -->
+  <rect x="30" y="400" width="840" height="68" rx="8" fill="#181825" stroke="#45475a" stroke-width="1"/>
+  <text x="50" y="420" fill="#a6adc8" font-size="11" font-weight="bold" font-family="Arial">搜索索引说明</text>
+  <text x="50" y="437" fill="#cdd6f4" font-size="10" font-family="Arial">搜索 Tag 包括: FiB_Name / FiB_Nodes / FiB_Functions / FiB_Pins / FiB_DefaultValue / FiB_Tooltip 等</text>
+  <text x="50" y="453" fill="#cdd6f4" font-size="10" font-family="Arial">索引在 Blueprint 保存时序列化到 JSON，存入 UBlueprint 的元数据；搜索时不加载 UEdGraph，只读 JSON，速度很快</text>
+  <text x="50" y="462" fill="#cdd6f4" font-size="10" font-family="Arial">可搜索范围: 当前 BP / 全部 BP（All Blueprints 模式）</text>
+</svg>

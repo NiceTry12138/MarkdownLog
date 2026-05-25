@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/EnvironmentQueryEditor.uplugin",
+      "language": "uplugin",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/EnvironmentQueryEditor.Build.cs",
+      "language": "csharp",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/ActorFactoryEnvironmentQuery.cpp",
+      "language": "cpp",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/AssetDefinition_EnvironmentQuery.cpp",
+      "language": "cpp",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/AssetDefinition_EnvironmentQuery.h",
+      "language": "c",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvDirectionCustomization.cpp",
+      "language": "cpp",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvDirectionCustomization.h",
+      "language": "c",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvQueryTestDetails.cpp",
+      "language": "cpp",
+      "sizeLines": 784,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvQueryTestDetails.h",
+      "language": "c",
+      "sizeLines": 122,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvTraceDataCustomization.cpp",
+      "language": "cpp",
+      "sizeLines": 307,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvTraceDataCustomization.h",
+      "language": "c",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EdGraphSchema_EnvironmentQuery.cpp",
+      "language": "cpp",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryColors.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryEditor.cpp",
+      "language": "cpp",
+      "sizeLines": 483,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryEditor.h",
+      "language": "c",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryEditorModule.cpp",
+      "language": "cpp",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraph.cpp",
+      "language": "cpp",
+      "sizeLines": 599,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode_Option.cpp",
+      "language": "cpp",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode_Root.cpp",
+      "language": "cpp",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode_Test.cpp",
+      "language": "cpp",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode.cpp",
+      "language": "cpp",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryLoadGraph.cpp",
+      "language": "cpp",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryLoadGraph.h",
+      "language": "c",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryProfiler.cpp",
+      "language": "cpp",
+      "sizeLines": 342,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/EnvironmentQueryEditor/EnvironmentQueryEditor.uplugin": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/EnvironmentQueryEditor.Build.cs": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/ActorFactoryEnvironmentQuery.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/AssetDefinition_EnvironmentQuery.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/AssetDefinition_EnvironmentQuery.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvDirectionCustomization.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvDirectionCustomization.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvQueryTestDetails.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvQueryTestDetails.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvTraceDataCustomization.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/DetailCustomizations/EnvTraceDataCustomization.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EdGraphSchema_EnvironmentQuery.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryColors.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryEditor.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryEditor.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryEditorModule.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryFactory.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraph.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode_Option.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode_Root.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode_Test.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/EnvironmentQueryGraphNode.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryLoadGraph.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryLoadGraph.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryProfiler.cpp": []
+  }
+}

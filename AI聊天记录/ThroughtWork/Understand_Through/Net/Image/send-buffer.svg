@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#444"/>
+    </marker>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#27AE60"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="500" fill="#F8FAFB" rx="8"/>
+  <text x="480" y="28" font-family="Microsoft YaHei,sans-serif" font-size="17" font-weight="bold"
+        text-anchor="middle" fill="#1A1A2E">Bunch 合并与 SendBuffer 填充过程</text>
+  <text x="480" y="46" font-family="Microsoft YaHei,sans-serif" font-size="11"
+        text-anchor="middle" fill="#888">UChannel::SendBunch() 中的合并检查，以及 WriteBitsToSendBuffer() 写入流程</text>
+
+  <!-- ===== Top: Two bunches side by side ===== -->
+  <text x="175" y="72" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold"
+        text-anchor="middle" fill="#D35400">当前 Bunch（Actor A, 不可靠）</text>
+  <text x="510" y="72" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold"
+        text-anchor="middle" fill="#D35400">上一个 Bunch（Actor A, 不可靠）</text>
+
+  <rect x="40" y="78" width="270" height="50" fill="#E67E22" rx="5"/>
+  <text x="175" y="99" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">FOutBunch（本次 Actor A 数据）</text>
+  <text x="175" y="115" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#FDEBD0">GetNumBits() = 420 bits</text>
+
+  <rect x="380" y="78" width="270" height="50" fill="#D35400" rx="5"/>
+  <text x="515" y="99" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white">Connection::LastOut（上次 Actor A）</text>
+  <text x="515" y="115" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#FDEBD0">GetNumBits() = 380 bits · LastEnd == SendBuffer.Bits</text>
+
+  <!-- Merge condition checks -->
+  <rect x="40" y="148" width="820" height="56" fill="#EBF5FB" rx="5" stroke="#2980B9"/>
+  <text x="450" y="166" font-family="Microsoft YaHei,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1A5276">合并条件检查（全部满足才执行合并）</text>
+  <text x="60" y="184" font-family="Consolas,monospace" font-size="10" fill="#555">
+    LastOut.ChIndex == Bunch.ChIndex  ·  LastOut.bReliable == Bunch.bReliable  ·  AllowMerge  ·  LastEnd.GetNumBits() == SendBuffer.GetNumBits()  ·  380+420 ≤ MAX_SINGLE_BUNCH_SIZE_BITS
+  </text>
+
+  <!-- Arrow down: merge succeeds -->
+  <line x1="450" y1="204" x2="450" y2="228" stroke="#27AE60" stroke-width="2" marker-end="url(#arr-g)"/>
+  <text x="465" y="222" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#27AE60">合并成功</text>
+
+  <!-- Merged bunch -->
+  <rect x="200" y="228" width="500" height="50" fill="#1E8449" rx="5"/>
+  <text x="450" y="249" font-family="Consolas,monospace" font-size="11" text-anchor="middle" fill="white" font-weight="bold">合并后 LastOut = 380 + 420 = 800 bits</text>
+  <text x="450" y="265" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#D5F5E3">同一个 UDP 包内携带两次 Actor A 的属性更新，节省包头开销</text>
+
+  <!-- ===== SendBuffer diagram ===== -->
+  <text x="480" y="302" font-family="Microsoft YaHei,sans-serif" font-size="13" font-weight="bold"
+        text-anchor="middle" fill="#333">Connection::SendBuffer（发送缓冲区位流）</text>
+
+  <!-- SendBuffer bar -->
+  <rect x="40" y="314" width="880" height="60" fill="none" stroke="#555" stroke-width="1.5" rx="4"/>
+
+  <!-- Filled portions -->
+  <rect x="40" y="314" width="140" height="60" fill="#7B68EE" rx="4"/>
+  <text x="110" y="340" font-family="Consolas,monospace" font-size="10" text-anchor="middle" fill="white">Packet Header</text>
+  <text x="110" y="355" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#E0D8FF">+AckHistory+Info</text>
+  <text x="110" y="368" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#E0D8FF">~300 bits</text>
+
+  <rect x="180" y="314" width="160" height="60" fill="#E67E22" rx="2"/>
+  <text x="260" y="340" font-family="Consolas,monospace" font-size="10" text-anchor="middle" fill="white">Bunch 1</text>
+  <text x="260" y="355" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#FDEBD0">Actor B (Health)</text>
+  <text x="260" y="368" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#FDEBD0">520 bits</text>
+
+  <rect x="340" y="314" width="200" height="60" fill="#D35400" rx="2"/>
+  <text x="440" y="340" font-family="Consolas,monospace" font-size="10" text-anchor="middle" fill="white">Bunch 2（合并后）</text>
+  <text x="440" y="355" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#FDEBD0">Actor A (two frames)</text>
+  <text x="440" y="368" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#FDEBD0">800 bits</text>
+
+  <rect x="540" y="314" width="120" height="60" fill="#8E44AD" rx="2"/>
+  <text x="600" y="340" font-family="Consolas,monospace" font-size="10" text-anchor="middle" fill="white">Partial[1/2]</text>
+  <text x="600" y="355" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#E8DAEF">Actor C 分片1</text>
+  <text x="600" y="368" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#E8DAEF">1400 bits</text>
+
+  <!-- Free space -->
+  <rect x="660" y="314" width="180" height="60" fill="#F4F6F7" rx="2" stroke="#CCC" stroke-dasharray="4,3"/>
+  <text x="750" y="344" font-family="Consolas,monospace" font-size="10" text-anchor="middle" fill="#AAA">剩余空间</text>
+
+  <!-- Terminator bit -->
+  <rect x="840" y="314" width="30" height="60" fill="#555" rx="2"/>
+  <text x="855" y="344" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="white">终止</text>
+  <text x="855" y="358" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#DDD">1 bit</text>
+
+  <!-- Padding -->
+  <rect x="870" y="314" width="50" height="60" fill="#BDC3C7" rx="2" opacity="0.7"/>
+  <text x="895" y="344" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#555">字节</text>
+  <text x="895" y="358" font-family="Consolas,monospace" font-size="9" text-anchor="middle" fill="#555">对齐</text>
+
+  <!-- Total size note -->
+  <text x="480" y="394" font-family="Microsoft YaHei,sans-serif" font-size="11" text-anchor="middle" fill="#555">
+    总计: 300 + 520 + 800 + 1400 + ≈3024 bits ≈ 378 字节 → 一次 UDP 发出（远小于 MTU 1400B，下一个 PartialBunch 在下一个 UDP 包中）
+  </text>
+
+  <!-- FlushNet note -->
+  <rect x="40" y="410" width="880" height="72" fill="#EEF0F5" rx="6" stroke="#DDD"/>
+  <text x="480" y="428" font-family="Microsoft YaHei,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#333">FlushNet() 发送时机</text>
+  <text x="55" y="446" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● 主动刷新：每次 TickFlush 结束时，或者 Channel 判断数据紧急时（TimeSensitive=true）
+  </text>
+  <text x="55" y="462" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● 心跳刷新：距上次发送超过 KeepAliveTime 时，即便 SendBuffer 为空也发一个只含包头的 KeepAlive 包
+  </text>
+  <text x="55" y="478" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#555">
+    ● 发出后：OutPacketId++，PacketNotify.CommitAndIncrementOutSeq()，更新统计计数（OutBytes/OutPackets）
+  </text>
+</svg>

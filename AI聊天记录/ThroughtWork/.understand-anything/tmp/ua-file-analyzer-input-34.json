@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookAssetBroker.h",
+      "language": "c",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookHelpers.cpp",
+      "language": "cpp",
+      "sizeLines": 169,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookThumbnailRenderer.cpp",
+      "language": "cpp",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperImporterSettings.cpp",
+      "language": "cpp",
+      "sizeLines": 251,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperJSONHelpers.cpp",
+      "language": "cpp",
+      "sizeLines": 181,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteActorFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteAssetBroker.h",
+      "language": "c",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteThumbnailRenderer.cpp",
+      "language": "cpp",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperStyle.cpp",
+      "language": "cpp",
+      "sizeLines": 337,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperStyle.h",
+      "language": "c",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileMapFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileMapPromotionFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileSetFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileSetThumbnailRenderer.cpp",
+      "language": "cpp",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SPaperEditorViewport.cpp",
+      "language": "cpp",
+      "sizeLines": 539,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SPaperEditorViewport.h",
+      "language": "c",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteAssetTypeActions.cpp",
+      "language": "cpp",
+      "sizeLines": 161,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteAssetTypeActions.h",
+      "language": "c",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteCanvas.cpp",
+      "language": "cpp",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteCanvas.h",
+      "language": "c",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteEditor/SpriteComponentDetailsCustomization.cpp",
+      "language": "cpp",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteEditor/SpriteComponentDetailsCustomization.h",
+      "language": "c",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteEditor/SpriteDetailsCustomization.cpp",
+      "language": "cpp",
+      "sizeLines": 605,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookAssetBroker.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookHelpers.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperFlipbookThumbnailRenderer.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperImporterSettings.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperJSONHelpers.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteActorFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteAssetBroker.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperSpriteThumbnailRenderer.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperStyle.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperStyle.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileMapFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileMapPromotionFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileSetFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/PaperTileSetThumbnailRenderer.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SPaperEditorViewport.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SPaperEditorViewport.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteAssetTypeActions.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteAssetTypeActions.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteCanvas.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteCanvas.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteEditor/SpriteComponentDetailsCustomization.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteEditor/SpriteComponentDetailsCustomization.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/SpriteEditor/SpriteDetailsCustomization.cpp": []
+  }
+}

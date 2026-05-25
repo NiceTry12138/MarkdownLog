@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationFragments.cpp",
+      "language": "cpp",
+      "sizeLines": 487,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationModule.cpp",
+      "language": "cpp",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 622,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationUtils.cpp",
+      "language": "cpp",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/IMassZoneGraphNavigationModule.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationFragments.h",
+      "language": "c",
+      "sizeLines": 290,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationProcessors.h",
+      "language": "c",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationTrait.h",
+      "language": "c",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationTypes.h",
+      "language": "c",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationUtils.h",
+      "language": "c",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Config/BaseMassCrowd.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/MassCrowd.uplugin",
+      "language": "uplugin",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/MassCrowd.Build.cs",
+      "language": "csharp",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdBubble.cpp",
+      "language": "cpp",
+      "sizeLines": 189,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdLaneClosingTest.cpp",
+      "language": "cpp",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdLaneDataRenderingComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 276,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdMemberTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdModule.cpp",
+      "language": "cpp",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdNavigationProcessor.cpp",
+      "language": "cpp",
+      "sizeLines": 313,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdReplicator.cpp",
+      "language": "cpp",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdRepresentationActorManagement.cpp",
+      "language": "cpp",
+      "sizeLines": 105,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdRepresentationSubsystem.cpp",
+      "language": "cpp",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdServerRepresentationLODProcessor.cpp",
+      "language": "cpp",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdServerRepresentationProcessor.cpp",
+      "language": "cpp",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationFragments.cpp": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationModule.cpp": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationTrait.cpp": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Private/MassZoneGraphNavigationUtils.cpp": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/IMassZoneGraphNavigationModule.h": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationFragments.h": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationProcessors.h": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationTrait.h": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationTypes.h": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/Public/MassZoneGraphNavigationUtils.h": [],
+    "Plugins/AI/MassCrowd/Config/BaseMassCrowd.ini": [],
+    "Plugins/AI/MassCrowd/MassCrowd.uplugin": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/MassCrowd.Build.cs": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdBubble.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdLaneClosingTest.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdLaneDataRenderingComponent.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdMemberTrait.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdModule.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdNavigationProcessor.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdReplicator.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdRepresentationActorManagement.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdRepresentationSubsystem.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdServerRepresentationLODProcessor.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdServerRepresentationProcessor.cpp": []
+  }
+}

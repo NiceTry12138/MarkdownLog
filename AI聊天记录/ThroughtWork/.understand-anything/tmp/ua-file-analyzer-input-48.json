@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdSubsystem.h",
+      "language": "c",
+      "sizeLines": 257,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdTypes.h",
+      "language": "c",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdVisualizationLODProcessor.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdVisualizationProcessor.h",
+      "language": "c",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdVisualizationTrait.h",
+      "language": "c",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/Tasks/MassCrowdClaimWaitSlotTask.h",
+      "language": "c",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/Tasks/MassZoneGraphFindWanderTarget.h",
+      "language": "c",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/ZoneGraphCrowdLaneAnnotations.h",
+      "language": "c",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/MLAdapter.uplugin",
+      "language": "uplugin",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/README.md",
+      "language": "markdown",
+      "sizeLines": 122,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/MLAdapter.Build.cs",
+      "language": "csharp",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator_Camera.cpp",
+      "language": "cpp",
+      "sizeLines": 114,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator_EnhancedInput.cpp",
+      "language": "cpp",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator_InputKey.cpp",
+      "language": "cpp",
+      "sizeLines": 130,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator.cpp",
+      "language": "cpp",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Agents/MLAdapterAgent_Inference.cpp",
+      "language": "cpp",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Agents/MLAdapterAgent.cpp",
+      "language": "cpp",
+      "sizeLines": 514,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Agents/MLAdapterAgentElement.cpp",
+      "language": "cpp",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Debug/GameplayDebuggerCategory_MLAdapter.cpp",
+      "language": "cpp",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterManager_Client.cpp",
+      "language": "cpp",
+      "sizeLines": 311,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterManager_Server.cpp",
+      "language": "cpp",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterManager.cpp",
+      "language": "cpp",
+      "sizeLines": 532,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterNoRPCManager.cpp",
+      "language": "cpp",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterInputHelper.cpp",
+      "language": "cpp",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterLibrarian.cpp",
+      "language": "cpp",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdSubsystem.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdTypes.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdVisualizationLODProcessor.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdVisualizationProcessor.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdVisualizationTrait.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/Tasks/MassCrowdClaimWaitSlotTask.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/Tasks/MassZoneGraphFindWanderTarget.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/ZoneGraphCrowdLaneAnnotations.h": [],
+    "Plugins/AI/MLAdapter/MLAdapter.uplugin": [],
+    "Plugins/AI/MLAdapter/README.md": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/MLAdapter.Build.cs": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator_Camera.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator_EnhancedInput.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator_InputKey.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Actuators/MLAdapterActuator.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Agents/MLAdapterAgent_Inference.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Agents/MLAdapterAgent.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Agents/MLAdapterAgentElement.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Debug/GameplayDebuggerCategory_MLAdapter.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterManager_Client.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterManager_Server.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterManager.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Managers/MLAdapterNoRPCManager.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterInputHelper.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterLibrarian.cpp": []
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/IOS/BaseIOSEngine.ini",
+      "language": "config",
+      "sizeLines": 111,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/IOS/BaseIOSGame.ini",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/IOS/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 84,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/IOS/IOSGame.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/IOS/IOSScalability.ini",
+      "language": "config",
+      "sizeLines": 222,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/IOS/IOS_SDK.json",
+      "language": "json",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/IOS/BaseIOSEngine.ini": [],
+    "Config/IOS/BaseIOSGame.ini": [],
+    "Config/IOS/DataDrivenPlatformInfo.ini": [],
+    "Config/IOS/IOSGame.ini": [],
+    "Config/IOS/IOSScalability.ini": [],
+    "Config/IOS/IOS_SDK.json": []
+  }
+}

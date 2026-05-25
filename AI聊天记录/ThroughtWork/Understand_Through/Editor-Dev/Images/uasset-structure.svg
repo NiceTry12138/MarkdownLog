@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" font-family="Consolas,'Courier New',monospace">
+  <rect width="1000" height="820" fill="#1e1e2e" rx="12"/>
+  <text x="500" y="38" fill="#cba6f7" font-size="18" font-weight="bold" text-anchor="middle" font-family="'Segoe UI',sans-serif">BP_Enemy.uasset 文件数据分布</text>
+
+  <!-- File byte stream vertical layout -->
+  <!-- Column 1: file block descriptions -->
+  <g transform="translate(40,60)">
+
+    <!-- Header -->
+    <rect x="0" y="0" width="200" height="56" rx="6" fill="#313244" stroke="#89b4fa" stroke-width="1.5"/>
+    <text x="100" y="18" fill="#89b4fa" font-size="12" font-weight="bold" text-anchor="middle">FPackageFileSummary</text>
+    <text x="100" y="32" fill="#a6adc8" font-size="10" text-anchor="middle">魔法数字 0x9E2A83C1</text>
+    <text x="100" y="46" fill="#a6adc8" font-size="10" text-anchor="middle">版本号 / 压缩方式 / Guid</text>
+
+    <!-- Name Table -->
+    <rect x="0" y="68" width="200" height="56" rx="6" fill="#313244" stroke="#a6e3a1" stroke-width="1.5"/>
+    <text x="100" y="86" fill="#a6e3a1" font-size="12" font-weight="bold" text-anchor="middle">Name Table  (名称表)</text>
+    <text x="100" y="100" fill="#a6adc8" font-size="10" text-anchor="middle">所有 FName 字符串数组</text>
+    <text x="100" y="114" fill="#a6adc8" font-size="10" text-anchor="middle">"BP_Enemy" "SetHP" "HP" "bAlive"…</text>
+
+    <!-- Import Table -->
+    <rect x="0" y="136" width="200" height="56" rx="6" fill="#313244" stroke="#f9e2af" stroke-width="1.5"/>
+    <text x="100" y="154" fill="#f9e2af" font-size="12" font-weight="bold" text-anchor="middle">Import Table  (导入表)</text>
+    <text x="100" y="168" fill="#a6adc8" font-size="10" text-anchor="middle">引用的外部对象列表</text>
+    <text x="100" y="182" fill="#a6adc8" font-size="10" text-anchor="middle">AActor / PrintString / 引擎类…</text>
+
+    <!-- Export Table -->
+    <rect x="0" y="204" width="200" height="56" rx="6" fill="#313244" stroke="#cba6f7" stroke-width="1.5"/>
+    <text x="100" y="222" fill="#cba6f7" font-size="12" font-weight="bold" text-anchor="middle">Export Table  (导出表)</text>
+    <text x="100" y="236" fill="#a6adc8" font-size="10" text-anchor="middle">本包中所有对象的描述</text>
+    <text x="100" y="250" fill="#a6adc8" font-size="10" text-anchor="middle">UBlueprint / GeneratedClass / CDO…</text>
+
+    <!-- Serialized Objects -->
+    <rect x="0" y="272" width="200" height="56" rx="6" fill="#313244" stroke="#89dceb" stroke-width="1.5"/>
+    <text x="100" y="290" fill="#89dceb" font-size="12" font-weight="bold" text-anchor="middle">序列化对象数据</text>
+    <text x="100" y="304" fill="#a6adc8" font-size="10" text-anchor="middle">Export 表中每个对象的实际内容</text>
+    <text x="100" y="318" fill="#a6adc8" font-size="10" text-anchor="middle">UBlueprint / UEdGraph / UFunction…</text>
+
+    <!-- Thumbnail / other -->
+    <rect x="0" y="340" width="200" height="40" rx="6" fill="#313244" stroke="#a6adc8" stroke-width="1.0"/>
+    <text x="100" y="358" fill="#a6adc8" font-size="11" text-anchor="middle">Thumbnail / AssetRegistry</text>
+    <text x="100" y="372" fill="#585b70" font-size="10" text-anchor="middle">缩略图 / 搜索标记</text>
+
+    <!-- Arrow down -->
+    <line x1="100" y1="56" x2="100" y2="68" stroke="#585b70" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="124" x2="100" y2="136" stroke="#585b70" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="192" x2="100" y2="204" stroke="#585b70" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="260" x2="100" y2="272" stroke="#585b70" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="328" x2="100" y2="340" stroke="#585b70" stroke-width="1.5" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- Column 2: UBlueprint object expansion -->
+  <g transform="translate(300,60)">
+    <text x="0" y="12" fill="#cdd6f4" font-size="13" font-weight="bold">UBlueprint  对象 (Editor-Only)</text>
+    <rect x="0" y="18" width="280" height="200" rx="6" fill="#181825" stroke="#cba6f7" stroke-width="1.5"/>
+
+    <text x="12" y="38" fill="#cba6f7" font-size="11" font-weight="bold">FunctionGraphs[0]  → "SetHP" UEdGraph</text>
+    <rect x="12" y="44" width="256" height="66" rx="4" fill="#313244"/>
+    <text x="20" y="59" fill="#a6e3a1" font-size="10">  UEdGraphNode: FunctionEntry (入口节点)</text>
+    <text x="20" y="73" fill="#f9e2af" font-size="10">  UEdGraphNode: K2Node_IfThenElse (Branch)</text>
+    <text x="20" y="87" fill="#89dceb" font-size="10">  UEdGraphNode: K2Node_VariableSet (HP)</text>
+    <text x="20" y="101" fill="#f38ba8" font-size="10">  UEdGraphNode: K2Node_CallFunction (PrintString)</text>
+
+    <text x="12" y="128" fill="#cba6f7" font-size="11" font-weight="bold">UbergraphPages[0]  → EventGraph</text>
+    <text x="12" y="144" fill="#a6adc8" font-size="10">  各种 Event 节点（BeginPlay 等）</text>
+
+    <text x="12" y="162" fill="#cba6f7" font-size="11" font-weight="bold">NewVariables[]  → 属性描述</text>
+    <text x="12" y="178" fill="#a6adc8" font-size="10">  { Name:"HP",  Type:int32 }</text>
+    <text x="12" y="194" fill="#a6adc8" font-size="10">  { Name:"bAlive", Type:bool }</text>
+    <text x="12" y="210" fill="#a6adc8" font-size="10">  ParentClass → AActor</text>
+
+    <!-- Second box: Generated Class -->
+    <text x="0" y="242" fill="#cdd6f4" font-size="13" font-weight="bold">UBlueprintGeneratedClass  (Runtime)</text>
+    <rect x="0" y="248" width="280" height="160" rx="6" fill="#181825" stroke="#89b4fa" stroke-width="1.5"/>
+
+    <text x="12" y="268" fill="#89b4fa" font-size="11" font-weight="bold">UFunction "SetHP"</text>
+    <rect x="12" y="274" width="256" height="90" rx="4" fill="#313244"/>
+    <text x="20" y="290" fill="#a6e3a1" font-size="10">  TArray&lt;uint8&gt; Script  ← 编译后的字节码</text>
+    <text x="20" y="305" fill="#f9e2af" font-size="10">  [0x07][Offset][0x01:bAlive][0x1B:PrintString]</text>
+    <text x="20" y="320" fill="#f9e2af" font-size="10">  [0x0F][HP_prop][0x00:NewHP_local]</text>
+    <text x="20" y="335" fill="#a6adc8" font-size="10">  ParmsSize / ReturnValueOffset / FunctionFlags</text>
+    <text x="20" y="350" fill="#89dceb" font-size="10">  FProperty链: NewHP(int) / 本地变量</text>
+
+    <text x="12" y="378" fill="#89b4fa" font-size="11" font-weight="bold">CDO  (默认对象)</text>
+    <text x="12" y="394" fill="#a6adc8" font-size="10">  HP = 0,  bAlive = false  (默认值)</text>
+  </g>
+
+  <!-- Column 3: ByteCode zoom -->
+  <g transform="translate(640,60)">
+    <text x="0" y="12" fill="#cdd6f4" font-size="13" font-weight="bold">SetHP 字节码逻辑流</text>
+    <rect x="0" y="18" width="320" height="400" rx="6" fill="#11111b" stroke="#89dceb" stroke-width="1.5"/>
+
+    <!-- byte sequence -->
+    <text x="12" y="42" fill="#a6adc8" font-size="10">偏移  操作码  说明</text>
+    <line x1="12" y1="46" x2="308" y2="46" stroke="#313244" stroke-width="1"/>
+
+    <text x="12" y="62" fill="#89dceb" font-size="10.5">0x00  EX_LocalVariable</text>
+    <text x="220" y="62" fill="#a6adc8" font-size="10">读 NewHP 参数地址</text>
+
+    <text x="12" y="78" fill="#89dceb" font-size="10.5">0x05  EX_InstanceVariable</text>
+    <text x="220" y="78" fill="#a6adc8" font-size="10">读 bAlive 成员地址</text>
+
+    <text x="12" y="94" fill="#f9e2af" font-size="10.5" font-weight="bold">0x0A  EX_JumpIfNot  → 0x3C</text>
+    <text x="220" y="94" fill="#a6adc8" font-size="10">false → 跳 PrintString</text>
+
+    <text x="12" y="110" fill="#a6e3a1" font-size="10.5">0x12  EX_InstanceVariable</text>
+    <text x="220" y="110" fill="#a6adc8" font-size="10">读 HP 成员地址（目标）</text>
+
+    <text x="12" y="126" fill="#a6e3a1" font-size="10.5">0x17  EX_LocalVariable</text>
+    <text x="220" y="126" fill="#a6adc8" font-size="10">读 NewHP 值（源）</text>
+
+    <text x="12" y="142" fill="#a6e3a1" font-size="10.5" font-weight="bold">0x1C  EX_Let</text>
+    <text x="220" y="142" fill="#a6adc8" font-size="10">HP = NewHP  (赋值)</text>
+
+    <text x="12" y="158" fill="#89dceb" font-size="10.5">0x28  EX_Jump  → 0x50</text>
+    <text x="220" y="158" fill="#a6adc8" font-size="10">跳过 false 分支</text>
+
+    <line x1="12" y1="165" x2="308" y2="165" stroke="#313244" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="12" y="180" fill="#a6adc8" font-size="10">── false 分支 (bAlive=false) ──</text>
+
+    <text x="12" y="196" fill="#f38ba8" font-size="10.5">0x3C  EX_Self</text>
+    <text x="220" y="196" fill="#a6adc8" font-size="10">压入 self 参数</text>
+
+    <text x="12" y="212" fill="#f38ba8" font-size="10.5">0x3D  EX_StringConst</text>
+    <text x="220" y="212" fill="#a6adc8" font-size="10">压入字符串常量</text>
+
+    <text x="12" y="228" fill="#f38ba8" font-size="10.5" font-weight="bold">0x48  EX_FinalFunction  → PrintString</text>
+    <text x="220" y="228" fill="#a6adc8" font-size="10">调用 PrintString</text>
+
+    <text x="12" y="244" fill="#89dceb" font-size="10.5">0x50  EX_EndFunctionParms</text>
+    <text x="220" y="244" fill="#a6adc8" font-size="10">参数结束哨兵</text>
+
+    <text x="12" y="260" fill="#cba6f7" font-size="10.5" font-weight="bold">0x54  EX_Return</text>
+    <text x="220" y="260" fill="#a6adc8" font-size="10">函数返回</text>
+
+    <text x="12" y="276" fill="#585b70" font-size="10.5">0x55  EX_EndOfScript</text>
+    <text x="220" y="276" fill="#585b70" font-size="10">脚本结束标记</text>
+
+    <!-- jump arrow -->
+    <path d="M 195,94 Q 315,94 315,196 Q 315,196 295,196" fill="none" stroke="#f9e2af" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+    <text x="320" y="148" fill="#f9e2af" font-size="9" transform="rotate(90,320,148)">false 跳转</text>
+
+    <!-- legend -->
+    <text x="12" y="310" fill="#cdd6f4" font-size="11" font-weight="bold">数据类型说明</text>
+    <rect x="12" y="316" width="296" height="74" rx="4" fill="#1e1e2e"/>
+    <circle cx="22" cy="328" r="4" fill="#89b4fa"/>
+    <text x="32" y="332" fill="#a6adc8" font-size="10">操作码 = 1 字节 uint8 (EExprToken)</text>
+    <circle cx="22" cy="344" r="4" fill="#f9e2af"/>
+    <text x="32" y="348" fill="#a6adc8" font-size="10">跳转偏移 = 4 字节 uint32 (CodeSkipSizeType)</text>
+    <circle cx="22" cy="360" r="4" fill="#a6e3a1"/>
+    <text x="32" y="364" fill="#a6adc8" font-size="10">属性/函数指针 = 8 字节 (ScriptPointerType)</text>
+    <circle cx="22" cy="376" r="4" fill="#89dceb"/>
+    <text x="32" y="380" fill="#a6adc8" font-size="10">字符串 = N+1 字节 (null-terminated)</text>
+  </g>
+
+  <!-- Arrows from file structure to object boxes -->
+  <line x1="240" y1="300" x2="298" y2="300" stroke="#cba6f7" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr3)"/>
+  <text x="248" y="295" fill="#cba6f7" font-size="9">Export → 对象</text>
+
+  <line x1="580" y1="340" x2="638" y2="340" stroke="#89b4fa" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr3)"/>
+  <text x="584" y="334" fill="#89b4fa" font-size="9">Script[]</text>
+
+  <!-- Legend bottom -->
+  <g transform="translate(40,740)">
+    <text x="0" y="16" fill="#cdd6f4" font-size="12" font-weight="bold" font-family="'Segoe UI',sans-serif">关键点</text>
+    <text x="0" y="34" fill="#a6adc8" font-size="11">• UBlueprint (含图节点) 仅在 Editor 中存在，打包后不随 uasset 发布</text>
+    <text x="0" y="52" fill="#a6adc8" font-size="11">• UBlueprintGeneratedClass (含 UFunction::Script 字节码) 在运行时始终存在</text>
+    <text x="0" y="70" fill="#a6adc8" font-size="11">• CDO 存储属性默认值，每次 SpawnActor 时由引擎复制到新实例</text>
+  </g>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#585b70"/>
+    </marker>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f9e2af"/>
+    </marker>
+    <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#cba6f7"/>
+    </marker>
+  </defs>
+</svg>

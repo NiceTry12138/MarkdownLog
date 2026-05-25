@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Platforms/VisionOS/Source/Runtime/Launch/Source/UESwift.swift",
+      "language": "swift",
+      "sizeLines": 127,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Runtime/OodleDataCompression/OodleDataCompression_VisionOS.Build.cs",
+      "language": "csharp",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Runtime/VisionOSRuntimeSettings/Classes/VisionOSRuntimeSettings.h",
+      "language": "c",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Runtime/VisionOSRuntimeSettings/Private/VisionOSRuntimeSettings.cpp",
+      "language": "cpp",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Runtime/VisionOSRuntimeSettings/VisionOSRuntimeSettings.Build.cs",
+      "language": "csharp",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Config/BasePaper2D.ini",
+      "language": "config",
+      "sizeLines": 10,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Paper2D.uplugin",
+      "language": "uplugin",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/IntMargin.h",
+      "language": "c",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperCharacter.h",
+      "language": "c",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbook.h",
+      "language": "c",
+      "sizeLines": 199,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbookActor.h",
+      "language": "c",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbookComponent.h",
+      "language": "c",
+      "sizeLines": 221,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperGroupedSpriteActor.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperGroupedSpriteComponent.h",
+      "language": "c",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperRuntimeSettings.h",
+      "language": "c",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSprite.h",
+      "language": "c",
+      "sizeLines": 355,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteActor.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteAtlas.h",
+      "language": "c",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteBlueprintLibrary.h",
+      "language": "c",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteComponent.h",
+      "language": "c",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainActor.h",
+      "language": "c",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainComponent.h",
+      "language": "c",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainMaterial.h",
+      "language": "c",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainSplineComponent.h",
+      "language": "c",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileLayer.h",
+      "language": "c",
+      "sizeLines": 271,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Platforms/VisionOS/Source/Runtime/Launch/Source/UESwift.swift": [],
+    "Platforms/VisionOS/Source/Runtime/OodleDataCompression/OodleDataCompression_VisionOS.Build.cs": [],
+    "Platforms/VisionOS/Source/Runtime/VisionOSRuntimeSettings/Classes/VisionOSRuntimeSettings.h": [],
+    "Platforms/VisionOS/Source/Runtime/VisionOSRuntimeSettings/Private/VisionOSRuntimeSettings.cpp": [],
+    "Platforms/VisionOS/Source/Runtime/VisionOSRuntimeSettings/VisionOSRuntimeSettings.Build.cs": [],
+    "Plugins/2D/Paper2D/Config/BasePaper2D.ini": [],
+    "Plugins/2D/Paper2D/Paper2D.uplugin": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/IntMargin.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperCharacter.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbook.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbookActor.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbookComponent.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperGroupedSpriteActor.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperGroupedSpriteComponent.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperRuntimeSettings.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSprite.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteActor.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteAtlas.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteBlueprintLibrary.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperSpriteComponent.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainActor.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainComponent.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainMaterial.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTerrainSplineComponent.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileLayer.h": []
+  }
+}

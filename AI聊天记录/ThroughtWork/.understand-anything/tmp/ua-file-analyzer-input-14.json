@@ -1,0 +1,28 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/Experimental/NNERuntimeIREE/Config/IREE_Linux_To_Linux.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Experimental/NNERuntimeIREE/Config/IREE_Mac_To_Mac.json",
+      "language": "json",
+      "sizeLines": 16,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Experimental/NNERuntimeIREE/Config/IREE_Windows_To_Windows.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/Experimental/NNERuntimeIREE/Config/IREE_Linux_To_Linux.json": [],
+    "Plugins/Experimental/NNERuntimeIREE/Config/IREE_Mac_To_Mac.json": [],
+    "Plugins/Experimental/NNERuntimeIREE/Config/IREE_Windows_To_Windows.json": []
+  }
+}

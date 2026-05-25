@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 760" font-family="'Segoe UI',sans-serif">
+  <rect width="1060" height="760" fill="#1e1e2e" rx="12"/>
+  <text x="530" y="34" fill="#cba6f7" font-size="17" font-weight="bold" text-anchor="middle">CustomThunk — 普通 Thunk vs Custom Thunk 对比与运行机制</text>
+
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#89b4fa"/>
+    </marker>
+    <marker id="ag" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#a6e3a1"/>
+    </marker>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#f38ba8"/>
+    </marker>
+    <marker id="ay" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#f9e2af"/>
+    </marker>
+  </defs>
+
+  <!-- ══ LEFT: Normal Thunk ══ -->
+  <text x="230" y="62" fill="#89b4fa" font-size="14" font-weight="bold" text-anchor="middle">普通 UFUNCTION（UHT 自动生成 Thunk）</text>
+
+  <!-- UFUNCTION decl -->
+  <rect x="30" y="74" width="400" height="52" rx="6" fill="#181825" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="40" y="92" fill="#a6adc8" font-size="10" font-family="Consolas,'Courier New'">UFUNCTION(BlueprintCallable)</text>
+  <text x="40" y="108" fill="#89b4fa" font-size="10" font-family="Consolas,'Courier New'">static int32 Add(int32 A, int32 B);</text>
+
+  <!-- UHT arrow -->
+  <line x1="230" y1="126" x2="230" y2="148" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="235" y="140" fill="#585b70" font-size="10">UHT 自动生成 .gen.cpp</text>
+
+  <!-- Generated code -->
+  <rect x="30" y="148" width="400" height="100" rx="6" fill="#11111b" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="40" y="166" fill="#585b70" font-size="10" font-family="Consolas,'Courier New'">// ──── 自动生成，开发者无需编写 ────</text>
+  <text x="40" y="182" fill="#cba6f7" font-size="10" font-family="Consolas,'Courier New'">DEFINE_FUNCTION(UMyLib::execAdd) {</text>
+  <text x="40" y="198" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">  P_GET_PROPERTY(FIntProperty, A);  // 读参数A</text>
+  <text x="40" y="214" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">  P_GET_PROPERTY(FIntProperty, B);  // 读参数B</text>
+  <text x="40" y="230" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">  P_FINISH;  *(int32*)RESULT_PARAM = Add(A, B); }</text>
+
+  <!-- arrow to execution -->
+  <line x1="230" y1="248" x2="230" y2="270" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- VM calls it -->
+  <rect x="30" y="270" width="400" height="44" rx="6" fill="#313244" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="230" y="290" fill="#a6adc8" font-size="11" text-anchor="middle">VM 读 EX_FinalFunction → 查 GNatives → 调 execAdd</text>
+  <text x="230" y="308" fill="#a6adc8" font-size="10" text-anchor="middle">参数类型已固定 (int32)，无法泛化</text>
+
+  <!-- limitation box -->
+  <rect x="30" y="326" width="400" height="34" rx="6" fill="#181825" stroke="#f38ba8" stroke-width="1.5"/>
+  <text x="230" y="344" fill="#f38ba8" font-size="11" text-anchor="middle">⚠ 局限：函数签名中的参数类型是编译期固定的</text>
+  <text x="230" y="358" fill="#a6adc8" font-size="10" text-anchor="middle">无法实现 TArray&lt;任意类型&gt; 或 "任意属性" 操作</text>
+
+  <!-- ══ RIGHT: CustomThunk ══ -->
+  <text x="780" y="62" fill="#a6e3a1" font-size="14" font-weight="bold" text-anchor="middle">CustomThunk（开发者手动编写 Thunk）</text>
+
+  <!-- UFUNCTION decl with CustomThunk -->
+  <rect x="560" y="74" width="470" height="52" rx="6" fill="#181825" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="570" y="92" fill="#a6adc8" font-size="10" font-family="Consolas,'Courier New'">UFUNCTION(BlueprintCallable, CustomThunk,</text>
+  <text x="570" y="108" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">  meta=(ArrayParm="TargetArray")) static int32 Array_Add(...);</text>
+
+  <!-- UHT arrow (skip) -->
+  <line x1="795" y1="126" x2="795" y2="148" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#ag)"/>
+  <text x="800" y="140" fill="#a6e3a1" font-size="10">UHT 跳过生成，开发者手写 execXxx</text>
+
+  <!-- Custom exec code -->
+  <rect x="560" y="148" width="470" height="130" rx="6" fill="#11111b" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="570" y="166" fill="#585b70" font-size="10" font-family="Consolas,'Courier New'">// ──── 开发者手动编写 ────</text>
+  <text x="570" y="182" fill="#cba6f7" font-size="10" font-family="Consolas,'Courier New'">DEFINE_FUNCTION(UKismetArrayLibrary::execArray_Add) {</text>
+  <text x="570" y="198" fill="#89dceb" font-size="10" font-family="Consolas,'Courier New'">  Stack.StepCompiledIn&lt;FArrayProperty&gt;(nullptr); // 求值参数</text>
+  <text x="570" y="214" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">  FArrayProperty* ArrProp =                       // 获取运行时</text>
+  <text x="570" y="230" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">    CastField&lt;FArrayProperty&gt;(Stack.MostRecentProperty); // 类型信息</text>
+  <text x="570" y="246" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">  void* ArrAddr = Stack.MostRecentPropertyAddress; // 获取内存地址</text>
+  <text x="570" y="262" fill="#a6adc8" font-size="10" font-family="Consolas,'Courier New'">  P_FINISH;   GenericArray_Add(ArrAddr, ArrProp, Item); }</text>
+
+  <!-- VM calls it -->
+  <line x1="795" y1="278" x2="795" y2="300" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#ag)"/>
+  <rect x="560" y="300" width="470" height="44" rx="6" fill="#313244" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="795" y="320" fill="#a6adc8" font-size="11" text-anchor="middle">VM 同样通过 GNatives → 调 execArray_Add</text>
+  <text x="795" y="338" fill="#a6e3a1" font-size="10" text-anchor="middle">可在运行时读取 MostRecentProperty 获得真实 FArrayProperty*</text>
+
+  <!-- advantage -->
+  <rect x="560" y="356" width="470" height="34" rx="6" fill="#181825" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="795" y="374" fill="#a6e3a1" font-size="11" text-anchor="middle">✓ 优势：运行时类型感知 → 泛型操作 / 属性名访问 / 错误处理</text>
+
+  <!-- ══ BOTTOM: FFrame & Stack data ══ -->
+  <text x="530" y="428" fill="#cdd6f4" font-size="14" font-weight="bold" text-anchor="middle">DEFINE_FUNCTION 中 Stack (FFrame) 的完整数据与用法</text>
+
+  <!-- FFrame layout -->
+  <rect x="30" y="446" width="490" height="290" rx="8" fill="#181825" stroke="#cba6f7" stroke-width="1.5"/>
+  <text x="270" y="466" fill="#cba6f7" font-size="12" font-weight="bold" text-anchor="middle">FFrame 数据成员（Stack.h）</text>
+
+  <rect x="42" y="474" width="466" height="16" rx="3" fill="#313244"/>
+  <text x="50" y="486" fill="#89b4fa" font-size="10" font-family="Consolas,'Courier New'">UFunction*  Stack.Node     </text>
+  <text x="310" y="486" fill="#a6adc8" font-size="10">当前执行的 UFunction（函数元数据）</text>
+
+  <rect x="42" y="494" width="466" height="16" rx="3" fill="#11111b"/>
+  <text x="50" y="506" fill="#89b4fa" font-size="10" font-family="Consolas,'Courier New'">UObject*    Stack.Object   </text>
+  <text x="310" y="506" fill="#a6adc8" font-size="10">执行目标对象（= Context = P_THIS_OBJECT）</text>
+
+  <rect x="42" y="514" width="466" height="16" rx="3" fill="#313244"/>
+  <text x="50" y="526" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">uint8*      Stack.Code     </text>
+  <text x="310" y="526" fill="#a6adc8" font-size="10">当前字节码指针（P_GET_* 和 P_FINISH 会推进它）</text>
+
+  <rect x="42" y="534" width="466" height="16" rx="3" fill="#11111b"/>
+  <text x="50" y="546" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">uint8*      Stack.Locals   </text>
+  <text x="310" y="546" fill="#a6adc8" font-size="10">本地变量内存块（含参数和局部变量）</text>
+
+  <rect x="42" y="554" width="466" height="16" rx="3" fill="#313244"/>
+  <text x="50" y="566" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">FProperty*  Stack.MostRecentProperty       </text>
+  <text x="310" y="566" fill="#a6adc8" font-size="10">最近一次 Step 后设置的属性类型</text>
+
+  <rect x="42" y="574" width="466" height="16" rx="3" fill="#11111b"/>
+  <text x="50" y="586" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">uint8*      Stack.MostRecentPropertyAddress</text>
+  <text x="310" y="586" fill="#a6adc8" font-size="10">最近一次 Step 后指向的内存地址</text>
+
+  <rect x="42" y="594" width="466" height="16" rx="3" fill="#313244"/>
+  <text x="50" y="606" fill="#89dceb" font-size="10" font-family="Consolas,'Courier New'">FFrame*     Stack.PreviousFrame            </text>
+  <text x="310" y="606" fill="#a6adc8" font-size="10">调用方的帧（用于堆栈追踪）</text>
+
+  <rect x="42" y="614" width="466" height="16" rx="3" fill="#11111b"/>
+  <text x="50" y="626" fill="#89dceb" font-size="10" font-family="Consolas,'Courier New'">FOutParmRec* Stack.OutParms               </text>
+  <text x="310" y="626" fill="#a6adc8" font-size="10">by-ref 输出参数链表</text>
+
+  <!-- utility methods -->
+  <text x="50" y="660" fill="#cba6f7" font-size="11" font-weight="bold">常用操作</text>
+  <text x="50" y="676" fill="#a6adc8" font-size="10" font-family="Consolas,'Courier New'">Stack.Step(Stack.Object, &amp;buf)           </text>
+  <text x="280" y="676" fill="#585b70" font-size="10">执行下一条 opcode，结果写入 buf</text>
+  <text x="50" y="692" fill="#a6adc8" font-size="10" font-family="Consolas,'Courier New'">Stack.StepCompiledIn&lt;PropType&gt;(&amp;val)   </text>
+  <text x="280" y="692" fill="#585b70" font-size="10">读参数（含编译期类型检查），推进 Code</text>
+  <text x="50" y="708" fill="#a6adc8" font-size="10" font-family="Consolas,'Courier New'">Stack.GetStackTrace()                    </text>
+  <text x="280" y="708" fill="#585b70" font-size="10">获取当前蓝图调用栈字符串</text>
+  <text x="50" y="724" fill="#a6adc8" font-size="10" font-family="Consolas,'Courier New'">FFrame::KismetExecutionMessage(msg,...)  </text>
+  <text x="280" y="724" fill="#585b70" font-size="10">输出运行时警告/错误到蓝图日志</text>
+
+  <!-- RIGHT BOTTOM: P_GET macros table -->
+  <rect x="534" y="446" width="496" height="290" rx="8" fill="#181825" stroke="#f9e2af" stroke-width="1.5"/>
+  <text x="782" y="466" fill="#f9e2af" font-size="12" font-weight="bold" text-anchor="middle">P_GET_* 宏全览（ScriptMacros.h）</text>
+
+  <text x="544" y="486" fill="#cdd6f4" font-size="10.5" font-weight="bold">宏名</text>
+  <text x="760" y="486" fill="#cdd6f4" font-size="10.5" font-weight="bold">作用 / 产生的变量类型</text>
+  <line x1="544" y1="490" x2="1020" y2="490" stroke="#313244" stroke-width="1"/>
+
+  <text x="544" y="506" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">P_GET_PROPERTY(FIntProperty, N)</text>
+  <text x="760" y="506" fill="#a6adc8" font-size="10">读取 int32 N（使用 FIntProperty::TCppType）</text>
+
+  <text x="544" y="522" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">P_GET_PROPERTY_REF(FIntProperty, N)</text>
+  <text x="760" y="522" fill="#a6adc8" font-size="10">by-ref，N 是 int32&amp;（指向原始内存）</text>
+
+  <text x="544" y="538" fill="#89dceb" font-size="10" font-family="Consolas,'Courier New'">P_GET_UBOOL(bFlag)</text>
+  <text x="760" y="538" fill="#a6adc8" font-size="10">读取 bool（处理 bitfield→bool 转换）</text>
+
+  <text x="544" y="554" fill="#89dceb" font-size="10" font-family="Consolas,'Courier New'">P_GET_STRUCT(FVector, V)</text>
+  <text x="760" y="554" fill="#a6adc8" font-size="10">读取结构体（by value），V 为 FVector</text>
+
+  <text x="544" y="570" fill="#89dceb" font-size="10" font-family="Consolas,'Courier New'">P_GET_STRUCT_REF(FVector, V)</text>
+  <text x="760" y="570" fill="#a6adc8" font-size="10">读取结构体（by ref），V 为 FVector&amp;</text>
+
+  <text x="544" y="586" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">P_GET_OBJECT(AActor, Obj)</text>
+  <text x="760" y="586" fill="#a6adc8" font-size="10">读取 UObject 指针，Obj 为 AActor*</text>
+
+  <text x="544" y="602" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">P_GET_TINTERFACE(IMyIface, Iface)</text>
+  <text x="760" y="602" fill="#a6adc8" font-size="10">读取接口，Iface 为 TScriptInterface&lt;IMyIface&gt;</text>
+
+  <text x="544" y="618" fill="#a6e3a1" font-size="10" font-family="Consolas,'Courier New'">P_GET_TARRAY(int32, Arr)</text>
+  <text x="760" y="618" fill="#a6adc8" font-size="10">读取数组，Arr 为 TArray&lt;int32&gt;</text>
+
+  <text x="544" y="634" fill="#cba6f7" font-size="10" font-family="Consolas,'Courier New'">P_GET_ENUM(EMyEnum, Val)</text>
+  <text x="760" y="634" fill="#a6adc8" font-size="10">读取枚举值，Val 为 EMyEnum</text>
+
+  <text x="544" y="656" fill="#f38ba8" font-size="10" font-family="Consolas,'Courier New'">P_FINISH</text>
+  <text x="760" y="656" fill="#a6adc8" font-size="10">消耗 EX_EndFunctionParms（必须在所有参数之后）</text>
+
+  <text x="544" y="672" fill="#f38ba8" font-size="10" font-family="Consolas,'Courier New'">P_THIS_CAST(AMyActor)</text>
+  <text x="760" y="672" fill="#a6adc8" font-size="10">将 Context 转型为 AMyActor*</text>
+
+  <text x="544" y="688" fill="#f38ba8" font-size="10" font-family="Consolas,'Courier New'">P_NATIVE_BEGIN / P_NATIVE_END</text>
+  <text x="760" y="688" fill="#a6adc8" font-size="10">包围 C++ 逻辑，用于性能统计计时</text>
+
+  <text x="544" y="710" fill="#585b70" font-size="10" font-style="italic">泛型（不存结果，用 MostRecentProperty 获取类型）:</text>
+  <text x="544" y="726" fill="#f9e2af" font-size="10" font-family="Consolas,'Courier New'">Stack.StepCompiledIn&lt;FProperty&gt;(nullptr)</text>
+  <text x="760" y="726" fill="#a6adc8" font-size="10">→ 之后读 Stack.MostRecentProperty 获得真实类型</text>
+</svg>

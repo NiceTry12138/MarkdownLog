@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/STileLayerList.h",
+      "language": "c",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/STileMapEditorViewportToolbar.cpp",
+      "language": "cpp",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/STileMapEditorViewportToolbar.h",
+      "language": "c",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapActorFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapAssetImportData.cpp",
+      "language": "cpp",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapAssetTypeActions.cpp",
+      "language": "cpp",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapAssetTypeActions.h",
+      "language": "c",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditor.cpp",
+      "language": "cpp",
+      "sizeLines": 502,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditor.h",
+      "language": "c",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorCommands.cpp",
+      "language": "cpp",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorCommands.h",
+      "language": "c",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorSettings.cpp",
+      "language": "cpp",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorSettings.h",
+      "language": "c",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorViewportClient.cpp",
+      "language": "cpp",
+      "sizeLines": 314,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorViewportClient.h",
+      "language": "c",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEdModeToolkit.cpp",
+      "language": "cpp",
+      "sizeLines": 404,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEdModeToolkit.h",
+      "language": "c",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetAssetTypeActions.cpp",
+      "language": "cpp",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetAssetTypeActions.h",
+      "language": "c",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor.cpp",
+      "language": "cpp",
+      "sizeLines": 465,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor.h",
+      "language": "c",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewport.cpp",
+      "language": "cpp",
+      "sizeLines": 181,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewport.h",
+      "language": "c",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewportClient.cpp",
+      "language": "cpp",
+      "sizeLines": 397,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewportClient.h",
+      "language": "c",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/STileLayerList.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/STileMapEditorViewportToolbar.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/STileMapEditorViewportToolbar.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapActorFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapAssetImportData.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapAssetTypeActions.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapAssetTypeActions.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditor.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditor.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorCommands.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorCommands.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorSettings.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorSettings.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorViewportClient.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEditorViewportClient.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEdModeToolkit.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileMapEditing/TileMapEdModeToolkit.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetAssetTypeActions.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetAssetTypeActions.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewport.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewport.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewportClient.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2DEditor/Private/TileSetEditor/SingleTileEditorViewportClient.h": []
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdServerRepresentationTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdSettings.cpp",
+      "language": "cpp",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdSubsystem.cpp",
+      "language": "cpp",
+      "sizeLines": 692,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdVisualizationLODProcessor.cpp",
+      "language": "cpp",
+      "sizeLines": 119,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdVisualizationProcessor.cpp",
+      "language": "cpp",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdVisualizationTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/Tasks/MassCrowdClaimWaitSlotTask.cpp",
+      "language": "cpp",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/Tasks/MassZoneGraphFindWanderTarget.cpp",
+      "language": "cpp",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Private/ZoneGraphCrowdLaneAnnotations.cpp",
+      "language": "cpp",
+      "sizeLines": 321,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/IMassCrowdModule.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdBubble.h",
+      "language": "c",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdFragments.h",
+      "language": "c",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdLaneClosingTest.h",
+      "language": "c",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdLaneDataRenderingComponent.h",
+      "language": "c",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdMemberTrait.h",
+      "language": "c",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdNavigationProcessor.h",
+      "language": "c",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdReplicatedAgent.h",
+      "language": "c",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdReplicator.h",
+      "language": "c",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdRepresentationActorManagement.h",
+      "language": "c",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdRepresentationSubsystem.h",
+      "language": "c",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdServerRepresentationLODProcessor.h",
+      "language": "c",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdServerRepresentationProcessor.h",
+      "language": "c",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdServerRepresentationTrait.h",
+      "language": "c",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdSettings.h",
+      "language": "c",
+      "sizeLines": 150,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdSpawnerSubsystem.h",
+      "language": "c",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdServerRepresentationTrait.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdSettings.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdSubsystem.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdVisualizationLODProcessor.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdVisualizationProcessor.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/MassCrowdVisualizationTrait.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/Tasks/MassCrowdClaimWaitSlotTask.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/Tasks/MassZoneGraphFindWanderTarget.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Private/ZoneGraphCrowdLaneAnnotations.cpp": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/IMassCrowdModule.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdBubble.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdFragments.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdLaneClosingTest.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdLaneDataRenderingComponent.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdMemberTrait.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdNavigationProcessor.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdReplicatedAgent.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdReplicator.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdRepresentationActorManagement.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdRepresentationSubsystem.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdServerRepresentationLODProcessor.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdServerRepresentationProcessor.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdServerRepresentationTrait.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdSettings.h": [],
+    "Plugins/AI/MassCrowd/Source/MassCrowd/Public/MassCrowdSpawnerSubsystem.h": []
+  }
+}

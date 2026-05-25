@@ -1,0 +1,56 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/Windows/BaseWindowsEngine.ini",
+      "language": "config",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Windows/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 183,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Windows/WindowsEditorPerProjectUserSettings.ini",
+      "language": "config",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Windows/WindowsEngine.ini",
+      "language": "config",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Windows/WindowsGame.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Windows/WindowsInput.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Windows/Windows_SDK.json",
+      "language": "json",
+      "sizeLines": 58,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/Windows/BaseWindowsEngine.ini": [],
+    "Config/Windows/DataDrivenPlatformInfo.ini": [],
+    "Config/Windows/WindowsEditorPerProjectUserSettings.ini": [],
+    "Config/Windows/WindowsEngine.ini": [],
+    "Config/Windows/WindowsGame.ini": [],
+    "Config/Windows/WindowsInput.ini": [],
+    "Config/Windows/Windows_SDK.json": []
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Source/Editor/SwarmInterface/DotNET/SwarmInterface.csproj",
+      "language": "csproj",
+      "sizeLines": 63,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Source/Editor/SwarmInterface/DotNET/SwarmInterface.sln",
+      "language": "sln",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Source/Editor/SwarmInterface/DotNET/SwarmInterface_Mono.csproj",
+      "language": "csproj",
+      "sizeLines": 58,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Source/Editor/SwarmInterface/DotNET/SwarmInterface_Mono.sln",
+      "language": "sln",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Source/Editor/SwarmInterface/DotNET/SwarmInterface.csproj": [],
+    "Source/Editor/SwarmInterface/DotNET/SwarmInterface.sln": [],
+    "Source/Editor/SwarmInterface/DotNET/SwarmInterface_Mono.csproj": [],
+    "Source/Editor/SwarmInterface/DotNET/SwarmInterface_Mono.sln": []
+  }
+}

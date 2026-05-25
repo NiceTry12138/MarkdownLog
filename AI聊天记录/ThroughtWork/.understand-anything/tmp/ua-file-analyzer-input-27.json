@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAppDelegate.h",
+      "language": "c",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSController.cpp",
+      "language": "cpp",
+      "sizeLines": 236,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSController.h",
+      "language": "c",
+      "sizeLines": 119,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSInstance.cpp",
+      "language": "cpp",
+      "sizeLines": 753,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSInstance.h",
+      "language": "c",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSPlatformRHI.h",
+      "language": "c",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSPlatformUtils.h",
+      "language": "c",
+      "sizeLines": 238,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSession.cpp",
+      "language": "cpp",
+      "sizeLines": 1615,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSession.h",
+      "language": "c",
+      "sizeLines": 291,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSpace.cpp",
+      "language": "cpp",
+      "sizeLines": 329,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSpace.h",
+      "language": "c",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSwapchain.cpp",
+      "language": "cpp",
+      "sizeLines": 310,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSwapchain.h",
+      "language": "c",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSTracker.cpp",
+      "language": "cpp",
+      "sizeLines": 350,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSTracker.h",
+      "language": "c",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/OXRVisionOSSettings.build.cs",
+      "language": "csharp",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Private/OXRVisionOSSettingsModule.cpp",
+      "language": "cpp",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Private/OXRVisionOSSettingsModule.h",
+      "language": "c",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Public/OXRVisionOSRuntimeSettings.h",
+      "language": "c",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Public/OXRVisionOSSettingsTypes.h",
+      "language": "c",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Developer/VisionOSPlatformEditor/Private/VisionOSPlatformEditorModule.cpp",
+      "language": "cpp",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Developer/VisionOSPlatformEditor/VisionOSPlatformEditor.Build.cs",
+      "language": "csharp",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Developer/VisionOSTargetPlatform/Private/VisionOSTargetPlatformModule.cpp",
+      "language": "cpp",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Developer/VisionOSTargetPlatform/VisionOSTargetPlatform.Build.cs",
+      "language": "csharp",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Source/Runtime/Launch/Launch_VisionOS.Build.cs",
+      "language": "csharp",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAppDelegate.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSController.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSController.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSInstance.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSInstance.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSPlatformRHI.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSPlatformUtils.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSession.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSession.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSpace.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSpace.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSwapchain.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSSwapchain.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSTracker.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSTracker.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/OXRVisionOSSettings.build.cs": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Private/OXRVisionOSSettingsModule.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Private/OXRVisionOSSettingsModule.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Public/OXRVisionOSRuntimeSettings.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOSSettings/Public/OXRVisionOSSettingsTypes.h": [],
+    "Platforms/VisionOS/Source/Developer/VisionOSPlatformEditor/Private/VisionOSPlatformEditorModule.cpp": [],
+    "Platforms/VisionOS/Source/Developer/VisionOSPlatformEditor/VisionOSPlatformEditor.Build.cs": [],
+    "Platforms/VisionOS/Source/Developer/VisionOSTargetPlatform/Private/VisionOSTargetPlatformModule.cpp": [],
+    "Platforms/VisionOS/Source/Developer/VisionOSTargetPlatform/VisionOSTargetPlatform.Build.cs": [],
+    "Platforms/VisionOS/Source/Runtime/Launch/Launch_VisionOS.Build.cs": []
+  }
+}

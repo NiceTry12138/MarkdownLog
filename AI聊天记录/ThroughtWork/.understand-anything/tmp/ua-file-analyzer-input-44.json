@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIDebug/Private/MassAIDebugModule.cpp",
+      "language": "cpp",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIDebug/Private/MassDebugStateTreeProcessor.cpp",
+      "language": "cpp",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIDebug/Public/GameplayDebuggerCategory_Mass.h",
+      "language": "c",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIDebug/Public/IMassAIDebugModule.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIDebug/Public/MassDebugStateTreeProcessor.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIReplication/MassAIReplication.Build.cs",
+      "language": "csharp",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIReplication/Private/MassAIReplicationModule.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIReplication/Private/MassReplicationPathHandlers.cpp",
+      "language": "cpp",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIReplication/Public/IMassAIReplicationModule.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIReplication/Public/MassReplicationPathHandlers.h",
+      "language": "c",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAITestSuite/MassAITestSuite.Build.cs",
+      "language": "csharp",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAITestSuite/Private/MassAITest.cpp",
+      "language": "cpp",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAITestSuite/Private/MassAITestSuiteModule.cpp",
+      "language": "cpp",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAITestSuite/Public/MassAITestSuiteModule.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/MassNavigation.Build.cs",
+      "language": "csharp",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassAvoidanceProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 1254,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassAvoidanceTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationFragments.cpp",
+      "language": "cpp",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationModule.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationObstacleTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 312,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationSubsystem.cpp",
+      "language": "cpp",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationTypes.cpp",
+      "language": "cpp",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSmoothOrientationProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 140,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSmoothOrientationTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MassAI/Source/MassAIDebug/Private/MassAIDebugModule.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIDebug/Private/MassDebugStateTreeProcessor.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIDebug/Public/GameplayDebuggerCategory_Mass.h": [],
+    "Plugins/AI/MassAI/Source/MassAIDebug/Public/IMassAIDebugModule.h": [],
+    "Plugins/AI/MassAI/Source/MassAIDebug/Public/MassDebugStateTreeProcessor.h": [],
+    "Plugins/AI/MassAI/Source/MassAIReplication/MassAIReplication.Build.cs": [],
+    "Plugins/AI/MassAI/Source/MassAIReplication/Private/MassAIReplicationModule.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIReplication/Private/MassReplicationPathHandlers.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIReplication/Public/IMassAIReplicationModule.h": [],
+    "Plugins/AI/MassAI/Source/MassAIReplication/Public/MassReplicationPathHandlers.h": [],
+    "Plugins/AI/MassAI/Source/MassAITestSuite/MassAITestSuite.Build.cs": [],
+    "Plugins/AI/MassAI/Source/MassAITestSuite/Private/MassAITest.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAITestSuite/Private/MassAITestSuiteModule.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAITestSuite/Public/MassAITestSuiteModule.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/MassNavigation.Build.cs": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassAvoidanceProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassAvoidanceTrait.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationFragments.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationModule.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationObstacleTrait.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationSubsystem.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassNavigationTypes.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSmoothOrientationProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSmoothOrientationTrait.cpp": []
+  }
+}

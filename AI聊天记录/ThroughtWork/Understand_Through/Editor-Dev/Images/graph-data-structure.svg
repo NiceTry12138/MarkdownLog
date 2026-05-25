@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#89b4fa"/>
+    </marker>
+    <marker id="arrPurple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#cba6f7"/>
+    </marker>
+  </defs>
+  <rect width="900" height="500" fill="#1e1e2e" rx="12"/>
+  <text x="450" y="32" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold" font-family="Arial">图节点数据结构</text>
+  <text x="450" y="50" text-anchor="middle" fill="#a6adc8" font-size="11" font-family="Arial">Source/Runtime/Engine/Classes/EdGraph/  +  Source/Editor/BlueprintGraph/</text>
+
+  <!-- UEdGraph box -->
+  <rect x="30" y="68" width="240" height="150" rx="8" fill="#1a3d2e" stroke="#40a857" stroke-width="2"/>
+  <rect x="30" y="68" width="240" height="26" rx="8" fill="#264d37"/>
+  <text x="150" y="86" text-anchor="middle" fill="#a6e3a1" font-size="13" font-weight="bold" font-family="Arial">UEdGraph</text>
+  <text x="50" y="108" fill="#cdd6f4" font-size="10" font-family="Arial">Schema: UEdGraphSchema*</text>
+  <text x="50" y="124" fill="#cdd6f4" font-size="10" font-family="Arial">Nodes: TArray&lt;UEdGraphNode*&gt;</text>
+  <text x="50" y="140" fill="#cdd6f4" font-size="10" font-family="Arial">GraphGuid: FGuid</text>
+  <text x="50" y="156" fill="#cdd6f4" font-size="10" font-family="Arial">bEditable: bool</text>
+  <text x="50" y="172" fill="#cdd6f4" font-size="10" font-family="Arial">SubGraphs: TArray&lt;UEdGraph*&gt;</text>
+  <text x="50" y="191" fill="#a6adc8" font-size="9" font-family="Arial">EdGraph.h (Runtime/Engine)</text>
+
+  <!-- UBlueprint holds UEdGraph array -->
+  <rect x="30" y="242" width="240" height="70" rx="8" fill="#1e3a5f" stroke="#4A90D9" stroke-width="2"/>
+  <rect x="30" y="242" width="240" height="24" rx="8" fill="#2a4a6f"/>
+  <text x="150" y="258" text-anchor="middle" fill="#89b4fa" font-size="12" font-weight="bold" font-family="Arial">UBlueprint</text>
+  <text x="50" y="279" fill="#cdd6f4" font-size="10" font-family="Arial">UbergraphPages: TArray&lt;UEdGraph*&gt;</text>
+  <text x="50" y="295" fill="#cdd6f4" font-size="10" font-family="Arial">FunctionGraphs: TArray&lt;UEdGraph*&gt;</text>
+  <line x1="150" y1="242" x2="150" y2="218" stroke="#4A90D9" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="155" y="232" fill="#a6adc8" font-size="9" font-family="Arial">1: N</text>
+
+  <!-- UEdGraphNode box -->
+  <rect x="320" y="68" width="260" height="190" rx="8" fill="#3d2a1a" stroke="#fab387" stroke-width="2"/>
+  <rect x="320" y="68" width="260" height="26" rx="8" fill="#4d3a2a"/>
+  <text x="450" y="86" text-anchor="middle" fill="#fab387" font-size="13" font-weight="bold" font-family="Arial">UEdGraphNode</text>
+  <text x="340" y="108" fill="#cdd6f4" font-size="10" font-family="Arial">Pins: TArray&lt;UEdGraphPin*&gt;</text>
+  <text x="340" y="124" fill="#cdd6f4" font-size="10" font-family="Arial">NodePosX, NodePosY: int32</text>
+  <text x="340" y="140" fill="#cdd6f4" font-size="10" font-family="Arial">NodeGuid: FGuid</text>
+  <text x="340" y="156" fill="#cdd6f4" font-size="10" font-family="Arial">bHasCompilerMessage: bool</text>
+  <text x="340" y="172" fill="#cdd6f4" font-size="10" font-family="Arial">ErrorMsg, NodeComment: FString</text>
+  <text x="340" y="189" fill="#a6adc8" font-size="10" font-family="Arial">重要虚函数:</text>
+  <text x="340" y="205" fill="#cdd6f4" font-size="10" font-family="Arial">AllocateDefaultPins() / NodeCausesStructuralBlueprintChange()</text>
+  <text x="340" y="221" fill="#a6adc8" font-size="9" font-family="Arial">EdGraphNode.h (Runtime/Engine)</text>
+  <text x="340" y="237" fill="#a6adc8" font-size="9" font-family="Arial">子类: UK2Node (Editor/BlueprintGraph)</text>
+
+  <!-- Arrow from UEdGraph to UEdGraphNode -->
+  <line x1="270" y1="140" x2="320" y2="140" stroke="#40a857" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="278" y="133" fill="#a6adc8" font-size="9" font-family="Arial">1:N</text>
+
+  <!-- UEdGraphPin box -->
+  <rect x="630" y="68" width="245" height="220" rx="8" fill="#2a1a3d" stroke="#cba6f7" stroke-width="2"/>
+  <rect x="630" y="68" width="245" height="26" rx="8" fill="#3d2a5f"/>
+  <text x="752" y="86" text-anchor="middle" fill="#cba6f7" font-size="13" font-weight="bold" font-family="Arial">UEdGraphPin</text>
+  <text x="650" y="108" fill="#cdd6f4" font-size="10" font-family="Arial">PinName: FName</text>
+  <text x="650" y="124" fill="#cdd6f4" font-size="10" font-family="Arial">PinType: FEdGraphPinType</text>
+  <text x="670" y="138" fill="#a6adc8" font-size="9" font-family="Arial">PinCategory (PC_Boolean/Int/Object...)</text>
+  <text x="670" y="152" fill="#a6adc8" font-size="9" font-family="Arial">PinSubCategory</text>
+  <text x="670" y="166" fill="#a6adc8" font-size="9" font-family="Arial">PinSubCategoryObject (UClass*)</text>
+  <text x="650" y="182" fill="#cdd6f4" font-size="10" font-family="Arial">Direction: EGPD_Input / EGPD_Output</text>
+  <text x="650" y="198" fill="#cdd6f4" font-size="10" font-family="Arial">LinkedTo: TArray&lt;UEdGraphPin*&gt;</text>
+  <text x="650" y="214" fill="#f38ba8" font-size="10" font-weight="bold" font-family="Arial">← 连线就是填写这个数组!</text>
+  <text x="650" y="230" fill="#cdd6f4" font-size="10" font-family="Arial">DefaultValue: FString</text>
+  <text x="650" y="246" fill="#cdd6f4" font-size="10" font-family="Arial">DefaultObject: UObject*</text>
+  <text x="650" y="264" fill="#a6adc8" font-size="9" font-family="Arial">EdGraphPin.h (Runtime/Engine)</text>
+
+  <!-- Arrow from UEdGraphNode to UEdGraphPin -->
+  <line x1="580" y1="140" x2="630" y2="140" stroke="#fab387" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="588" y="133" fill="#a6adc8" font-size="9" font-family="Arial">1:N</text>
+
+  <!-- Pin self-reference arrow (LinkedTo) -->
+  <path d="M875 198 C910 198, 910 280, 875 280" stroke="#f38ba8" stroke-width="2" fill="none" marker-end="url(#arrPurple)"/>
+  <text x="882" y="240" fill="#f38ba8" font-size="9" font-family="Arial">LinkedTo</text>
+
+  <!-- UK2Node section -->
+  <rect x="320" y="290" width="260" height="100" rx="8" fill="#3d1a1a" stroke="#e06c75" stroke-width="2"/>
+  <rect x="320" y="290" width="260" height="24" rx="8" fill="#4d2a2a"/>
+  <text x="450" y="307" text-anchor="middle" fill="#f38ba8" font-size="12" font-weight="bold" font-family="Arial">UK2Node (子类示例)</text>
+  <text x="340" y="325" fill="#cdd6f4" font-size="10" font-family="Arial">UK2Node_CallFunction    (调用函数)</text>
+  <text x="340" y="341" fill="#cdd6f4" font-size="10" font-family="Arial">UK2Node_Event            (事件)</text>
+  <text x="340" y="357" fill="#cdd6f4" font-size="10" font-family="Arial">UK2Node_VariableGet/Set (变量读写)</text>
+  <text x="340" y="373" fill="#cdd6f4" font-size="10" font-family="Arial">UK2Node_IfThenElse       (Branch)</text>
+  <text x="340" y="381" fill="#a6adc8" font-size="9" font-family="Arial">Source/Editor/BlueprintGraph/Classes/</text>
+  <!-- Arrow from UEdGraphNode to UK2Node -->
+  <line x1="450" y1="258" x2="450" y2="290" stroke="#e06c75" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="455" y="276" fill="#a6adc8" font-size="9" font-family="Arial">继承</text>
+
+  <!-- UEdGraphSchema box -->
+  <rect x="30" y="330" width="240" height="90" rx="8" fill="#1e3a5f" stroke="#4A90D9" stroke-width="2"/>
+  <rect x="30" y="330" width="240" height="24" rx="8" fill="#2a4a6f"/>
+  <text x="150" y="346" text-anchor="middle" fill="#89b4fa" font-size="12" font-weight="bold" font-family="Arial">UEdGraphSchema_K2</text>
+  <text x="50" y="367" fill="#cdd6f4" font-size="10" font-family="Arial">CanCreateConnection(Pin*, Pin*)</text>
+  <text x="50" y="383" fill="#cdd6f4" font-size="10" font-family="Arial">→ FPinConnectionResponse</text>
+  <text x="50" y="399" fill="#cdd6f4" font-size="10" font-family="Arial">TryCreateConnection() / BreakPinLinks()</text>
+  <text x="50" y="412" fill="#a6adc8" font-size="9" font-family="Arial">EdGraphSchema_K2.h (Editor/BlueprintGraph)</text>
+  <!-- Arrow from UEdGraph to Schema -->
+  <line x1="150" y1="315" x2="150" y2="330" stroke="#4A90D9" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="155" y="325" fill="#a6adc8" font-size="9" font-family="Arial">Schema</text>
+
+  <!-- 底部说明 -->
+  <rect x="30" y="438" width="840" height="50" rx="8" fill="#181825" stroke="#45475a" stroke-width="1"/>
+  <text x="50" y="458" fill="#a6adc8" font-size="11" font-weight="bold" font-family="Arial">关键数据流</text>
+  <text x="50" y="476" fill="#cdd6f4" font-size="10" font-family="Arial">拖拽连线 → Schema::CanCreateConnection() 检查方向+类型 → MakeLinkTo()/BreakLinkTo() 修改 Pin::LinkedTo 数组 → 图发生变化通知编辑器</text>
+</svg>

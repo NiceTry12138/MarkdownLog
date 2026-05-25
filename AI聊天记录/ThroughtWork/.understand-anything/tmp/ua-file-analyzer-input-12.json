@@ -1,0 +1,28 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/Enterprise/GLTFExporter/Config/BaseGLTFExporter.ini",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Enterprise/GLTFExporter/Config/DefaultGLTFExporter.ini",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Enterprise/GLTFExporter/Config/FilterPlugin.ini",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/Enterprise/GLTFExporter/Config/BaseGLTFExporter.ini": [],
+    "Plugins/Enterprise/GLTFExporter/Config/DefaultGLTFExporter.ini": [],
+    "Plugins/Enterprise/GLTFExporter/Config/FilterPlugin.ini": []
+  }
+}

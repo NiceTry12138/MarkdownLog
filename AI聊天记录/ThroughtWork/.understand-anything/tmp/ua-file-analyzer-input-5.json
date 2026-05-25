@@ -1,0 +1,35 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/LinuxArm64/BaseLinuxArm64Engine.ini",
+      "language": "config",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/LinuxArm64/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 30,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/LinuxArm64/LinuxArm64Engine.ini",
+      "language": "config",
+      "sizeLines": 30,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/LinuxArm64/LinuxArm64_SDK.json",
+      "language": "json",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/LinuxArm64/BaseLinuxArm64Engine.ini": [],
+    "Config/LinuxArm64/DataDrivenPlatformInfo.ini": [],
+    "Config/LinuxArm64/LinuxArm64Engine.ini": [],
+    "Config/LinuxArm64/LinuxArm64_SDK.json": []
+  }
+}

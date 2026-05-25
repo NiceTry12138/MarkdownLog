@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperSpriteSheetImporter/Private/PaperSpriteSheetImportFactory.h",
+      "language": "c",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperSpriteSheetImporter/Private/PaperSpriteSheetReimportFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 113,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperSpriteSheetImporter/Private/PaperSpriteSheetReimportFactory.h",
+      "language": "c",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperTiledImporter/Classes/PaperTiledImporterFactory.h",
+      "language": "c",
+      "sizeLines": 400,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperTiledImporter/PaperTiledImporter.Build.cs",
+      "language": "csharp",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperTiledImporter/Private/PaperTiledImporterFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 1307,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperTiledImporter/Private/PaperTiledImporterLog.h",
+      "language": "c",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/PaperTiledImporter/Private/PaperTiledImporterModule.cpp",
+      "language": "cpp",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SmartSnapping/Private/PlanarConstraintSnapPolicy.cpp",
+      "language": "cpp",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SmartSnapping/Private/PlanarConstraintSnapPolicy.h",
+      "language": "c",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SmartSnapping/Private/SmartSnappingModule.cpp",
+      "language": "cpp",
+      "sizeLines": 104,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SmartSnapping/SmartSnapping.Build.cs",
+      "language": "csharp",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/PaperSpriterImportData.cpp",
+      "language": "cpp",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/PaperSpriterImportData.h",
+      "language": "c",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterDataModel.cpp",
+      "language": "cpp",
+      "sizeLines": 1655,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterDataModel.h",
+      "language": "c",
+      "sizeLines": 683,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterFactory.cpp",
+      "language": "cpp",
+      "sizeLines": 659,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterFactory.h",
+      "language": "c",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterLog.h",
+      "language": "c",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterModule.cpp",
+      "language": "cpp",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/SpriterImporter/SpriterImporter.Build.cs",
+      "language": "csharp",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/AISupport/AISupport.uplugin",
+      "language": "uplugin",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/AISupport/Source/AISupportModule/AISupportModule.Build.cs",
+      "language": "csharp",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/AISupport/Source/AISupportModule/Private/AISupportModule.cpp",
+      "language": "cpp",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/AISupport/Source/AISupportModule/Public/AISupportModule.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/2D/Paper2D/Source/PaperSpriteSheetImporter/Private/PaperSpriteSheetImportFactory.h": [],
+    "Plugins/2D/Paper2D/Source/PaperSpriteSheetImporter/Private/PaperSpriteSheetReimportFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/PaperSpriteSheetImporter/Private/PaperSpriteSheetReimportFactory.h": [],
+    "Plugins/2D/Paper2D/Source/PaperTiledImporter/Classes/PaperTiledImporterFactory.h": [],
+    "Plugins/2D/Paper2D/Source/PaperTiledImporter/PaperTiledImporter.Build.cs": [],
+    "Plugins/2D/Paper2D/Source/PaperTiledImporter/Private/PaperTiledImporterFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/PaperTiledImporter/Private/PaperTiledImporterLog.h": [],
+    "Plugins/2D/Paper2D/Source/PaperTiledImporter/Private/PaperTiledImporterModule.cpp": [],
+    "Plugins/2D/Paper2D/Source/SmartSnapping/Private/PlanarConstraintSnapPolicy.cpp": [],
+    "Plugins/2D/Paper2D/Source/SmartSnapping/Private/PlanarConstraintSnapPolicy.h": [],
+    "Plugins/2D/Paper2D/Source/SmartSnapping/Private/SmartSnappingModule.cpp": [],
+    "Plugins/2D/Paper2D/Source/SmartSnapping/SmartSnapping.Build.cs": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/PaperSpriterImportData.cpp": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/PaperSpriterImportData.h": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterDataModel.cpp": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterDataModel.h": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterFactory.cpp": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterFactory.h": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterLog.h": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/Private/SpriterImporterModule.cpp": [],
+    "Plugins/2D/Paper2D/Source/SpriterImporter/SpriterImporter.Build.cs": [],
+    "Plugins/AI/AISupport/AISupport.uplugin": [],
+    "Plugins/AI/AISupport/Source/AISupportModule/AISupportModule.Build.cs": [],
+    "Plugins/AI/AISupport/Source/AISupportModule/Private/AISupportModule.cpp": [],
+    "Plugins/AI/AISupport/Source/AISupportModule/Public/AISupportModule.h": []
+  }
+}

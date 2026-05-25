@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileMap.h",
+      "language": "c",
+      "sizeLines": 252,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileMapActor.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileMapComponent.h",
+      "language": "c",
+      "sizeLines": 244,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileSet.h",
+      "language": "c",
+      "sizeLines": 307,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/SpriteDrawCall.h",
+      "language": "c",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/SpriteEditorOnlyTypes.h",
+      "language": "c",
+      "sizeLines": 338,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Classes/TileMapBlueprintLibrary.h",
+      "language": "c",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Paper2D.Build.cs",
+      "language": "csharp",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/BitmapUtils.h",
+      "language": "c",
+      "sizeLines": 214,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/GroupedSpriteSceneProxy.cpp",
+      "language": "cpp",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/GroupedSpriteSceneProxy.h",
+      "language": "c",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/Paper2DModule.cpp",
+      "language": "cpp",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/Paper2DPrivate.h",
+      "language": "c",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperCharacter.cpp",
+      "language": "cpp",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperCustomVersion.cpp",
+      "language": "cpp",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperCustomVersion.h",
+      "language": "c",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbook.cpp",
+      "language": "cpp",
+      "sizeLines": 246,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookActor.cpp",
+      "language": "cpp",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 713,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookSceneProxy.cpp",
+      "language": "cpp",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookSceneProxy.h",
+      "language": "c",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperGroupedSpriteActor.cpp",
+      "language": "cpp",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperGroupedSpriteComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 615,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperRenderSceneProxy.cpp",
+      "language": "cpp",
+      "sizeLines": 677,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperRenderSceneProxy.h",
+      "language": "c",
+      "sizeLines": 204,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileMap.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileMapActor.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileMapComponent.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperTileSet.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/SpriteDrawCall.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/SpriteEditorOnlyTypes.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Classes/TileMapBlueprintLibrary.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Paper2D.Build.cs": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/BitmapUtils.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/GroupedSpriteSceneProxy.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/GroupedSpriteSceneProxy.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/Paper2DModule.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/Paper2DPrivate.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperCharacter.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperCustomVersion.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperCustomVersion.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbook.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookActor.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookComponent.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookSceneProxy.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperFlipbookSceneProxy.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperGroupedSpriteActor.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperGroupedSpriteComponent.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperRenderSceneProxy.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperRenderSceneProxy.h": []
+  }
+}

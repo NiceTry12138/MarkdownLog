@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryProfiler.h",
+      "language": "c",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SGraphNode_EnvironmentQuery.cpp",
+      "language": "cpp",
+      "sizeLines": 584,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SGraphNode_EnvironmentQuery.h",
+      "language": "c",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/STestFunctionWidget.cpp",
+      "language": "cpp",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/STestFunctionWidget.h",
+      "language": "c",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/ActorFactoryEnvironmentQuery.h",
+      "language": "c",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EdGraphSchema_EnvironmentQuery.h",
+      "language": "c",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryEditorModule.h",
+      "language": "c",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryFactory.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraph.h",
+      "language": "c",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode_Option.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode_Root.h",
+      "language": "c",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode_Test.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode.h",
+      "language": "c",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/IEnvironmentQueryEditor.h",
+      "language": "c",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/HTNPlanner.uplugin",
+      "language": "uplugin",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/HTNPlanner.Build.cs",
+      "language": "csharp",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/AI/HTNBrainComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/Debug/GameplayDebuggerCategory_HTN.cpp",
+      "language": "cpp",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/Debug/HTNDebug.cpp",
+      "language": "cpp",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNBuilder.cpp",
+      "language": "cpp",
+      "sizeLines": 337,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNDomain.cpp",
+      "language": "cpp",
+      "sizeLines": 295,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNPlanner.cpp",
+      "language": "cpp",
+      "sizeLines": 120,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNPlannerModule.cpp",
+      "language": "cpp",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/AI/HTNBrainComponent.h",
+      "language": "c",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SEnvQueryProfiler.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SGraphNode_EnvironmentQuery.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/SGraphNode_EnvironmentQuery.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/STestFunctionWidget.cpp": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Private/STestFunctionWidget.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/ActorFactoryEnvironmentQuery.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EdGraphSchema_EnvironmentQuery.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryEditorModule.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryFactory.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraph.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode_Option.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode_Root.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode_Test.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/EnvironmentQueryGraphNode.h": [],
+    "Plugins/AI/EnvironmentQueryEditor/Source/EnvironmentQueryEditor/Public/IEnvironmentQueryEditor.h": [],
+    "Plugins/AI/HTNPlanner/HTNPlanner.uplugin": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/HTNPlanner.Build.cs": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/AI/HTNBrainComponent.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/Debug/GameplayDebuggerCategory_HTN.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/Debug/HTNDebug.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNBuilder.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNDomain.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNPlanner.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Private/HTNPlannerModule.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/AI/HTNBrainComponent.h": []
+  }
+}

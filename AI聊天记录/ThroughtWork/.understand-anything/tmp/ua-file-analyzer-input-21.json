@@ -1,0 +1,49 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Clean.bat",
+      "language": "batch",
+      "sizeLines": 33,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/FixNpmInstall.bat",
+      "language": "batch",
+      "sizeLines": 6,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Start.bat",
+      "language": "batch",
+      "sizeLines": 68,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Start.sh",
+      "language": "shell",
+      "sizeLines": 72,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/_package-lock.json",
+      "language": "json",
+      "sizeLines": 485,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/_package.json",
+      "language": "json",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Clean.bat": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/FixNpmInstall.bat": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Start.bat": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Start.sh": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/_package-lock.json": [],
+    "Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/_package.json": []
+  }
+}

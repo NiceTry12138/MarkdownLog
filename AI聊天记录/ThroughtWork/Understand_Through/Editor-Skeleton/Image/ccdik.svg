@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="560" viewBox="0 0 860 560">
+  <rect width="860" height="560" fill="#12121f"/>
+  <text x="430" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">CCDIK：循环坐标下降迭代算法</text>
+
+  <!-- Left: Chain Diagram (before) -->
+  <rect x="20" y="55" width="250" height="280" rx="6" fill="#181828" stroke="#333"/>
+  <text x="145" y="76" text-anchor="middle" font-size="12" font-weight="bold" fill="#8080b0" font-family="Arial, sans-serif">迭代前（初始状态）</text>
+
+  <!-- Root (fixed) -->
+  <circle cx="145" cy="280" r="10" fill="#2060a0" stroke="#60a0e0" stroke-width="2"/>
+  <text x="115" y="285" text-anchor="end" font-size="11" fill="#60a0e0" font-family="Arial, sans-serif">Root</text>
+
+  <!-- Link 1 -->
+  <line x1="145" y1="270" x2="160" y2="200" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="160" cy="200" r="8" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+  <text x="170" y="198" font-size="10" fill="#5090c0" font-family="Arial, sans-serif">链节1</text>
+
+  <!-- Link 2 -->
+  <line x1="160" y1="192" x2="200" y2="150" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="200" cy="150" r="8" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+  <text x="210" y="148" font-size="10" fill="#5090c0" font-family="Arial, sans-serif">链节2</text>
+
+  <!-- Link 3 (Tip) -->
+  <line x1="200" y1="142" x2="220" y2="100" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="220" cy="100" r="8" fill="#204080" stroke="#80c0ff" stroke-width="2"/>
+  <text x="230" y="98" font-size="11" fill="#80c0ff" font-family="Arial, sans-serif">Tip（末端）</text>
+
+  <!-- Target (star/cross) -->
+  <circle cx="90" cy="130" r="10" fill="none" stroke="#ff6060" stroke-width="2.5" stroke-dasharray="3,2"/>
+  <line x1="80" y1="130" x2="100" y2="130" stroke="#ff6060" stroke-width="2"/>
+  <line x1="90" y1="120" x2="90" y2="140" stroke="#ff6060" stroke-width="2"/>
+  <text x="65" y="118" font-size="11" fill="#ff6060" font-family="Arial, sans-serif">Target</text>
+
+  <!-- Distance indicator -->
+  <line x1="220" y1="100" x2="90" y2="130" stroke="#ff8040" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="155" y="108" text-anchor="middle" font-size="10" fill="#c06030" font-family="Arial, sans-serif">距离 &gt; Precision</text>
+
+  <!-- Right: Chain Diagram (during CCD) -->
+  <rect x="290" y="55" width="260" height="280" rx="6" fill="#181828" stroke="#333"/>
+  <text x="420" y="76" text-anchor="middle" font-size="12" font-weight="bold" fill="#8080b0" font-family="Arial, sans-serif">CCD 迭代中（从末端向根）</text>
+
+  <!-- Root fixed -->
+  <circle cx="420" cy="280" r="10" fill="#2060a0" stroke="#60a0e0" stroke-width="2"/>
+  <text x="390" y="285" text-anchor="end" font-size="11" fill="#60a0e0" font-family="Arial, sans-serif">Root</text>
+
+  <!-- Iteration step: Link 3 rotates toward target -->
+  <!-- Current chain, rotated -->
+  <line x1="420" y1="270" x2="410" y2="200" stroke="#4080c0" stroke-width="2"/>
+  <circle cx="410" cy="200" r="8" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+
+  <line x1="410" y1="192" x2="380" y2="155" stroke="#4080c0" stroke-width="2"/>
+  <circle cx="380" cy="155" r="8" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+
+  <!-- Rotated link 3 -->
+  <line x1="380" y1="147" x2="330" y2="130" stroke="#60c060" stroke-width="2.5"/>
+  <circle cx="330" cy="130" r="8" fill="#204060" stroke="#80e080" stroke-width="2"/>
+  <text x="310" y="122" text-anchor="middle" font-size="10" fill="#80e080" font-family="Arial, sans-serif">Tip（旋转后）</text>
+
+  <!-- Target -->
+  <circle cx="310" cy="155" r="10" fill="none" stroke="#ff6060" stroke-width="2.5" stroke-dasharray="3,2"/>
+  <line x1="300" y1="155" x2="320" y2="155" stroke="#ff6060" stroke-width="2"/>
+  <line x1="310" y1="145" x2="310" y2="165" stroke="#ff6060" stroke-width="2"/>
+
+  <!-- Rotation arc for link 3 -->
+  <path d="M 360 145 A 25 25 0 0 1 380 135" fill="none" stroke="#60e060" stroke-width="2" stroke-dasharray="3,2" marker-end="url(#arrowGreen2)"/>
+  <text x="357" y="127" font-size="10" fill="#60e060" font-family="Arial, sans-serif">ΔR₃</text>
+
+  <!-- Rotation arc for link 2 -->
+  <path d="M 400 195 A 18 18 0 0 1 420 187" fill="none" stroke="#a0c060" stroke-width="2" stroke-dasharray="3,2" marker-end="url(#arrowGreen2)"/>
+  <text x="413" y="185" font-size="10" fill="#a0c060" font-family="Arial, sans-serif">ΔR₂</text>
+
+  <!-- Formula block (bottom) -->
+  <rect x="20" y="348" width="810" height="192" rx="8" fill="#1e1e2d" stroke="#5060a0" stroke-width="1.5"/>
+  <text x="430" y="372" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0ff" font-family="Arial, sans-serif">SolveCCDIK() 每次迭代的计算（CCDIK.cpp）</text>
+
+  <!-- Step columns -->
+  <text x="30" y="395" font-size="12" fill="#c0c0ff" font-family="Arial, sans-serif">对链条中每个链节（从末端→根）执行 UpdateChainLink(Chain, LinkIndex, TargetPos)：</text>
+
+  <text x="30" y="418" font-size="12" fill="#e0e080" font-family="Arial, sans-serif">① ToEnd   = normalize( TipPos - CurrentLink.Location )</text>
+  <text x="30" y="435" font-size="12" fill="#e0e080" font-family="Arial, sans-serif">② ToTarget = normalize( TargetPos - CurrentLink.Location )</text>
+  <text x="30" y="452" font-size="12" fill="#80e080" font-family="Arial, sans-serif">③ RotationAxis = normalize( Cross( ToEnd, ToTarget ) )</text>
+  <text x="30" y="469" font-size="12" fill="#80e080" font-family="Arial, sans-serif">④ Angle = Clamp( ACos( Dot( ToEnd, ToTarget ) ), -RotLimit, +RotLimit )</text>
+  <text x="30" y="486" font-size="12" fill="#ffa060" font-family="Arial, sans-serif">⑤ ΔR = FQuat( RotationAxis, Angle )    ← 将当前关节旋转使末端朝向Target</text>
+  <text x="30" y="503" font-size="12" fill="#ffa060" font-family="Arial, sans-serif">⑥ NewRotation = ΔR × CurrentLink.Rotation</text>
+  <text x="30" y="520" font-size="12" fill="#e080e0" font-family="Arial, sans-serif">⑦ 更新 CurrentLink 的局部变换（相对父骨）→ 向下传播到所有子骨更新世界坐标</text>
+  <text x="30" y="537" font-size="11" fill="#808080" font-family="Arial, sans-serif">外层循环：while( dist(TipPos, TargetPos) &gt; Precision &amp;&amp; iter &lt; MaxIteration )，每次全链扫描一遍</text>
+
+  <!-- Right: after convergence diagram -->
+  <rect x="580" y="55" width="260" height="280" rx="6" fill="#181828" stroke="#333"/>
+  <text x="710" y="76" text-anchor="middle" font-size="12" font-weight="bold" fill="#8080b0" font-family="Arial, sans-serif">收敛后（Tip ≈ Target）</text>
+
+  <!-- Root -->
+  <circle cx="710" cy="280" r="10" fill="#2060a0" stroke="#60a0e0" stroke-width="2"/>
+  <text x="680" y="285" text-anchor="end" font-size="11" fill="#60a0e0" font-family="Arial, sans-serif">Root</text>
+
+  <!-- Converged chain (more natural pose) -->
+  <line x1="710" y1="270" x2="690" y2="210" stroke="#60c060" stroke-width="2.5"/>
+  <circle cx="690" cy="210" r="8" fill="#204060" stroke="#80e060" stroke-width="1.5"/>
+
+  <line x1="690" y1="202" x2="640" y2="175" stroke="#60c060" stroke-width="2.5"/>
+  <circle cx="640" cy="175" r="8" fill="#204060" stroke="#80e060" stroke-width="1.5"/>
+
+  <line x1="640" y1="167" x2="610" y2="145" stroke="#60c060" stroke-width="2.5"/>
+  <circle cx="610" cy="145" r="8" fill="#204060" stroke="#80e080" stroke-width="2"/>
+
+  <!-- Target overlapping Tip -->
+  <circle cx="610" cy="145" r="12" fill="none" stroke="#ff6060" stroke-width="2"/>
+  <line x1="600" y1="145" x2="620" y2="145" stroke="#ff6060" stroke-width="2"/>
+  <line x1="610" y1="135" x2="610" y2="155" stroke="#ff6060" stroke-width="2"/>
+
+  <text x="710" y="320" text-anchor="middle" font-size="11" fill="#60a060" font-family="Arial, sans-serif">Tip 与 Target 重合</text>
+  <text x="710" y="335" text-anchor="middle" font-size="10" fill="#408040" font-family="Arial, sans-serif">dist &lt; Precision，迭代终止</text>
+
+  <defs>
+    <marker id="arrowGreen2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#60e060"/>
+    </marker>
+  </defs>
+</svg>

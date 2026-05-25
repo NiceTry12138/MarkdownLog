@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/Apple/Apple_SDK.json",
+      "language": "json",
+      "sizeLines": 10,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Layouts/DefaultLayout.ini",
+      "language": "config",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Layouts/UE4ClassicLayout.ini",
+      "language": "config",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/PluginBase.ini",
+      "language": "config",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Unix/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Unix/UnixEngine.ini",
+      "language": "config",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/VulkanPC/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 284,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Compression/OodleNetwork/OodleNetwork_VisionOS.uplugin",
+      "language": "uplugin",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Compression/OodleNetwork/Source/OodleNetworkHandlerComponent_VisionOS.Build.cs",
+      "language": "csharp",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXR/OpenXR_VisionOS.uplugin",
+      "language": "uplugin",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRHandTracking/OpenXRHandTracking_VisionOS.uplugin",
+      "language": "uplugin",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/OpenXRVisionOS.uplugin",
+      "language": "uplugin",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Internal/OXRVisionOS_openxr_platform.h",
+      "language": "c",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/OXRVisionOS.Build.cs",
+      "language": "csharp",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_RenderBridge.cpp",
+      "language": "cpp",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_RenderBridge.h",
+      "language": "c",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_Swapchain.cpp",
+      "language": "cpp",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_Swapchain.h",
+      "language": "c",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS.cpp",
+      "language": "cpp",
+      "sizeLines": 967,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS.h",
+      "language": "c",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAction.cpp",
+      "language": "cpp",
+      "sizeLines": 389,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAction.h",
+      "language": "c",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSActionSet.cpp",
+      "language": "cpp",
+      "sizeLines": 119,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSActionSet.h",
+      "language": "c",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAppDelegate.cpp",
+      "language": "cpp",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Config/Apple/Apple_SDK.json": [],
+    "Config/Layouts/DefaultLayout.ini": [],
+    "Config/Layouts/UE4ClassicLayout.ini": [],
+    "Config/PluginBase.ini": [],
+    "Config/Unix/DataDrivenPlatformInfo.ini": [],
+    "Config/Unix/UnixEngine.ini": [],
+    "Config/VulkanPC/DataDrivenPlatformInfo.ini": [],
+    "Platforms/VisionOS/Plugins/Compression/OodleNetwork/OodleNetwork_VisionOS.uplugin": [],
+    "Platforms/VisionOS/Plugins/Compression/OodleNetwork/Source/OodleNetworkHandlerComponent_VisionOS.Build.cs": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXR/OpenXR_VisionOS.uplugin": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRHandTracking/OpenXRHandTracking_VisionOS.uplugin": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/OpenXRVisionOS.uplugin": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Internal/OXRVisionOS_openxr_platform.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/OXRVisionOS.Build.cs": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_RenderBridge.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_RenderBridge.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_Swapchain.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS_Swapchain.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOS.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAction.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAction.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSActionSet.cpp": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSActionSet.h": [],
+    "Platforms/VisionOS/Plugins/Runtime/OpenXRVisionOS/Source/OXRVisionOS/Private/OXRVisionOSAppDelegate.cpp": []
+  }
+}

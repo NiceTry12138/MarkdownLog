@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520">
+  <!-- 背景 -->
+  <rect width="1000" height="520" fill="#1e1e2e" rx="12"/>
+  <text x="500" y="32" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold" font-family="Arial">蓝图编辑器界面布局（Actor Blueprint）</text>
+
+  <!-- 工具栏 顶部 -->
+  <rect x="20" y="48" width="960" height="38" rx="6" fill="#313244" stroke="#585b70" stroke-width="1.5"/>
+  <text x="500" y="62" text-anchor="middle" fill="#89b4fa" font-size="11" font-family="Arial">工具栏（Toolbar） — 编译按钮 / 保存 / 播放 / 调试下拉框</text>
+  <text x="500" y="76" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">SBlueprintEditorToolbar   |   FBlueprintEditorCommands   |   UToolMenu</text>
+
+  <!-- 三列主体区域 -->
+  <!-- 左列: MyBlueprint -->
+  <rect x="20" y="95" width="185" height="380" rx="6" fill="#2a2a3e" stroke="#585b70" stroke-width="1.5"/>
+  <rect x="20" y="95" width="185" height="26" rx="6" fill="#45475a"/>
+  <text x="112" y="113" text-anchor="middle" fill="#cba6f7" font-size="12" font-weight="bold" font-family="Arial">My Blueprint 面板</text>
+  <text x="35" y="138" fill="#a6e3a1" font-size="11" font-family="Arial">▶ Graphs</text>
+  <text x="50" y="155" fill="#cdd6f4" font-size="10" font-family="Arial">EventGraph (主图)</text>
+  <text x="35" y="174" fill="#a6e3a1" font-size="11" font-family="Arial">▶ Functions</text>
+  <text x="50" y="191" fill="#cdd6f4" font-size="10" font-family="Arial">BeginPlay / MyFunc</text>
+  <text x="35" y="210" fill="#a6e3a1" font-size="11" font-family="Arial">▶ Macros</text>
+  <text x="35" y="228" fill="#a6e3a1" font-size="11" font-family="Arial">▶ Variables</text>
+  <text x="50" y="245" fill="#cdd6f4" font-size="10" font-family="Arial">Health (float)</text>
+  <text x="50" y="261" fill="#cdd6f4" font-size="10" font-family="Arial">IsAlive (bool)</text>
+  <text x="35" y="280" fill="#a6e3a1" font-size="11" font-family="Arial">▶ Event Dispatchers</text>
+  <text x="35" y="299" fill="#a6e3a1" font-size="11" font-family="Arial">▶ Interfaces</text>
+  <rect x="30" y="445" width="165" height="22" rx="4" fill="#313244"/>
+  <text x="112" y="460" text-anchor="middle" fill="#89b4fa" font-size="10" font-family="Arial">SMyBlueprint.cpp (4271行)</text>
+
+  <!-- 中列: 主区域 (Viewport + Graph) -->
+  <!-- Viewport Tab -->
+  <rect x="215" y="95" width="570" height="175" rx="6" fill="#1a2a3a" stroke="#4A90D9" stroke-width="2"/>
+  <rect x="215" y="95" width="570" height="26" rx="6" fill="#2a3a4a"/>
+  <text x="500" y="113" text-anchor="middle" fill="#89b4fa" font-size="12" font-weight="bold" font-family="Arial">Viewport（Components 模式）</text>
+  <text x="220" y="125" fill="#89b4fa" font-size="9" font-family="Arial"> [Perspective]  [Lit]  [Show]  ↔ Transform Gizmo</text>
+  <!-- 3D 预览框 -->
+  <rect x="230" y="130" width="540" height="130" rx="4" fill="#0d1b2a" stroke="#4A90D9" stroke-width="1"/>
+  <text x="500" y="190" text-anchor="middle" fill="#4A90D9" font-size="13" font-family="Arial">3D 预览场景 (FPreviewScene)</text>
+  <text x="500" y="210" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">Actor 预览实例  ←  SimpleConstructionScript</text>
+  <text x="500" y="228" text-anchor="middle" fill="#585b70" font-size="10" font-family="Arial">SSCSEditorViewport → FSCSEditorViewportClient → FEditorViewportClient</text>
+
+  <!-- Graph Tab -->
+  <rect x="215" y="280" width="570" height="195" rx="6" fill="#1a2a1a" stroke="#40a857" stroke-width="2"/>
+  <rect x="215" y="280" width="570" height="26" rx="6" fill="#2a3a2a"/>
+  <text x="500" y="298" text-anchor="middle" fill="#a6e3a1" font-size="12" font-weight="bold" font-family="Arial">Event Graph（节点图编辑区）</text>
+  <!-- nodes -->
+  <rect x="250" y="318" width="130" height="40" rx="6" fill="#264d3a" stroke="#40a857" stroke-width="1.5"/>
+  <text x="315" y="334" text-anchor="middle" fill="#a6e3a1" font-size="10" font-weight="bold" font-family="Arial">Event BeginPlay</text>
+  <rect x="250" y="344" width="8" height="8" rx="2" fill="#a6e3a1"/>
+  <text x="265" y="352" fill="#a6adc8" font-size="9" font-family="Arial">▶ exec</text>
+  <!-- wire -->
+  <line x1="390" y1="348" x2="430" y2="348" stroke="#a6e3a1" stroke-width="2"/>
+  <!-- node 2 -->
+  <rect x="430" y="318" width="140" height="40" rx="6" fill="#1a3d2e" stroke="#40a857" stroke-width="1.5"/>
+  <text x="500" y="334" text-anchor="middle" fill="#a6e3a1" font-size="10" font-weight="bold" font-family="Arial">Print String</text>
+  <rect x="430" y="344" width="8" height="8" rx="2" fill="#a6e3a1"/>
+  <text x="445" y="352" fill="#a6adc8" font-size="9" font-family="Arial">▶ exec in</text>
+  <!-- node 3 -->
+  <rect x="430" y="375" width="140" height="35" rx="6" fill="#2a2a4a" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="500" y="392" text-anchor="middle" fill="#89b4fa" font-size="10" font-family="Arial">Get Health (float)</text>
+  <!-- wire to node 2 -->
+  <line x1="500" y1="375" x2="500" y2="358" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="500" y="445" text-anchor="middle" fill="#585b70" font-size="10" font-family="Arial">SGraphEditor  →  UEdGraph  →  UEdGraphNode  →  UEdGraphPin</text>
+  <text x="500" y="462" text-anchor="middle" fill="#585b70" font-size="10" font-family="Arial">右键 → SBlueprintActionMenu → BlueprintActionDatabase → 生成节点</text>
+
+  <!-- 右列: Details + Palette -->
+  <!-- Details -->
+  <rect x="795" y="95" width="185" height="230" rx="6" fill="#2a2a3e" stroke="#585b70" stroke-width="1.5"/>
+  <rect x="795" y="95" width="185" height="26" rx="6" fill="#45475a"/>
+  <text x="887" y="113" text-anchor="middle" fill="#cba6f7" font-size="12" font-weight="bold" font-family="Arial">Details 面板</text>
+  <text x="810" y="135" fill="#a6e3a1" font-size="10" font-family="Arial">▼ Transform</text>
+  <rect x="810" y="140" width="80" height="14" rx="2" fill="#313244"/>
+  <text x="850" y="152" text-anchor="middle" fill="#cdd6f4" font-size="9" font-family="Arial">Location</text>
+  <rect x="900" y="140" width="70" height="14" rx="2" fill="#313244"/>
+  <text x="935" y="152" text-anchor="middle" fill="#89b4fa" font-size="9" font-family="Arial">0.0, 0.0, 0.0</text>
+  <text x="810" y="175" fill="#a6e3a1" font-size="10" font-family="Arial">▼ Variable</text>
+  <rect x="810" y="180" width="80" height="14" rx="2" fill="#313244"/>
+  <text x="850" y="192" text-anchor="middle" fill="#cdd6f4" font-size="9" font-family="Arial">Health</text>
+  <rect x="900" y="180" width="70" height="14" rx="2" fill="#313244"/>
+  <text x="935" y="192" text-anchor="middle" fill="#89b4fa" font-size="9" font-family="Arial">100.0</text>
+  <text x="810" y="215" fill="#a6e3a1" font-size="10" font-family="Arial">▼ Replication</text>
+  <text x="810" y="233" fill="#a6e3a1" font-size="10" font-family="Arial">▼ Advanced</text>
+  <rect x="805" y="290" width="165" height="22" rx="4" fill="#313244"/>
+  <text x="887" y="305" text-anchor="middle" fill="#89b4fa" font-size="10" font-family="Arial">SKismetInspector / IDetailsView</text>
+
+  <!-- Palette -->
+  <rect x="795" y="335" width="185" height="140" rx="6" fill="#2a2a3e" stroke="#585b70" stroke-width="1.5"/>
+  <rect x="795" y="335" width="185" height="26" rx="6" fill="#45475a"/>
+  <text x="887" y="353" text-anchor="middle" fill="#cba6f7" font-size="12" font-weight="bold" font-family="Arial">Palette</text>
+  <rect x="810" y="366" width="160" height="18" rx="3" fill="#313244"/>
+  <text x="890" y="379" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">🔍 搜索节点...</text>
+  <text x="810" y="400" fill="#cdd6f4" font-size="10" font-family="Arial">▶ Math</text>
+  <text x="810" y="416" fill="#cdd6f4" font-size="10" font-family="Arial">▶ Flow Control</text>
+  <text x="810" y="432" fill="#cdd6f4" font-size="10" font-family="Arial">▶ String</text>
+  <text x="810" y="448" fill="#cdd6f4" font-size="10" font-family="Arial">▶ Input</text>
+  <rect x="805" y="456" width="165" height="16" rx="3" fill="#313244"/>
+  <text x="887" y="468" text-anchor="middle" fill="#89b4fa" font-size="10" font-family="Arial">SBlueprintPalette.cpp</text>
+
+  <!-- Compiler Results 底部 -->
+  <rect x="20" y="485" width="960" height="26" rx="6" fill="#1a1a2e" stroke="#585b70" stroke-width="1"/>
+  <text x="500" y="502" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">编译结果（Compiler Results）  |  查找结果（Find Results）  |  书签（Bookmarks）  ← 底部 Tab</text>
+</svg>

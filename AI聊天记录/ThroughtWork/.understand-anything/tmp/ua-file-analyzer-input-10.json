@@ -1,0 +1,35 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/Bridge/Config/FilterPlugin.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Bridge/Config/FilterPluginLinux.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Bridge/Config/FilterPluginMac.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Bridge/Config/FilterPluginWin64.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/Bridge/Config/FilterPlugin.ini": [],
+    "Plugins/Bridge/Config/FilterPluginLinux.ini": [],
+    "Plugins/Bridge/Config/FilterPluginMac.ini": [],
+    "Plugins/Bridge/Config/FilterPluginWin64.ini": []
+  }
+}

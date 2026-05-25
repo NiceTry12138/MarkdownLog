@@ -1,0 +1,28 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/Experimental/Avalanche/Config/EaseCurves/Ease In Out.json",
+      "language": "json",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Experimental/Avalanche/Config/EaseCurves/Ease In.json",
+      "language": "json",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/Experimental/Avalanche/Config/EaseCurves/Ease Out.json",
+      "language": "json",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/Experimental/Avalanche/Config/EaseCurves/Ease In Out.json": [],
+    "Plugins/Experimental/Avalanche/Config/EaseCurves/Ease In.json": [],
+    "Plugins/Experimental/Avalanche/Config/EaseCurves/Ease Out.json": []
+  }
+}

@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="780" viewBox="0 0 960 780">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#444"/>
+    </marker>
+    <marker id="arr-r" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#E74C3C"/>
+    </marker>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#27AE60"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="780" fill="#F8FAFB" rx="8"/>
+  <text x="480" y="28" font-family="Microsoft YaHei,sans-serif" font-size="17" font-weight="bold"
+        text-anchor="middle" fill="#1A1A2E">数据包接收处理流程（客户端）</text>
+
+  <!-- Main pipeline: vertical flow on left side (x=80..500), error paths on right side -->
+
+  <!-- Step 1: UDP arrives -->
+  <rect x="280" y="46" width="400" height="46" fill="#2C3E50" rx="6"/>
+  <text x="480" y="65" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">① UDP 数据包到达</text>
+  <text x="480" y="82" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#BDC3C7">UIpNetDriver::TickDispatch() → FPacketIterator 迭代所有待收包</text>
+
+  <line x1="480" y1="92" x2="480" y2="118" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 2: Match connection -->
+  <rect x="280" y="118" width="400" height="46" fill="#2E86C1" rx="6"/>
+  <text x="480" y="138" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">② 匹配 UNetConnection</text>
+  <text x="480" y="154" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#D6EAF8">MappedClientConnections.Find(FromAddr) → 找到对应的连接对象</text>
+
+  <!-- Error: No connection found (new connection attempt) -->
+  <line x1="680" y1="141" x2="770" y2="141" stroke="#F39C12" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="770" y="120" width="170" height="42" fill="#FEF9E7" rx="5" stroke="#F39C12"/>
+  <text x="855" y="137" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7D6608">未找到连接</text>
+  <text x="855" y="152" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7D6608">→ ProcessConnectionless</text>
+
+  <line x1="480" y1="164" x2="480" y2="190" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 3: ReceivedRawPacket -->
+  <rect x="280" y="190" width="400" height="56" fill="#8E44AD" rx="6"/>
+  <text x="480" y="210" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">③ UNetConnection::ReceivedRawPacket()</text>
+  <text x="480" y="226" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E8DAEF">① 统计 InBytes/InPackets 计数器</text>
+  <text x="480" y="240" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E8DAEF">② 读末字节定位实际位数（Bit streaming 末字节标记）</text>
+
+  <!-- Error: empty packet or 0 last byte -->
+  <line x1="680" y1="218" x2="770" y2="218" stroke="#E74C3C" stroke-width="1.5" marker-end="url(#arr-r)"/>
+  <rect x="770" y="196" width="170" height="50" fill="#FADBD8" rx="5" stroke="#E74C3C"/>
+  <text x="855" y="213" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">零字节包 / 末字节全0</text>
+  <text x="855" y="227" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">→ ZeroSize /</text>
+  <text x="855" y="241" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">ZeroLastByte 关闭连接</text>
+
+  <line x1="480" y1="246" x2="480" y2="272" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 4: PacketHandler -->
+  <rect x="280" y="272" width="400" height="56" fill="#117A65" rx="6"/>
+  <text x="480" y="292" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">④ PacketHandler::Incoming()</text>
+  <text x="480" y="308" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#D1F2EB">解密 / 解压 / DTLS · StatelessConnectHandler 验证 Cookie</text>
+  <text x="480" y="322" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#D1F2EB">Handler 链式处理：每个 Component 依次处理，可修改 DataView</text>
+
+  <!-- Error: handler fail -->
+  <line x1="680" y1="300" x2="770" y2="300" stroke="#E74C3C" stroke-width="1.5" marker-end="url(#arr-r)"/>
+  <rect x="770" y="278" width="170" height="45" fill="#FADBD8" rx="5" stroke="#E74C3C"/>
+  <text x="855" y="295" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">Handler 处理失败</text>
+  <text x="855" y="309" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">→ PacketHandlerIncoming</text>
+  <text x="855" y="322" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">Error 关闭连接</text>
+
+  <line x1="480" y1="328" x2="480" y2="354" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 5: ReceivedPacket -->
+  <rect x="240" y="354" width="480" height="70" fill="#1A5276" rx="6"/>
+  <text x="480" y="374" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">⑤ UNetConnection::ReceivedPacket()</text>
+  <text x="480" y="390" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#AED6F1">a) 读包头：PacketNotify.ReadHeader() → 解析 InSeq / OutAckSeq</text>
+  <text x="480" y="404" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#AED6F1">b) PacketNotify.Update() → 调用 ReceivedAck / ReceivedNak 通知 Bunch</text>
+  <text x="480" y="418" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#AED6F1">c) ReadPacketInfo()：读取 Jitter 时钟等附加信息</text>
+
+  <!-- Sequence error -->
+  <line x1="720" y1="389" x2="770" y2="389" stroke="#E74C3C" stroke-width="1.5" marker-end="url(#arr-r)"/>
+  <rect x="770" y="366" width="170" height="50" fill="#FADBD8" rx="5" stroke="#E74C3C"/>
+  <text x="855" y="383" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">序号异常 / 头部读取失败</text>
+  <text x="855" y="397" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">→ ReadHeaderFail /</text>
+  <text x="855" y="411" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">AckSequenceMismatch</text>
+
+  <!-- Out of order: go to cache -->
+  <line x1="240" y1="389" x2="100" y2="389" stroke="#F39C12" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="20" y="366" width="80" height="46" fill="#FEF9E7" rx="5" stroke="#F39C12"/>
+  <text x="60" y="387" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7D6608">乱序包</text>
+  <text x="60" y="401" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7D6608">→ 缓存等待</text>
+
+  <line x1="480" y1="424" x2="480" y2="450" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 6: DispatchPacket -->
+  <rect x="240" y="450" width="480" height="70" fill="#E67E22" rx="6"/>
+  <text x="480" y="470" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">⑥ UNetConnection::DispatchPacket()</text>
+  <text x="480" y="486" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#FDEBD0">循环读取每个 Bunch：解析 BunchHeader（ChIndex / bReliable / bPartial ...）</text>
+  <text x="480" y="500" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#FDEBD0">找到对应 UChannel（Channels[ChIndex]），若无则根据 bOpen 创建</text>
+  <text x="480" y="514" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#FDEBD0">调用 Channel->ReceivedBunch() 分发数据</text>
+
+  <!-- Error: channel index bad -->
+  <line x1="720" y1="485" x2="770" y2="485" stroke="#E74C3C" stroke-width="1.5" marker-end="url(#arr-r)"/>
+  <rect x="770" y="462" width="170" height="46" fill="#FADBD8" rx="5" stroke="#E74C3C"/>
+  <text x="855" y="479" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">ChIndex 超界 /</text>
+  <text x="855" y="493" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">BunchBadChannelIndex</text>
+  <text x="855" y="507" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#7B241C">→ 关闭连接</text>
+
+  <line x1="480" y1="520" x2="480" y2="546" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 7: ActorChannel ReceivedBunch -->
+  <rect x="240" y="546" width="480" height="70" fill="#D35400" rx="6"/>
+  <text x="480" y="566" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">⑦ UActorChannel::ReceivedBunch()</text>
+  <text x="480" y="582" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#FDEBD0">处理 MustBeMappedGUIDs（等待资源加载），若有未映射 GUID → 入队列 QueuedBunches</text>
+  <text x="480" y="596" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#FDEBD0">调用 ProcessBunch()：首包 bOpen=1 → SerializeNewActor() 生成/查找 Actor 对象</text>
+  <text x="480" y="610" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#FDEBD0">然后读 ContentBlock → FObjectReplicator::ReceivedBunch() 应用属性</text>
+
+  <line x1="480" y1="616" x2="480" y2="642" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 8: Apply properties -->
+  <rect x="240" y="642" width="480" height="70" fill="#27AE60" rx="6"/>
+  <text x="480" y="662" font-family="Microsoft YaHei,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">⑧ FRepLayout::ReceiveProperties()</text>
+  <text x="480" y="678" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E8F8F5">读取属性句柄（Handle/Name），定位 Actor 对象内存偏移</text>
+  <text x="480" y="692" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E8F8F5">将 Bunch 中的二进制值写入 Actor 属性内存</text>
+  <text x="480" y="706" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#E8F8F5">触发 RepNotify：收集变更属性 → 调用 OnRep_XXX() 回调函数</text>
+
+  <!-- Legend -->
+  <rect x="20" y="730" width="920" height="38" fill="#EEF0F5" rx="6" stroke="#DDD"/>
+  <rect x="30" y="740" width="12" height="12" fill="#444" rx="2"/>
+  <text x="48" y="751" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#333">正常流程</text>
+  <rect x="130" y="740" width="12" height="12" fill="#E74C3C" rx="2"/>
+  <text x="148" y="751" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#333">错误处理（关闭连接）</text>
+  <rect x="290" y="740" width="12" height="12" fill="#F39C12" rx="2"/>
+  <text x="308" y="751" font-family="Microsoft YaHei,sans-serif" font-size="10" fill="#333">特殊处理（缓存/等待）</text>
+  <text x="480" y="762" font-family="Microsoft YaHei,sans-serif" font-size="10" text-anchor="middle" fill="#888">接收路径中任何环节发现异常数据均会记录日志并根据严重程度决定是否关闭连接</text>
+</svg>

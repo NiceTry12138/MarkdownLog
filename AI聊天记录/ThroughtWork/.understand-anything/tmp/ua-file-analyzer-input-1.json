@@ -1,0 +1,56 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/Android/AndroidEngine.ini",
+      "language": "config",
+      "sizeLines": 120,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Android/AndroidScalability.ini",
+      "language": "config",
+      "sizeLines": 221,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Android/Android_SDK.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Android/BaseAndroidEngine.ini",
+      "language": "config",
+      "sizeLines": 19,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Android/BaseAndroidGame.ini",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Android/BaseAndroidInstallBundle.ini",
+      "language": "config",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/Android/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 127,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/Android/AndroidEngine.ini": [],
+    "Config/Android/AndroidScalability.ini": [],
+    "Config/Android/Android_SDK.json": [],
+    "Config/Android/BaseAndroidEngine.ini": [],
+    "Config/Android/BaseAndroidGame.ini": [],
+    "Config/Android/BaseAndroidInstallBundle.ini": [],
+    "Config/Android/DataDrivenPlatformInfo.ini": []
+  }
+}

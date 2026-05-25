@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="720" viewBox="0 0 980 720">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#89b4fa"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#a6e3a1"/>
+    </marker>
+    <marker id="arrow-yellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f9e2af"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="980" height="720" fill="#1e1e2e"/>
+
+  <!-- Title -->
+  <text x="490" y="32" fill="#cdd6f4" font-family="monospace" font-size="18" font-weight="bold" text-anchor="middle">UEdGraph + UEdGraphNode — 数据模型与生命周期</text>
+  <text x="490" y="52" fill="#6c7086" font-family="monospace" font-size="12" text-anchor="middle">EdGraph/EdGraph.h  +  EdGraph/EdGraphNode.h  (Runtime/Engine 模块)</text>
+
+  <!-- ===== LEFT: UEdGraph Data Model ===== -->
+  <text x="20" y="78" fill="#89b4fa" font-family="monospace" font-size="13" font-weight="bold">UEdGraph 数据成员</text>
+
+  <rect x="20" y="88" width="300" height="320" rx="6" fill="#181825" stroke="#89b4fa" stroke-width="2"/>
+
+  <!-- Header -->
+  <rect x="20" y="88" width="300" height="28" rx="6" fill="#89b4fa" fill-opacity="0.2"/>
+  <text x="170" y="108" fill="#89b4fa" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">UEdGraph : UObject</text>
+
+  <text x="32" y="132" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">Schema</text>
+  <text x="32" y="147" fill="#a6adc8" font-family="monospace" font-size="9">  TSubclassOf&lt;UEdGraphSchema&gt;</text>
+  <text x="32" y="162" fill="#6c7086" font-family="monospace" font-size="9">  决定图的行为规则</text>
+
+  <line x1="32" y1="172" x2="306" y2="172" stroke="#45475a" stroke-width="1"/>
+
+  <text x="32" y="188" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">Nodes</text>
+  <text x="32" y="203" fill="#a6adc8" font-family="monospace" font-size="9">  TArray&lt;TObjectPtr&lt;UEdGraphNode&gt;&gt;</text>
+  <text x="32" y="218" fill="#6c7086" font-family="monospace" font-size="9">  图内所有节点</text>
+
+  <line x1="32" y1="228" x2="306" y2="228" stroke="#45475a" stroke-width="1"/>
+
+  <text x="32" y="244" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">bEditable / bAllowDeletion</text>
+  <text x="32" y="259" fill="#a6adc8" font-family="monospace" font-size="9">  uint32 位域 — 图的编辑权限</text>
+
+  <line x1="32" y1="269" x2="306" y2="269" stroke="#45475a" stroke-width="1"/>
+
+  <text x="32" y="285" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">SubGraphs  [EditorOnly]</text>
+  <text x="32" y="300" fill="#a6adc8" font-family="monospace" font-size="9">  TArray&lt;TObjectPtr&lt;UEdGraph&gt;&gt;</text>
+  <text x="32" y="315" fill="#6c7086" font-family="monospace" font-size="9">  子图（折叠区域等）</text>
+
+  <line x1="32" y1="325" x2="306" y2="325" stroke="#45475a" stroke-width="1"/>
+
+  <text x="32" y="341" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">GraphGuid  [EditorOnly]</text>
+  <text x="32" y="356" fill="#a6adc8" font-family="monospace" font-size="9">  FGuid — 持久唯一 ID</text>
+
+  <line x1="32" y1="366" x2="306" y2="366" stroke="#45475a" stroke-width="1"/>
+
+  <text x="32" y="382" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">OnGraphChanged  (私有)</text>
+  <text x="32" y="397" fill="#a6adc8" font-family="monospace" font-size="9">  FOnGraphChanged  多播委托</text>
+
+  <!-- UEdGraph Methods box -->
+  <text x="20" y="430" fill="#a6e3a1" font-family="monospace" font-size="13" font-weight="bold">UEdGraph 关键方法</text>
+  <rect x="20" y="440" width="300" height="260" rx="6" fill="#181825" stroke="#a6e3a1" stroke-width="1.5"/>
+
+  <text x="32" y="460" fill="#cba6f7" font-family="monospace" font-size="10" font-weight="bold">节点管理</text>
+  <text x="32" y="476" fill="#cdd6f4" font-family="monospace" font-size="10">AddNode(Node, bUserAction)</text>
+  <text x="32" y="491" fill="#cdd6f4" font-family="monospace" font-size="10">RemoveNode(Node, bBreakLinks)</text>
+  <text x="32" y="506" fill="#cdd6f4" font-family="monospace" font-size="10">GetNodesOfClass&lt;T&gt;(OutNodes)</text>
+  <text x="32" y="521" fill="#cdd6f4" font-family="monospace" font-size="10">MoveNodesToAnotherGraph(Dest,...)</text>
+
+  <line x1="32" y1="533" x2="306" y2="533" stroke="#45475a" stroke-width="1"/>
+
+  <text x="32" y="549" fill="#cba6f7" font-family="monospace" font-size="10" font-weight="bold">通知 / 查询</text>
+  <text x="32" y="565" fill="#cdd6f4" font-family="monospace" font-size="10">NotifyGraphChanged()</text>
+  <text x="32" y="580" fill="#cdd6f4" font-family="monospace" font-size="10">NotifyNodeChanged(Node)</text>
+  <text x="32" y="595" fill="#cdd6f4" font-family="monospace" font-size="10">GetSchema() → UEdGraphSchema*</text>
+  <text x="32" y="610" fill="#cdd6f4" font-family="monospace" font-size="10">GetGoodPlaceForNewNode()</text>
+
+  <line x1="32" y1="622" x2="306" y2="622" stroke="#45475a" stroke-width="1"/>
+
+  <text x="32" y="638" fill="#cba6f7" font-family="monospace" font-size="10" font-weight="bold">辅助模板</text>
+  <text x="32" y="654" fill="#cdd6f4" font-family="monospace" font-size="10">FGraphNodeCreator&lt;NodeType&gt;</text>
+  <text x="32" y="669" fill="#a6adc8" font-family="monospace" font-size="9">  RAII 风格节点创建器，Finalize() 后加入图</text>
+  <text x="32" y="684" fill="#cdd6f4" font-family="monospace" font-size="10">AddOnGraphChangedHandler()</text>
+
+  <!-- ===== MIDDLE: Arrow from UEdGraph to UEdGraphNode -->
+  <line x1="320" y1="248" x2="354" y2="248" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="322" y="243" fill="#6c7086" font-family="monospace" font-size="9">Nodes[]</text>
+
+  <!-- ===== MIDDLE-RIGHT: UEdGraphNode Data Model ===== -->
+  <text x="360" y="78" fill="#cba6f7" font-family="monospace" font-size="13" font-weight="bold">UEdGraphNode 数据成员</text>
+
+  <rect x="360" y="88" width="300" height="380" rx="6" fill="#181825" stroke="#cba6f7" stroke-width="2"/>
+
+  <rect x="360" y="88" width="300" height="28" rx="6" fill="#cba6f7" fill-opacity="0.2"/>
+  <text x="510" y="108" fill="#cba6f7" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">UEdGraphNode : UObject</text>
+
+  <text x="372" y="132" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">Pins</text>
+  <text x="372" y="147" fill="#a6adc8" font-family="monospace" font-size="9">  TArray&lt;UEdGraphPin*&gt;  (非 UPROPERTY)</text>
+  <text x="372" y="162" fill="#6c7086" font-family="monospace" font-size="9">  节点拥有的所有输入/输出引脚</text>
+
+  <line x1="372" y1="172" x2="646" y2="172" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="188" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">NodePosX / NodePosY</text>
+  <text x="372" y="203" fill="#a6adc8" font-family="monospace" font-size="9">  int32  节点在画布的位置</text>
+
+  <text x="372" y="220" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">NodeWidth / NodeHeight</text>
+  <text x="372" y="235" fill="#a6adc8" font-family="monospace" font-size="9">  int32  仅 bCanResizeNode=true 时有效</text>
+
+  <line x1="372" y1="245" x2="646" y2="245" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="261" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">NodeGuid</text>
+  <text x="372" y="276" fill="#a6adc8" font-family="monospace" font-size="9">  FGuid  节点唯一 ID（diff/序列化用）</text>
+
+  <line x1="372" y1="286" x2="646" y2="286" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="302" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">EnabledState  /  bUserSetEnabledState</text>
+  <text x="372" y="317" fill="#a6adc8" font-family="monospace" font-size="9">  ENodeEnabledState: Enabled/Disabled/DevelopmentOnly</text>
+
+  <line x1="372" y1="327" x2="646" y2="327" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="343" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">bHasCompilerMessage / ErrorMsg</text>
+  <text x="372" y="358" fill="#a6adc8" font-family="monospace" font-size="9">  编译错误/警告标记和消息</text>
+
+  <line x1="372" y1="368" x2="646" y2="368" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="384" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">NodeComment  [EditorOnly]</text>
+  <text x="372" y="399" fill="#a6adc8" font-family="monospace" font-size="9">  FString  节点上的注释文字</text>
+
+  <line x1="372" y1="409" x2="646" y2="409" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="425" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">AdvancedPinDisplay</text>
+  <text x="372" y="440" fill="#a6adc8" font-family="monospace" font-size="9">  ENodeAdvancedPins: NoPins/Shown/Hidden</text>
+
+  <line x1="372" y1="450" x2="646" y2="450" stroke="#45475a" stroke-width="1"/>
+
+  <text x="372" y="466" fill="#f9e2af" font-family="monospace" font-size="10" font-weight="bold">DEPRECATED_NodeWidget</text>
+  <text x="372" y="481" fill="#a6adc8" font-family="monospace" font-size="9">  TWeakPtr&lt;SGraphNode&gt;  (废弃，不可依赖)</text>
+
+  <!-- ===== RIGHT: UEdGraphNode Virtual Methods ===== -->
+  <text x="680" y="78" fill="#f9e2af" font-family="monospace" font-size="13" font-weight="bold">UEdGraphNode 核心虚函数</text>
+
+  <rect x="680" y="88" width="280" height="580" rx="6" fill="#181825" stroke="#f9e2af" stroke-width="1.5"/>
+
+  <text x="692" y="108" fill="#89dceb" font-family="monospace" font-size="10" font-weight="bold">引脚创建 [子类必须重写]</text>
+  <text x="692" y="124" fill="#cdd6f4" font-family="monospace" font-size="10">AllocateDefaultPins()</text>
+  <text x="692" y="139" fill="#a6adc8" font-family="monospace" font-size="9">  节点首次放入图时创建引脚</text>
+  <text x="692" y="155" fill="#cdd6f4" font-family="monospace" font-size="10">ReconstructNode()</text>
+  <text x="692" y="170" fill="#a6adc8" font-family="monospace" font-size="9">  重建引脚（类型变化后刷新）</text>
+
+  <line x1="692" y1="182" x2="946" y2="182" stroke="#45475a" stroke-width="1"/>
+
+  <text x="692" y="198" fill="#89dceb" font-family="monospace" font-size="10" font-weight="bold">显示信息</text>
+  <text x="692" y="214" fill="#cdd6f4" font-family="monospace" font-size="10">GetNodeTitle(TitleType)</text>
+  <text x="692" y="229" fill="#a6adc8" font-family="monospace" font-size="9">  FullTitle / ListView / MenuTitle</text>
+  <text x="692" y="247" fill="#cdd6f4" font-family="monospace" font-size="10">GetNodeTitleColor()</text>
+  <text x="692" y="262" fill="#a6adc8" font-family="monospace" font-size="9">  → FLinearColor  标题栏背景色</text>
+  <text x="692" y="280" fill="#cdd6f4" font-family="monospace" font-size="10">GetTooltipText()</text>
+  <text x="692" y="295" fill="#cdd6f4" font-family="monospace" font-size="10">GetIconAndTint(OutColor)</text>
+  <text x="692" y="310" fill="#a6adc8" font-family="monospace" font-size="9">  节点图标与色调</text>
+
+  <line x1="692" y1="322" x2="946" y2="322" stroke="#45475a" stroke-width="1"/>
+
+  <text x="692" y="338" fill="#89dceb" font-family="monospace" font-size="10" font-weight="bold">生命周期</text>
+  <text x="692" y="354" fill="#cdd6f4" font-family="monospace" font-size="10">PostPlacedNewNode()</text>
+  <text x="692" y="369" fill="#a6adc8" font-family="monospace" font-size="9">  放置后初始化（绑定函数等）</text>
+  <text x="692" y="387" fill="#cdd6f4" font-family="monospace" font-size="10">PrepareForCopying()</text>
+  <text x="692" y="402" fill="#a6adc8" font-family="monospace" font-size="9">  复制前准备（深拷贝数据）</text>
+  <text x="692" y="420" fill="#cdd6f4" font-family="monospace" font-size="10">PostPasteNode()</text>
+  <text x="692" y="435" fill="#a6adc8" font-family="monospace" font-size="9">  粘贴后修正（GUID 等）</text>
+  <text x="692" y="453" fill="#cdd6f4" font-family="monospace" font-size="10">DestroyNode()</text>
+  <text x="692" y="468" fill="#a6adc8" font-family="monospace" font-size="9">  删除节点时清理</text>
+
+  <line x1="692" y1="480" x2="946" y2="480" stroke="#45475a" stroke-width="1"/>
+
+  <text x="692" y="496" fill="#89dceb" font-family="monospace" font-size="10" font-weight="bold">兼容性检查</text>
+  <text x="692" y="512" fill="#cdd6f4" font-family="monospace" font-size="10">IsCompatibleWithGraph(Graph)</text>
+  <text x="692" y="527" fill="#a6adc8" font-family="monospace" font-size="9">  能否放入指定图</text>
+  <text x="692" y="545" fill="#cdd6f4" font-family="monospace" font-size="10">CanPasteHere(TargetGraph)</text>
+  <text x="692" y="560" fill="#a6adc8" font-family="monospace" font-size="9">  能否粘贴到目标图</text>
+  <text x="692" y="578" fill="#cdd6f4" font-family="monospace" font-size="10">CanCreateUnderSpecifiedSchema(Schema)</text>
+
+  <line x1="692" y1="590" x2="946" y2="590" stroke="#45475a" stroke-width="1"/>
+
+  <text x="692" y="606" fill="#89dceb" font-family="monospace" font-size="10" font-weight="bold">引脚操作</text>
+  <text x="692" y="622" fill="#cdd6f4" font-family="monospace" font-size="10">CreatePin(Dir, Category, Name)</text>
+  <text x="692" y="638" fill="#a6adc8" font-family="monospace" font-size="9">  在节点上创建引脚并加入 Pins</text>
+  <text x="692" y="656" fill="#cdd6f4" font-family="monospace" font-size="10">FindPin(PinName, Direction)</text>
+  <text x="692" y="672" fill="#cdd6f4" font-family="monospace" font-size="10">BreakAllNodeLinks()</text>
+
+  <!-- ===== MIDDLE BOTTOM: Node Creation Pattern ===== -->
+  <rect x="360" y="500" width="300" height="180" rx="6" fill="#11111b" stroke="#45475a" stroke-width="1"/>
+  <text x="510" y="520" fill="#f9e2af" font-family="monospace" font-size="11" font-weight="bold" text-anchor="middle">节点创建惯用法</text>
+  <text x="372" y="540" fill="#6c7086" font-family="monospace" font-size="10">// 推荐：使用 FGraphNodeCreator RAII</text>
+  <text x="372" y="556" fill="#a6e3a1" font-family="monospace" font-size="10">FGraphNodeCreator&lt;UMyNode&gt; NodeCreator(*Graph);</text>
+  <text x="372" y="572" fill="#cdd6f4" font-family="monospace" font-size="10">UMyNode* Node = NodeCreator.CreateNode();</text>
+  <text x="372" y="588" fill="#cdd6f4" font-family="monospace" font-size="10">Node-&gt;NodePosX = 200;</text>
+  <text x="372" y="604" fill="#cdd6f4" font-family="monospace" font-size="10">Node-&gt;NodePosY = 100;</text>
+  <text x="372" y="620" fill="#89b4fa" font-family="monospace" font-size="10">NodeCreator.Finalize(); // 调 AllocateDefaultPins</text>
+  <text x="372" y="640" fill="#6c7086" font-family="monospace" font-size="9">// Finalize 会：CreateNewGuid + PostPlacedNewNode</text>
+  <text x="372" y="656" fill="#6c7086" font-family="monospace" font-size="9">// + AllocateDefaultPins (如 Pins 为空)</text>
+  <text x="372" y="674" fill="#6c7086" font-family="monospace" font-size="9">// 析构时 check(!bPlaced) 避免忘记 Finalize</text>
+</svg>

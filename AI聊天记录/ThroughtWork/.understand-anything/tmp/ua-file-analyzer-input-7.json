@@ -1,0 +1,28 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/TVOS/DataDrivenPlatformInfo.ini",
+      "language": "config",
+      "sizeLines": 39,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/TVOS/TVOSEngine.ini",
+      "language": "config",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/TVOS/TVOS_SDK.json",
+      "language": "json",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/TVOS/DataDrivenPlatformInfo.ini": [],
+    "Config/TVOS/TVOSEngine.ini": [],
+    "Config/TVOS/TVOS_SDK.json": []
+  }
+}

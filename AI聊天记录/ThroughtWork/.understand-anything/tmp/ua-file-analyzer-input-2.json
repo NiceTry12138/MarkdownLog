@@ -1,0 +1,147 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Config/Base.ini",
+      "language": "config",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseCompat.ini",
+      "language": "config",
+      "sizeLines": 516,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseDeviceProfiles.ini",
+      "language": "config",
+      "sizeLines": 1229,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseEditor.ini",
+      "language": "config",
+      "sizeLines": 682,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseEditorKeyBindings.ini",
+      "language": "config",
+      "sizeLines": 13,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseEditorPerProjectUserSettings.ini",
+      "language": "config",
+      "sizeLines": 993,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseEditorSettings.ini",
+      "language": "config",
+      "sizeLines": 71,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseEngine.ini",
+      "language": "config",
+      "sizeLines": 3586,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseGame.ini",
+      "language": "config",
+      "sizeLines": 321,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseGameUserSettings.ini",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseHardware.ini",
+      "language": "config",
+      "sizeLines": 94,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseInput.ini",
+      "language": "config",
+      "sizeLines": 255,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseInstallBundle.ini",
+      "language": "config",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseLightmass.ini",
+      "language": "config",
+      "sizeLines": 284,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BasePakFileRules.ini",
+      "language": "config",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseRuntimeOptions.ini",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseScalability.ini",
+      "language": "config",
+      "sizeLines": 812,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/BaseSourceControlSettings.ini",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/ConfigRedirects.ini",
+      "language": "config",
+      "sizeLines": 69,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Config/ConsoleVariables.ini",
+      "language": "config",
+      "sizeLines": 201,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Config/Base.ini": [],
+    "Config/BaseCompat.ini": [],
+    "Config/BaseDeviceProfiles.ini": [],
+    "Config/BaseEditor.ini": [],
+    "Config/BaseEditorKeyBindings.ini": [],
+    "Config/BaseEditorPerProjectUserSettings.ini": [],
+    "Config/BaseEditorSettings.ini": [],
+    "Config/BaseEngine.ini": [],
+    "Config/BaseGame.ini": [],
+    "Config/BaseGameUserSettings.ini": [],
+    "Config/BaseHardware.ini": [],
+    "Config/BaseInput.ini": [],
+    "Config/BaseInstallBundle.ini": [],
+    "Config/BaseLightmass.ini": [],
+    "Config/BasePakFileRules.ini": [],
+    "Config/BaseRuntimeOptions.ini": [],
+    "Config/BaseScalability.ini": [],
+    "Config/BaseSourceControlSettings.ini": [],
+    "Config/ConfigRedirects.ini": [],
+    "Config/ConsoleVariables.ini": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_build_install_unity_deps.sh",
+      "language": "shell",
+      "sizeLines": 133,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_core_deps.sh",
+      "language": "shell",
+      "sizeLines": 56,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_wwise_deps.sh",
+      "language": "shell",
+      "sizeLines": 32,
+      "fileCategory": "script"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_build_install_unity_deps.sh": [],
+    "Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_core_deps.sh": [],
+    "Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_wwise_deps.sh": []
+  }
+}

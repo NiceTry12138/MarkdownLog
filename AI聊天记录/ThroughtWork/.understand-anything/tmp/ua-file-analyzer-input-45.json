@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSteeringProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 328,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSteeringTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassAvoidanceFragments.h",
+      "language": "c",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassAvoidanceProcessors.h",
+      "language": "c",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassAvoidanceTrait.h",
+      "language": "c",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassNavigationObstacleTrait.h",
+      "language": "c",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/IMassNavigationModule.h",
+      "language": "c",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationFragments.h",
+      "language": "c",
+      "sizeLines": 185,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationProcessors.h",
+      "language": "c",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationSubsystem.h",
+      "language": "c",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationTypes.h",
+      "language": "c",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationUtils.h",
+      "language": "c",
+      "sizeLines": 114,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/SmoothOrientation/MassSmoothOrientationFragments.h",
+      "language": "c",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/SmoothOrientation/MassSmoothOrientationProcessors.h",
+      "language": "c",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/SmoothOrientation/MassSmoothOrientationTrait.h",
+      "language": "c",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/Steering/MassSteeringFragments.h",
+      "language": "c",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/Steering/MassSteeringProcessors.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigation/Public/Steering/MassSteeringTrait.h",
+      "language": "c",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigationEditor/MassNavigationEditor.Build.cs",
+      "language": "csharp",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigationEditor/Private/MassNavigationEditorModule.cpp",
+      "language": "cpp",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigationEditor/Private/MassNavigationTestingActor.cpp",
+      "language": "cpp",
+      "sizeLines": 327,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigationEditor/Private/MassNavigationTestingActor.h",
+      "language": "c",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigationEditor/Public/IMassNavigationEditor.h",
+      "language": "c",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassNavigationEditor/Public/MassNavigationEditorModule.h",
+      "language": "c",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/MassZoneGraphNavigation.Build.cs",
+      "language": "csharp",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSteeringProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Private/MassSteeringTrait.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassAvoidanceFragments.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassAvoidanceProcessors.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassAvoidanceTrait.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/Avoidance/MassNavigationObstacleTrait.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/IMassNavigationModule.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationFragments.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationProcessors.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationSubsystem.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationTypes.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/MassNavigationUtils.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/SmoothOrientation/MassSmoothOrientationFragments.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/SmoothOrientation/MassSmoothOrientationProcessors.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/SmoothOrientation/MassSmoothOrientationTrait.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/Steering/MassSteeringFragments.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/Steering/MassSteeringProcessors.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigation/Public/Steering/MassSteeringTrait.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigationEditor/MassNavigationEditor.Build.cs": [],
+    "Plugins/AI/MassAI/Source/MassNavigationEditor/Private/MassNavigationEditorModule.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigationEditor/Private/MassNavigationTestingActor.cpp": [],
+    "Plugins/AI/MassAI/Source/MassNavigationEditor/Private/MassNavigationTestingActor.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigationEditor/Public/IMassNavigationEditor.h": [],
+    "Plugins/AI/MassAI/Source/MassNavigationEditor/Public/MassNavigationEditorModule.h": [],
+    "Plugins/AI/MassAI/Source/MassZoneGraphNavigation/MassZoneGraphNavigation.Build.cs": []
+  }
+}

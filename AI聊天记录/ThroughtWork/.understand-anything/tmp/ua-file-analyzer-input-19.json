@@ -1,0 +1,35 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Header.txt",
+      "language": "txt",
+      "sizeLines": 32,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Source.txt",
+      "language": "txt",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Subclass Header.txt",
+      "language": "txt",
+      "sizeLines": 21,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Subclass Source.txt",
+      "language": "txt",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Header.txt": [],
+    "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Source.txt": [],
+    "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Subclass Header.txt": [],
+    "Plugins/NetcodeUnitTest/NetcodeUnitTest/VAXSnippets/Unit Test Subclass Source.txt": []
+  }
+}

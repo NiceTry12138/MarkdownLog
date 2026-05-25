@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 720" width="900" height="720">
+  <!-- Background -->
+  <rect width="900" height="720" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#e6edf3" font-family="Arial, sans-serif">StrideWarping 算法流程 (AnimNode_StrideWarping.cpp)</text>
+
+  <!-- ===== INPUT ROW ===== -->
+  <text x="450" y="58" text-anchor="middle" font-size="12" fill="#8b949e" font-family="Arial, sans-serif">— 输入阶段 —</text>
+
+  <!-- Box: LocomotionSpeed -->
+  <rect x="30" y="65" width="240" height="54" rx="6" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="150" y="86" text-anchor="middle" font-size="12" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">LocomotionSpeed</text>
+  <text x="150" y="102" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">胶囊体/物理速度（cm/s）</text>
+  <text x="150" y="115" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">由 CharacterMovement 提供</text>
+
+  <!-- Box: RootMotionDelta -->
+  <rect x="330" y="65" width="240" height="54" rx="6" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="450" y="86" text-anchor="middle" font-size="12" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">RootMotionDelta</text>
+  <text x="450" y="102" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">动画根骨骼每帧位移 ΔT</text>
+  <text x="450" y="115" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">IAnimRootMotionProvider::ExtractRootMotion</text>
+
+  <!-- Box: StrideDirection -->
+  <rect x="630" y="65" width="240" height="54" rx="6" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="750" y="86" text-anchor="middle" font-size="12" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">StrideDirection</text>
+  <text x="750" y="102" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">步幅方向（Graph: ΔT 方向）</text>
+  <text x="750" y="115" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">Manual: 用户指定 / Graph: 自动计算</text>
+
+  <!-- Arrows from inputs to step 1 -->
+  <line x1="150" y1="119" x2="150" y2="138" stroke="#388bfd" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="450" y1="119" x2="450" y2="138" stroke="#388bfd" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="750" y1="119" x2="750" y2="138" stroke="#388bfd" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <!-- Converge lines -->
+  <line x1="150" y1="138" x2="450" y2="148" stroke="#388bfd" stroke-width="1"/>
+  <line x1="750" y1="138" x2="450" y2="148" stroke="#388bfd" stroke-width="1"/>
+
+  <!-- ===== STEP 1: StrideScale ===== -->
+  <rect x="100" y="155" width="700" height="88" rx="6" fill="#0f2033" stroke="#1f6feb" stroke-width="1.5"/>
+  <text x="450" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">① StrideScale 计算</text>
+  <!-- formula block -->
+  <rect x="120" y="183" width="320" height="48" rx="4" fill="#0a1929" stroke="#1f6feb" stroke-width="1"/>
+  <text x="280" y="200" text-anchor="middle" font-size="11" fill="#e6edf3" font-family="Arial, sans-serif">RootMotionSpeed = |ΔT| / Δtime</text>
+  <text x="280" y="218" text-anchor="middle" font-size="11" fill="#f0c060" font-family="Arial, sans-serif">StrideScale = LocomotionSpeed / RootMotionSpeed</text>
+  <!-- condition -->
+  <rect x="455" y="183" width="330" height="48" rx="4" fill="#0a1929" stroke="#1f6feb" stroke-width="1"/>
+  <text x="620" y="200" text-anchor="middle" font-size="11" fill="#8b949e" font-family="Arial, sans-serif">若 RootMotionSpeed ≤ MinThreshold:</text>
+  <text x="620" y="218" text-anchor="middle" font-size="11" fill="#ffa657" font-family="Arial, sans-serif">StrideScale = 1.0  (跳过 warping)</text>
+
+  <!-- Arrow step1 → step2 -->
+  <line x1="450" y1="243" x2="450" y2="261" stroke="#30a14e" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+
+  <!-- ===== STEP 2: Orient StrideDirection ===== -->
+  <rect x="100" y="265" width="700" height="68" rx="6" fill="#0f2319" stroke="#238636" stroke-width="1.5"/>
+  <text x="450" y="286" text-anchor="middle" font-size="13" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">② 步幅方向地面修正（OrientByFloorNormal）</text>
+  <text x="450" y="305" text-anchor="middle" font-size="11" fill="#8b949e" font-family="Arial, sans-serif">WarpingAxis = FloorNormal ×  StrideDirection</text>
+  <text x="450" y="322" text-anchor="middle" font-size="11" fill="#56d364" font-family="Arial, sans-serif">ActualStrideDir = WarpingAxis × FloorNormal  →  去除法线分量，保持平行地面</text>
+
+  <!-- Arrow step2 → step3 -->
+  <line x1="450" y1="333" x2="450" y2="351" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- ===== STEP 3: Warp IK Feet ===== -->
+  <rect x="100" y="355" width="700" height="128" rx="6" fill="#1e1133" stroke="#8957e5" stroke-width="1.5"/>
+  <text x="450" y="376" text-anchor="middle" font-size="13" font-weight="bold" fill="#d2a8ff" font-family="Arial, sans-serif">③ IK 脚部位置缩放（核心步骤，每脚独立执行）</text>
+  <!-- 3 sub-steps -->
+  <rect x="115" y="382" width="210" height="88" rx="4" fill="#130d22" stroke="#8957e5" stroke-width="1"/>
+  <text x="220" y="398" text-anchor="middle" font-size="11" font-weight="bold" fill="#bc8cff" font-family="Arial, sans-serif">a. 计算 T'（Stride Pivot）</text>
+  <text x="220" y="413" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">将 Thigh 沿重力方向投影</text>
+  <text x="220" y="428" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">到 IKFoot 所在地板平面</text>
+  <text x="220" y="447" text-anchor="middle" font-size="10" fill="#cae8ff" font-family="Arial, sans-serif">T' = LinePlaneIntersection(</text>
+  <text x="220" y="462" text-anchor="middle" font-size="10" fill="#cae8ff" font-family="Arial, sans-serif">Thigh, Thigh+Gravity, Foot, FloorN)</text>
+
+  <rect x="345" y="382" width="210" height="88" rx="4" fill="#130d22" stroke="#8957e5" stroke-width="1"/>
+  <text x="450" y="398" text-anchor="middle" font-size="11" font-weight="bold" fill="#bc8cff" font-family="Arial, sans-serif">b. 计算 ScaleOrigin</text>
+  <text x="450" y="413" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">去除步幅分量，得到</text>
+  <text x="450" y="428" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">步幅方向上的缩放基点</text>
+  <text x="450" y="447" text-anchor="middle" font-size="10" fill="#cae8ff" font-family="Arial, sans-serif">ScaleOrigin = PointPlaneProject(</text>
+  <text x="450" y="462" text-anchor="middle" font-size="10" fill="#cae8ff" font-family="Arial, sans-serif">IKFoot, T', ActualStrideDir)</text>
+
+  <rect x="575" y="382" width="210" height="88" rx="4" fill="#130d22" stroke="#8957e5" stroke-width="1"/>
+  <text x="680" y="398" text-anchor="middle" font-size="11" font-weight="bold" fill="#bc8cff" font-family="Arial, sans-serif">c. 缩放</text>
+  <text x="680" y="413" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">以 ScaleOrigin 为基点</text>
+  <text x="680" y="428" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">沿步幅方向线性缩放</text>
+  <text x="680" y="447" text-anchor="middle" font-size="10" fill="#f0c060" font-family="Arial, sans-serif">WarpedFoot = ScaleOrigin +</text>
+  <text x="680" y="462" text-anchor="middle" font-size="10" fill="#f0c060" font-family="Arial, sans-serif">(Foot - ScaleOrigin) × StrideScale</text>
+
+  <!-- Arrow step3 → step4 -->
+  <line x1="450" y1="483" x2="450" y2="501" stroke="#e3b341" stroke-width="1.5" marker-end="url(#arrowYellow)"/>
+
+  <!-- ===== STEP 4: Pelvis Adjust ===== -->
+  <rect x="100" y="505" width="700" height="72" rx="6" fill="#1f1a00" stroke="#bb8009" stroke-width="1.5"/>
+  <text x="450" y="526" text-anchor="middle" font-size="13" font-weight="bold" fill="#e3b341" font-family="Arial, sans-serif">④ 骨盆下拉修正（FIKFootPelvisPullDownSolver）</text>
+  <text x="450" y="545" text-anchor="middle" font-size="11" fill="#8b949e" font-family="Arial, sans-serif">迭代计算：IdealPelvis_i = IKFoot_i + normalize(Pelvis - IKFoot_i) × FKLegLength_i</text>
+  <text x="450" y="563" text-anchor="middle" font-size="11" fill="#e3b341" font-family="Arial, sans-serif">AdjustedPelvis = Σ(weight_i × IdealPelvis_i)  →  弹簧插值  →  Alpha Lerp  →  距离限幅</text>
+
+  <!-- Arrow step4 → step5 -->
+  <line x1="450" y1="577" x2="450" y2="595" stroke="#ffa657" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+
+  <!-- ===== STEP 5: Thigh Compensate ===== -->
+  <rect x="100" y="599" width="700" height="72" rx="6" fill="#1f1500" stroke="#d1812b" stroke-width="1.5"/>
+  <text x="450" y="620" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffa657" font-family="Arial, sans-serif">⑤ 大腿旋转补偿（CompensateIKUsingFKThighRotation）</text>
+  <text x="450" y="639" text-anchor="middle" font-size="11" fill="#8b949e" font-family="Arial, sans-serif">InitDir = normalize(FKFoot - Thigh)  →  TargetDir = normalize(IKFoot_warped - AdjustedThigh)</text>
+  <text x="450" y="657" text-anchor="middle" font-size="11" fill="#ffa657" font-family="Arial, sans-serif">ΔR = FQuat::FindBetweenNormals(InitDir, TargetDir)  →  旋转大腿；IK 脚超限时夹到 FK 腿长</text>
+
+  <!-- Arrow step5 → output -->
+  <line x1="450" y1="671" x2="450" y2="689" stroke="#f85149" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+
+  <!-- ===== OUTPUT ===== -->
+  <rect x="200" y="692" width="500" height="18" rx="4" fill="#21262d" stroke="#f85149" stroke-width="1.5"/>
+  <text x="450" y="705" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff7b72" font-family="Arial, sans-serif">输出：修正后的 Pelvis / Thigh / IKFoot BoneTransforms → OutBoneTransforms</text>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#388bfd"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#30a14e"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowYellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#e3b341"/>
+    </marker>
+    <marker id="arrowOrange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ffa657"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f85149"/>
+    </marker>
+  </defs>
+</svg>

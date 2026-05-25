@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/Debug/GameplayDebuggerCategory_HTN.h",
+      "language": "c",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/Debug/HTNDebug.h",
+      "language": "c",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNBuilder.h",
+      "language": "c",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNDomain.h",
+      "language": "c",
+      "sizeLines": 273,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNPlanner.h",
+      "language": "c",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNPlannerModule.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNTestSuite/HTNTestSuite.Build.cs",
+      "language": "csharp",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Private/HTNTest.cpp",
+      "language": "cpp",
+      "sizeLines": 628,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Private/HTNTestSuiteModule.cpp",
+      "language": "cpp",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Private/MockHTN.h",
+      "language": "c",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Public/HTNTestSuiteModule.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Config/BaseMassAI.ini",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "Plugins/AI/MassAI/MassAI.uplugin",
+      "language": "uplugin",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/MassAIBehavior.Build.cs",
+      "language": "csharp",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/MassBehaviorSettings.cpp",
+      "language": "cpp",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Conditions/ZoneGraphTagConditions.cpp",
+      "language": "cpp",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Evaluators/MassComponentHitEvaluator.cpp",
+      "language": "cpp",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Evaluators/MassZoneGraphAnnotationEvaluator.cpp",
+      "language": "cpp",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassAIBehaviorModule.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassAIBehaviorTypes.cpp",
+      "language": "cpp",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassComponentHitSubsystem.cpp",
+      "language": "cpp",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtFragments.cpp",
+      "language": "cpp",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtProcessors.cpp",
+      "language": "cpp",
+      "sizeLines": 526,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtTargetTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtTrait.cpp",
+      "language": "cpp",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/Debug/GameplayDebuggerCategory_HTN.h": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/Debug/HTNDebug.h": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNBuilder.h": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNDomain.h": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNPlanner.h": [],
+    "Plugins/AI/HTNPlanner/Source/HTNPlanner/Public/HTNPlannerModule.h": [],
+    "Plugins/AI/HTNPlanner/Source/HTNTestSuite/HTNTestSuite.Build.cs": [],
+    "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Private/HTNTest.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Private/HTNTestSuiteModule.cpp": [],
+    "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Private/MockHTN.h": [],
+    "Plugins/AI/HTNPlanner/Source/HTNTestSuite/Public/HTNTestSuiteModule.h": [],
+    "Plugins/AI/MassAI/Config/BaseMassAI.ini": [],
+    "Plugins/AI/MassAI/MassAI.uplugin": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/MassAIBehavior.Build.cs": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/MassBehaviorSettings.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Conditions/ZoneGraphTagConditions.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Evaluators/MassComponentHitEvaluator.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/Evaluators/MassZoneGraphAnnotationEvaluator.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassAIBehaviorModule.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassAIBehaviorTypes.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassComponentHitSubsystem.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtFragments.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtProcessors.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtTargetTrait.cpp": [],
+    "Plugins/AI/MassAI/Source/MassAIBehavior/Private/MassLookAtTrait.cpp": []
+  }
+}

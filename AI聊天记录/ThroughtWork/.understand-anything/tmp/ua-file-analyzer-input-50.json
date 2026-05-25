@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterAsync.h",
+      "language": "c",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterInputHelper.h",
+      "language": "c",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterJson.h",
+      "language": "c",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterLibrarian.h",
+      "language": "c",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterModule.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterScribe.h",
+      "language": "c",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterSettings.h",
+      "language": "c",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterSpace.h",
+      "language": "c",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterTypes.h",
+      "language": "c",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/RPCWrapper/MsgPack.h",
+      "language": "c",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/RPCWrapper/rpclib_includes.h",
+      "language": "c",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/RPCWrapper/Server.h",
+      "language": "c",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_AIPerception.h",
+      "language": "c",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Attribute.h",
+      "language": "c",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Camera.h",
+      "language": "c",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_EnhancedInput.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Input.h",
+      "language": "c",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Movement.h",
+      "language": "c",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor.h",
+      "language": "c",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sessions/MLAdapterLocalDataCollectionSession.h",
+      "language": "c",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sessions/MLAdapterSession.h",
+      "language": "c",
+      "sizeLines": 230,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/MLAdapterTestSuite.Build.cs",
+      "language": "csharp",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/Private/AgentTest.cpp",
+      "language": "cpp",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/Private/MLAdapterTestSuiteModule.cpp",
+      "language": "cpp",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/Private/RPCServerTest.cpp",
+      "language": "cpp",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterAsync.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterInputHelper.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterJson.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterLibrarian.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterModule.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterScribe.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterSettings.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterSpace.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/MLAdapterTypes.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/RPCWrapper/MsgPack.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/RPCWrapper/rpclib_includes.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/RPCWrapper/Server.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_AIPerception.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Attribute.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Camera.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_EnhancedInput.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Input.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor_Movement.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sensors/MLAdapterSensor.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sessions/MLAdapterLocalDataCollectionSession.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Sessions/MLAdapterSession.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/MLAdapterTestSuite.Build.cs": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/Private/AgentTest.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/Private/MLAdapterTestSuiteModule.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapterTestSuite/Private/RPCServerTest.cpp": []
+  }
+}

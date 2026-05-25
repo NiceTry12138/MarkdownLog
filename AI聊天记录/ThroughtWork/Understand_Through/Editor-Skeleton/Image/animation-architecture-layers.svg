@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700">
+  <!-- Background -->
+  <rect width="900" height="700" fill="#1a1a2e"/>
+  
+  <!-- Title -->
+  <text x="450" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">UE 动画系统 5 层架构</text>
+  
+  <!-- Layer 5: Game Logic (Top) -->
+  <rect x="60" y="70" width="780" height="90" rx="8" fill="#2d4a1e" stroke="#6ab04c" stroke-width="2"/>
+  <text x="90" y="100" font-size="16" font-weight="bold" fill="#6ab04c" font-family="Arial, sans-serif">① 游戏逻辑层（Game Logic Layer）</text>
+  <text x="90" y="122" font-size="13" fill="#a8d880" font-family="Arial, sans-serif">C++/Blueprint 代码 · Character/Pawn · 调用 PlayMontage / SetVariable · 触发状态变更</text>
+  <text x="90" y="142" font-size="12" fill="#80b060" font-family="Arial, sans-serif">关键类：ACharacter, APawn, UGameplayAbility</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="450" y1="160" x2="450" y2="180" stroke="#888" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Layer 4: AnimInstance -->
+  <rect x="60" y="182" width="780" height="90" rx="8" fill="#1e2d4a" stroke="#4c7ab0" stroke-width="2"/>
+  <text x="90" y="212" font-size="16" font-weight="bold" fill="#4c9bff" font-family="Arial, sans-serif">② 动画实例层（AnimInstance Layer）</text>
+  <text x="90" y="234" font-size="13" fill="#80b0e0" font-family="Arial, sans-serif">UAnimInstance · UAnimBlueprintGeneratedClass · FAnimInstanceProxy</text>
+  <text x="90" y="254" font-size="12" fill="#608090" font-family="Arial, sans-serif">管理 Montage、曲线、变量状态 · Update/Evaluate 入口 · 线程安全更新</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="450" y1="272" x2="450" y2="292" stroke="#888" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Layer 3: AnimGraph -->
+  <rect x="60" y="294" width="780" height="110" rx="8" fill="#2d1e4a" stroke="#b04cb0" stroke-width="2"/>
+  <text x="90" y="324" font-size="16" font-weight="bold" fill="#c080ff" font-family="Arial, sans-serif">③ 动画图层（AnimGraph Layer）</text>
+  <text x="90" y="346" font-size="13" fill="#c0a0e0" font-family="Arial, sans-serif">FAnimNode_StateMachine · FAnimNode_BlendSpacePlayer · FAnimNode_LinkedAnimLayer</text>
+  <text x="90" y="366" font-size="13" fill="#c0a0e0" font-family="Arial, sans-serif">FAnimNode_SaveCachedPose · Slot Node · AnimGraph 节点图</text>
+  <text x="90" y="386" font-size="12" fill="#907090" font-family="Arial, sans-serif">计算各骨骼的 LocalSpace Transform · 生成 FCompactPose</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="450" y1="404" x2="450" y2="424" stroke="#888" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Layer 2: Skeleton Control -->
+  <rect x="60" y="426" width="780" height="90" rx="8" fill="#4a2d1e" stroke="#b07040" stroke-width="2"/>
+  <text x="90" y="456" font-size="16" font-weight="bold" fill="#ffa060" font-family="Arial, sans-serif">④ 骨骼控制层（Skeletal Control Layer）</text>
+  <text x="90" y="478" font-size="13" fill="#e0c080" font-family="Arial, sans-serif">FAnimNode_SkeletalControlBase · TwoBoneIK · CCDIK · SplineIK · LookAt</text>
+  <text x="90" y="498" font-size="12" fill="#906040" font-family="Arial, sans-serif">在 ComponentSpace 下修改骨骼 Transform · IK 求解 · 物理叠加</text>
+
+  <!-- Arrow 4→5 -->
+  <line x1="450" y1="516" x2="450" y2="536" stroke="#888" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Layer 1: SkeletalMeshComponent (Bottom) -->
+  <rect x="60" y="538" width="780" height="90" rx="8" fill="#4a1e1e" stroke="#b04040" stroke-width="2"/>
+  <text x="90" y="568" font-size="16" font-weight="bold" fill="#ff6060" font-family="Arial, sans-serif">⑤ 渲染驱动层（Rendering Layer）</text>
+  <text x="90" y="590" font-size="13" fill="#e08080" font-family="Arial, sans-serif">USkeletalMeshComponent · RefreshBoneTransforms · FSkeletalMeshRenderData</text>
+  <text x="90" y="610" font-size="12" fill="#905050" font-family="Arial, sans-serif">将最终 FCompactPose 写入 BoneSpaceTransforms · 提交 GPU · 驱动蒙皮渲染</text>
+
+  <!-- Side labels -->
+  <text x="860" y="115" text-anchor="middle" font-size="11" fill="#888" transform="rotate(-90,860,115)">GameThread</text>
+  <text x="875" y="300" text-anchor="middle" font-size="11" fill="#aaa" transform="rotate(-90,875,300)">Worker Thread</text>
+  <text x="860" y="580" text-anchor="middle" font-size="11" fill="#888" transform="rotate(-90,860,580)">GameThread/RenderThread</text>
+
+  <!-- Bracket lines -->
+  <line x1="852" y1="70" x2="852" y2="160" stroke="#666" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="850" y1="182" x2="850" y2="514" stroke="#888" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="852" y1="538" x2="852" y2="628" stroke="#666" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- Legend -->
+  <rect x="60" y="645" width="20" height="14" fill="#2d4a1e" stroke="#6ab04c"/>
+  <text x="86" y="658" font-size="12" fill="#ccc" font-family="Arial, sans-serif">主线程（游戏逻辑）</text>
+  <rect x="230" y="645" width="20" height="14" fill="#1e2d4a" stroke="#4c7ab0"/>
+  <text x="256" y="658" font-size="12" fill="#ccc" font-family="Arial, sans-serif">可工作线程</text>
+  <rect x="380" y="645" width="20" height="14" fill="#4a1e1e" stroke="#b04040"/>
+  <text x="406" y="658" font-size="12" fill="#ccc" font-family="Arial, sans-serif">渲染线程</text>
+</svg>

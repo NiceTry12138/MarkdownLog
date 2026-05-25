@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterModule.cpp",
+      "language": "cpp",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterScribe.cpp",
+      "language": "cpp",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterSettings.cpp",
+      "language": "cpp",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterSpace.cpp",
+      "language": "cpp",
+      "sizeLines": 255,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterTypes.cpp",
+      "language": "cpp",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_AIPerception.cpp",
+      "language": "cpp",
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Attribute.cpp",
+      "language": "cpp",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Camera.cpp",
+      "language": "cpp",
+      "sizeLines": 215,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_EnhancedInput.cpp",
+      "language": "cpp",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Input.cpp",
+      "language": "cpp",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Movement.cpp",
+      "language": "cpp",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor.cpp",
+      "language": "cpp",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sessions/MLAdapterLocalDataCollectionSession.cpp",
+      "language": "cpp",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sessions/MLAdapterSession.cpp",
+      "language": "cpp",
+      "sizeLines": 623,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator_Camera.h",
+      "language": "c",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator_EnhancedInput.h",
+      "language": "c",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator_InputKey.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Agents/MLAdapterAgent_Inference.h",
+      "language": "c",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Agents/MLAdapterAgent.h",
+      "language": "c",
+      "sizeLines": 245,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Agents/MLAdapterAgentElement.h",
+      "language": "c",
+      "sizeLines": 113,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Debug/DebugHelpers.h",
+      "language": "c",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Debug/GameplayDebuggerCategory_MLAdapter.h",
+      "language": "c",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Managers/MLAdapterManager.h",
+      "language": "c",
+      "sizeLines": 223,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Managers/MLAdapterNoRPCManager.h",
+      "language": "c",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterModule.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterScribe.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterSettings.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterSpace.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/MLAdapterTypes.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_AIPerception.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Attribute.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Camera.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_EnhancedInput.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Input.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor_Movement.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sensors/MLAdapterSensor.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sessions/MLAdapterLocalDataCollectionSession.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Private/Sessions/MLAdapterSession.cpp": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator_Camera.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator_EnhancedInput.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator_InputKey.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Actuators/MLAdapterActuator.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Agents/MLAdapterAgent_Inference.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Agents/MLAdapterAgent.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Agents/MLAdapterAgentElement.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Debug/DebugHelpers.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Debug/GameplayDebuggerCategory_MLAdapter.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Managers/MLAdapterManager.h": [],
+    "Plugins/AI/MLAdapter/Source/MLAdapter/Public/Managers/MLAdapterNoRPCManager.h": []
+  }
+}

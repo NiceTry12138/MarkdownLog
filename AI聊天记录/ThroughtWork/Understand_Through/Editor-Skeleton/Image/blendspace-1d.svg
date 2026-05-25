@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="480" viewBox="0 0 860 480">
+  <rect width="860" height="480" fill="#12121f"/>
+  <text x="430" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">BlendSpace 1D：线性插值算法</text>
+
+  <!-- Horizontal axis -->
+  <line x1="60" y1="200" x2="780" y2="200" stroke="#444" stroke-width="2"/>
+  <text x="780" y="215" font-size="12" fill="#888" font-family="Arial, sans-serif">轴</text>
+  <text x="50" y="215" font-size="11" fill="#888" font-family="Arial, sans-serif">0.0</text>
+  <text x="780" y="215" font-size="11" text-anchor="end" fill="#888" font-family="Arial, sans-serif">1.0（归一化坐标）</text>
+
+  <!-- Sample points -->
+  <circle cx="120" cy="200" r="10" fill="#4060a0" stroke="#80a0e0" stroke-width="2"/>
+  <text x="120" y="228" text-anchor="middle" font-size="11" fill="#80a0e0" font-family="Arial, sans-serif">Idle</text>
+  <text x="120" y="240" text-anchor="middle" font-size="10" fill="#606080" font-family="Arial, sans-serif">Speed=0</text>
+
+  <circle cx="300" cy="200" r="10" fill="#4060a0" stroke="#80a0e0" stroke-width="2"/>
+  <text x="300" y="228" text-anchor="middle" font-size="11" fill="#80a0e0" font-family="Arial, sans-serif">Walk</text>
+  <text x="300" y="240" text-anchor="middle" font-size="10" fill="#606080" font-family="Arial, sans-serif">Speed=150</text>
+
+  <circle cx="500" cy="200" r="10" fill="#4060a0" stroke="#80a0e0" stroke-width="2"/>
+  <text x="500" y="228" text-anchor="middle" font-size="11" fill="#80a0e0" font-family="Arial, sans-serif">Jog</text>
+  <text x="500" y="240" text-anchor="middle" font-size="10" fill="#606080" font-family="Arial, sans-serif">Speed=300</text>
+
+  <circle cx="700" cy="200" r="10" fill="#4060a0" stroke="#80a0e0" stroke-width="2"/>
+  <text x="700" y="228" text-anchor="middle" font-size="11" fill="#80a0e0" font-family="Arial, sans-serif">Sprint</text>
+  <text x="700" y="240" text-anchor="middle" font-size="10" fill="#606080" font-family="Arial, sans-serif">Speed=600</text>
+
+  <!-- Segment lines between samples -->
+  <line x1="120" y1="200" x2="300" y2="200" stroke="#4060a0" stroke-width="2.5"/>
+  <line x1="300" y1="200" x2="500" y2="200" stroke="#4060a0" stroke-width="2.5"/>
+  <line x1="500" y1="200" x2="700" y2="200" stroke="#4060a0" stroke-width="2.5"/>
+
+  <!-- Query point P -->
+  <circle cx="380" cy="200" r="10" fill="#ff8040" stroke="#ffa060" stroke-width="2"/>
+  <line x1="380" y1="175" x2="380" y2="140" stroke="#ff8040" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="380" y="135" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa060" font-family="Arial, sans-serif">P（查询点）</text>
+  <text x="380" y="120" text-anchor="middle" font-size="11" fill="#c06030" font-family="Arial, sans-serif">Speed=200（归一化后约0.44）</text>
+
+  <!-- P0 and P1 labels -->
+  <line x1="300" y1="175" x2="300" y2="155" stroke="#80a0e0" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="300" y="150" text-anchor="middle" font-size="11" fill="#80a0e0" font-family="Arial, sans-serif">P₀ = Walk</text>
+
+  <line x1="500" y1="175" x2="500" y2="155" stroke="#80a0e0" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="500" y="150" text-anchor="middle" font-size="11" fill="#80a0e0" font-family="Arial, sans-serif">P₁ = Jog</text>
+
+  <!-- Formula block -->
+  <rect x="60" y="262" width="730" height="190" rx="8" fill="#1e1e2d" stroke="#5060a0" stroke-width="1.5"/>
+  <text x="430" y="286" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0ff" font-family="Arial, sans-serif">源码 GetSamples1D() 计算公式（BlendSpace.cpp ~2750行）</text>
+
+  <text x="80" y="312" font-size="13" fill="#c0c0ff" font-family="Arial, sans-serif">步骤 1：归一化输入  P_norm = (P - Min) / (Max - Min)</text>
+
+  <text x="80" y="336" font-size="13" fill="#c0c0ff" font-family="Arial, sans-serif">步骤 2：二分搜索 Segments 数组，找到满足 Seg.Vertices[0] ≤ P_norm ≤ Seg.Vertices[1] 的段</text>
+
+  <text x="80" y="360" font-size="13" fill="#e0e080" font-family="Arial, sans-serif">步骤 3：计算插值因子</text>
+  <text x="100" y="380" font-size="13" fill="#e0e080" font-family="monospace">  Frac = Clamp( (P - P₀) / (P₁ - P₀),  0, 1 )</text>
+
+  <text x="80" y="404" font-size="13" fill="#80e080" font-family="Arial, sans-serif">步骤 4：输出两个加权样本</text>
+  <text x="100" y="424" font-size="13" fill="#80e080" font-family="monospace">  weight₀ = 1 - Frac    （P₀ = Walk 动画）</text>
+  <text x="100" y="442" font-size="13" fill="#80e080" font-family="monospace">  weight₁ = Frac        （P₁ = Jog 动画）</text>
+
+  <!-- Example values -->
+  <rect x="500" y="355" width="280" height="80" rx="6" fill="#1a2a1a" stroke="#4a6a4a" stroke-width="1"/>
+  <text x="640" y="373" text-anchor="middle" font-size="11" font-weight="bold" fill="#80c080" font-family="Arial, sans-serif">示例：P=200，P₀=150，P₁=300</text>
+  <text x="640" y="391" text-anchor="middle" font-size="11" fill="#60a060" font-family="Arial, sans-serif">Frac = (200-150)/(300-150) = 0.333</text>
+  <text x="640" y="408" text-anchor="middle" font-size="11" fill="#60a060" font-family="Arial, sans-serif">Walk权重 = 0.667，Jog权重 = 0.333</text>
+  <text x="640" y="425" text-anchor="middle" font-size="10" fill="#407040" font-family="Arial, sans-serif">最终Pose = 0.667×Walk + 0.333×Jog</text>
+</svg>

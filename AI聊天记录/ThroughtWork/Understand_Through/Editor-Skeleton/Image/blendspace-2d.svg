@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="540" viewBox="0 0 860 540">
+  <rect width="860" height="540" fill="#12121f"/>
+  <text x="430" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">BlendSpace 2D：三角剖分 + 重心坐标算法</text>
+
+  <!-- Grid area -->
+  <rect x="40" y="50" width="380" height="330" rx="6" fill="#181828" stroke="#333" stroke-width="1.5"/>
+  <text x="230" y="72" text-anchor="middle" font-size="13" font-weight="bold" fill="#8080c0" font-family="Arial, sans-serif">二维 BlendSpace（Delaunay 三角剖分）</text>
+
+  <!-- Grid lines (subtle) -->
+  <line x1="40" y1="170" x2="420" y2="170" stroke="#222" stroke-width="1"/>
+  <line x1="40" y1="270" x2="420" y2="270" stroke="#222" stroke-width="1"/>
+  <line x1="135" y1="50" x2="135" y2="380" stroke="#222" stroke-width="1"/>
+  <line x1="230" y1="50" x2="230" y2="380" stroke="#222" stroke-width="1"/>
+  <line x1="325" y1="50" x2="325" y2="380" stroke="#222" stroke-width="1"/>
+
+  <!-- Sample points (BlendSamples) -->
+  <!-- A: StandStill -->
+  <circle cx="140" cy="275" r="8" fill="#4060b0" stroke="#80a0ff" stroke-width="1.5"/>
+  <text x="140" y="296" text-anchor="middle" font-size="10" fill="#80a0ff" font-family="Arial, sans-serif">Idle</text>
+  <text x="140" y="308" text-anchor="middle" font-size="9" fill="#506090" font-family="Arial, sans-serif">(0,0)</text>
+
+  <!-- B: WalkFwd -->
+  <circle cx="230" cy="165" r="8" fill="#4060b0" stroke="#80a0ff" stroke-width="1.5"/>
+  <text x="230" y="152" text-anchor="middle" font-size="10" fill="#80a0ff" font-family="Arial, sans-serif">WalkFwd</text>
+  <text x="230" y="140" text-anchor="middle" font-size="9" fill="#506090" font-family="Arial, sans-serif">(0,150)</text>
+
+  <!-- C: WalkRight -->
+  <circle cx="330" cy="275" r="8" fill="#4060b0" stroke="#80a0ff" stroke-width="1.5"/>
+  <text x="330" y="296" text-anchor="middle" font-size="10" fill="#80a0ff" font-family="Arial, sans-serif">WalkRight</text>
+  <text x="330" y="308" text-anchor="middle" font-size="9" fill="#506090" font-family="Arial, sans-serif">(150,0)</text>
+
+  <!-- D: WalkDiag -->
+  <circle cx="330" cy="165" r="8" fill="#4060b0" stroke="#80a0ff" stroke-width="1.5"/>
+  <text x="355" y="162" text-anchor="start" font-size="10" fill="#80a0ff" font-family="Arial, sans-serif">WalkDiag</text>
+  <text x="355" y="172" text-anchor="start" font-size="9" fill="#506090" font-family="Arial, sans-serif">(150,150)</text>
+
+  <!-- E: WalkLeft -->
+  <circle cx="60" cy="275" r="8" fill="#4060b0" stroke="#80a0ff" stroke-width="1.5"/>
+  <text x="60" y="296" text-anchor="middle" font-size="10" fill="#80a0ff" font-family="Arial, sans-serif">WalkLeft</text>
+  <text x="60" y="308" text-anchor="middle" font-size="9" fill="#506090" font-family="Arial, sans-serif">(-150,0)</text>
+
+  <!-- F: WalkBack -->
+  <circle cx="140" cy="355" r="8" fill="#4060b0" stroke="#80a0ff" stroke-width="1.5"/>
+  <text x="140" y="375" text-anchor="middle" font-size="10" fill="#80a0ff" font-family="Arial, sans-serif">WalkBack</text>
+  <text x="140" y="387" text-anchor="middle" font-size="9" fill="#506090" font-family="Arial, sans-serif">(0,-100)</text>
+
+  <!-- Triangle 1: A-B-C (highlighted) -->
+  <polygon points="140,275 230,165 330,275" fill="rgba(255,160,50,0.15)" stroke="#ffa030" stroke-width="2"/>
+  <!-- Triangle 2: B-C-D -->
+  <polygon points="230,165 330,165 330,275" fill="rgba(80,140,255,0.1)" stroke="#5090e0" stroke-width="1.5"/>
+  <!-- Triangle 3: A-E-B rough -->
+  <polygon points="140,275 60,275 230,165" fill="rgba(100,200,100,0.08)" stroke="#60a060" stroke-width="1" stroke-dasharray="3,2"/>
+  <!-- Triangle 4: A-B-F -->
+  <polygon points="140,275 230,165 140,355" fill="rgba(200,80,200,0.08)" stroke="#c060c0" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- Query point P -->
+  <circle cx="235" cy="240" r="9" fill="#ff4060" stroke="#ff80a0" stroke-width="2"/>
+  <text x="235" y="227" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff80a0" font-family="Arial, sans-serif">P</text>
+
+  <!-- Barycentric dashed lines to vertices of containing triangle -->
+  <line x1="235" y1="240" x2="140" y2="275" stroke="#ffa030" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="235" y1="240" x2="230" y2="165" stroke="#ffa030" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="235" y1="240" x2="330" y2="275" stroke="#ffa030" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Axis labels -->
+  <text x="415" y="230" text-anchor="end" font-size="10" fill="#555" font-family="Arial, sans-serif">Y轴（前进速度）</text>
+  <text x="230" y="398" text-anchor="middle" font-size="10" fill="#555" font-family="Arial, sans-serif">X轴（侧移速度）</text>
+
+  <!-- ===== Formula block ===== -->
+  <rect x="450" y="50" width="380" height="330" rx="8" fill="#1e1e2d" stroke="#5060a0" stroke-width="1.5"/>
+  <text x="640" y="74" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0ff" font-family="Arial, sans-serif">重心坐标计算公式</text>
+
+  <text x="470" y="100" font-size="12" fill="#c0c0ff" font-family="Arial, sans-serif">含P的三角形：顶点 V₀, V₁, V₂</text>
+  <text x="470" y="118" font-size="12" fill="#c0c0ff" font-family="Arial, sans-serif">（即上图橙色高亮三角形：A, B, C）</text>
+
+  <text x="470" y="145" font-size="12" fill="#e0e080" font-family="Arial, sans-serif">重心坐标定义：</text>
+  <text x="490" y="163" font-size="12" fill="#e0e080" font-family="monospace">P = λ₀V₀ + λ₁V₁ + λ₂V₂</text>
+  <text x="490" y="180" font-size="12" fill="#e0e080" font-family="monospace">λ₀ + λ₁ + λ₂ = 1</text>
+
+  <text x="470" y="207" font-size="12" fill="#80e080" font-family="Arial, sans-serif">三角面积法求解：</text>
+  <text x="490" y="225" font-size="11" fill="#80e080" font-family="monospace">S  = Area(V₀, V₁, V₂)</text>
+  <text x="490" y="242" font-size="11" fill="#80e080" font-family="monospace">λ₀ = Area(P,  V₁, V₂) / S</text>
+  <text x="490" y="259" font-size="11" fill="#80e080" font-family="monospace">λ₁ = Area(V₀, P,  V₂) / S</text>
+  <text x="490" y="276" font-size="11" fill="#80e080" font-family="monospace">λ₂ = 1 - λ₀ - λ₁</text>
+
+  <text x="470" y="303" font-size="12" fill="#ffa060" font-family="Arial, sans-serif">最终混合 Pose：</text>
+  <text x="490" y="321" font-size="11" fill="#ffa060" font-family="monospace">Pose = λ₀·PoseA + λ₁·PoseB + λ₂·PoseC</text>
+  <text x="490" y="338" font-size="10" fill="#806040" font-family="Arial, sans-serif">（对应 Idle, WalkFwd, WalkRight）</text>
+
+  <text x="470" y="365" font-size="11" fill="#808080" font-family="Arial, sans-serif">源码路径：GetSamples2D() 在 BlendSpace.cpp ~2769</text>
+  <text x="470" y="380" font-size="10" fill="#606060" font-family="Arial, sans-serif">边法线检测跨三角形，保证收敛（凸区域）</text>
+
+  <!-- ===== Bottom note ===== -->
+  <rect x="40" y="396" width="790" height="120" rx="6" fill="#1a1a1a" stroke="#444" stroke-width="1"/>
+  <text x="435" y="418" text-anchor="middle" font-size="13" font-weight="bold" fill="#aaa" font-family="Arial, sans-serif">GetSamples2D 算法核心：边法线增量搜索</text>
+  <text x="435" y="438" text-anchor="middle" font-size="11" fill="#888" font-family="Arial, sans-serif">每帧缓存上一帧的三角形索引 InOutTriangleIndex，从缓存位置开始搜索，避免全局遍历</text>
+  <text x="435" y="455" text-anchor="middle" font-size="11" fill="#888" font-family="Arial, sans-serif">对三角形每条边计算 Distance = (P - Corner) · EdgeNormal，找最大正值边 → 跳到相邻三角形</text>
+  <text x="435" y="472" text-anchor="middle" font-size="11" fill="#888" font-family="Arial, sans-serif">若 P 在所有边内侧（Distance ≤ 0）→ 找到包含三角形，输出 3 个加权 FWeightedBlendSample</text>
+  <text x="435" y="490" text-anchor="middle" font-size="10" fill="#666" font-family="Arial, sans-serif">特殊处理：单样本 → weight=1；两样本共线 → T=(P-V0)·Δ/|Δ|² 线性插值；边界外 → 投影到最近边</text>
+  <text x="435" y="507" text-anchor="middle" font-size="10" fill="#555" font-family="Arial, sans-serif">TargetWeightInterpolationSpeedPerSec &gt; 0 时：额外对 weight 进行跨帧平滑，防止闪烁，再 NormalizeDataWeight()</text>
+</svg>

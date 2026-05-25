@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#89b4fa"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a6e3a1"/>
+    </marker>
+    <marker id="arrRed" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f38ba8"/>
+    </marker>
+  </defs>
+  <rect width="900" height="480" fill="#1e1e2e" rx="12"/>
+  <text x="450" y="30" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold" font-family="Arial">节点右键菜单 + 连线验证流程</text>
+
+  <!-- ====== TOP: 右键菜单 ====== -->
+  <!-- User action box -->
+  <rect x="30" y="50" width="180" height="50" rx="6" fill="#313244" stroke="#585b70" stroke-width="1.5"/>
+  <text x="120" y="70" text-anchor="middle" fill="#cdd6f4" font-size="11" font-weight="bold" font-family="Arial">用户右键点击空白处</text>
+  <text x="120" y="87" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">SGraphPanel::OnMouseButtonDown</text>
+
+  <line x1="210" y1="75" x2="250" y2="75" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- SBlueprintActionMenu -->
+  <rect x="250" y="50" width="200" height="50" rx="6" fill="#1e3a5f" stroke="#4A90D9" stroke-width="2"/>
+  <text x="350" y="70" text-anchor="middle" fill="#89b4fa" font-size="11" font-weight="bold" font-family="Arial">SBlueprintActionMenu</text>
+  <text x="350" y="87" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">弹出菜单 Widget，含搜索框</text>
+
+  <line x1="450" y1="75" x2="490" y2="75" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- BlueprintActionMenuBuilder -->
+  <rect x="490" y="50" width="230" height="50" rx="6" fill="#1a3d2e" stroke="#40a857" stroke-width="2"/>
+  <text x="605" y="70" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">FBlueprintActionMenuBuilder</text>
+  <text x="605" y="87" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">AddContextMenuSection(Context)</text>
+
+  <line x1="720" y1="75" x2="760" y2="75" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- BlueprintActionDatabase -->
+  <rect x="760" y="50" width="110" height="50" rx="6" fill="#2a1a3d" stroke="#cba6f7" stroke-width="2"/>
+  <text x="815" y="70" text-anchor="middle" fill="#cba6f7" font-size="11" font-weight="bold" font-family="Arial">Action DB</text>
+  <text x="815" y="87" text-anchor="middle" fill="#a6adc8" font-size="9" font-family="Arial">所有 Spawner</text>
+
+  <!-- Arrow down from ActionDB -->
+  <line x1="815" y1="100" x2="815" y2="130" stroke="#cba6f7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Filter -->
+  <rect x="620" y="130" width="220" height="50" rx="6" fill="#3d2a1a" stroke="#fab387" stroke-width="2"/>
+  <text x="730" y="150" text-anchor="middle" fill="#fab387" font-size="11" font-weight="bold" font-family="Arial">FBlueprintActionFilter</text>
+  <text x="730" y="167" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">过滤: Blueprint+Graph+Pin 上下文</text>
+
+  <line x1="730" y1="180" x2="730" y2="210" stroke="#fab387" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="815" y1="130" x2="730" y2="130" stroke="#cba6f7" stroke-width="1.5"/>
+
+  <!-- Filtered results shown in menu -->
+  <rect x="560" y="210" width="350" height="50" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="735" y="230" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">过滤后的菜单项列表</text>
+  <text x="735" y="247" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">TArray&lt;FBlueprintActionMenuItem&gt;  — 用户选择后 Spawn 节点</text>
+
+  <!-- ====== DIVIDER ====== -->
+  <line x1="30" y1="280" x2="870" y2="280" stroke="#45475a" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="450" y="272" text-anchor="middle" fill="#585b70" font-size="10" font-family="Arial">—————— 拖拽连线验证 (CanCreateConnection) ——————</text>
+
+  <!-- ====== BOTTOM: 连线验证 ====== -->
+  <!-- 用户开始拖拽 -->
+  <rect x="30" y="292" width="165" height="50" rx="6" fill="#313244" stroke="#585b70" stroke-width="1.5"/>
+  <text x="112" y="312" text-anchor="middle" fill="#cdd6f4" font-size="11" font-weight="bold" font-family="Arial">用户拖拽 Pin</text>
+  <text x="112" y="328" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">SGraphPin::OnMouseDrag</text>
+
+  <line x1="195" y1="317" x2="230" y2="317" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- CanCreateConnection -->
+  <rect x="230" y="292" width="280" height="70" rx="6" fill="#3d1a1a" stroke="#f38ba8" stroke-width="2"/>
+  <text x="370" y="312" text-anchor="middle" fill="#f38ba8" font-size="11" font-weight="bold" font-family="Arial">UEdGraphSchema_K2::CanCreateConnection</text>
+  <text x="370" y="328" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">检查1: 方向 (Input ↔ Output)</text>
+  <text x="370" y="344" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">检查2: PinType 兼容性</text>
+  <text x="370" y="358" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">检查3: 不能是同一节点的Pin</text>
+
+  <!-- 返回结果 -->
+  <line x1="510" y1="327" x2="560" y2="327" stroke="#89b4fa" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="560" y="292" width="310" height="70" rx="6" fill="#1a3d2e" stroke="#40a857" stroke-width="2"/>
+  <text x="715" y="312" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">FPinConnectionResponse</text>
+  <text x="715" y="330" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">✅ CONNECT_RESPONSE_MAKE</text>
+  <text x="715" y="346" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">❌ CONNECT_RESPONSE_DISALLOW (+ Message)</text>
+  <text x="715" y="362" text-anchor="middle" fill="#cdd6f4" font-size="10" font-family="Arial">⚠️ CONNECT_RESPONSE_BREAK_OTHERS</text>
+
+  <!-- 成功连线 -->
+  <line x1="370" y1="362" x2="370" y2="395" stroke="#a6e3a1" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+
+  <rect x="230" y="395" width="280" height="50" rx="6" fill="#264d37" stroke="#40a857" stroke-width="1.5"/>
+  <text x="370" y="415" text-anchor="middle" fill="#a6e3a1" font-size="11" font-weight="bold" font-family="Arial">UEdGraphPin::MakeLinkTo(OtherPin)</text>
+  <text x="370" y="432" text-anchor="middle" fill="#a6adc8" font-size="10" font-family="Arial">A.LinkedTo.Add(B)  +  B.LinkedTo.Add(A)</text>
+
+  <!-- Type compatibility detail -->
+  <rect x="30" y="370" width="190" height="100" rx="6" fill="#181825" stroke="#45475a" stroke-width="1"/>
+  <text x="125" y="387" text-anchor="middle" fill="#a6adc8" font-size="10" font-weight="bold" font-family="Arial">PinType 类型检查规则</text>
+  <text x="45" y="403" fill="#cdd6f4" font-size="9" font-family="Arial">• exec ↔ exec (流控线)</text>
+  <text x="45" y="418" fill="#cdd6f4" font-size="9" font-family="Arial">• bool → bool / int → int</text>
+  <text x="45" y="433" fill="#cdd6f4" font-size="9" font-family="Arial">• Child ← Parent (类型提升)</text>
+  <text x="45" y="448" fill="#cdd6f4" font-size="9" font-family="Arial">• Wildcard 可连任意类型</text>
+  <text x="45" y="463" fill="#cdd6f4" font-size="9" font-family="Arial">• Array ≠ 非Array (不兼容)</text>
+</svg>

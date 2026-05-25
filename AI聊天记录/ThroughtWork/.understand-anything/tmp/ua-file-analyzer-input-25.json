@@ -1,0 +1,35 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Source/Runtime/SymsLib/BuildForLinux.sh",
+      "language": "shell",
+      "sizeLines": 89,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Source/Runtime/SymsLib/BuildForMac.sh",
+      "language": "shell",
+      "sizeLines": 55,
+      "fileCategory": "script"
+    },
+    {
+      "path": "Source/Runtime/SymsLib/CMakeLists.txt",
+      "language": "txt",
+      "sizeLines": 9,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "Source/Runtime/SymsLib/SymsLib.sln",
+      "language": "sln",
+      "sizeLines": 31,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "Source/Runtime/SymsLib/BuildForLinux.sh": [],
+    "Source/Runtime/SymsLib/BuildForMac.sh": [],
+    "Source/Runtime/SymsLib/CMakeLists.txt": [],
+    "Source/Runtime/SymsLib/SymsLib.sln": []
+  }
+}

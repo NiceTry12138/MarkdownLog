@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="500" viewBox="0 0 860 500">
+  <rect width="860" height="500" fill="#12121f"/>
+  <text x="430" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">Montage 混合与 Slot 系统</text>
+
+  <!-- Timeline at top -->
+  <text x="50" y="65" font-size="13" fill="#888" font-family="Arial, sans-serif">时间线：</text>
+  <line x1="120" y1="60" x2="800" y2="60" stroke="#444" stroke-width="2"/>
+  <line x1="120" y1="55" x2="120" y2="65" stroke="#888" stroke-width="1.5"/>
+  <line x1="800" y1="55" x2="800" y2="65" stroke="#888" stroke-width="1.5"/>
+  <text x="120" y="78" text-anchor="middle" font-size="10" fill="#666" font-family="Arial, sans-serif">t=0</text>
+  <text x="800" y="78" text-anchor="middle" font-size="10" fill="#666" font-family="Arial, sans-serif">t=end</text>
+
+  <!-- BlendIn -->
+  <rect x="120" y="85" width="160" height="30" rx="4" fill="#1e4a2d" stroke="#4ab04a"/>
+  <text x="200" y="104" text-anchor="middle" font-size="11" fill="#80d080" font-family="Arial, sans-serif">Blend-In 阶段</text>
+  
+  <!-- Playing -->
+  <rect x="280" y="85" width="360" height="30" rx="4" fill="#1e2d4a" stroke="#4a80b0"/>
+  <text x="460" y="104" text-anchor="middle" font-size="11" fill="#80b0e0" font-family="Arial, sans-serif">正常播放阶段</text>
+
+  <!-- BlendOut -->
+  <rect x="640" y="85" width="160" height="30" rx="4" fill="#4a2d1e" stroke="#b07040"/>
+  <text x="720" y="104" text-anchor="middle" font-size="11" fill="#e0a060" font-family="Arial, sans-serif">Blend-Out 阶段</text>
+
+  <!-- Weight curve -->
+  <text x="50" y="145" font-size="12" fill="#aaa" font-family="Arial, sans-serif">混合权重 Weight：</text>
+  <polyline points="120,185 200,140 280,135 640,135 720,185 800,185" fill="none" stroke="#60d060" stroke-width="2.5"/>
+  <line x1="120" y1="195" x2="800" y2="195" stroke="#333" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="110" y="143" text-anchor="end" font-size="11" fill="#60d060" font-family="Arial, sans-serif">1.0</text>
+  <text x="110" y="198" text-anchor="end" font-size="11" fill="#606060" font-family="Arial, sans-serif">0.0</text>
+
+  <!-- FAlphaBlend description -->
+  <rect x="50" y="210" width="360" height="90" rx="6" fill="#1e2d1e" stroke="#4a804a" stroke-width="1.5"/>
+  <text x="230" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#80c080" font-family="Arial, sans-serif">FAlphaBlend（源码中的 Weight 计算）</text>
+  <text x="230" y="250" text-anchor="middle" font-size="11" fill="#608060" font-family="Arial, sans-serif">BlendIn:  Alpha = ElapsedTime / BlendInTime</text>
+  <text x="230" y="265" text-anchor="middle" font-size="11" fill="#608060" font-family="Arial, sans-serif">BlendOut: Alpha = 1 - (RemainTime / BlendOutTime)</text>
+  <text x="230" y="280" text-anchor="middle" font-size="10" fill="#406040" font-family="Arial, sans-serif">BlendOption 决定插值曲线（Linear/Cubic/Sin 等）</text>
+  <text x="230" y="294" text-anchor="middle" font-size="10" fill="#406040" font-family="Arial, sans-serif">FAlphaBlend::Update(DeltaTime) 每帧在 Proxy::UpdateMontage 中调用</text>
+
+  <!-- Slot Node Accumulation -->
+  <rect x="450" y="210" width="370" height="120" rx="6" fill="#2d1e1e" stroke="#a04040" stroke-width="1.5"/>
+  <text x="635" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff8080" font-family="Arial, sans-serif">Slot 节点如何累积 Montage 贡献</text>
+  <text x="635" y="252" text-anchor="middle" font-size="11" fill="#c06060" font-family="Arial, sans-serif">每个 FAnimMontageInstance 有 Weight 字段</text>
+  <text x="635" y="268" text-anchor="middle" font-size="10" fill="#904040" font-family="Arial, sans-serif">SlotWeight = MontageWeight × NodeGlobalWeight</text>
+  <text x="635" y="284" text-anchor="middle" font-size="10" fill="#904040" font-family="Arial, sans-serif">最终 Pose = Lerp(BasePose, MontagePose, SlotWeight)</text>
+  <text x="635" y="300" text-anchor="middle" font-size="10" fill="#904040" font-family="Arial, sans-serif">多个 Montage 在同一 Slot 时：按权重累加归一化</text>
+  <text x="635" y="316" text-anchor="middle" font-size="10" fill="#703030" font-family="Arial, sans-serif">EMontageBlendMode: Standard（Weight混合）或 Inertialization（惯性化）</text>
+
+  <!-- Sections -->
+  <rect x="50" y="330" width="760" height="80" rx="6" fill="#1e1e2d" stroke="#6060a0" stroke-width="1.5"/>
+  <text x="430" y="352" text-anchor="middle" font-size="12" font-weight="bold" fill="#a0a0e0" font-family="Arial, sans-serif">Montage Section 系统（FCompositeSection）</text>
+  
+  <!-- Sections visual -->
+  <rect x="70" y="362" width="120" height="28" rx="4" fill="#2d2d4a" stroke="#6060a0"/>
+  <text x="130" y="379" text-anchor="middle" font-size="11" fill="#c0c0e0" font-family="Arial, sans-serif">Section: Start</text>
+  <line x1="190" y1="376" x2="220" y2="376" stroke="#6060a0" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <rect x="222" y="362" width="120" height="28" rx="4" fill="#2d2d4a" stroke="#6060a0"/>
+  <text x="282" y="379" text-anchor="middle" font-size="11" fill="#c0c0e0" font-family="Arial, sans-serif">Section: Main</text>
+  <path d="M 342 376 Q 360 340 380 376" fill="none" stroke="#80a0c0" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <text x="362" y="352" text-anchor="middle" font-size="10" fill="#808090" font-family="Arial, sans-serif">循环</text>
+  <rect x="502" y="362" width="120" height="28" rx="4" fill="#2d2d4a" stroke="#6060a0"/>
+  <text x="562" y="379" text-anchor="middle" font-size="11" fill="#c0c0e0" font-family="Arial, sans-serif">Section: End</text>
+  <text x="430" y="405" text-anchor="middle" font-size="10" fill="#606080" font-family="Arial, sans-serif">FCompositeSection.NextSectionName 决定跳转；Montage_SetNextSection() 可在运行时修改</text>
+
+  <!-- Slot track -->
+  <rect x="50" y="425" width="760" height="60" rx="6" fill="#1e1e1e" stroke="#444" stroke-width="1"/>
+  <text x="430" y="447" text-anchor="middle" font-size="12" font-weight="bold" fill="#888" font-family="Arial, sans-serif">FSlotAnimationTrack：SlotName（对应 Slot 节点名称） + FAnimTrack（多段 AnimSequence 时间片段）</text>
+  <text x="430" y="465" text-anchor="middle" font-size="11" fill="#666" font-family="Arial, sans-serif">一个 Montage 可有多个 Slot Track → 上半身 Slot + 全身 Slot 同时播放，实现叠加效果</text>
+
+  <defs>
+    <marker id="arrowGray" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#666"/></marker>
+  </defs>
+</svg>

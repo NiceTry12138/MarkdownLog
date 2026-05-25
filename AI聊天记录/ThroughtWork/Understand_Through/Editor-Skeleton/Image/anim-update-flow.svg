@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="620" viewBox="0 0 920 620">
+  <rect width="920" height="620" fill="#12121f"/>
+  <text x="460" y="36" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">UE 动画帧驱动流程（每帧执行路径）</text>
+
+  <!-- ===== GAME THREAD ===== -->
+  <rect x="10" y="55" width="900" height="22" rx="4" fill="#1e3a1e"/>
+  <text x="460" y="70" text-anchor="middle" font-size="13" fill="#6ab04c" font-family="Arial, sans-serif">游戏主线程（Game Thread）</text>
+
+  <!-- Step 1: SkeletalMeshComponent::TickComponent -->
+  <rect x="30" y="85" width="260" height="56" rx="6" fill="#1e2d4a" stroke="#4c7ab0" stroke-width="1.5"/>
+  <text x="160" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#88ccff" font-family="Arial, sans-serif">SkeletalMeshComponent</text>
+  <text x="160" y="122" text-anchor="middle" font-size="11" fill="#80a0c0" font-family="Arial, sans-serif">::TickComponent(DeltaTime)</text>
+  <text x="160" y="136" text-anchor="middle" font-size="10" fill="#607080" font-family="Arial, sans-serif">每帧由 UWorld 调度</text>
+
+  <line x1="290" y1="113" x2="330" y2="113" stroke="#4c7ab0" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+  <!-- Step 2: UpdateAnimation -->
+  <rect x="332" y="85" width="240" height="56" rx="6" fill="#1e2d4a" stroke="#4c7ab0" stroke-width="1.5"/>
+  <text x="452" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#88ccff" font-family="Arial, sans-serif">AnimInstance::UpdateAnimation</text>
+  <text x="452" y="122" text-anchor="middle" font-size="11" fill="#80a0c0" font-family="Arial, sans-serif">NativeUpdateAnimation()</text>
+  <text x="452" y="136" text-anchor="middle" font-size="10" fill="#607080" font-family="Arial, sans-serif">BlueprintUpdateAnimation() ← 主线程</text>
+
+  <line x1="572" y1="113" x2="612" y2="113" stroke="#4c7ab0" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+  <!-- Step 3: Dispatch to Worker -->
+  <rect x="614" y="85" width="270" height="56" rx="6" fill="#2d1e4a" stroke="#9060e0" stroke-width="1.5"/>
+  <text x="749" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#c090ff" font-family="Arial, sans-serif">FParallelAnimationTask</text>
+  <text x="749" y="122" text-anchor="middle" font-size="11" fill="#a070d0" font-family="Arial, sans-serif">派发到工作线程（TaskGraph）</text>
+  <text x="749" y="136" text-anchor="middle" font-size="10" fill="#806090" font-family="Arial, sans-serif">bUseMultiThreadedAnimationUpdate=true 时</text>
+
+  <!-- ===== WORKER THREAD ===== -->
+  <rect x="10" y="165" width="900" height="22" rx="4" fill="#3a1e1e"/>
+  <text x="460" y="180" text-anchor="middle" font-size="13" fill="#ffa060" font-family="Arial, sans-serif">工作线程（Worker Thread）</text>
+
+  <!-- WorkerThread Steps -->
+  <rect x="30" y="195" width="210" height="70" rx="6" fill="#4a2d1e" stroke="#b07040" stroke-width="1.5"/>
+  <text x="135" y="218" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa060" font-family="Arial, sans-serif">FAnimInstanceProxy</text>
+  <text x="135" y="234" text-anchor="middle" font-size="11" fill="#c08050" font-family="Arial, sans-serif">::UpdateAnimation_WithRoot</text>
+  <text x="135" y="250" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">1. NativeThreadSafeUpdateAnimation</text>
+  <text x="135" y="263" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">2. BlueprintThreadSafeUpdateAnimation</text>
+
+  <line x1="240" y1="230" x2="280" y2="230" stroke="#b07040" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+
+  <!-- State Machine Update -->
+  <rect x="282" y="195" width="190" height="70" rx="6" fill="#4a2d1e" stroke="#b07040" stroke-width="1.5"/>
+  <text x="377" y="218" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa060" font-family="Arial, sans-serif">UpdateAnimationNode</text>
+  <text x="377" y="234" text-anchor="middle" font-size="11" fill="#c08050" font-family="Arial, sans-serif">遍历 AnimGraph 节点树</text>
+  <text x="377" y="250" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">StateMachine::Update_AnyThread</text>
+  <text x="377" y="263" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">BlendSpacePlayer::UpdateAssetPlayer</text>
+
+  <line x1="472" y1="230" x2="512" y2="230" stroke="#b07040" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+
+  <!-- Montage Update -->
+  <rect x="514" y="195" width="200" height="70" rx="6" fill="#4a2d1e" stroke="#b07040" stroke-width="1.5"/>
+  <text x="614" y="218" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa060" font-family="Arial, sans-serif">Montage Update</text>
+  <text x="614" y="234" text-anchor="middle" font-size="11" fill="#c08050" font-family="Arial, sans-serif">Advance Montage Time</text>
+  <text x="614" y="250" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">更新 Slot Weight</text>
+  <text x="614" y="263" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">触发 AnimNotify</text>
+
+  <line x1="714" y1="230" x2="754" y2="230" stroke="#b07040" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+
+  <!-- Asset Player Tick -->
+  <rect x="756" y="195" width="130" height="70" rx="6" fill="#4a2d1e" stroke="#b07040" stroke-width="1.5"/>
+  <text x="821" y="218" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffa060" font-family="Arial, sans-serif">TickAssetPlayer</text>
+  <text x="821" y="234" text-anchor="middle" font-size="11" fill="#c08050" font-family="Arial, sans-serif">同步组同步</text>
+  <text x="821" y="250" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">推进时间轴</text>
+  <text x="821" y="263" text-anchor="middle" font-size="10" fill="#907040" font-family="Arial, sans-serif">SyncGroup Leader</text>
+
+  <!-- ===== EVALUATE ===== -->
+  <rect x="10" y="285" width="900" height="22" rx="4" fill="#1e1e3a"/>
+  <text x="460" y="300" text-anchor="middle" font-size="13" fill="#60c0ff" font-family="Arial, sans-serif">求值阶段（Evaluate Phase）</text>
+
+  <!-- EvaluateAnimation -->
+  <rect x="30" y="315" width="200" height="70" rx="6" fill="#1e2d4a" stroke="#4090c0" stroke-width="1.5"/>
+  <text x="130" y="338" text-anchor="middle" font-size="12" font-weight="bold" fill="#60b0ff" font-family="Arial, sans-serif">EvaluateAnimation</text>
+  <text x="130" y="354" text-anchor="middle" font-size="11" fill="#407090" font-family="Arial, sans-serif">_WithRoot()</text>
+  <text x="130" y="370" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">创建 FPoseContext</text>
+  <text x="130" y="383" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">ResetToRefPose</text>
+
+  <line x1="230" y1="350" x2="270" y2="350" stroke="#4090c0" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+
+  <!-- Run AnimGraph -->
+  <rect x="272" y="315" width="200" height="70" rx="6" fill="#1e2d4a" stroke="#4090c0" stroke-width="1.5"/>
+  <text x="372" y="338" text-anchor="middle" font-size="12" font-weight="bold" fill="#60b0ff" font-family="Arial, sans-serif">AnimGraph 求值</text>
+  <text x="372" y="354" text-anchor="middle" font-size="11" fill="#407090" font-family="Arial, sans-serif">OutputNode.Evaluate</text>
+  <text x="372" y="370" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">State → BlendSpace → Pose</text>
+  <text x="372" y="383" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">生成 LocalSpace FCompactPose</text>
+
+  <line x1="472" y1="350" x2="512" y2="350" stroke="#4090c0" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+
+  <!-- Slot Node Blend -->
+  <rect x="514" y="315" width="200" height="70" rx="6" fill="#1e2d4a" stroke="#4090c0" stroke-width="1.5"/>
+  <text x="614" y="338" text-anchor="middle" font-size="12" font-weight="bold" fill="#60b0ff" font-family="Arial, sans-serif">Slot 节点混合</text>
+  <text x="614" y="354" text-anchor="middle" font-size="11" fill="#407090" font-family="Arial, sans-serif">Montage Pose 叠加</text>
+  <text x="614" y="370" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">BlendWeight 加权</text>
+  <text x="614" y="383" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">输出混合 Pose</text>
+
+  <line x1="714" y1="350" x2="754" y2="350" stroke="#4090c0" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+
+  <!-- Skeletal Control -->
+  <rect x="756" y="315" width="130" height="70" rx="6" fill="#1e2d4a" stroke="#4090c0" stroke-width="1.5"/>
+  <text x="821" y="338" text-anchor="middle" font-size="12" font-weight="bold" fill="#60b0ff" font-family="Arial, sans-serif">骨骼控制</text>
+  <text x="821" y="354" text-anchor="middle" font-size="11" fill="#407090" font-family="Arial, sans-serif">IK 求解</text>
+  <text x="821" y="370" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">ComponentSpace</text>
+  <text x="821" y="383" text-anchor="middle" font-size="10" fill="#305060" font-family="Arial, sans-serif">Transform 修改</text>
+
+  <!-- ===== FINALIZE ===== -->
+  <rect x="10" y="405" width="900" height="22" rx="4" fill="#1e3a1e"/>
+  <text x="460" y="420" text-anchor="middle" font-size="13" fill="#6ab04c" font-family="Arial, sans-serif">最终化阶段（Finalize &amp; Submit）</text>
+
+  <!-- FinalizeAnimationUpdate -->
+  <rect x="130" y="435" width="240" height="70" rx="6" fill="#1e3a1e" stroke="#4a904a" stroke-width="1.5"/>
+  <text x="250" y="460" text-anchor="middle" font-size="12" font-weight="bold" fill="#80ff80" font-family="Arial, sans-serif">RefreshBoneTransforms</text>
+  <text x="250" y="476" text-anchor="middle" font-size="11" fill="#60c060" font-family="Arial, sans-serif">FCompactPose → BoneSpaceTransforms</text>
+  <text x="250" y="492" text-anchor="middle" font-size="10" fill="#407040" font-family="Arial, sans-serif">填充 ComponentSpaceTransforms</text>
+  <text x="250" y="505" text-anchor="middle" font-size="10" fill="#407040" font-family="Arial, sans-serif">触发 PostAnimEvaluation</text>
+
+  <line x1="370" y1="470" x2="430" y2="470" stroke="#4a904a" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+
+  <!-- Submit GPU -->
+  <rect x="432" y="435" width="240" height="70" rx="6" fill="#3a1e1e" stroke="#904040" stroke-width="1.5"/>
+  <text x="552" y="460" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff8080" font-family="Arial, sans-serif">FSkeletalMeshObject::Update</text>
+  <text x="552" y="476" text-anchor="middle" font-size="11" fill="#c06060" font-family="Arial, sans-serif">传输 Bone Matrix 到 GPU</text>
+  <text x="552" y="492" text-anchor="middle" font-size="10" fill="#904040" font-family="Arial, sans-serif">蒙皮顶点计算（Skinning Shader）</text>
+  <text x="552" y="505" text-anchor="middle" font-size="10" fill="#904040" font-family="Arial, sans-serif">渲染最终角色网格</text>
+
+  <!-- Summary box -->
+  <rect x="30" y="530" width="860" height="68" rx="6" fill="#1e1e1e" stroke="#555" stroke-width="1"/>
+  <text x="460" y="550" text-anchor="middle" font-size="13" font-weight="bold" fill="#aaa" font-family="Arial, sans-serif">关键数据流：DeltaTime → 推进时间 → Update节点权重 → Evaluate生成FCompactPose → 写入BoneMatrix → GPU蒙皮</text>
+  <text x="460" y="568" text-anchor="middle" font-size="12" fill="#888" font-family="Arial, sans-serif">FCompactPose：每骨骼 FTransform(Translation, Rotation, Scale) 的数组（LocalSpace），骨骼数量 = BoneContainer.GetNumBones()</text>
+  <text x="460" y="585" text-anchor="middle" font-size="11" fill="#666" font-family="Arial, sans-serif">bUseMultiThreadedAnimationUpdate=true 时，Update Phase 在 Worker Thread 执行；Evaluate 也可并行；最终结果回写在 GameThread</text>
+
+  <defs>
+    <marker id="arrowBlue" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#4c7ab0"/>
+    </marker>
+    <marker id="arrowOrange" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#b07040"/>
+    </marker>
+    <marker id="arrowCyan" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#4090c0"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#4a904a"/>
+    </marker>
+  </defs>
+</svg>

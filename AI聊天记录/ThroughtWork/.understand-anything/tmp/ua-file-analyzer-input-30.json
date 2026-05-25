@@ -1,0 +1,182 @@
+{
+  "projectRoot": "s:\\UnrealEngine\\UnrealEngine-5.4.4-release\\Engine",
+  "batchFiles": [
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperRuntimeSettings.cpp",
+      "language": "cpp",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSprite.cpp",
+      "language": "cpp",
+      "sizeLines": 2270,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteActor.cpp",
+      "language": "cpp",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteAtlas.cpp",
+      "language": "cpp",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteBlueprintLibrary.cpp",
+      "language": "cpp",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 397,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteSceneProxy.cpp",
+      "language": "cpp",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteSceneProxy.h",
+      "language": "c",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteVertexBuffer.cpp",
+      "language": "cpp",
+      "sizeLines": 235,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteVertexBuffer.h",
+      "language": "c",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileLayer.cpp",
+      "language": "cpp",
+      "sizeLines": 343,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMap.cpp",
+      "language": "cpp",
+      "sizeLines": 743,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapActor.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 768,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapRenderSceneProxy.cpp",
+      "language": "cpp",
+      "sizeLines": 441,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapRenderSceneProxy.h",
+      "language": "c",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileSet.cpp",
+      "language": "cpp",
+      "sizeLines": 269,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/Rendering/MaterialExpressionSpriteTextureSampler.cpp",
+      "language": "cpp",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainActor.cpp",
+      "language": "cpp",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 1058,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainMaterial.cpp",
+      "language": "cpp",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainSplineComponent.cpp",
+      "language": "cpp",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Private/TileMapBlueprintLibrary.cpp",
+      "language": "cpp",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Public/AlphaBitmap.h",
+      "language": "c",
+      "sizeLines": 365,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Plugins/2D/Paper2D/Source/Paper2D/Public/MaterialExpressionSpriteTextureSampler.h",
+      "language": "c",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperRuntimeSettings.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSprite.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteActor.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteAtlas.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteBlueprintLibrary.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteComponent.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteSceneProxy.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteSceneProxy.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteVertexBuffer.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperSpriteVertexBuffer.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileLayer.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMap.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapActor.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapComponent.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapRenderSceneProxy.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileMapRenderSceneProxy.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/PaperTileSet.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/Rendering/MaterialExpressionSpriteTextureSampler.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainActor.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainComponent.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainMaterial.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/Terrain/PaperTerrainSplineComponent.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Private/TileMapBlueprintLibrary.cpp": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Public/AlphaBitmap.h": [],
+    "Plugins/2D/Paper2D/Source/Paper2D/Public/MaterialExpressionSpriteTextureSampler.h": []
+  }
+}

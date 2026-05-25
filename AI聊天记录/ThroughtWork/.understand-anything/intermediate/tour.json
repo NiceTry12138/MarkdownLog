@@ -1,0 +1,160 @@
+[
+  {
+    "order": 1,
+    "title": "项目总览",
+    "description": "从顶层配置入手，了解 Unreal Engine 引擎仓库的整体形态：核心源码位于 Source/，引擎插件位于 Plugins/，可配置参数集中在 Config/。先浏览引擎根级的 Base 配置文件，掌握引擎默认行为的入口。",
+    "nodeIds": [
+      "config:Config/Base.ini",
+      "config:Config/BaseEngine.ini",
+      "config:Config/BaseGame.ini",
+      "config:Config/BaseEditor.ini"
+    ]
+  },
+  {
+    "order": 2,
+    "title": "引擎启动入口",
+    "description": "引擎可执行程序的入口点位于 Source/Runtime/Launch。这里负责模块加载、引擎循环（GameEngine / EditorEngine）的创建与销毁，是阅读引擎初始化流程的起点。",
+    "nodeIds": [
+      "file:Source/Runtime/Launch/Launch.Build.cs",
+      "file:Source/Runtime/Launch/Private/Android/AndroidEventManager.cpp",
+      "file:Source/Runtime/Launch/Private/Android/AndroidJNI.cpp",
+      "file:Source/Runtime/Launch/Private/Android/LaunchAndroid.cpp",
+      "file:Source/Runtime/Launch/Private/IOS/GameLaunchDaemonMessageHandler.cpp"
+    ]
+  },
+  {
+    "order": 3,
+    "title": "引擎核心 Core",
+    "description": "Source/Runtime/Core 提供内存分配、容器、字符串、数学、文件 IO、日志、Tick、Stat 等所有引擎模块依赖的基础设施。建议先阅读 CoreMinimal.h、PlatformAtomics、HAL（硬件抽象层）以理解平台抽象。",
+    "nodeIds": [
+      "file:Source/Runtime/Core/Public/Algo/Accumulate.h",
+      "file:Source/Runtime/Core/Public/Algo/AllOf.h",
+      "file:Source/Runtime/Core/Public/Algo/AnyOf.h",
+      "file:Source/Runtime/Core/Public/Algo/BinarySearch.h",
+      "file:Source/Runtime/Core/Public/Algo/Common.h",
+      "file:Source/Runtime/Core/Public/Algo/Compare.h",
+      "file:Source/Runtime/Core/Public/Algo/Copy.h",
+      "file:Source/Runtime/Core/Public/Algo/Count.h"
+    ]
+  },
+  {
+    "order": 4,
+    "title": "UObject 反射系统",
+    "description": "CoreUObject 实现 UE 的反射、垃圾回收、序列化系统，是蓝图、网络复制、资产系统、编辑器属性面板的统一基石。理解 UObject、UClass、FProperty 是阅读引擎任何上层模块的前提。",
+    "nodeIds": [
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/ARFilter.h",
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/AssetBundleData.h",
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/AssetData.h",
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/AssetDataTagMap.h",
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/AssetDataTagMapSerializationDetails.h",
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/AssetDataToken.h",
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/AssetIdentifier.h",
+      "file:Source/Runtime/CoreUObject/Public/AssetRegistry/CookTagList.h"
+    ]
+  },
+  {
+    "order": 5,
+    "title": "Engine 模块 — 游戏世界",
+    "description": "Source/Runtime/Engine 定义 Actor、Component、World、Level、GameMode 等核心游戏对象，是 gameplay 框架的实现层。同时承担资产（StaticMesh、Material、Texture 等）的运行时表达。",
+    "nodeIds": [
+      "file:Source/Runtime/Engine/Classes/AI/AISystemBase.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/AvoidanceManager.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavAgentInterface.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavAgentSelector.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavAreaBase.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavCollisionBase.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavDataGatheringMode.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavEdgeProviderInterface.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavigationAvoidanceTypes.h",
+      "file:Source/Runtime/Engine/Classes/AI/Navigation/NavigationBounds.h"
+    ]
+  },
+  {
+    "order": 6,
+    "title": "渲染管线 RHI + Renderer",
+    "description": "RHI 是平台无关的渲染硬件接口；Renderer 在其之上实现延迟/前向渲染、阴影、光照等渲染算法；各 *RHI（D3D11/12、Vulkan、Metal）模块提供平台后端实现。",
+    "nodeIds": [
+      "file:Source/Runtime/RHI/Public/BoundShaderStateCache.h",
+      "file:Source/Runtime/RHI/Public/DataDrivenShaderPlatformInfo.h",
+      "file:Source/Runtime/RHI/Public/DynamicRHI.h",
+      "file:Source/Runtime/Renderer/Private/AmbientCubemapParameters.h",
+      "file:Source/Runtime/Renderer/Private/AnisotropyRendering.cpp",
+      "file:Source/Runtime/Renderer/Private/AnisotropyRendering.h",
+      "file:Source/Runtime/RenderCore/Public/Animation/MeshDeformerProvider.h",
+      "file:Source/Runtime/RenderCore/Public/BinkShaders.h"
+    ]
+  },
+  {
+    "order": 7,
+    "title": "Slate + UMG UI 框架",
+    "description": "Slate 是 UE 自研的 immediate-mode UI 框架，编辑器界面全部基于它构建；UMG 在 Slate 上提供面向 gameplay 的 widget blueprint。",
+    "nodeIds": [
+      "file:Source/Runtime/SlateCore/Public/Animation/CurveHandle.h",
+      "file:Source/Runtime/SlateCore/Public/Animation/CurveSequence.h",
+      "file:Source/Runtime/SlateCore/Public/Animation/SlateSprings.h",
+      "file:Source/Runtime/Slate/Public/Framework/Animation/AnimatedAttribute.h",
+      "file:Source/Runtime/Slate/Public/Framework/Animation/AnimatedAttributeManager.h",
+      "file:Source/Runtime/Slate/Public/Framework/Animation/AttributeInterpolator.h",
+      "file:Source/Runtime/UMG/Public/Animation/MovieScene2DTransformPropertySystem.h",
+      "file:Source/Runtime/UMG/Public/Animation/MovieScene2DTransformSection.h"
+    ]
+  },
+  {
+    "order": 8,
+    "title": "编辑器 UnrealEd",
+    "description": "Source/Editor/UnrealEd 是编辑器主模块，承载关卡编辑、Actor 操控、内容浏览器、菜单系统等。编辑器其他子模块（PropertyEditor、SceneOutliner、BlueprintGraph 等）围绕它扩展。",
+    "nodeIds": [
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactory.h",
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactoryAmbientSound.h",
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactoryAnimationAsset.h",
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactoryBasicShape.h",
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactoryBlueprint.h",
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactoryBoxReflectionCapture.h",
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactoryBoxVolume.h",
+      "file:Source/Editor/UnrealEd/Classes/ActorFactories/ActorFactoryCameraActor.h"
+    ]
+  },
+  {
+    "order": 9,
+    "title": "开发者工具",
+    "description": "Source/Developer 下的工具集合：Insights / Trace（性能与内存分析）、AutomationController（自动化测试）、SourceControl（版本控制集成）等，仅在非 Shipping 构建下编译。",
+    "nodeIds": [
+      "file:Source/Developer/TraceInsights/Private/Insights/Common/AsyncOperationProgress.h",
+      "file:Source/Developer/TraceInsights/Private/Insights/Common/FixedCircularBuffer.h",
+      "file:Source/Developer/TraceInsights/Private/Insights/Common/InsightsAsyncWorkUtils.h",
+      "file:Source/Developer/AutomationController/AutomationController.Build.cs",
+      "file:Source/Developer/AutomationController/Private/AutomationCommandline.cpp",
+      "file:Source/Developer/SourceControl/Private/DefaultSourceControlProvider.cpp",
+      "file:Source/Developer/SourceControl/Private/DefaultSourceControlProvider.h"
+    ]
+  },
+  {
+    "order": 10,
+    "title": "插件生态：运行时插件",
+    "description": "Plugins/Runtime 与 Plugins/Animation、Plugins/FX、Plugins/Online 等承载了大量可选运行时能力（Niagara 粒子、增强输入、在线子系统、控制绑定 Animation Rigging 等），通过 .uplugin 描述启用。",
+    "nodeIds": [
+      "file:Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_build_install_unity_deps.sh",
+      "file:Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_core_deps.sh",
+      "file:Plugins/Runtime/ResonanceAudio/Source/ResonanceAudio/Private/ResonanceAudioLibrary/third_party/clone_wwise_deps.sh",
+      "file:Plugins/Animation/ACLPlugin/ACLPlugin.uplugin",
+      "file:Plugins/Animation/ACLPlugin/Animation Compression Library Unreal Engine Plugin_v2.0.8.tps",
+      "document:Plugins/FX/Niagara/.p4ignore.txt",
+      "config:Plugins/FX/Niagara/Config/BaseNiagara.ini",
+      "config:Plugins/EnhancedInput/Config/BaseEnhancedInput.ini"
+    ]
+  },
+  {
+    "order": 11,
+    "title": "插件生态：编辑器与实验性",
+    "description": "Plugins/Editor、Plugins/Experimental、Plugins/Developer 等提供编辑器扩展与新功能孵化（Chaos 物理、虚拟制作、Interchange 资产导入框架等）。",
+    "nodeIds": [
+      "file:Plugins/Editor/AssetManagerEditor/AssetManagerEditor.uplugin",
+      "file:Plugins/Editor/AssetManagerEditor/Source/AssetManagerEditor/AssetManagerEditor.Build.cs",
+      "file:Plugins/Experimental/ChaosCaching/ChaosCaching.uplugin",
+      "file:Plugins/Experimental/ChaosCaching/Source/ChaosCaching/ChaosCaching.Build.cs",
+      "file:Plugins/Interchange/Editor/InterchangeEditor.uplugin",
+      "file:Plugins/Interchange/Editor/Source/InterchangeEditor/InterchangeEditor.Build.cs",
+      "file:Plugins/VirtualProduction/RemoteControlWebInterface/WebApp/Clean.bat"
+    ]
+  }
+]
