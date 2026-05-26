@@ -1,90 +1,182 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="860" height="520" viewBox="0 0 860 520">
-  <rect width="860" height="520" fill="#12121f"/>
-  <text x="430" y="34" text-anchor="middle" font-size="18" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">Jacobian Transpose IK 原理（多关节多变量）</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="700" viewBox="0 0 880 700">
+  <defs>
+    <marker id="arrowYellow3" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#ffff30"/>
+    </marker>
+    <marker id="arrowOrange2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#ff8040"/>
+    </marker>
+    <marker id="arrGreen2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#60e060"/>
+    </marker>
+    <marker id="arrRed2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#ff6060"/>
+    </marker>
+  </defs>
 
-  <!-- ===== Left: Jacobian geometry ===== -->
-  <rect x="20" y="55" width="360" height="340" rx="6" fill="#181828" stroke="#333"/>
-  <text x="200" y="76" text-anchor="middle" font-size="13" font-weight="bold" fill="#8080b0" font-family="Arial, sans-serif">机械臂末端位置的雅可比矩阵</text>
+  <rect width="880" height="700" fill="#12121f"/>
+  <text x="440" y="30" text-anchor="middle" font-size="17" font-weight="bold" fill="#e0e0ff" font-family="Arial, sans-serif">Jacobian Transpose IK 原理（多关节多变量，计算前后对照）</text>
 
-  <!-- Chain: 3 joints -->
-  <circle cx="130" cy="300" r="10" fill="#2060a0" stroke="#60a0e0" stroke-width="2"/>
-  <text x="105" y="304" text-anchor="end" font-size="11" fill="#60a0e0" font-family="Arial, sans-serif">θ₁</text>
+  <!-- ============================================================ -->
+  <!-- BEFORE panel  (y=44 – 316)                                   -->
+  <!-- ============================================================ -->
+  <rect x="18" y="44" width="365" height="272" rx="6" fill="#181828" stroke="#664422" stroke-width="1.5"/>
+  <text x="200" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#e08040" font-family="Arial, sans-serif">① 计算前：末端 e(θ) 未到达 Target</text>
 
-  <line x1="130" y1="290" x2="180" y2="230" stroke="#4080c0" stroke-width="2.5"/>
-  <circle cx="180" cy="230" r="9" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
-  <text x="192" y="228" font-size="11" fill="#5090c0" font-family="Arial, sans-serif">θ₂</text>
+  <!-- Chain joints (before) -->
+  <circle cx="128" cy="298" r="10" fill="#2060a0" stroke="#60a0e0" stroke-width="2"/>
+  <text x="103" y="302" text-anchor="end" font-size="11" fill="#60a0e0" font-family="Arial, sans-serif">θ₁</text>
+  <text x="103" y="314" text-anchor="end" font-size="9" fill="#404060" font-family="Arial, sans-serif">(根关节)</text>
 
-  <line x1="180" y1="221" x2="250" y2="175" stroke="#4080c0" stroke-width="2.5"/>
-  <circle cx="250" cy="175" r="9" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
-  <text x="262" y="173" font-size="11" fill="#5090c0" font-family="Arial, sans-serif">θ₃</text>
+  <line x1="128" y1="288" x2="182" y2="228" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="182" cy="228" r="9" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+  <text x="194" y="226" font-size="11" fill="#5090c0" font-family="Arial, sans-serif">θ₂</text>
 
-  <line x1="250" y1="166" x2="300" y2="130" stroke="#4080c0" stroke-width="2.5"/>
-  <circle cx="300" cy="130" r="9" fill="#60a040" stroke="#a0e060" stroke-width="2"/>
-  <text x="312" y="128" font-size="11" fill="#a0e060" font-family="Arial, sans-serif">End e(θ)</text>
+  <line x1="182" y1="219" x2="246" y2="180" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="246" cy="180" r="9" fill="#204080" stroke="#5090c0" stroke-width="1.5"/>
+  <text x="258" y="178" font-size="11" fill="#5090c0" font-family="Arial, sans-serif">θ₃</text>
 
-  <!-- Target -->
-  <circle cx="250" cy="110" r="10" fill="none" stroke="#ff6060" stroke-width="2.5" stroke-dasharray="3,2"/>
-  <line x1="240" y1="110" x2="260" y2="110" stroke="#ff6060" stroke-width="2"/>
-  <line x1="250" y1="100" x2="250" y2="120" stroke="#ff6060" stroke-width="2"/>
-  <text x="268" y="108" font-size="11" fill="#ff6060" font-family="Arial, sans-serif">Target t</text>
+  <line x1="246" y1="171" x2="294" y2="132" stroke="#4080c0" stroke-width="2.5"/>
+  <circle cx="294" cy="132" r="9" fill="#a05030" stroke="#e07040" stroke-width="2"/>
+  <text x="306" y="130" font-size="11" fill="#e07040" font-family="Arial, sans-serif">e(θ)</text>
+  <text x="306" y="142" font-size="9" fill="#704030" font-family="Arial, sans-serif">(末端，未到)</text>
 
-  <!-- Error vector delta e -->
-  <line x1="300" y1="130" x2="250" y2="110" stroke="#ffff30" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrowYellow3)"/>
-  <text x="290" y="116" font-size="11" fill="#ffff30" font-family="Arial, sans-serif">Δe = t - e</text>
+  <!-- Target (before panel) -->
+  <circle cx="238" cy="112" r="11" fill="none" stroke="#ff6060" stroke-width="2" stroke-dasharray="3,2"/>
+  <line x1="229" y1="112" x2="247" y2="112" stroke="#ff6060" stroke-width="2"/>
+  <line x1="238" y1="103" x2="238" y2="121" stroke="#ff6060" stroke-width="2"/>
+  <text x="252" y="110" font-size="11" fill="#ff6060" font-family="Arial, sans-serif">Target t</text>
 
-  <!-- Partial derivative arrows (Jacobian columns) -->
-  <line x1="130" y1="300" x2="145" y2="295" stroke="#ff8040" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
-  <text x="100" y="338" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₁</text>
+  <!-- Error vector Δe -->
+  <line x1="294" y1="132" x2="244" y2="116" stroke="#ffff30" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrowYellow3)"/>
+  <text x="286" y="118" font-size="11" fill="#ffff30" font-family="Arial, sans-serif">Δe=t−e</text>
 
-  <line x1="180" y1="230" x2="196" y2="222" stroke="#ff8040" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
-  <text x="195" y="253" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₂</text>
+  <!-- Partial derivative arrows (∂e/∂θᵢ perpendicular to segment-to-end) -->
+  <!-- ∂e/∂θ₁: perp to θ₁→e direction -->
+  <line x1="128" y1="298" x2="148" y2="278" stroke="#ff8040" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
+  <text x="96" y="336" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₁</text>
 
-  <line x1="250" y1="175" x2="267" y2="168" stroke="#ff8040" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
-  <text x="268" y="192" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₃</text>
+  <!-- ∂e/∂θ₂ -->
+  <line x1="182" y1="228" x2="200" y2="210" stroke="#ff8040" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
+  <text x="196" y="252" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₂</text>
 
-  <!-- Jacobian matrix visual -->
-  <rect x="30" y="340" width="340" height="46" rx="4" fill="#1e1e2d" stroke="#4060a0" stroke-width="1"/>
-  <text x="200" y="360" text-anchor="middle" font-size="11" fill="#a0a0e0" font-family="Arial, sans-serif">J(θ) = [ ∂e/∂θ₁ | ∂e/∂θ₂ | ∂e/∂θ₃ ]  ∈ R^(3×n)</text>
-  <text x="200" y="378" text-anchor="middle" font-size="10" fill="#6060a0" font-family="Arial, sans-serif">每列 = 该关节角微小变化引起末端位移（偏导数）</text>
+  <!-- ∂e/∂θ₃ -->
+  <line x1="246" y1="180" x2="264" y2="164" stroke="#ff8040" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arrowOrange2)"/>
+  <text x="266" y="196" font-size="10" fill="#ff8040" font-family="Arial, sans-serif">∂e/∂θ₃</text>
 
-  <!-- ===== Right: Jacobian Transpose update rule ===== -->
-  <rect x="400" y="55" width="440" height="460" rx="8" fill="#1e1e2d" stroke="#5060a0" stroke-width="1.5"/>
-  <text x="620" y="78" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0ff" font-family="Arial, sans-serif">Jacobian Transpose 方法（JT-IK）</text>
+  <!-- Jacobian matrix row -->
+  <rect x="26" y="340" width="350" height="38" rx="4" fill="#1e1e2d" stroke="#4060a0" stroke-width="1"/>
+  <text x="201" y="357" text-anchor="middle" font-size="11" fill="#a0a0e0" font-family="Arial, sans-serif">J(θ) = [ ∂e/∂θ₁ | ∂e/∂θ₂ | ∂e/∂θ₃ ]  ∈ R^(2×3)</text>
+  <text x="201" y="372" text-anchor="middle" font-size="10" fill="#6060a0" font-family="Arial, sans-serif">每列 = 该关节角微变引起末端位移（各偏导数）</text>
 
-  <text x="415" y="100" font-size="12" fill="#c0c0ff" font-family="Arial, sans-serif">问题：已知误差向量 Δe，如何更新关节角 Δθ？</text>
+  <!-- before note -->
+  <text x="26" y="296" font-size="10" fill="#666688" font-family="Arial, sans-serif">当前末端 e(294,132) ≠ Target(238,112)，需迭代调整 θ₁θ₂θ₃</text>
+
+  <!-- ===== Divider arrow ===== -->
+  <polygon points="191,388 201,404 211,388" fill="#60e060"/>
+  <text x="224" y="400" font-size="11" fill="#60e060" font-family="Arial, sans-serif">迭代 Δθ = α·Jᵀ·Δe</text>
+
+  <!-- ============================================================ -->
+  <!-- AFTER panel  (y=410 – 690)                                   -->
+  <!-- ============================================================ -->
+  <rect x="18" y="410" width="365" height="280" rx="6" fill="#181828" stroke="#226622" stroke-width="1.5"/>
+  <text x="200" y="428" text-anchor="middle" font-size="12" font-weight="bold" fill="#60e060" font-family="Arial, sans-serif">② 迭代收敛后：e(θ) 到达 Target ✓</text>
+
+  <!-- Chain joints (after — same root, different angles) -->
+  <circle cx="128" cy="668" r="10" fill="#2060a0" stroke="#60a0e0" stroke-width="2"/>
+  <text x="103" y="672" text-anchor="end" font-size="11" fill="#60a0e0" font-family="Arial, sans-serif">θ₁</text>
+  <text x="103" y="684" text-anchor="end" font-size="9" fill="#404060" font-family="Arial, sans-serif">(固定)</text>
+
+  <!-- Segment to θ₂ (converged angle) -->
+  <line x1="128" y1="658" x2="175" y2="584" stroke="#3fb950" stroke-width="2.5"/>
+  <circle cx="175" cy="584" r="9" fill="#1a4025" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="187" y="582" font-size="11" fill="#3fb950" font-family="Arial, sans-serif">θ₂'</text>
+
+  <!-- Segment to θ₃ -->
+  <line x1="175" y1="575" x2="220" y2="528" stroke="#3fb950" stroke-width="2.5"/>
+  <circle cx="220" cy="528" r="9" fill="#1a4025" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="232" y="526" font-size="11" fill="#3fb950" font-family="Arial, sans-serif">θ₃'</text>
+
+  <!-- Segment to End = Target -->
+  <line x1="220" y1="519" x2="238" y2="480" stroke="#3fb950" stroke-width="2.5"/>
+
+  <!-- End = Target (coincide) -->
+  <circle cx="238" cy="480" r="12" fill="#c05030" stroke="#60e060" stroke-width="2.5"/>
+  <line x1="229" y1="480" x2="247" y2="480" stroke="#ff6060" stroke-width="2"/>
+  <line x1="238" y1="471" x2="238" y2="489" stroke="#ff6060" stroke-width="2"/>
+  <text x="253" y="477" font-size="12" fill="#60e060" font-family="Arial, sans-serif">e(θ') = Target ✓</text>
+  <text x="253" y="490" font-size="10" fill="#408040" font-family="Arial, sans-serif">(末端精确到达)</text>
+
+  <!-- Ghost original end position (before) -->
+  <circle cx="294" cy="502" r="6" fill="none" stroke="#e07040" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="300" y="500" font-size="9" fill="#604030" font-family="Arial, sans-serif">原末端</text>
+
+  <!-- Show angle changes at joints with small arcs -->
+  <!-- θ₁ angle change arc -->
+  <path d="M 148 661 A 22 22 0 0 1 135 646" fill="none" stroke="#ffff60" stroke-width="1.5"/>
+  <text x="153" y="647" font-size="10" fill="#ffff60" font-family="Arial, sans-serif">Δθ₁</text>
+
+  <!-- θ₂ angle change arc -->
+  <path d="M 192 579 A 18 18 0 0 1 182 567" fill="none" stroke="#ffff60" stroke-width="1.5"/>
+  <text x="196" y="567" font-size="10" fill="#ffff60" font-family="Arial, sans-serif">Δθ₂</text>
+
+  <!-- θ₃ angle change arc -->
+  <path d="M 236 524 A 16 16 0 0 1 228 514" fill="none" stroke="#ffff60" stroke-width="1.5"/>
+  <text x="238" y="514" font-size="10" fill="#ffff60" font-family="Arial, sans-serif">Δθ₃</text>
+
+  <!-- after note -->
+  <text x="26" y="448" font-size="10" fill="#408040" font-family="Arial, sans-serif">θ₁,θ₂,θ₃ 经多次迭代更新后，末端精确命中 Target</text>
+  <text x="26" y="462" font-size="10" fill="#408040" font-family="Arial, sans-serif">各关节角度均有 Δθ 贡献，分布自然无奇异解</text>
+
+  <!-- ============================================================ -->
+  <!-- RIGHT: Formula block  (x=400 – 872, y=44 – 692)             -->
+  <!-- ============================================================ -->
+  <rect x="400" y="44" width="472" height="648" rx="8" fill="#1e1e2d" stroke="#5060a0" stroke-width="1.5"/>
+  <text x="636" y="68" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0ff" font-family="Arial, sans-serif">Jacobian Transpose 方法（JT-IK）</text>
+
+  <text x="414" y="92" font-size="12" fill="#c0c0ff" font-family="Arial, sans-serif">问题：已知误差向量 Δe，如何更新关节角 Δθ？</text>
 
   <!-- Methods comparison -->
-  <rect x="410" y="110" width="415" height="90" rx="4" fill="#2a2a1a" stroke="#8a8a40" stroke-width="1"/>
-  <text x="618" y="130" text-anchor="middle" font-size="11" font-weight="bold" fill="#e0e080" font-family="Arial, sans-serif">伪逆法（J† = JᵀW/(JJᵀ)）vs 转置法</text>
-  <text x="418" y="150" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• 伪逆法：精确，但 J·Jᵀ 求逆计算量大，O(n³)</text>
-  <text x="418" y="167" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• 转置法：近似，但只用矩阵乘法，O(n)，适合实时</text>
-  <text x="418" y="184" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• UE 的 SplineIK/AnimDynamics 采用基于梯度下降思想</text>
+  <rect x="410" y="102" width="452" height="88" rx="4" fill="#2a2a1a" stroke="#8a8a40" stroke-width="1"/>
+  <text x="636" y="122" text-anchor="middle" font-size="11" font-weight="bold" fill="#e0e080" font-family="Arial, sans-serif">伪逆法 vs 转置法</text>
+  <text x="418" y="142" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• 伪逆法：精确，但 J·Jᵀ 求逆 O(n³)，不适合实时</text>
+  <text x="418" y="160" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• 转置法：近似，只用矩阵乘法 O(n)，适合实时骨骼IK</text>
+  <text x="418" y="178" font-size="11" fill="#c0c060" font-family="Arial, sans-serif">• UE 使用转置法思想于 SplineIK / AnimDynamics</text>
 
-  <!-- Transpose formula -->
-  <rect x="410" y="212" width="415" height="120" rx="4" fill="#2a1a1a" stroke="#8a4a4a" stroke-width="1"/>
-  <text x="618" y="233" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff8080" font-family="Arial, sans-serif">Jacobian Transpose 更新公式</text>
-  <text x="425" y="255" font-size="13" fill="#e08080" font-family="monospace">Δθ = α · Jᵀ · Δe</text>
-  <text x="425" y="278" font-size="11" fill="#c06060" font-family="Arial, sans-serif">其中 α 为步长（学习率），需满足：</text>
-  <text x="440" y="296" font-size="12" fill="#e08080" font-family="monospace">         Δeᵀ · J · Jᵀ · Δe</text>
-  <text x="440" y="314" font-size="12" fill="#e08080" font-family="monospace">α_opt = ─────────────────────</text>
-  <text x="440" y="320" font-size="11" fill="#c06060" font-family="Arial, sans-serif">（自适应步长）</text>
-  <text x="440" y="325" font-size="12" fill="#e08080" font-family="monospace">         (J·Jᵀ·Δe)ᵀ(J·Jᵀ·Δe)</text>
+  <!-- Core formula -->
+  <rect x="410" y="200" width="452" height="132" rx="4" fill="#2a1a1a" stroke="#8a4a4a" stroke-width="1"/>
+  <text x="636" y="222" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff8080" font-family="Arial, sans-serif">Jacobian Transpose 更新公式</text>
+  <text x="424" y="246" font-size="13" fill="#e08080" font-family="monospace">Δθ = α · Jᵀ · Δe</text>
+  <text x="424" y="268" font-size="11" fill="#c06060" font-family="Arial, sans-serif">α 为步长，自适应最优步长：</text>
+  <text x="440" y="288" font-size="12" fill="#e08080" font-family="monospace">         Δeᵀ · J · Jᵀ · Δe</text>
+  <text x="440" y="306" font-size="12" fill="#e08080" font-family="monospace">α_opt = ─────────────────────</text>
+  <text x="440" y="324" font-size="12" fill="#e08080" font-family="monospace">         (J·Jᵀ·Δe)ᵀ(J·Jᵀ·Δe)</text>
 
-  <!-- Direct IK vs FK -->
-  <rect x="410" y="346" width="415" height="90" rx="4" fill="#1a2a1a" stroke="#4a8a4a" stroke-width="1"/>
-  <text x="618" y="368" text-anchor="middle" font-size="12" font-weight="bold" fill="#80e080" font-family="Arial, sans-serif">FK vs IK 对比</text>
-  <text x="418" y="388" font-size="11" fill="#60c060" font-family="Arial, sans-serif">FK（正向运动学）：给定关节角 θ → 用变换矩阵乘积求末端位置</text>
-  <text x="418" y="406" font-size="11" fill="#60c060" font-family="Arial, sans-serif">              e = T₁(θ₁) · T₂(θ₂) · … · Tₙ(θₙ) · p₀</text>
-  <text x="418" y="424" font-size="11" fill="#60c060" font-family="Arial, sans-serif">IK（逆向运动学）：给定目标位置 t → 反求 θ（Jacobian 方法）</text>
+  <!-- FK vs IK -->
+  <rect x="410" y="344" width="452" height="96" rx="4" fill="#1a2a1a" stroke="#4a8a4a" stroke-width="1"/>
+  <text x="636" y="365" text-anchor="middle" font-size="12" font-weight="bold" fill="#80e080" font-family="Arial, sans-serif">FK vs IK 对比</text>
+  <text x="418" y="385" font-size="11" fill="#60c060" font-family="Arial, sans-serif">FK：给定关节角 θ → 矩阵乘积 → 末端位置</text>
+  <text x="418" y="402" font-size="11" fill="#60c060" font-family="Arial, sans-serif">    e = T₁(θ₁) · T₂(θ₂) · … · Tₙ(θₙ) · p₀</text>
+  <text x="418" y="420" font-size="11" fill="#60c060" font-family="Arial, sans-serif">IK：给定目标 t → 反求 θ（Jacobian 迭代法）</text>
+  <text x="418" y="437" font-size="11" fill="#60c060" font-family="Arial, sans-serif">    迭代直到 |e(θ) − t| &lt; ε 收敛</text>
+
+  <!-- Convergence process box (links to the before/after diagram) -->
+  <rect x="410" y="452" width="452" height="120" rx="4" fill="#0f1f2f" stroke="#3060a0" stroke-width="1"/>
+  <text x="636" y="472" text-anchor="middle" font-size="12" font-weight="bold" fill="#60a0e0" font-family="Arial, sans-serif">迭代收敛过程（对应左侧前后图）</text>
+  <text x="418" y="492" font-size="11" fill="#4080a0" font-family="Arial, sans-serif">① 前：计算 Δe = Target − e(θ)（左上图黄色箭头）</text>
+  <text x="418" y="509" font-size="11" fill="#4080a0" font-family="Arial, sans-serif">② 构建 J：∂e/∂θᵢ = z × (e − θᵢ_pos)（橙色偏导箭头）</text>
+  <text x="418" y="526" font-size="11" fill="#4080a0" font-family="Arial, sans-serif">③ Δθ = α·Jᵀ·Δe  →  θ := θ + Δθ  →  重新 FK</text>
+  <text x="418" y="543" font-size="11" fill="#4080a0" font-family="Arial, sans-serif">④ 重复直到 |Δe| &lt; ε  （左下图：e(θ')=Target）</text>
+  <text x="418" y="562" font-size="10" fill="#305060" font-family="Arial, sans-serif">每次 Δθ 由所有关节共同分担，形成最自然的运动分布</text>
 
   <!-- UE note -->
-  <rect x="410" y="448" width="415" height="56" rx="4" fill="#1a1a1a" stroke="#444" stroke-width="1"/>
-  <text x="618" y="468" text-anchor="middle" font-size="11" font-weight="bold" fill="#888" font-family="Arial, sans-serif">UE 中的实现说明</text>
-  <text x="418" y="486" font-size="10" fill="#666" font-family="Arial, sans-serif">UE5 使用 CCDIK 和 TwoBoneIK 作为主要运行时 IK；</text>
-  <text x="418" y="499" font-size="10" fill="#666" font-family="Arial, sans-serif">Full-body Jacobian IK 在 IK Retargeter / IK Rig 中更完整（UE5.0+ 新系统）</text>
+  <rect x="410" y="582" width="452" height="58" rx="4" fill="#1a1a1a" stroke="#444" stroke-width="1"/>
+  <text x="636" y="601" text-anchor="middle" font-size="11" font-weight="bold" fill="#888" font-family="Arial, sans-serif">UE 实现说明</text>
+  <text x="418" y="619" font-size="10" fill="#666" font-family="Arial, sans-serif">UE5 主要 runtime IK 用 CCDIK 和 TwoBoneIK；</text>
+  <text x="418" y="633" font-size="10" fill="#666" font-family="Arial, sans-serif">Full-body Jacobian IK 在 IK Retargeter / IK Rig 中实现（UE5.0+）</text>
 
-  <defs>
-    <marker id="arrowYellow3" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#ffff30"/></marker>
-    <marker id="arrowOrange2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#ff8040"/></marker>
-  </defs>
+  <!-- Comparison note at bottom -->
+  <rect x="410" y="650" width="452" height="38" rx="4" fill="#141424" stroke="#445" stroke-width="1"/>
+  <text x="636" y="667" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#8080a0" font-family="Arial, sans-serif">图示对照</text>
+  <text x="418" y="681" font-size="10" fill="#606080" font-family="Arial, sans-serif">① 前：e(294,132) ≠ t(238,112)，Δe≠0  →  ② 后：e'(238,480)≡t，Δθ₁,₂,₃各自贡献</text>
 </svg>
