@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#555"/>
+    </marker>
+    <marker id="arr-b" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#2980b9"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="620" fill="#f8f9fa"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e" font-family="sans-serif">FEntityManager 内存布局 — SoA (Structure of Arrays)</text>
+
+  <!-- Big entity manager box -->
+  <rect x="20" y="50" width="960" height="530" rx="8" fill="#eaf2ff" stroke="#2980b9" stroke-width="2"/>
+  <text x="500" y="76" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a5276" font-family="sans-serif">FEntityManager</text>
+
+  <!-- EntityLocations table -->
+  <rect x="40" y="90" width="280" height="200" rx="6" fill="white" stroke="#7fb3d3" stroke-width="1.5"/>
+  <text x="180" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a5276" font-family="sans-serif">EntityLocations 索引表</text>
+  <text x="180" y="130" text-anchor="middle" font-size="11" fill="#888" font-family="sans-serif">EntityID → (AllocationIdx, Offset)</text>
+  <rect x="55" y="138" width="250" height="26" rx="3" fill="#dbeafe"/>
+  <text x="85" y="155" font-size="11" fill="#333" font-family="sans-serif">Entity#0  →  Alloc[0], offset=0</text>
+  <rect x="55" y="167" width="250" height="26" rx="3" fill="#dbeafe"/>
+  <text x="85" y="183" font-size="11" fill="#333" font-family="sans-serif">Entity#1  →  Alloc[0], offset=1</text>
+  <rect x="55" y="196" width="250" height="26" rx="3" fill="#dbeafe"/>
+  <text x="85" y="212" font-size="11" fill="#333" font-family="sans-serif">Entity#2  →  Alloc[1], offset=0</text>
+  <rect x="55" y="225" width="250" height="26" rx="3" fill="#e8f4f8"/>
+  <text x="85" y="241" font-size="11" fill="#333" font-family="sans-serif">Entity#3  →  Alloc[1], offset=1</text>
+  <text x="180" y="275" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">稳定索引，重排时更新此表</text>
+
+  <!-- arrow to allocations -->
+  <line x1="320" y1="180" x2="360" y2="180" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Allocation 0 box -->
+  <rect x="360" y="90" width="580" height="195" rx="6" fill="white" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="650" y="113" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a5e34" font-family="sans-serif">FEntityAllocation[0]  — ComponentMask: {DoubleChannel[0..8], EvalTime, DoubleResult[0..8], PropertyBinding, SceneComponentBinding}</text>
+  <text x="650" y="131" text-anchor="middle" font-size="11" fill="#888" font-family="sans-serif">（即：所有组件完全相同的 Entity 被放在同一个 Allocation 中）</text>
+
+  <!-- Component arrays inside Allocation 0 -->
+  <rect x="375" y="140" width="90" height="120" rx="4" fill="#d5f5e3" stroke="#27ae60" stroke-width="1"/>
+  <text x="420" y="158" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e34" font-family="sans-serif">EvalTime[]</text>
+  <rect x="380" y="165" width="80" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="420" y="178" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">FFrameTime#0</text>
+  <rect x="380" y="186" width="80" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="420" y="199" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">FFrameTime#1</text>
+  <rect x="380" y="207" width="80" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="420" y="220" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">FFrameTime#2</text>
+  <rect x="380" y="228" width="80" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="420" y="241" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">FFrameTime#3</text>
+
+  <rect x="475" y="140" width="100" height="120" rx="4" fill="#d5f5e3" stroke="#27ae60" stroke-width="1"/>
+  <text x="525" y="158" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e34" font-family="sans-serif">DoubleChannel[0]</text>
+  <text x="525" y="174" text-anchor="middle" font-size="9" fill="#888" font-family="sans-serif">(指针数组，不持有数据)</text>
+  <rect x="480" y="180" width="90" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="525" y="193" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">*Channel_Tx(e0)</text>
+  <rect x="480" y="201" width="90" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="525" y="214" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">*Channel_Tx(e1)</text>
+  <rect x="480" y="222" width="90" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="525" y="235" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">*Channel_Tx(e2)</text>
+  <rect x="480" y="243" width="90" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="525" y="256" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">*Channel_Tx(e3)</text>
+
+  <!-- ... dots -->
+  <text x="600" y="195" font-size="18" fill="#aaa" font-family="sans-serif">···</text>
+
+  <rect x="625" y="140" width="100" height="120" rx="4" fill="#d5f5e3" stroke="#27ae60" stroke-width="1"/>
+  <text x="675" y="158" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e34" font-family="sans-serif">DoubleResult[0]</text>
+  <text x="675" y="174" text-anchor="middle" font-size="9" fill="#888" font-family="sans-serif">(写入输出值)</text>
+  <rect x="630" y="180" width="90" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="675" y="193" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">double: 120.5</text>
+  <rect x="630" y="201" width="90" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="675" y="214" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">double: 220.0</text>
+  <rect x="630" y="222" width="90" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="675" y="235" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">double: 0.0</text>
+  <rect x="630" y="243" width="90" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="675" y="256" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">double: 50.3</text>
+
+  <rect x="735" y="140" width="115" height="120" rx="4" fill="#d5f5e3" stroke="#27ae60" stroke-width="1"/>
+  <text x="792" y="158" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a5e34" font-family="sans-serif">PropertyBinding[]</text>
+  <rect x="740" y="165" width="105" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="792" y="178" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">"RelativeLocation"</text>
+  <rect x="740" y="186" width="105" height="18" rx="2" fill="#a9dfbf"/>
+  <text x="792" y="199" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">"RelativeLocation"</text>
+  <rect x="740" y="207" width="105" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="792" y="220" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">"RelativeRotation"</text>
+  <rect x="740" y="228" width="105" height="18" rx="2" fill="#b3d9c4"/>
+  <text x="792" y="241" text-anchor="middle" font-size="10" fill="#333" font-family="sans-serif">"RelativeRotation"</text>
+
+  <!-- Allocation 1 -->
+  <rect x="360" y="305" width="580" height="100" rx="6" fill="white" stroke="#e74c3c" stroke-width="1.5"/>
+  <text x="650" y="325" text-anchor="middle" font-size="13" font-weight="bold" fill="#922b21" font-family="sans-serif">FEntityAllocation[1]  — ComponentMask: {BoolChannel, BoolResult, PropertyBinding, GenericObjectBinding}  (不同的组合类型)</text>
+  <rect x="375" y="335" width="80" height="55" rx="4" fill="#fadbd8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="415" y="353" text-anchor="middle" font-size="10" font-weight="bold" fill="#922b21" font-family="sans-serif">BoolChannel[]</text>
+  <rect x="380" y="360" width="70" height="18" rx="2" fill="#f1948a"/>
+  <text x="415" y="373" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif">*Channel(e4)</text>
+
+  <rect x="470" y="335" width="80" height="55" rx="4" fill="#fadbd8" stroke="#e74c3c" stroke-width="1"/>
+  <text x="510" y="353" text-anchor="middle" font-size="10" font-weight="bold" fill="#922b21" font-family="sans-serif">BoolResult[]</text>
+  <rect x="475" y="360" width="70" height="18" rx="2" fill="#f1948a"/>
+  <text x="510" y="373" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif">bool: true</text>
+
+  <text x="590" y="385" font-size="11" fill="#888" font-family="sans-serif">不同的 ComponentMask → 不同的 Allocation → System 只迭代匹配自己的 Allocation</text>
+
+  <!-- Arrow Alloc0 - label SoA -->
+  <text x="40" y="320" font-size="12" font-weight="bold" fill="#27ae60" font-family="sans-serif">Alloc[0]</text>
+  <text x="40" y="380" font-size="12" font-weight="bold" fill="#e74c3c" font-family="sans-serif">Alloc[1]</text>
+
+  <!-- Key insight box -->
+  <rect x="40" y="430" width="920" height="130" rx="6" fill="#fffde7" stroke="#f39c12" stroke-width="1.5"/>
+  <text x="500" y="452" text-anchor="middle" font-size="13" font-weight="bold" fill="#7d6608" font-family="sans-serif">SoA 内存布局的好处 — System 如何遍历 Entity</text>
+  <text x="60" y="474" font-size="11" fill="#555" font-family="sans-serif">① 同一组件类型的所有数据紧凑排列 → CPU Cache 命中率高，可以使用 SIMD 向量化</text>
+  <text x="60" y="494" font-size="11" fill="#555" font-family="sans-serif">② System 查询："给我所有同时拥有 DoubleChannel + EvalTime + DoubleResult 的 Entity" → 直接遍历 Alloc[0] 所有行</text>
+  <text x="60" y="514" font-size="11" fill="#555" font-family="sans-serif">③ 不同 ComponentMask 的 Entity 在不同 Allocation → 同类型 Entity 聚集 → 无需按位过滤每个 Entity</text>
+  <text x="60" y="534" font-size="11" fill="#555" font-family="sans-serif">④ FEntityTaskBuilder().Read(X).Write(Y) 即是声明"我要访问哪些组件列"，运行时自动找到所有满足条件的 Allocation</text>
+  <text x="60" y="553" font-size="11" fill="#888" font-family="sans-serif">类比：想象 Excel 表格，每列是一种组件，每行是一个 Entity；同类 Entity 在同一张表，跨表不存在（不同 ComponentMask）</text>
+</svg>

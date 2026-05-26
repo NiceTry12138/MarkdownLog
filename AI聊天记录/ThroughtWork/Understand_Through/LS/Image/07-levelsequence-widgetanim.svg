@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#555"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="580" fill="#f8f9fa"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e" font-family="sans-serif">LevelSequence / WidgetAnimation 对比与扩展点</text>
+
+  <!-- LevelSequence Column -->
+  <rect x="20" y="55" width="440" height="460" rx="8" fill="#e8f4fd" stroke="#2980b9" stroke-width="2"/>
+  <text x="240" y="78" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a5276" font-family="sans-serif">ULevelSequence</text>
+  <text x="240" y="96" text-anchor="middle" font-size="11" fill="#555" font-family="sans-serif">继承自 UMovieSceneSequence，用于 World 中动画 Actor</text>
+
+  <rect x="35" y="108" width="410" height="36" rx="5" fill="#aed6f1" stroke="#2980b9"/>
+  <text x="240" y="127" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a5276" font-family="sans-serif">关键字段</text>
+  <text x="240" y="141" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">MovieScene: TObjectPtr&lt;UMovieScene&gt;  ·  DirectorClass  ·  BindingReferences</text>
+
+  <rect x="35" y="152" width="410" height="110" rx="5" fill="white" stroke="#7fb3d3"/>
+  <text x="240" y="172" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a5276" font-family="sans-serif">Possessable vs Spawnable 对象绑定</text>
+  <text x="50" y="192" font-size="10" fill="#555" font-family="sans-serif">Possessable: 绑定已存在的 AActor（通过 GUID 解析），</text>
+  <text x="60" y="208" font-size="10" fill="#555" font-family="sans-serif">BindingReferences → FLevelSequenceBindingReference 解析</text>
+  <text x="50" y="226" font-size="10" fill="#555" font-family="sans-serif">Spawnable: Sequence 负责 Spawn/Destroy Actor，</text>
+  <text x="60" y="242" font-size="10" fill="#555" font-family="sans-serif">UMovieSceneSpawnablesSystem 在 Spawn Phase 处理</text>
+  <text x="50" y="258" font-size="10" fill="#888" font-family="sans-serif">两者都产生 BoundObject 组件供后续 System 写属性</text>
+
+  <rect x="35" y="270" width="410" height="100" rx="5" fill="white" stroke="#7fb3d3"/>
+  <text x="240" y="290" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a5276" font-family="sans-serif">Director Blueprint</text>
+  <text x="50" y="310" font-size="10" fill="#555" font-family="sans-serif">DirectorClass (UBlueprintGeneratedClass)：事件轨道调用时</text>
+  <text x="50" y="326" font-size="10" fill="#555" font-family="sans-serif">UMovieSceneSequence::CreateDirectorInstance() 创建实例</text>
+  <text x="50" y="342" font-size="10" fill="#555" font-family="sans-serif">EventTrack → 调用 Director Blueprint 中 Endpoint 函数</text>
+  <text x="50" y="358" font-size="10" fill="#888" font-family="sans-serif">扩展：在 Director Blueprint 中写自定义逻辑，无需 C++</text>
+
+  <rect x="35" y="378" width="410" height="60" rx="5" fill="#d6eaf8" stroke="#2980b9"/>
+  <text x="240" y="397" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a5276" font-family="sans-serif">Linker Role: EEntitySystemLinkerRole::LevelSequences</text>
+  <text x="50" y="414" font-size="10" fill="#555" font-family="sans-serif">ALevelSequenceActor 使用独立 Linker，不与 UMG 共享</text>
+  <text x="50" y="430" font-size="10" fill="#888" font-family="sans-serif">相同 World 中多个 LevelSequence → 共享同一个 Linker</text>
+
+  <rect x="35" y="446" width="410" height="54" rx="5" fill="#e8f8f5" stroke="#148f77"/>
+  <text x="240" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#0b5345" font-family="sans-serif">支持的扩展</text>
+  <text x="50" y="482" font-size="10" fill="#555" font-family="sans-serif">IsTrackSupported() 可过滤允许的 Track 类型</text>
+  <text x="50" y="496" font-size="10" fill="#555" font-family="sans-serif">MetaDataObjects：编辑器元数据 FindOrAddMetaDataByClass()</text>
+
+  <!-- WidgetAnimation Column -->
+  <rect x="540" y="55" width="440" height="460" rx="8" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="760" y="78" text-anchor="middle" font-size="14" font-weight="bold" fill="#7d6608" font-family="sans-serif">UWidgetAnimation</text>
+  <text x="760" y="96" text-anchor="middle" font-size="11" fill="#555" font-family="sans-serif">继承自 UMovieSceneSequence，用于 UMG Widget 动画</text>
+
+  <rect x="555" y="108" width="410" height="36" rx="5" fill="#f9e79f" stroke="#f39c12"/>
+  <text x="760" y="127" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d6608" font-family="sans-serif">关键字段</text>
+  <text x="760" y="141" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">MovieScene: TObjectPtr&lt;UMovieScene&gt;  ·  AnimationBindings: TArray&lt;FWidgetAnimationBinding&gt;</text>
+
+  <rect x="555" y="152" width="410" height="110" rx="5" fill="white" stroke="#f0b27a"/>
+  <text x="760" y="172" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d6608" font-family="sans-serif">FWidgetAnimationBinding 对象绑定</text>
+  <text x="570" y="192" font-size="10" fill="#555" font-family="sans-serif">WidgetName: FName — 目标 Widget 的名字</text>
+  <text x="570" y="208" font-size="10" fill="#555" font-family="sans-serif">SlotWidgetName: FName — 动画目标 Slot Widget</text>
+  <text x="570" y="224" font-size="10" fill="#555" font-family="sans-serif">AnimationGuid: FGuid — 对应 MovieScene 中的 Binding</text>
+  <text x="570" y="242" font-size="10" fill="#555" font-family="sans-serif">LocateBoundObjects(): 通过 WidgetName 在 UUserWidget</text>
+  <text x="580" y="256" font-size="10" fill="#888" font-family="sans-serif">的 NamedSlots 中找到目标控件，添加到输出列表</text>
+
+  <rect x="555" y="270" width="410" height="100" rx="5" fill="white" stroke="#f0b27a"/>
+  <text x="760" y="290" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d6608" font-family="sans-serif">与 LevelSequence 的主要差异</text>
+  <text x="570" y="310" font-size="10" fill="#555" font-family="sans-serif">1. 不支持 Spawnable（仅 Possessable）</text>
+  <text x="570" y="326" font-size="10" fill="#555" font-family="sans-serif">2. 对象绑定通过 WidgetName 而非 World/Level 上下文</text>
+  <text x="570" y="342" font-size="10" fill="#555" font-family="sans-serif">3. Linker Role: EEntitySystemLinkerRole::UMG  （独立 Linker）</text>
+  <text x="570" y="358" font-size="10" fill="#888" font-family="sans-serif">4. 允许的 Track 集合不同（IsTrackSupported 过滤）</text>
+
+  <rect x="555" y="378" width="410" height="60" rx="5" fill="#fef9e7" stroke="#f39c12"/>
+  <text x="760" y="397" text-anchor="middle" font-size="11" font-weight="bold" fill="#7d6608" font-family="sans-serif">播放 API</text>
+  <text x="570" y="414" font-size="10" fill="#555" font-family="sans-serif">UUserWidget::PlayAnimation(UWidgetAnimation*, StartAt, NumLoops, ...)</text>
+  <text x="570" y="430" font-size="10" fill="#888" font-family="sans-serif">内部创建 UUMGSequencePlayer，绑定到 UMG 的 Linker</text>
+
+  <rect x="555" y="446" width="410" height="54" rx="5" fill="#e8f8f5" stroke="#148f77"/>
+  <text x="760" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#0b5345" font-family="sans-serif">事件回调</text>
+  <text x="570" y="482" font-size="10" fill="#555" font-family="sans-serif">BindToAnimationStarted / BindToAnimationFinished</text>
+  <text x="570" y="496" font-size="10" fill="#888" font-family="sans-serif">最终由 UMovieSceneSequencePlayer 的 OnStop/OnPlay 委托触发</text>
+
+  <!-- Shared base -->
+  <rect x="200" y="530" width="600" height="40" rx="6" fill="#d5dbdb" stroke="#7f8c8d" stroke-width="1.5"/>
+  <text x="500" y="555" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50" font-family="sans-serif">共同基类 UMovieSceneSequence — GetMovieScene() · BindPossessableObject() · LocateBoundObjects()</text>
+
+  <line x1="240" y1="515" x2="400" y2="530" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="760" y1="515" x2="600" y2="530" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+</svg>

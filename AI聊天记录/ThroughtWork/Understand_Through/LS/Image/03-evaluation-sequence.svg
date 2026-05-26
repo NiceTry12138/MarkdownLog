@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="740" viewBox="0 0 1000 740">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#333"/>
+    </marker>
+    <marker id="arr-red" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#c0392b"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="740" fill="#f8f9fa"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e" font-family="sans-serif">ECS 运行时求值全流程时序图</text>
+
+  <!-- ===== Swimlane headers ===== -->
+  <!-- lane backgrounds -->
+  <rect x="0" y="50" width="1000" height="50" fill="#d6eaf8"/>
+  <rect x="0" y="100" width="1000" height="50" fill="#e8f8f5"/>
+  <rect x="0" y="150" width="1000" height="50" fill="#fef9e7"/>
+  <rect x="0" y="200" width="1000" height="50" fill="#fef5fb"/>
+  <rect x="0" y="250" width="1000" height="50" fill="#eafaf1"/>
+  <rect x="0" y="300" width="1000" height="50" fill="#fdebd0"/>
+  <rect x="0" y="350" width="1000" height="50" fill="#fdedec"/>
+  <rect x="0" y="400" width="1000" height="50" fill="#e8f8f5"/>
+  <rect x="0" y="450" width="1000" height="50" fill="#fef9e7"/>
+  <rect x="0" y="500" width="1000" height="50" fill="#f2f3f4"/>
+
+  <!-- lane labels -->
+  <text x="90" y="82" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a5276" font-family="sans-serif">Player / World Tick</text>
+  <text x="90" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#0b5345" font-family="sans-serif">SequencePlayer</text>
+  <text x="90" y="178" text-anchor="middle" font-size="12" font-weight="bold" fill="#7d6608" font-family="sans-serif">Runner (Flush)</text>
+  <text x="90" y="228" text-anchor="middle" font-size="12" font-weight="bold" fill="#6c3483" font-family="sans-serif">Sequence Instance</text>
+  <text x="90" y="278" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a5e34" font-family="sans-serif">EntityManager</text>
+  <text x="90" y="328" text-anchor="middle" font-size="12" font-weight="bold" fill="#784212" font-family="sans-serif">Phase: Instantiation</text>
+  <text x="90" y="378" text-anchor="middle" font-size="12" font-weight="bold" fill="#922b21" font-family="sans-serif">Phase: Evaluation</text>
+  <text x="90" y="428" text-anchor="middle" font-size="12" font-weight="bold" fill="#0b5345" font-family="sans-serif">Phase: Finalization</text>
+  <text x="90" y="478" text-anchor="middle" font-size="12" font-weight="bold" fill="#7d6608" font-family="sans-serif">Target Object</text>
+
+  <!-- lane separator -->
+  <line x1="180" y1="50" x2="180" y2="550" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="0" y1="550" x2="1000" y2="550" stroke="#aaa" stroke-width="1"/>
+
+  <!-- ===== Timeline steps ===== -->
+  <!-- Step positions: x = 220, 340, 460, 580, 700, 800, 900 -->
+
+  <!-- Step 1: WorldTick -> QueueUpdate -->
+  <rect x="200" y="58" width="140" height="34" rx="5" fill="#2980b9" opacity="0.85"/>
+  <text x="270" y="78" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif">World Tick触发</text>
+  <text x="270" y="91" text-anchor="middle" font-size="10" fill="#ddd" font-family="sans-serif">UMovieSceneSequenceTickManager</text>
+
+  <line x1="270" y1="92" x2="270" y2="108" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 2: SequencePlayer -> QueueUpdate -->
+  <rect x="200" y="110" width="140" height="32" rx="5" fill="#148f77" opacity="0.85"/>
+  <text x="270" y="130" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif">QueueUpdate(Context)</text>
+  <text x="270" y="143" text-anchor="middle" font-size="10" fill="#cef" font-family="sans-serif">更新当前时间 + 状态</text>
+
+  <line x1="270" y1="144" x2="270" y2="158" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 3: Runner Flush starts -->
+  <rect x="200" y="158" width="180" height="34" rx="5" fill="#d4ac0d" opacity="0.85"/>
+  <text x="290" y="178" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif">Runner::Flush()</text>
+  <text x="290" y="191" text-anchor="middle" font-size="10" fill="#fff3" font-family="sans-serif">遍历 ERunnerFlushState 阶段</text>
+
+  <!-- Phase: Import -->
+  <rect x="400" y="160" width="130" height="30" rx="5" fill="#9b59b6" opacity="0.85"/>
+  <text x="465" y="180" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif">ConditionalRecompile</text>
+  <line x1="380" y1="175" x2="400" y2="175" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="550" y="160" width="110" height="30" rx="5" fill="#9b59b6" opacity="0.8"/>
+  <text x="605" y="180" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif">ImportEntities</text>
+  <line x1="530" y1="175" x2="550" y2="175" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Arrow to SeqInstance (import) -->
+  <line x1="605" y1="190" x2="605" y2="208" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="540" y="210" width="220" height="32" rx="5" fill="#6c3483" opacity="0.85"/>
+  <text x="650" y="230" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif">SequenceInstance::Update()</text>
+  <text x="650" y="242" text-anchor="middle" font-size="10" fill="#ddd" font-family="sans-serif">查找当前帧的Entities范围</text>
+
+  <!-- Arrow to EntityManager -->
+  <line x1="650" y1="242" x2="650" y2="258" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="540" y="260" width="235" height="30" rx="5" fill="#27ae60" opacity="0.85"/>
+  <text x="657" y="280" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif">Section::ImportEntityImpl() → EntityManager</text>
+
+  <!-- Instantiation Phase -->
+  <rect x="200" y="310" width="760" height="32" rx="5" fill="#b7770d" opacity="0.8"/>
+  <text x="580" y="330" text-anchor="middle" font-size="12" fill="white" font-family="sans-serif">Phase: Instantiation  —  UMovieScenePropertyInstantiatorSystem::OnRun()  →  路由Blender · 建立属性绑定</text>
+
+  <!-- Evaluation Phase -->
+  <rect x="200" y="360" width="760" height="32" rx="5" fill="#c0392b" opacity="0.8"/>
+  <text x="580" y="380" text-anchor="middle" font-size="12" fill="white" font-family="sans-serif">Phase: Evaluation  —  EvalTime → ChannelEvaluator → BlenderSystem → PropertySystem  (流水线并行)</text>
+
+  <!-- sub boxes for eval -->
+  <rect x="200" y="400" width="160" height="40" rx="5" fill="#e8f8f5" stroke="#148f77" stroke-width="1.5"/>
+  <text x="280" y="418" text-anchor="middle" font-size="11" fill="#0b5345" font-family="sans-serif">EvalTimeSystem</text>
+  <text x="280" y="432" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">写 EvalTime 组件</text>
+
+  <line x1="360" y1="420" x2="380" y2="420" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="380" y="400" width="180" height="40" rx="5" fill="#fef9e7" stroke="#d4ac0d" stroke-width="1.5"/>
+  <text x="470" y="418" text-anchor="middle" font-size="11" fill="#7d6608" font-family="sans-serif">DoubleChannelEvaluator</text>
+  <text x="470" y="432" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">采样曲线→写DoubleResult</text>
+
+  <line x1="560" y1="420" x2="580" y2="420" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="580" y="400" width="160" height="40" rx="5" fill="#fef5fb" stroke="#9b59b6" stroke-width="1.5"/>
+  <text x="660" y="418" text-anchor="middle" font-size="11" fill="#6c3483" font-family="sans-serif">BlenderSystem</text>
+  <text x="660" y="432" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">多段混合→写Output</text>
+
+  <line x1="740" y1="420" x2="760" y2="420" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="760" y="400" width="175" height="40" rx="5" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="847" y="418" text-anchor="middle" font-size="11" fill="#1a5e34" font-family="sans-serif">PropertySystem</text>
+  <text x="847" y="432" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">写对象属性</text>
+
+  <!-- Finalization -->
+  <rect x="200" y="460" width="760" height="30" rx="5" fill="#148f77" opacity="0.8"/>
+  <text x="580" y="480" text-anchor="middle" font-size="12" fill="white" font-family="sans-serif">Phase: Finalization  —  触发Events · PostEvaluation · PreAnimatedState restore</text>
+
+  <!-- Final target object -->
+  <rect x="300" y="510" width="400" height="34" rx="6" fill="#7f8c8d" opacity="0.85"/>
+  <text x="500" y="530" text-anchor="middle" font-size="13" fill="white" font-family="sans-serif">AActor / USceneComponent — RelativeLocation 已被写入新值</text>
+
+  <!-- top arrow to target object -->
+  <line x1="847" y1="440" x2="847" y2="490" stroke="#1a5e34" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="847" y1="490" x2="500" y2="510" stroke="#1a5e34" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Legend -->
+  <rect x="20" y="565" width="960" height="165" rx="6" fill="#f2f3f4" stroke="#bbb" stroke-width="1"/>
+  <text x="30" y="583" font-size="13" font-weight="bold" fill="#333" font-family="sans-serif">ERunnerFlushState 阶段说明：</text>
+
+  <!-- Phase list -->
+  <rect x="30" y="590" width="120" height="22" rx="3" fill="#9b59b6" opacity="0.7"/>
+  <text x="90" y="606" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif">ConditionalRecompile</text>
+  <text x="160" y="606" font-size="10" fill="#555" font-family="sans-serif">检查轨道签名是否变更，若变更则重新编译 EvaluationField</text>
+
+  <rect x="30" y="618" width="80" height="22" rx="3" fill="#1a5276" opacity="0.7"/>
+  <text x="70" y="634" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif">Import</text>
+  <text x="120" y="634" font-size="10" fill="#555" font-family="sans-serif">遍历当前时间所在的 EvaluationField 区间，调用 Section::ImportEntityImpl() 创建/销毁 ECS 实体</text>
+
+  <rect x="30" y="646" width="90" height="22" rx="3" fill="#b7770d" opacity="0.7"/>
+  <text x="75" y="662" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif">Instantiation</text>
+  <text x="130" y="662" font-size="10" fill="#555" font-family="sans-serif">PropertyInstantiatorSystem 分析Entity组件组合，决定使用哪种 Blender / FastOffset / SlowProperty</text>
+
+  <rect x="30" y="674" width="80" height="22" rx="3" fill="#c0392b" opacity="0.7"/>
+  <text x="70" y="690" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif">Evaluation</text>
+  <text x="120" y="690" font-size="10" fill="#555" font-family="sans-serif">流水线：EvalTime → Channel采样 → Blending → 属性写入，TaskGraph 并行，彼此依赖有序</text>
+
+  <rect x="30" y="702" width="85" height="22" rx="3" fill="#148f77" opacity="0.7"/>
+  <text x="72" y="718" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif">Finalization</text>
+  <text x="125" y="718" font-size="10" fill="#555" font-family="sans-serif">触发事件轨道事件 · PostEvaluation 回调 · PreAnimatedState 恢复（若 CompletionMode=RestoreState）</text>
+</svg>

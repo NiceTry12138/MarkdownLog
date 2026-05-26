@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#555"/>
+    </marker>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#27ae60"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="560" fill="#f8f9fa"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e" font-family="sans-serif">Section → Entity 导入流程（ImportEntityImpl 详解）</text>
+
+  <!-- Step boxes (horizontal pipeline) -->
+  <!-- Step 1 -->
+  <rect x="20" y="60" width="145" height="90" rx="7" fill="#d6eaf8" stroke="#2980b9" stroke-width="2"/>
+  <text x="92" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a5276" font-family="sans-serif">① 编译阶段</text>
+  <text x="92" y="101" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">Track::GetEvaluationField()</text>
+  <text x="92" y="116" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">Section时间范围 →</text>
+  <text x="92" y="131" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">TrackEvaluationField</text>
+  <text x="92" y="146" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">(懒加载,数据脏时重建)</text>
+
+  <line x1="165" y1="105" x2="185" y2="105" stroke="#555" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Step 2 -->
+  <rect x="185" y="60" width="155" height="90" rx="7" fill="#e8f8f5" stroke="#148f77" stroke-width="2"/>
+  <text x="262" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="#0b5345" font-family="sans-serif">② 时间查询</text>
+  <text x="262" y="101" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">EvaluationField 二分</text>
+  <text x="262" y="116" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">查找 CurrentTime 落入</text>
+  <text x="262" y="131" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">哪些 Section 区间</text>
+  <text x="262" y="146" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">返回 EntityIDs 列表</text>
+
+  <line x1="340" y1="105" x2="360" y2="105" stroke="#555" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Step 3 -->
+  <rect x="360" y="60" width="165" height="90" rx="7" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="442" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="#7d6608" font-family="sans-serif">③ Ledger 差分</text>
+  <text x="442" y="101" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">FMovieSceneEntityLedger</text>
+  <text x="442" y="116" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">对比 上帧/本帧 EntityID</text>
+  <text x="442" y="131" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">新增的 → 调用 Import</text>
+  <text x="442" y="146" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">消失的 → 销毁 Entity</text>
+
+  <line x1="525" y1="105" x2="545" y2="105" stroke="#555" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Step 4 -->
+  <rect x="545" y="60" width="185" height="90" rx="7" fill="#fef5fb" stroke="#9b59b6" stroke-width="2"/>
+  <text x="637" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="#6c3483" font-family="sans-serif">④ ImportEntityImpl</text>
+  <text x="637" y="101" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">Section实现此接口</text>
+  <text x="637" y="116" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">FEntityBuilder 添加组件:</text>
+  <text x="637" y="131" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">DoubleChannel[0] = &amp;Tx</text>
+  <text x="637" y="146" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">PropertyBinding, GUID等</text>
+
+  <line x1="730" y1="105" x2="750" y2="105" stroke="#555" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Step 5 -->
+  <rect x="750" y="60" width="225" height="90" rx="7" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="862" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a5e34" font-family="sans-serif">⑤ EntityManager 创建</text>
+  <text x="862" y="101" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">FImportedEntity::Manufacture()</text>
+  <text x="862" y="116" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">找/创建对应ComponentMask</text>
+  <text x="862" y="131" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">的 FEntityAllocation</text>
+  <text x="862" y="146" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif">追加行 + 写入组件初始值</text>
+
+  <!-- Section data box -->
+  <rect x="545" y="175" width="430" height="220" rx="8" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2"/>
+  <text x="760" y="198" text-anchor="middle" font-size="13" font-weight="bold" fill="#6c5ce7" font-family="sans-serif">UMovieScene3DTransformSection::ImportEntityImpl 实际执行内容</text>
+
+  <text x="560" y="222" font-size="11" fill="#333" font-family="sans-serif">// 步骤A: 确定绑定类型 (SceneComponentBinding vs GenericObjectBinding)</text>
+  <text x="560" y="240" font-size="11" fill="#333" font-family="sans-serif">const TComponentTypeID&lt;FGuid&gt;&amp; ObjectBinding =</text>
+  <text x="580" y="256" font-size="11" fill="#333" font-family="sans-serif">  Track→IsA&lt;UMovieScene3DTransformTrack&gt;() ?</text>
+  <text x="580" y="272" font-size="11" fill="#2980b9" font-family="sans-serif">  BuiltInTypes→SceneComponentBinding  // → 找SceneComponent</text>
+  <text x="580" y="288" font-size="11" fill="#c0392b" font-family="sans-serif">  : BuiltInTypes→GenericObjectBinding; // → 找任意UObject</text>
+  <text x="560" y="308" font-size="11" fill="#333" font-family="sans-serif">// 步骤B: FEntityBuilder 链式添加组件</text>
+  <text x="560" y="324" font-size="11" fill="#27ae60" font-family="sans-serif">FEntityBuilder()</text>
+  <text x="575" y="340" font-size="11" fill="#27ae60" font-family="sans-serif">  .Add(PropertyBinding, Track→GetPropertyBinding())</text>
+  <text x="575" y="356" font-size="11" fill="#27ae60" font-family="sans-serif">  .AddConditional(ObjectBinding, ObjectGUID, GUID.IsValid())</text>
+  <text x="575" y="372" font-size="11" fill="#27ae60" font-family="sans-serif">  .AddConditional(DoubleChannel[0], &amp;Translation[0], ActiveMask[0])</text>
+  <text x="575" y="388" font-size="11" fill="#27ae60" font-family="sans-serif">  ... // 共9条 Double Channel</text>
+
+  <!-- Arrow from step 4 down to code box -->
+  <line x1="637" y1="150" x2="637" y2="175" stroke="#9b59b6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <!-- Tags box at bottom -->
+  <rect x="20" y="415" width="500" height="120" rx="7" fill="#fdedec" stroke="#e74c3c" stroke-width="1.5"/>
+  <text x="270" y="437" text-anchor="middle" font-size="13" font-weight="bold" fill="#922b21" font-family="sans-serif">NeedsLink Tag — Instantiation 触发时机</text>
+  <text x="35" y="458" font-size="11" fill="#555" font-family="sans-serif">每次新建 Entity 时自动携带 Tags.NeedsLink</text>
+  <text x="35" y="476" font-size="11" fill="#555" font-family="sans-serif">PropertyInstantiatorSystem::OnRun 检测 NeedsLink → 执行属性解析:</text>
+  <text x="35" y="494" font-size="11" fill="#c0392b" font-family="sans-serif">  1. 解析 GUID → 找到 UObject → 写入 BoundObject 组件</text>
+  <text x="35" y="512" font-size="11" fill="#c0392b" font-family="sans-serif">  2. 分析 PropertyBinding → 选择 FastOffset / SlowProperty / CustomProperty</text>
+  <text x="35" y="530" font-size="11" fill="#c0392b" font-family="sans-serif">  3. 决定使用哪个 BlenderSystem → 写入 BlendChannelInput 组件</text>
+
+  <!-- Lifecycle box bottom-right -->
+  <rect x="540" y="415" width="440" height="120" rx="7" fill="#e8f4fd" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="760" y="437" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a5276" font-family="sans-serif">Entity 生命周期</text>
+  <text x="555" y="458" font-size="11" fill="#555" font-family="sans-serif">创建: Section进入当前时间范围 → ImportEntityImpl</text>
+  <text x="555" y="476" font-size="11" fill="#555" font-family="sans-serif">活跃: 每帧 Evaluation 阶段处理此 Entity 的 Component</text>
+  <text x="555" y="494" font-size="11" fill="#555" font-family="sans-serif">销毁: Section离开时间范围 → Tags.NeedsUnlink → 恢复属性</text>
+  <text x="555" y="512" font-size="11" fill="#555" font-family="sans-serif">       如 CompletionMode==RestoreState 则从 PreAnimatedState 恢复</text>
+  <text x="555" y="530" font-size="11" fill="#888" font-family="sans-serif">       否则保留最后一帧的值 (KeepState)</text>
+</svg>

@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="680" viewBox="0 0 900 680">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="680" fill="#f8f9fa"/>
+
+  <!-- Title -->
+  <text x="450" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e" font-family="sans-serif">MovieScene / LevelSequence 框架分层架构</text>
+
+  <!-- ===== Layer 0: External Caller ===== -->
+  <rect x="30" y="60" width="840" height="60" rx="8" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+  <text x="450" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9" font-family="sans-serif">【外部调用层】Player / 编辑器 Sequencer</text>
+  <text x="450" y="108" text-anchor="middle" font-size="12" fill="#555" font-family="sans-serif">ULevelSequenceActor · ALevelSequenceActor · UMovieSceneSequencePlayer  ·  Sequencer Editor</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="120" x2="450" y2="148" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== Layer 1: Sequence Asset Layer ===== -->
+  <rect x="30" y="150" width="840" height="70" rx="8" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  <text x="450" y="175" text-anchor="middle" font-size="14" font-weight="bold" fill="#e67e22" font-family="sans-serif">【资产数据层】Sequence Asset</text>
+  <text x="450" y="200" text-anchor="middle" font-size="12" fill="#555" font-family="sans-serif">UMovieSceneSequence  ·  ULevelSequence  ·  UWidgetAnimation  ·  持久化静态数据，编辑时写入，运行时只读</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="220" x2="450" y2="248" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== Layer 2: MovieScene Data Layer ===== -->
+  <rect x="30" y="250" width="840" height="90" rx="8" fill="#fef5fb" stroke="#9b59b6" stroke-width="2"/>
+  <text x="450" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#8e44ad" font-family="sans-serif">【场景数据层】UMovieScene  —  轨道 / 绑定 / 帧率配置</text>
+  <!-- Sub boxes -->
+  <rect x="50" y="285" width="190" height="42" rx="5" fill="#d7bde2" stroke="#8e44ad" stroke-width="1"/>
+  <text x="145" y="305" text-anchor="middle" font-size="12" fill="#4a235a" font-family="sans-serif">FMovieSceneBinding</text>
+  <text x="145" y="320" text-anchor="middle" font-size="11" fill="#666" font-family="sans-serif">GUID + Tracks[]</text>
+
+  <rect x="260" y="285" width="190" height="42" rx="5" fill="#d7bde2" stroke="#8e44ad" stroke-width="1"/>
+  <text x="355" y="305" text-anchor="middle" font-size="12" fill="#4a235a" font-family="sans-serif">UMovieSceneTrack</text>
+  <text x="355" y="320" text-anchor="middle" font-size="11" fill="#666" font-family="sans-serif">轨道定义 + Sections[]</text>
+
+  <rect x="470" y="285" width="190" height="42" rx="5" fill="#d7bde2" stroke="#8e44ad" stroke-width="1"/>
+  <text x="565" y="305" text-anchor="middle" font-size="12" fill="#4a235a" font-family="sans-serif">UMovieSceneSection</text>
+  <text x="565" y="320" text-anchor="middle" font-size="11" fill="#666" font-family="sans-serif">时间范围 + Channels[]</text>
+
+  <rect x="680" y="285" width="170" height="42" rx="5" fill="#d7bde2" stroke="#8e44ad" stroke-width="1"/>
+  <text x="765" y="305" text-anchor="middle" font-size="12" fill="#4a235a" font-family="sans-serif">FMovieSceneChannel</text>
+  <text x="765" y="320" text-anchor="middle" font-size="11" fill="#666" font-family="sans-serif">关键帧曲线数组</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="340" x2="450" y2="368" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== Layer 3: ECS Entity Manager Layer ===== -->
+  <rect x="30" y="370" width="840" height="100" rx="8" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="450" y="395" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e8449" font-family="sans-serif">【ECS 实体/组件层】FEntityManager  (ECS: Entity-Component)</text>
+  <!-- Sub -->
+  <rect x="50" y="405" width="200" height="50" rx="5" fill="#a9dfbf" stroke="#27ae60" stroke-width="1"/>
+  <text x="150" y="425" text-anchor="middle" font-size="12" fill="#1a5e34" font-family="sans-serif">FEntityManager</text>
+  <text x="150" y="442" text-anchor="middle" font-size="11" fill="#555" font-family="sans-serif">Entity数据存储 + 分配器</text>
+
+  <rect x="270" y="405" width="200" height="50" rx="5" fill="#a9dfbf" stroke="#27ae60" stroke-width="1"/>
+  <text x="370" y="425" text-anchor="middle" font-size="12" fill="#1a5e34" font-family="sans-serif">FComponentRegistry</text>
+  <text x="370" y="442" text-anchor="middle" font-size="11" fill="#555" font-family="sans-serif">组件类型注册表</text>
+
+  <rect x="490" y="405" width="200" height="50" rx="5" fill="#a9dfbf" stroke="#27ae60" stroke-width="1"/>
+  <text x="590" y="425" text-anchor="middle" font-size="12" fill="#1a5e34" font-family="sans-serif">FBuiltInComponentTypes</text>
+  <text x="590" y="442" text-anchor="middle" font-size="11" fill="#555" font-family="sans-serif">内置组件类型定义</text>
+
+  <rect x="710" y="405" width="140" height="50" rx="5" fill="#a9dfbf" stroke="#27ae60" stroke-width="1"/>
+  <text x="780" y="425" text-anchor="middle" font-size="12" fill="#1a5e34" font-family="sans-serif">FEntityAllocation</text>
+  <text x="780" y="442" text-anchor="middle" font-size="11" fill="#555" font-family="sans-serif">SOA内存块</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="470" x2="450" y2="498" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== Layer 4: System Layer ===== -->
+  <rect x="30" y="500" width="840" height="90" rx="8" fill="#fdebd0" stroke="#e74c3c" stroke-width="2"/>
+  <text x="450" y="525" text-anchor="middle" font-size="14" font-weight="bold" fill="#c0392b" font-family="sans-serif">【ECS 系统层】UMovieSceneEntitySystem 子类  (ECS: System)</text>
+  <rect x="50" y="535" width="140" height="40" rx="5" fill="#f5cba7" stroke="#e74c3c" stroke-width="1"/>
+  <text x="120" y="555" text-anchor="middle" font-size="11" fill="#6e2c0e" font-family="sans-serif">EvalTimeSystem</text>
+  <text x="120" y="570" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">计算当前帧时间</text>
+
+  <rect x="210" y="535" width="150" height="40" rx="5" fill="#f5cba7" stroke="#e74c3c" stroke-width="1"/>
+  <text x="285" y="555" text-anchor="middle" font-size="11" fill="#6e2c0e" font-family="sans-serif">ChannelEvaluator</text>
+  <text x="285" y="570" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">曲线采样求值</text>
+
+  <rect x="380" y="535" width="165" height="40" rx="5" fill="#f5cba7" stroke="#e74c3c" stroke-width="1"/>
+  <text x="462" y="555" text-anchor="middle" font-size="11" fill="#6e2c0e" font-family="sans-serif">PropertyInstantiator</text>
+  <text x="462" y="570" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">属性绑定/Blender路由</text>
+
+  <rect x="560" y="535" width="145" height="40" rx="5" fill="#f5cba7" stroke="#e74c3c" stroke-width="1"/>
+  <text x="632" y="555" text-anchor="middle" font-size="11" fill="#6e2c0e" font-family="sans-serif">BlenderSystem</text>
+  <text x="632" y="570" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">多轨道混合计算</text>
+
+  <rect x="720" y="535" width="130" height="40" rx="5" fill="#f5cba7" stroke="#e74c3c" stroke-width="1"/>
+  <text x="785" y="555" text-anchor="middle" font-size="11" fill="#6e2c0e" font-family="sans-serif">PropertySystem</text>
+  <text x="785" y="570" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">写入对象属性</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="590" x2="450" y2="618" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== Layer 5: Runtime Object ===== -->
+  <rect x="30" y="620" width="840" height="48" rx="8" fill="#f2f3f4" stroke="#7f8c8d" stroke-width="2"/>
+  <text x="450" y="645" text-anchor="middle" font-size="14" font-weight="bold" fill="#34495e" font-family="sans-serif">【运行时对象层】AActor · USceneComponent · UWidget · 任意 UObject 属性</text>
+  <text x="450" y="662" text-anchor="middle" font-size="11" fill="#888" font-family="sans-serif">最终动画值写入这里</text>
+
+  <!-- Linker/Runner side label -->
+  <rect x="858" y="370" width="32" height="320" rx="5" fill="#ebf5fb" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="874" y="492" text-anchor="middle" font-size="11" fill="#2980b9" font-family="sans-serif" transform="rotate(90, 874, 492)">UMovieSceneEntitySystemLinker  +  FMovieSceneEntitySystemRunner</text>
+</svg>

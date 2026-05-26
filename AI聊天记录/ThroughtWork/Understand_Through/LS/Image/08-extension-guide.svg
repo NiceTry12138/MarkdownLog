@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#555"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="640" fill="#f8f9fa"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a2e" font-family="sans-serif">如何扩展 MovieScene / LevelSequence</text>
+
+  <!-- ===== Row 1: Custom Track ===== -->
+  <rect x="20" y="50" width="460" height="180" rx="8" fill="#e8f4fd" stroke="#2980b9" stroke-width="2"/>
+  <text x="250" y="73" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a5276" font-family="sans-serif">扩展点①：自定义 Track + Section</text>
+
+  <rect x="35" y="84" width="430" height="28" rx="4" fill="#aed6f1"/>
+  <text x="250" y="102" text-anchor="middle" font-size="11" fill="#1a5276" font-family="sans-serif">继承 UMovieSceneTrack → 实现 CreateNewSection() · SupportsType()</text>
+
+  <rect x="35" y="118" width="430" height="28" rx="4" fill="#aed6f1"/>
+  <text x="250" y="136" text-anchor="middle" font-size="11" fill="#1a5276" font-family="sans-serif">继承 UMovieSceneSection + IMovieSceneEntityProvider</text>
+
+  <text x="35" y="162" font-size="11" fill="#555" font-family="sans-serif">实现 PopulateEvaluationFieldImpl()  → 告诉系统此 Section 在哪些时间生效</text>
+  <text x="35" y="178" font-size="11" fill="#555" font-family="sans-serif">实现 ImportEntityImpl() → 用 FEntityBuilder 声明需要哪些 Component</text>
+  <text x="35" y="198" font-size="11" fill="#888" font-family="sans-serif">场景：自定义"颜色渐变轨道"——Section 持有 FloatChannel×3 (R/G/B)</text>
+  <text x="35" y="215" font-size="11" fill="#888" font-family="sans-serif">ImportEntityImpl 中 .Add(FloatChannel[0], &amp;R)  .Add(FloatChannel[1], &amp;G) ...</text>
+
+  <!-- ===== Row 1 right: Custom System ===== -->
+  <rect x="520" y="50" width="460" height="180" rx="8" fill="#eafaf1" stroke="#27ae60" stroke-width="2"/>
+  <text x="750" y="73" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a5e34" font-family="sans-serif">扩展点②：自定义 System</text>
+
+  <rect x="535" y="84" width="430" height="28" rx="4" fill="#a9dfbf"/>
+  <text x="750" y="102" text-anchor="middle" font-size="11" fill="#1a5e34" font-family="sans-serif">继承 UMovieSceneEntitySystem，重写 OnRun() / OnLink() / IsRelevantImpl()</text>
+
+  <text x="535" y="132" font-size="11" fill="#555" font-family="sans-serif">构造函数中：</text>
+  <text x="535" y="148" font-size="11" fill="#555" font-family="sans-serif">  Phase = ESystemPhase::Evaluation;  // 指定运行阶段</text>
+  <text x="535" y="164" font-size="11" fill="#555" font-family="sans-serif">  RelevantComponent = MyComponents→MyCustomType;  // 自动链接条件</text>
+  <text x="535" y="180" font-size="11" fill="#555" font-family="sans-serif">  DefineImplicitPrerequisite(UDoubleChannelEvaluatorSystem, GetClass()); // 排序</text>
+  <text x="535" y="196" font-size="11" fill="#888" font-family="sans-serif">场景：在 DoubleResult 已求值后，做进一步的自定义处理（如颜色空间转换）</text>
+  <text x="535" y="212" font-size="11" fill="#888" font-family="sans-serif">IsRelevantImpl(): 检查 EntityManager 中是否有 MyCustomType 组件</text>
+
+  <!-- ===== Row 2: Custom Component Type ===== -->
+  <rect x="20" y="250" width="460" height="180" rx="8" fill="#fef5fb" stroke="#9b59b6" stroke-width="2"/>
+  <text x="250" y="273" text-anchor="middle" font-size="13" font-weight="bold" fill="#6c3483" font-family="sans-serif">扩展点③：自定义 Component 类型</text>
+
+  <rect x="35" y="284" width="430" height="26" rx="4" fill="#d7bde2"/>
+  <text x="250" y="302" text-anchor="middle" font-size="11" fill="#4a235a" font-family="sans-serif">在模块启动时 (StartupModule) 注册自定义 Component</text>
+
+  <text x="35" y="325" font-size="11" fill="#555" font-family="sans-serif">// 定义结构体</text>
+  <text x="35" y="341" font-size="11" fill="#555" font-family="sans-serif">struct FMyColorData { FLinearColor Color; };</text>
+  <text x="35" y="357" font-size="11" fill="#555" font-family="sans-serif">// 在 FMyComponentTypes 单例中注册</text>
+  <text x="35" y="373" font-size="11" fill="#2980b9" font-family="sans-serif">TComponentTypeID&lt;FMyColorData&gt; MyColorOutput =</text>
+  <text x="35" y="389" font-size="11" fill="#2980b9" font-family="sans-serif">  ComponentRegistry.NewComponentType&lt;FMyColorData&gt;(TEXT("MyColorOutput"));</text>
+  <text x="35" y="410" font-size="11" fill="#888" font-family="sans-serif">然后在 Section::ImportEntityImpl() 中用 .Add(MyColorOutput, ...) 赋给 Entity</text>
+  <text x="35" y="426" font-size="11" fill="#888" font-family="sans-serif">System 中用 FEntityTaskBuilder().Write(MyColorOutput).Dispatch_PerEntity&lt;FMyTask&gt;</text>
+
+  <!-- ===== Row 2 right: Custom PropertySystem ===== -->
+  <rect x="520" y="250" width="460" height="180" rx="8" fill="#fdebd0" stroke="#e74c3c" stroke-width="2"/>
+  <text x="750" y="273" text-anchor="middle" font-size="13" font-weight="bold" fill="#922b21" font-family="sans-serif">扩展点④：自定义属性系统绑定</text>
+
+  <rect x="535" y="284" width="430" height="26" rx="4" fill="#f5cba7"/>
+  <text x="750" y="302" text-anchor="middle" font-size="11" fill="#6e2c0e" font-family="sans-serif">为自定义 USTRUCT 属性注册 Property → System 自动处理</text>
+
+  <text x="535" y="325" font-size="11" fill="#555" font-family="sans-serif">// 在 StartupModule 或 FMyComponentTypes 构造时：</text>
+  <text x="535" y="341" font-size="11" fill="#e74c3c" font-family="sans-serif">FBuiltInComponentTypes::Get()-&gt;PropertyRegistry.DefineProperty&lt;FMyStruct&gt;(...)</text>
+  <text x="535" y="358" font-size="11" fill="#555" font-family="sans-serif">  .AddSolverSystem&lt;UMyPropertyBlenderSystem&gt;()</text>
+  <text x="535" y="374" font-size="11" fill="#555" font-family="sans-serif">  .Commit();</text>
+  <text x="535" y="394" font-size="11" fill="#888" font-family="sans-serif">一旦注册，Section 中 .Add(PropertyBinding, FMovieScenePropertyBinding("MyProp"))</text>
+  <text x="535" y="410" font-size="11" fill="#888" font-family="sans-serif">PropertyInstantiatorSystem 即可自动路由到 UMyPropertyBlenderSystem</text>
+  <text x="535" y="426" font-size="11" fill="#888" font-family="sans-serif">无需修改 MovieScene 核心代码</text>
+
+  <!-- ===== Row 3: When to write System ===== -->
+  <rect x="20" y="450" width="960" height="170" rx="8" fill="#fffde7" stroke="#f9a825" stroke-width="2"/>
+  <text x="500" y="473" text-anchor="middle" font-size="13" font-weight="bold" fill="#f57f17" font-family="sans-serif">何时需要自定义 System？— 决策指南</text>
+
+  <!-- columns -->
+  <rect x="35" y="486" width="290" height="120" rx="5" fill="#e8f5e9" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="180" y="503" text-anchor="middle" font-size="12" font-weight="bold" fill="#1b5e20" font-family="sans-serif">✅ 应该写 System</text>
+  <text x="48" y="522" font-size="10" fill="#333" font-family="sans-serif">• 处理跨多个 Entity 的全局状态</text>
+  <text x="48" y="538" font-size="10" fill="#333" font-family="sans-serif">• 需要在特定 Phase 按序执行</text>
+  <text x="48" y="554" font-size="10" fill="#333" font-family="sans-serif">• 要修改 Entity 的 Component 组合（Mutation）</text>
+  <text x="48" y="570" font-size="10" fill="#333" font-family="sans-serif">• 需要 TaskGraph 并行处理海量 Entity</text>
+  <text x="48" y="586" font-size="10" fill="#333" font-family="sans-serif">• 例：运动模糊预测、自定义物理约束</text>
+
+  <rect x="350" y="486" width="290" height="120" rx="5" fill="#fff3e0" stroke="#f57c00" stroke-width="1.5"/>
+  <text x="495" y="503" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100" font-family="sans-serif">⚠️ 也可用 TrackInstance</text>
+  <text x="363" y="522" font-size="10" fill="#333" font-family="sans-serif">• 需要有状态（跨帧保存数据）</text>
+  <text x="363" y="538" font-size="10" fill="#333" font-family="sans-serif">• 逻辑简单、Entity数量少</text>
+  <text x="363" y="554" font-size="10" fill="#333" font-family="sans-serif">• UMovieSceneTrackInstance 子类，</text>
+  <text x="363" y="570" font-size="10" fill="#333" font-family="sans-serif">  OnBeginUpdateInputs / OnEndUpdateInputs</text>
+  <text x="363" y="586" font-size="10" fill="#888" font-family="sans-serif">  Section 通过 TrackInstanceComponent 绑定</text>
+
+  <rect x="665" y="486" width="295" height="120" rx="5" fill="#fce4ec" stroke="#e91e63" stroke-width="1.5"/>
+  <text x="812" y="503" text-anchor="middle" font-size="12" font-weight="bold" fill="#880e4f" font-family="sans-serif">❌ 不需要写 System</text>
+  <text x="678" y="522" font-size="10" fill="#333" font-family="sans-serif">• 只是新增一个驱动已有属性的轨道类型</text>
+  <text x="678" y="538" font-size="10" fill="#333" font-family="sans-serif">• 继承 UMovieScenePropertyTrack 即可</text>
+  <text x="678" y="554" font-size="10" fill="#333" font-family="sans-serif">• Section 实现 ImportEntityImpl，添加</text>
+  <text x="678" y="570" font-size="10" fill="#333" font-family="sans-serif">  DoubleChannel + PropertyBinding 组件</text>
+  <text x="678" y="586" font-size="10" fill="#888" font-family="sans-serif">  已有的 System 自动处理，无需额外代码</text>
+</svg>
