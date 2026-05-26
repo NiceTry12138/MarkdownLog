@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="720" viewBox="0 0 1080 720">
+  <rect x="0" y="0" width="1080" height="720" fill="#f8f9fa" rx="8"/>
+  <text x="540" y="28" font-family="Arial,sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a1a2e">示例文件集合通过 PAK 打包后的数据分布</text>
+  <text x="540" y="46" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">文件：T_Enemy_1/2/3，BP_EnemyBase，BP_Enemy，BP_Enemy_1/2/3，L_WorldMap → 打入一个 Game.pak</text>
+
+  <!-- PAK file region -->
+  <rect x="30" y="60" width="1020" height="30" fill="#2980b9" rx="4"/>
+  <text x="540" y="80" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">Game.pak —— 单个文件，内部线性排列（所有文件数据 → 索引区 → FPakInfo 尾部）</text>
+
+  <!-- Row labels -->
+  <text x="30" y="108" font-family="Arial,sans-serif" font-size="11" fill="#888">← 文件数据区（File Payload Area）———————————————————————————————————————————→</text>
+
+  <!-- Texture files -->
+  <rect x="30" y="114" width="110" height="68" fill="#e74c3c" rx="3"/>
+  <text x="85" y="134" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_1</text>
+  <text x="85" y="148" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">.uasset</text>
+  <text x="85" y="160" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Oodle 压缩</text>
+  <text x="85" y="172" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Offset₁</text>
+
+  <rect x="144" y="114" width="110" height="68" fill="#e74c3c" rx="3"/>
+  <text x="199" y="134" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_2</text>
+  <text x="199" y="148" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">.uasset</text>
+  <text x="199" y="160" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Oodle 压缩</text>
+  <text x="199" y="172" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Offset₂</text>
+
+  <rect x="258" y="114" width="110" height="68" fill="#e74c3c" rx="3"/>
+  <text x="313" y="134" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_3</text>
+  <text x="313" y="148" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">.uasset</text>
+  <text x="313" y="160" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Oodle 压缩</text>
+  <text x="313" y="172" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Offset₃</text>
+
+  <!-- Blueprint files -->
+  <rect x="372" y="114" width="120" height="68" fill="#8e44ad" rx="3"/>
+  <text x="432" y="130" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">BP_EnemyBase</text>
+  <text x="432" y="144" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">.uasset +</text>
+  <text x="432" y="156" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">.uexp 合并</text>
+  <text x="432" y="168" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Offset₄</text>
+
+  <rect x="496" y="114" width="120" height="68" fill="#8e44ad" rx="3"/>
+  <text x="556" y="130" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">BP_Enemy</text>
+  <text x="556" y="144" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">.uasset +</text>
+  <text x="556" y="156" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">.uexp 合并</text>
+  <text x="556" y="168" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Offset₅</text>
+
+  <rect x="620" y="114" width="80" height="68" fill="#8e44ad" rx="3"/>
+  <text x="660" y="134" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BP_Enemy_1</text>
+  <text x="660" y="148" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Offset₆</text>
+
+  <rect x="704" y="114" width="80" height="68" fill="#8e44ad" rx="3"/>
+  <text x="744" y="134" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BP_Enemy_2</text>
+  <text x="744" y="148" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Offset₇</text>
+
+  <rect x="788" y="114" width="80" height="68" fill="#8e44ad" rx="3"/>
+  <text x="828" y="134" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BP_Enemy_3</text>
+  <text x="828" y="148" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Offset₈</text>
+
+  <!-- Level file -->
+  <rect x="872" y="114" width="130" height="68" fill="#16a085" rx="3"/>
+  <text x="937" y="130" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">L_WorldMap</text>
+  <text x="937" y="144" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#cef">.umap +</text>
+  <text x="937" y="156" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#cef">.uexp 合并</text>
+  <text x="937" y="168" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#cef">Offset₉</text>
+
+  <!-- Index area -->
+  <text x="30" y="200" font-family="Arial,sans-serif" font-size="11" fill="#888">← 索引区 ——————————————————————→</text>
+
+  <rect x="30" y="206" width="340" height="42" fill="#27ae60" rx="3"/>
+  <text x="200" y="224" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">Primary Index</text>
+  <text x="200" y="240" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#cef">MountPoint="/Game/" | NumEntries=9 | PathHashSeed | EncodedPakEntries(9条) | placeholder</text>
+
+  <rect x="374" y="206" width="340" height="42" fill="#e67e22" rx="3"/>
+  <text x="544" y="224" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">PathHashIndex</text>
+  <text x="544" y="240" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#fcc">FNV64("Textures/T_Enemy_1") → Loc₁, FNV64("BP_EnemyBase") → Loc₄ ... (9对映射) + PrunedDirIndex</text>
+
+  <rect x="718" y="206" width="182" height="42" fill="#2c3e50" rx="3"/>
+  <text x="809" y="224" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">FullDirectoryIndex</text>
+  <text x="809" y="240" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#aec">目录树：/Game/Textures/ → {T_Enemy_1..3} /Game/Blueprints/ → {BP_...}</text>
+
+  <!-- FPakInfo -->
+  <rect x="30" y="254" width="870" height="36" fill="#c0392b" rx="3"/>
+  <text x="465" y="268" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">FPakInfo（Trailer，固定大小，约 221 字节）</text>
+  <text x="465" y="282" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#fdd">Magic=0x5A6F12E1 | Version=11 | IndexOffset=（指向 Primary Index 起始） | IndexSize | IndexHash | CompressionMethods</text>
+
+  <!-- FPakEntry Table detail -->
+  <text x="30" y="316" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#1a1a2e">每个 FPakEntry（存于 EncodedPakEntries / Primary Index 中）包含：</text>
+  <rect x="30" y="324" width="1020" height="90" fill="#fff" rx="6" stroke="#ddd" stroke-width="1"/>
+
+  <rect x="40" y="334" width="90" height="70" fill="#e74c3c" rx="3"/>
+  <text x="85" y="351" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="white">T_Enemy_1</text>
+  <text x="85" y="364" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Offset₁=0</text>
+  <text x="85" y="376" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Size=80KB（压）</text>
+  <text x="85" y="388" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Uncomp=256KB</text>
+  <text x="85" y="398" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#fcc">Method=Oodle</text>
+
+  <rect x="134" y="334" width="90" height="70" fill="#8e44ad" rx="3"/>
+  <text x="179" y="351" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="white">BP_EnemyBase</text>
+  <text x="179" y="364" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Offset₄=(T1+T2+T3)</text>
+  <text x="179" y="376" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Size=12KB</text>
+  <text x="179" y="388" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Uncomp=40KB</text>
+  <text x="179" y="398" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Hash=SHA1</text>
+
+  <rect x="228" y="334" width="90" height="70" fill="#8e44ad" rx="3"/>
+  <text x="273" y="351" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="white">BP_Enemy</text>
+  <text x="273" y="364" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Offset₅=(4+Base)</text>
+  <text x="273" y="376" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Size=8KB</text>
+  <text x="273" y="388" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Uncomp=25KB</text>
+  <text x="273" y="398" font-family="Arial,sans-serif" font-size="9" text-anchor="middle" fill="#e8d8ff">Hash=SHA1</text>
+
+  <text x="325" y="376" font-family="Arial,sans-serif" font-size="16" text-anchor="middle" fill="#aaa">···</text>
+
+  <text x="420" y="342" font-family="Arial,sans-serif" font-size="11" fill="#555">注意：所有文件的数据被线性连接在一起（紧接着写入），</text>
+  <text x="420" y="358" font-family="Arial,sans-serif" font-size="11" fill="#555">每个 FPakEntry.Offset 记录了该文件数据在整个 .pak 中的绝对偏移量。</text>
+  <text x="420" y="374" font-family="Arial,sans-serif" font-size="11" fill="#555">加载 BP_Enemy 时不需要读取整个 PAK，只需 Seek(Offset₅) 读 Size₅ 字节即可。</text>
+  <text x="420" y="390" font-family="Arial,sans-serif" font-size="11" fill="#555">文件顺序由 UnrealPak 按输入列表顺序写入（不保证按依赖排序）。</text>
+
+  <!-- Size comparison -->
+  <rect x="30" y="432" width="1020" height="86" fill="#fff" rx="6" stroke="#27ae60" stroke-width="2"/>
+  <text x="40" y="450" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#27ae60">典型大小示意（假设原始 Cook 输出大小）：</text>
+  <text x="40" y="468" font-family="Arial,sans-serif" font-size="11" fill="#555">T_Enemy_1/2/3（贴图）：原始各约 256KB（4096×4096 DXT1），Oodle 压缩后约 80KB/个 → 合计约 240KB</text>
+  <text x="40" y="484" font-family="Arial,sans-serif" font-size="11" fill="#555">BP_EnemyBase（蓝图）：约 40KB 原始，压缩后约 12KB；BP_Enemy：约 25KB，压缩后约 8KB；BP_Enemy_1/2/3：各约 6KB</text>
+  <text x="40" y="500" font-family="Arial,sans-serif" font-size="11" fill="#555">L_WorldMap（关卡）：原始约 200KB，压缩后约 60KB；总索引区约 20KB；FPakInfo 约 0.2KB</text>
+  <text x="40" y="516" font-family="Arial,sans-serif" font-size="11" fill="#555">Game.pak 总大小 ≈ 240 + 12 + 8 + 18 + 60 + 20 + 0.2 ≈ 约 358KB</text>
+
+  <!-- Important points -->
+  <rect x="30" y="528" width="1020" height="90" fill="#fff" rx="6" stroke="#2980b9" stroke-width="1"/>
+  <text x="40" y="546" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1a1a2e">PAK 模式的重要特性：</text>
+  <text x="40" y="564" font-family="Arial,sans-serif" font-size="11" fill="#555">① 单文件：所有内容在同一个 .pak 文件中，发布时只需携带这一个文件</text>
+  <text x="40" y="580" font-family="Arial,sans-serif" font-size="11" fill="#555">② 文件粒度加密/压缩：可对不同文件用不同压缩算法（或不压缩），每个文件都有独立的 SHA1 用于完整性校验</text>
+  <text x="40" y="596" font-family="Arial,sans-serif" font-size="11" fill="#555">③ 无法并发读取：多个文件请求必须排队（同一 Reader 是串行的），不如 IoStore 的批量 I/O 高效</text>
+  <text x="40" y="612" font-family="Arial,sans-serif" font-size="11" fill="#555">④ 索引内存占用：所有 FPakEntry（含路径字符串）加载到内存，文件数量多时占用较大（IoStore 用数字 ID 取代路径字符串）</text>
+</svg>

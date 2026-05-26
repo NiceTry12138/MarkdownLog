@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7C3AED"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="480" fill="#F8FAFC" rx="8"/>
+  <text x="450" y="28" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#1E293B">运行时使用反射：读写属性 &amp; 调用函数</text>
+
+  <!-- LEFT: Property access -->
+  <rect x="20" y="50" width="420" height="400" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/>
+  <text x="230" y="70" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#1D4ED8">属性读写（通过FProperty）</text>
+
+  <!-- Step 1 -->
+  <rect x="30" y="82" width="400" height="60" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="40" y="98" font-family="Arial" font-size="11" font-weight="bold" fill="#1D4ED8">第1步：获取类的UClass指针</text>
+  <text x="40" y="116" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">APatrolNPC* Npc = GetNPC();          // 某个UObject实例</text>
+  <text x="40" y="130" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">UClass* Class = Npc-&gt;GetClass();     // 读取 ClassPrivate 字段</text>
+
+  <!-- Arrow -->
+  <line x1="230" y1="142" x2="230" y2="158" stroke="#2563EB" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 2 -->
+  <rect x="30" y="158" width="400" height="48" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="40" y="174" font-family="Arial" font-size="11" font-weight="bold" fill="#1D4ED8">第2步：按名称查找属性</text>
+  <text x="40" y="192" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">FProperty* Prop = Class-&gt;FindPropertyByName(TEXT("PatrolSpeed"));</text>
+
+  <!-- Arrow -->
+  <line x1="230" y1="206" x2="230" y2="222" stroke="#2563EB" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 3 -->
+  <rect x="30" y="222" width="400" height="48" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="40" y="238" font-family="Arial" font-size="11" font-weight="bold" fill="#1D4ED8">第3步：强转为具体属性类型</text>
+  <text x="40" y="256" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">FFloatProperty* FloatProp = CastField&lt;FFloatProperty&gt;(Prop);</text>
+
+  <!-- Arrow -->
+  <line x1="230" y1="270" x2="230" y2="286" stroke="#2563EB" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 4 -->
+  <rect x="30" y="286" width="400" height="60" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="40" y="302" font-family="Arial" font-size="11" font-weight="bold" fill="#1D4ED8">第4步：获取内存地址并读写值</text>
+  <text x="40" y="320" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">// 读取: 计算 (uint8*)Npc + Offset_Internal</text>
+  <text x="40" y="334" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">float Speed = FloatProp-&gt;GetPropertyValue_InContainer(Npc);</text>
+
+  <!-- Arrow -->
+  <line x1="230" y1="346" x2="230" y2="362" stroke="#2563EB" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 5 -->
+  <rect x="30" y="362" width="400" height="48" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="40" y="378" font-family="Arial" font-size="11" font-weight="bold" fill="#1D4ED8">第5步：写入新值</text>
+  <text x="40" y="396" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">FloatProp-&gt;SetPropertyValue_InContainer(Npc, 300.0f);</text>
+  <text x="40" y="408" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">// 本质上: *(float*)((uint8*)Npc + Offset_Internal) = 300.0f;</text>
+
+  <!-- Memory diagram for offset -->
+  <rect x="30" y="418" width="400" height="24" rx="4" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1"/>
+  <text x="230" y="434" text-anchor="middle" font-family="Arial" font-size="10" fill="#1D4ED8">关键公式: 属性地址 = 对象基址 + Offset_Internal</text>
+
+  <!-- RIGHT: Function call -->
+  <rect x="460" y="50" width="420" height="400" rx="6" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5"/>
+  <text x="670" y="70" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#065F46">函数调用（通过UFunction）</text>
+
+  <!-- Step 1 -->
+  <rect x="470" y="82" width="400" height="60" rx="4" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
+  <text x="480" y="98" font-family="Arial" font-size="11" font-weight="bold" fill="#065F46">第1步：查找函数</text>
+  <text x="480" y="116" font-family="Consolas,monospace" font-size="10" fill="#064E3B">UFunction* Func =</text>
+  <text x="480" y="130" font-family="Consolas,monospace" font-size="10" fill="#064E3B">  Npc-&gt;FindFunction(TEXT("Attack"));</text>
+
+  <!-- Arrow -->
+  <line x1="670" y1="142" x2="670" y2="158" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 2 -->
+  <rect x="470" y="158" width="400" height="60" rx="4" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
+  <text x="480" y="174" font-family="Arial" font-size="11" font-weight="bold" fill="#065F46">第2步：在栈上准备参数内存</text>
+  <text x="480" y="192" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// Func-&gt;ParmsSize 告诉我们参数内存多大</text>
+  <text x="480" y="206" font-family="Consolas,monospace" font-size="10" fill="#064E3B">uint8 Parms[sizeof(APatrolNPC_eventAttack_Parms)];</text>
+
+  <!-- Arrow -->
+  <line x1="670" y1="218" x2="670" y2="234" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 3 -->
+  <rect x="470" y="234" width="400" height="60" rx="4" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
+  <text x="480" y="250" font-family="Arial" font-size="11" font-weight="bold" fill="#065F46">第3步：填写参数（用FProperty定位每个参数位置）</text>
+  <text x="480" y="268" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// Attack(float Damage) 的Damage参数偏移由UHT计算好</text>
+  <text x="480" y="282" font-family="Consolas,monospace" font-size="10" fill="#064E3B">FFloatProperty* DamageProp = ...;  DamageProp-&gt;SetValue(Parms, 50.f);</text>
+
+  <!-- Arrow -->
+  <line x1="670" y1="294" x2="670" y2="310" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 4 -->
+  <rect x="470" y="310" width="400" height="48" rx="4" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
+  <text x="480" y="326" font-family="Arial" font-size="11" font-weight="bold" fill="#065F46">第4步：调用ProcessEvent</text>
+  <text x="480" y="344" font-family="Consolas,monospace" font-size="10" fill="#064E3B">Npc-&gt;ProcessEvent(Func, Parms);</text>
+  <text x="480" y="356" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// 内部调用 Func-&gt;Invoke(Npc, Stack, Result)</text>
+
+  <!-- Arrow -->
+  <line x1="670" y1="358" x2="670" y2="374" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- Step 5 -->
+  <rect x="470" y="374" width="400" height="60" rx="4" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
+  <text x="480" y="390" font-family="Arial" font-size="11" font-weight="bold" fill="#065F46">第5步：实际执行（FUNC_Native时）</text>
+  <text x="480" y="408" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// Invoke 调用 Func-&gt;Func 指针指向的原生函数</text>
+  <text x="480" y="422" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// 即 &amp;APatrolNPC::execAttack (UHT生成的包装器)</text>
+  <text x="480" y="436" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// 最终调用 this-&gt;Attack(Damage)</text>
+
+  <!-- Note at bottom right -->
+  <rect x="470" y="442" width="400" height="8" rx="2" fill="#D1FAE5"/>
+</svg>

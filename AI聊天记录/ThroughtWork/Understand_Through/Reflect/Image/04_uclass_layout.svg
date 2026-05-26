@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#DC2626"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="500" fill="#F8FAFC" rx="8"/>
+  <text x="450" y="28" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#1E293B">UClass 数据布局详解</text>
+  <text x="450" y="46" text-anchor="middle" font-family="Arial" font-size="11" fill="#64748B">（继承自UStruct，包含完整类描述信息）</text>
+
+  <!-- UClass main box -->
+  <rect x="30" y="60" width="420" height="410" rx="6" fill="#FEF2F2" stroke="#DC2626" stroke-width="2"/>
+  <text x="240" y="82" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#991B1B">UClass 的数据成员（Class.h 2735行起）</text>
+  <line x1="30" y1="88" x2="450" y2="88" stroke="#FCA5A5" stroke-width="1.5"/>
+
+  <!-- Section: Constructor -->
+  <rect x="40" y="96" width="400" height="48" rx="4" fill="#FEE2E2"/>
+  <text x="50" y="112" font-family="Arial" font-size="11" font-weight="bold" fill="#7F1D1D">构造 &amp; 初始化</text>
+  <text x="50" y="130" font-family="Consolas,monospace" font-size="10" fill="#991B1B">ClassConstructor : ClassConstructorType  // 函数指针 void(*)(FObjectInitializer)</text>
+  <text x="50" y="142" font-family="Consolas,monospace" font-size="10" fill="#991B1B">ClassVTableHelperCtorCaller : ...         // vtable辅助构造指针</text>
+
+  <!-- Section: Flags -->
+  <rect x="40" y="152" width="400" height="36" rx="4" fill="#FEE2E2"/>
+  <text x="50" y="168" font-family="Arial" font-size="11" font-weight="bold" fill="#7F1D1D">标志位</text>
+  <text x="50" y="182" font-family="Consolas,monospace" font-size="10" fill="#991B1B">ClassFlags     : EClassFlags      ClassCastFlags : EClassCastFlags</text>
+
+  <!-- Section: Identity -->
+  <rect x="40" y="196" width="400" height="48" rx="4" fill="#FEE2E2"/>
+  <text x="50" y="212" font-family="Arial" font-size="11" font-weight="bold" fill="#7F1D1D">身份 &amp; 归属</text>
+  <text x="50" y="228" font-family="Consolas,monospace" font-size="10" fill="#991B1B">ClassWithin      : UClass*  // 要求的Outer类型</text>
+  <text x="50" y="240" font-family="Consolas,monospace" font-size="10" fill="#991B1B">ClassConfigName  : FName   // 对应哪个.ini配置文件</text>
+
+  <!-- Section: CDO -->
+  <rect x="40" y="252" width="400" height="48" rx="4" fill="#FEE2E2"/>
+  <text x="50" y="268" font-family="Arial" font-size="11" font-weight="bold" fill="#7F1D1D">默认对象（CDO）</text>
+  <text x="50" y="284" font-family="Consolas,monospace" font-size="10" fill="#991B1B">ClassDefaultObject : TObjectPtr&lt;UObject&gt;</text>
+  <text x="50" y="296" font-family="Consolas,monospace" font-size="10" fill="#991B1B">// 每个类有一个CDO实例，保存属性默认值</text>
+
+  <!-- Section: FuncMap -->
+  <rect x="40" y="308" width="400" height="48" rx="4" fill="#FEE2E2"/>
+  <text x="50" y="324" font-family="Arial" font-size="11" font-weight="bold" fill="#7F1D1D">函数注册表</text>
+  <text x="50" y="340" font-family="Consolas,monospace" font-size="10" fill="#991B1B">FuncMap        : TMap&lt;FName, TObjectPtr&lt;UFunction&gt;&gt;</text>
+  <text x="50" y="352" font-family="Consolas,monospace" font-size="10" fill="#991B1B">AllFunctionsCache: TMap&lt;FName, UFunction*&gt;  // 缓存含父类函数</text>
+
+  <!-- Section: Interfaces & Network -->
+  <rect x="40" y="364" width="400" height="48" rx="4" fill="#FEE2E2"/>
+  <text x="50" y="380" font-family="Arial" font-size="11" font-weight="bold" fill="#7F1D1D">接口 &amp; 网络</text>
+  <text x="50" y="396" font-family="Consolas,monospace" font-size="10" fill="#991B1B">Interfaces : TArray&lt;FImplementedInterface&gt;</text>
+  <text x="50" y="408" font-family="Consolas,monospace" font-size="10" fill="#991B1B">NetFields  : TArray&lt;UField*&gt;    ClassReps : TArray&lt;FRepRecord&gt;</text>
+
+  <!-- Section: Sparse -->
+  <rect x="40" y="420" width="400" height="40" rx="4" fill="#FEE2E2"/>
+  <text x="50" y="436" font-family="Arial" font-size="11" font-weight="bold" fill="#7F1D1D">稀疏类数据（SparseClassData）</text>
+  <text x="50" y="452" font-family="Consolas,monospace" font-size="10" fill="#991B1B">SparseClassData: void*  SparseClassDataStruct: UScriptStruct*</text>
+
+  <!-- Inherited from UStruct section -->
+  <rect x="465" y="60" width="410" height="200" rx="6" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"/>
+  <text x="670" y="82" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#14532D">继承自 UStruct 的字段</text>
+  <line x1="465" y1="88" x2="875" y2="88" stroke="#86EFAC" stroke-width="1.5"/>
+  <text x="475" y="108" font-family="Consolas,monospace" font-size="10" fill="#166534">SuperStruct      : UStruct*       // 父类(继承链)</text>
+  <text x="475" y="124" font-family="Consolas,monospace" font-size="10" fill="#166534">Children         : TObjectPtr&lt;UField&gt; // UFunction链表头</text>
+  <text x="475" y="140" font-family="Consolas,monospace" font-size="10" fill="#166534">ChildProperties  : FField*        // FProperty链表头</text>
+  <text x="475" y="156" font-family="Consolas,monospace" font-size="10" fill="#166534">PropertiesSize   : int32          // 全部属性内存总大小</text>
+  <text x="475" y="172" font-family="Consolas,monospace" font-size="10" fill="#166534">MinAlignment     : int32          // 内存对齐要求</text>
+  <text x="475" y="188" font-family="Consolas,monospace" font-size="10" fill="#166534">PropertyLink     : FProperty*     // 最派生→基类的属性链</text>
+  <text x="475" y="204" font-family="Consolas,monospace" font-size="10" fill="#166534">RefLink          : FProperty*     // 含UObject引用的属性链</text>
+  <text x="475" y="220" font-family="Consolas,monospace" font-size="10" fill="#166534">DestructorLink   : FProperty*     // 需要析构的属性链</text>
+  <text x="475" y="244" font-family="Consolas,monospace" font-size="10" fill="#166534">Script           : TArray&lt;uint8&gt;  // Blueprint字节码</text>
+
+  <!-- UFunction mini box -->
+  <rect x="465" y="275" width="195" height="125" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="562" y="292" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#1D4ED8">UFunction 关键字段</text>
+  <line x1="465" y1="297" x2="660" y2="297" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="475" y="313" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">FunctionFlags: EFunctionFlags</text>
+  <text x="475" y="329" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">NumParms  : uint8 // 参数个数</text>
+  <text x="475" y="345" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">ParmsSize : uint16 // 参数内存大小</text>
+  <text x="475" y="361" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">ReturnValueOffset: uint16</text>
+  <text x="475" y="377" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">Func: FNativeFuncPtr // 原生函数指针</text>
+  <text x="475" y="393" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">// 参数作为FProperty存在ChildProperties中</text>
+
+  <!-- FProperty mini box -->
+  <rect x="675" y="275" width="200" height="125" rx="6" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="775" y="292" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#B45309">FProperty 关键字段</text>
+  <line x1="675" y1="297" x2="875" y2="297" stroke="#FCD34D" stroke-width="1"/>
+  <text x="685" y="313" font-family="Consolas,monospace" font-size="10" fill="#78350F">Offset_Internal: int32  // 内存偏移</text>
+  <text x="685" y="329" font-family="Consolas,monospace" font-size="10" fill="#78350F">ArrayDim : int32  // 静态数组维度</text>
+  <text x="685" y="345" font-family="Consolas,monospace" font-size="10" fill="#78350F">ElementSize : int32  // 单元素大小</text>
+  <text x="685" y="361" font-family="Consolas,monospace" font-size="10" fill="#78350F">PropertyFlags: EPropertyFlags</text>
+  <text x="685" y="377" font-family="Consolas,monospace" font-size="10" fill="#78350F">Next : FField* // 链表next</text>
+  <text x="685" y="393" font-family="Consolas,monospace" font-size="10" fill="#78350F">Owner: FFieldVariant // 所属UStruct</text>
+
+  <!-- Access formula -->
+  <rect x="465" y="412" width="410" height="56" rx="6" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+  <text x="670" y="430" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#6D28D9">ContainerPtrToValuePtr 实现原理（UnrealType.h 633行）</text>
+  <text x="475" y="450" font-family="Consolas,monospace" font-size="11" fill="#4C1D95">return (uint8*)ContainerPtr + Offset_Internal + ElementSize * ArrayIndex;</text>
+  <text x="475" y="464" font-family="Arial" font-size="10" fill="#6D28D9">即：对象基址 + 属性内存偏移 = 属性所在地址</text>
+</svg>

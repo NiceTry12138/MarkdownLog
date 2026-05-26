@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="450" y="27" text-anchor="middle" font-size="16" font-weight="bold" fill="#e6edf3" font-family="Arial, sans-serif">6 足蜘蛛程序化爬行设计（无动画资产）</text>
+
+  <!-- ===== LEFT: SPIDER TOP-DOWN VIEW ===== -->
+  <rect x="12" y="38" width="360" height="470" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="192" y="57" text-anchor="middle" font-size="12" font-weight="bold" fill="#8b949e" font-family="Arial, sans-serif">俯视图：交替三足步态（Alternating Tripod）</text>
+
+  <!-- Spider body -->
+  <ellipse cx="192" cy="255" rx="55" ry="72" fill="#1e3a1e" stroke="#3fb950" stroke-width="2"/>
+  <text x="192" y="251" text-anchor="middle" font-size="11" font-weight="bold" fill="#56d364" font-family="Arial, sans-serif">身体</text>
+  <text x="192" y="266" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">Body</text>
+
+  <!-- Head direction indicator -->
+  <polygon points="192,175 182,190 202,190" fill="#3fb950" opacity="0.7"/>
+  <text x="192" y="171" text-anchor="middle" font-size="9" fill="#56d364" font-family="Arial, sans-serif">前进方向</text>
+
+  <!-- ===== LEGS GROUP A (1,3,5) — Blue — move together ===== -->
+  <!-- Leg 1 (front-left): from body to (90, 170) -->
+  <!-- Hip at body edge, foot at tip -->
+  <!-- Leg 1 L: hip(155,195) → knee(112,182) → foot(78,168) -->
+  <circle cx="78" cy="168" r="7" fill="#388bfd" stroke="#79c0ff" stroke-width="1.5"/>
+  <text x="65" y="162" font-size="9" fill="#79c0ff" text-anchor="end" font-family="Arial, sans-serif">L1</text>
+  <line x1="155" y1="200" x2="112" y2="182" stroke="#388bfd" stroke-width="2.5"/>
+  <line x1="112" y1="182" x2="78" y2="168" stroke="#388bfd" stroke-width="2.5"/>
+  <circle cx="112" cy="182" r="4" fill="#1f6feb"/>
+
+  <!-- Leg 3 (mid-left): hip(140,255) → knee(98,255) → foot(62,255) -->
+  <circle cx="62" cy="255" r="7" fill="#388bfd" stroke="#79c0ff" stroke-width="1.5"/>
+  <text x="50" y="259" font-size="9" fill="#79c0ff" text-anchor="end" font-family="Arial, sans-serif">L3</text>
+  <line x1="140" y1="255" x2="98" y2="255" stroke="#388bfd" stroke-width="2.5"/>
+  <line x1="98" y1="255" x2="62" y2="255" stroke="#388bfd" stroke-width="2.5"/>
+  <circle cx="98" cy="255" r="4" fill="#1f6feb"/>
+
+  <!-- Leg 5 (rear-left): hip(155,315) → knee(112,328) → foot(78,342) -->
+  <circle cx="78" cy="342" r="7" fill="#388bfd" stroke="#79c0ff" stroke-width="1.5"/>
+  <text x="65" y="348" font-size="9" fill="#79c0ff" text-anchor="end" font-family="Arial, sans-serif">L5</text>
+  <line x1="155" y1="310" x2="112" y2="328" stroke="#388bfd" stroke-width="2.5"/>
+  <line x1="112" y1="328" x2="78" y2="342" stroke="#388bfd" stroke-width="2.5"/>
+  <circle cx="112" cy="328" r="4" fill="#1f6feb"/>
+
+  <!-- ===== LEGS GROUP B (2,4,6) — Orange — move together ===== -->
+  <!-- Leg 2 (front-right): hip(232,200) → knee(272,182) → foot(306,168) -->
+  <circle cx="306" cy="168" r="7" fill="#ffa657" stroke="#ff7b72" stroke-width="1.5"/>
+  <text x="312" y="162" font-size="9" fill="#ffa657" font-family="Arial, sans-serif">R2</text>
+  <line x1="232" y1="200" x2="272" y2="182" stroke="#ffa657" stroke-width="2.5"/>
+  <line x1="272" y1="182" x2="306" y2="168" stroke="#ffa657" stroke-width="2.5"/>
+  <circle cx="272" cy="182" r="4" fill="#d1812b"/>
+
+  <!-- Leg 4 (mid-right): hip(247,255) → knee(288,255) → foot(322,255) -->
+  <circle cx="322" cy="255" r="7" fill="#ffa657" stroke="#ff7b72" stroke-width="1.5"/>
+  <text x="328" y="259" font-size="9" fill="#ffa657" font-family="Arial, sans-serif">R4</text>
+  <line x1="247" y1="255" x2="288" y2="255" stroke="#ffa657" stroke-width="2.5"/>
+  <line x1="288" y1="255" x2="322" y2="255" stroke="#ffa657" stroke-width="2.5"/>
+  <circle cx="288" cy="255" r="4" fill="#d1812b"/>
+
+  <!-- Leg 6 (rear-right): hip(232,310) → knee(272,328) → foot(306,342) -->
+  <circle cx="306" cy="342" r="7" fill="#ffa657" stroke="#ff7b72" stroke-width="1.5"/>
+  <text x="312" y="348" font-size="9" fill="#ffa657" font-family="Arial, sans-serif">R6</text>
+  <line x1="232" y1="310" x2="272" y2="328" stroke="#ffa657" stroke-width="2.5"/>
+  <line x1="272" y1="328" x2="306" y2="342" stroke="#ffa657" stroke-width="2.5"/>
+  <circle cx="272" cy="328" r="4" fill="#d1812b"/>
+
+  <!-- Ideal foot position circles (dashed rings) -->
+  <circle cx="78" cy="168" r="16" fill="none" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,4" opacity="0.6"/>
+  <circle cx="62" cy="255" r="16" fill="none" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,4" opacity="0.6"/>
+  <circle cx="78" cy="342" r="16" fill="none" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,4" opacity="0.6"/>
+  <circle cx="306" cy="168" r="16" fill="none" stroke="#e3b341" stroke-width="1" stroke-dasharray="3,4" opacity="0.6"/>
+  <circle cx="322" cy="255" r="16" fill="none" stroke="#e3b341" stroke-width="1" stroke-dasharray="3,4" opacity="0.6"/>
+  <circle cx="306" cy="342" r="16" fill="none" stroke="#e3b341" stroke-width="1" stroke-dasharray="3,4" opacity="0.6"/>
+
+  <!-- Legend -->
+  <rect x="24" y="385" width="20" height="12" rx="2" fill="#388bfd"/>
+  <text x="48" y="396" font-size="10" fill="#79c0ff" font-family="Arial, sans-serif">L1,L3,L5（组A）同步迈步</text>
+  <rect x="24" y="403" width="20" height="12" rx="2" fill="#ffa657"/>
+  <text x="48" y="414" font-size="10" fill="#ffa657" font-family="Arial, sans-serif">R2,R4,R6（组B）同步迈步</text>
+  <circle cx="34" cy="428" r="7" fill="none" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="48" y="431" font-size="10" fill="#56d364" font-family="Arial, sans-serif">理想落脚点（身体局部坐标系）</text>
+  <text x="24" y="450" font-size="9" fill="#6e7681" font-family="Arial, sans-serif">组A迈步时 组B保持支撑 → 始终3腿着地</text>
+  <text x="24" y="465" font-size="9" fill="#6e7681" font-family="Arial, sans-serif">爬墙：地表法线替换 WorldUp，其余计算不变</text>
+
+  <!-- ===== RIGHT: SYSTEM STEPS ===== -->
+  <rect x="386" y="38" width="502" height="470" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="637" y="57" text-anchor="middle" font-size="12" font-weight="bold" fill="#8b949e" font-family="Arial, sans-serif">程序化爬行系统步骤</text>
+
+  <!-- Step 1 -->
+  <rect x="398" y="63" width="478" height="52" rx="4" fill="#0f2033" stroke="#1f6feb" stroke-width="1"/>
+  <text x="408" y="79" font-size="10" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">① 身体参考系 — Body Local Frame</text>
+  <text x="408" y="94" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">身体朝向 = Lerp 到所有已落地脚平均法线方向（AverageNormal of planted feet）</text>
+  <text x="408" y="109" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">爬墙时 SurfaceNormal 替代 WorldUp，全部计算在局部系内进行</text>
+
+  <!-- Step 2 -->
+  <rect x="398" y="121" width="478" height="52" rx="4" fill="#0f2033" stroke="#1f6feb" stroke-width="1"/>
+  <text x="408" y="137" font-size="10" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">② 理想落脚点（Ideal Foot Target）</text>
+  <text x="408" y="152" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">6 个固定偏移量（身体局部坐标）定义每条腿理想位置</text>
+  <text x="408" y="167" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">沿身体局部"下方"（当前法线方向）Ray Trace → ImpactPoint</text>
+
+  <!-- Step 3 -->
+  <rect x="398" y="179" width="478" height="64" rx="4" fill="#0a1a0a" stroke="#238636" stroke-width="1"/>
+  <text x="408" y="195" font-size="10" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">③ 迈步触发（Step Trigger Conditions）</text>
+  <text x="408" y="210" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">触发迈步条件（满足其一）：</text>
+  <text x="418" y="224" font-size="10" fill="#56d364" font-family="Arial, sans-serif">a) 当前脚位置 与 理想脚位置 距离 &gt; StepThreshold</text>
+  <text x="418" y="238" font-size="10" fill="#56d364" font-family="Arial, sans-serif">b) 身体移动使腿链超出 MaxReach 软限制</text>
+
+  <!-- Step 4 -->
+  <rect x="398" y="249" width="478" height="64" rx="4" fill="#1f1500" stroke="#d1812b" stroke-width="1"/>
+  <text x="408" y="265" font-size="10" font-weight="bold" fill="#ffa657" font-family="Arial, sans-serif">④ 迈步动画（Swing Phase Lerp）</text>
+  <text x="408" y="280" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">Alpha = StepTimer / StepDuration  (0→1)</text>
+  <text x="408" y="295" font-size="10" fill="#ffa657" font-family="Arial, sans-serif">足迹 = Lerp(CurrentPos, LandTarget, smooth(Alpha))</text>
+  <text x="408" y="309" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">足高 += StepArcHeight * Sin(Alpha * π)  → 抬腿弧线</text>
+
+  <!-- Step 5 -->
+  <rect x="398" y="319" width="478" height="52" rx="4" fill="#1e1133" stroke="#8957e5" stroke-width="1"/>
+  <text x="408" y="335" font-size="10" font-weight="bold" fill="#d2a8ff" font-family="Arial, sans-serif">⑤ TwoBoneIK 求解每条腿</text>
+  <text x="408" y="350" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">Hip(髋) → Knee(膝) → Foot(脚) ×6 条腿</text>
+  <text x="408" y="365" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">ControlRig: RigUnit_TwoBoneIKSimple，已支持 HingeAxis</text>
+
+  <!-- Step 6 -->
+  <rect x="398" y="377" width="478" height="52" rx="4" fill="#0f2033" stroke="#1f6feb" stroke-width="1"/>
+  <text x="408" y="393" font-size="10" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">⑥ 身体高度调整（Pelvis Height）</text>
+  <text x="408" y="408" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">迭代调整骨盆位置使所有腿在可伸展范围内</text>
+  <text x="408" y="423" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">参考 FIKFootPelvisPullDownSolver 实现思路</text>
+
+  <!-- Step 7: Gait timing -->
+  <rect x="398" y="435" width="478" height="60" rx="4" fill="#0a1a2a" stroke="#58a6ff" stroke-width="1"/>
+  <text x="408" y="451" font-size="10" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">⑦ 步态时序（组间延迟）</text>
+
+  <!-- Gait timeline bars -->
+  <!-- Group A: legs 1,3,5 - starts at 0, stance 0-60%, swing 60-100% -->
+  <rect x="408" y="455" width="12" height="10" rx="2" fill="#3fb950"/>
+  <text x="422" y="464" font-size="9" fill="#56d364" font-family="Arial, sans-serif">A</text>
+  <!-- Timeline bar A -->
+  <rect x="440" y="455" width="180" height="10" rx="2" fill="#1a4025"/>
+  <rect x="440" y="455" width="108" height="10" rx="2" fill="#3fb950" opacity="0.8"/>
+  <text x="476" y="463" font-size="8" fill="#0d1117" font-weight="bold" font-family="Arial, sans-serif">Stance (支撑)</text>
+  <rect x="548" y="455" width="72" height="10" rx="2" fill="#f85149" opacity="0.7"/>
+  <text x="574" y="463" font-size="8" fill="#e6edf3" font-family="Arial, sans-serif">Swing</text>
+
+  <!-- Group B: half cycle offset -->
+  <rect x="408" y="471" width="12" height="10" rx="2" fill="#ffa657"/>
+  <text x="422" y="480" font-size="9" fill="#ffa657" font-family="Arial, sans-serif">B</text>
+  <rect x="440" y="471" width="180" height="10" rx="2" fill="#1a4025"/>
+  <rect x="476" y="471" width="108" height="10" rx="2" fill="#ffa657" opacity="0.8"/>
+  <text x="516" y="479" font-size="8" fill="#0d1117" font-weight="bold" font-family="Arial, sans-serif">Stance (支撑)</text>
+  <rect x="440" y="471" width="36" height="10" rx="2" fill="#f85149" opacity="0.7"/>
+  <rect x="584" y="471" width="36" height="10" rx="2" fill="#f85149" opacity="0.7"/>
+  <text x="458" y="479" font-size="8" fill="#e6edf3" font-family="Arial, sans-serif">Swg</text>
+  <text x="597" y="479" font-size="8" fill="#e6edf3" font-family="Arial, sans-serif">Swg</text>
+  <text x="636" y="465" font-size="9" fill="#6e7681" font-family="Arial, sans-serif">B 相位偏移 0.5×周期</text>
+  <text x="636" y="480" font-size="9" fill="#6e7681" font-family="Arial, sans-serif">任何时刻 ≥3 腿着地</text>
+</svg>

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="780" viewBox="0 0 880 780">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 Z" fill="#555"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="880" height="780" fill="#f8f9fa" rx="8"/>
+  <text x="440" y="30" font-family="Arial,sans-serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#1a1a2e">IoStore 文件生成流程（IoStoreUtilities::CreateIoStoreContainerFiles）</text>
+  <text x="440" y="50" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">源码：Engine/Source/Developer/IoStoreUtilities/Private/IoStoreUtilities.cpp</text>
+
+  <!-- Step 1 -->
+  <rect x="60" y="64" width="760" height="54" fill="#2980b9" rx="6"/>
+  <text x="440" y="85" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 1：Cook 阶段 —— UnrealEditor 烹饪并输出 .uasset/.uexp/.ubulk</text>
+  <text x="440" y="103" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">Cook 结果：每个资产输出多个文件（BP_Enemy.uasset / BP_Enemy.uexp / T_Enemy.uasset / T_Enemy.ubulk 等）</text>
+  <text x="440" y="115" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">同时生成 AssetRegistry.bin，记录所有资产的元数据</text>
+
+  <line x1="440" y1="118" x2="440" y2="138" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="60" y="140" width="760" height="54" fill="#16a085" rx="6"/>
+  <text x="440" y="161" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 2：IoStoreCommandlet 读取 Cook 结果，初始化容器目标（Container Targets）</text>
+  <text x="440" y="179" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">读取 PackagingSettings 中定义的 Chunk 分配规则（哪些资产放入哪个容器）</text>
+  <text x="440" y="191" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">为每个容器创建 IIoStoreWriter，设置 ContainerId（FNV64 对容器名哈希）</text>
+
+  <line x1="440" y1="194" x2="440" y2="214" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="60" y="216" width="760" height="80" fill="#8e44ad" rx="6"/>
+  <text x="440" y="236" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 3：PackageStoreOptimizer 对每个 .uasset 生成 Export Bundle</text>
+  <text x="440" y="254" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">读取 uasset 的 FPackageFileSummary（Header），提取 ExportMap / ImportMap / NameMap</text>
+  <text x="440" y="268" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">按依赖顺序将 Export 对象序列化为 ExportBundle 二进制数据</text>
+  <text x="440" y="282" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">每个 ExportBundle 作为一个 Chunk 写入：ChunkId = {PackageId, bundleIdx, ExportBundleData}</text>
+  <text x="440" y="294" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">BulkData（大型纹理原始数据等）单独作为 BulkData Chunk</text>
+
+  <line x1="440" y1="296" x2="440" y2="316" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="60" y="318" width="760" height="66" fill="#e67e22" rx="6"/>
+  <text x="440" y="340" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 4：IIoStoreWriter 压缩并写入 .ucas（数据文件）</text>
+  <text x="440" y="358" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">每个 Chunk 数据切分为若干压缩块（CompressionBlockSize，通常 64KB）</text>
+  <text x="440" y="372" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">按 Oodle/Zlib 压缩，并按 PartitionSize 分割成多个 .ucas 分区文件（_s1, _s2...）</text>
+  <text x="440" y="384" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">记录每个 Chunk 的 Offset + Length → 存入 FIoOffsetAndLength 数组</text>
+
+  <line x1="440" y1="384" x2="440" y2="404" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 5 -->
+  <rect x="60" y="406" width="760" height="66" fill="#c0392b" rx="6"/>
+  <text x="440" y="428" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 5：生成并写入 .utoc（目录索引文件）</text>
+  <text x="440" y="446" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">序列化 FIoStoreTocHeader，写入 ChunkIds[], ChunkOffsetLengths[], CompressionBlocks[]</text>
+  <text x="440" y="460" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">若启用完美哈希（PerfectHash），生成并写入 ChunkPerfectHashSeeds[]</text>
+  <text x="440" y="472" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">若需要 DirectoryIndex，序列化文件路径树（用于编辑器/非发行版）</text>
+
+  <line x1="440" y1="472" x2="440" y2="492" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 6 -->
+  <rect x="60" y="494" width="760" height="54" fill="#2c3e50" rx="6"/>
+  <text x="440" y="516" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 6：WriteContainerHeaderChunk —— 写入 FIoContainerHeader 作为特殊 Chunk</text>
+  <text x="440" y="534" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aec">PackageId → PackageName 映射、ImportedPackages 图、ExportMap（供运行时解析导入依赖使用）</text>
+  <text x="440" y="546" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#8ab">这个 Header Chunk 类型为 EIoChunkType::ContainerHeader，在容器挂载时被优先读取</text>
+
+  <line x1="440" y1="548" x2="440" y2="568" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 7 -->
+  <rect x="60" y="570" width="760" height="42" fill="#1a5276" rx="6"/>
+  <text x="440" y="592" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 7：生成兼容性 .pak 文件（含 FIoContainerHeader）</text>
+  <text x="440" y="606" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#a8d">可选地将 FIoContainerHeader 写入同名 .pak 文件，允许运行时挂载时从 PAK 获取容器元数据</text>
+
+  <line x1="440" y1="612" x2="440" y2="632" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Result -->
+  <rect x="200" y="634" width="480" height="64" fill="#1a1a2e" rx="8"/>
+  <text x="440" y="655" font-family="Arial,sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">✓ 输出文件：</text>
+  <text x="440" y="673" font-family="Arial,sans-serif" font-size="12" text-anchor="middle" fill="#aaa">game.utoc（目录） + game.ucas（数据）+ game.pak（元数据）</text>
+  <text x="440" y="689" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">如果数据超过 PartitionSize，还有 game_s1.ucas, game_s2.ucas...</text>
+
+  <!-- Note -->
+  <rect x="60" y="714" width="760" height="54" fill="#fff" rx="6" stroke="#ddd" stroke-width="1"/>
+  <text x="80" y="732" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#333">对比 PAK 模式的关键差异：</text>
+  <text x="80" y="750" font-family="Arial,sans-serif" font-size="11" fill="#555">• PAK：一个文件存全部数据 + 索引；IoStore：索引(.utoc) 与数据(.ucas) 分离，ChunkId 取代文件路径，按 Chunk 粒度加载</text>
+  <text x="80" y="764" font-family="Arial,sans-serif" font-size="11" fill="#555">• IoStore 支持异步并发请求（FIoBatch 批量读取），I/O 效率更高；PAK 是按顺序读取文件的整体数据</text>
+</svg>

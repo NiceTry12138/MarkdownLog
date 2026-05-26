@@ -1215,6 +1215,453 @@ if (IKLength > FKLength)
 
 ---
 
+## 九、程序化动画（Procedural Animation）
+
+### 9.1 什么是程序化动画
+
+**程序化动画**是指在运行时通过算法实时计算骨骼变换，而非回放预先录制的关键帧数据。它允许角色动态响应任意地形、物体和游戏状态，是高质量 AAA 游戏动画的核心技术之一。
+
+| 维度 | 关键帧动画 | 物理模拟 | 程序化动画 |
+|------|-----------|---------|-----------|
+| 数据来源 | 美术预制资产 | 物理引擎自动算 | 算法 + 环境感知 |
+| 适应性 | 固定，无法适应地形 | 完全随机，无法控制 | 可控且自适应 |
+| 性能 | 采样开销低 | 解算开销高 | 中等，可优化 |
+| 典型用途 | 通用动作表演 | 布料/毛发/破碎 | 脚步/脊柱/IK 修正 |
+
+**核心思想**：以 FK 动画 Pose 为基础，用 IK 算法 + 场景查询 + 弹簧插值在运行时修正骨骼变换，使角色对环境产生自然响应。
+
+![程序化动画管线总览](Image/procedural-anim-overview.svg)
+
+---
+
+### 9.2 程序化动画与 IK 的关系
+
+IK（逆向运动学）是程序化动画的核心原语：
+
+```
+程序化动画 = IK 算法 + 场景感知（RayTrace）+ 状态机 + 弹簧插值
+```
+
+具体拆解：
+
+- **IK 算法**（FABRIK / TwoBoneIK / SplineIK / CCDIK）：给定末端执行器目标位置，反算关节链中各骨骼旋转
+- **场景感知**：`World->SweepSingleByChannel()` / `LineTraceSingle()` 实时查询地形高度、法线方向
+- **状态机**：控制哪条腿处于 Planted/Unplanted/Swing 阶段，决定 IK 何时激活
+- **弹簧插值**（`FVectorSpringState` / `FQuatSpringState`）：将 IK 修正从"立即跳变"平滑成自然的弹性过渡
+
+UE 动画管线中，所有程序化动画节点都继承 `FAnimNode_SkeletalControlBase`，在 `EvaluateSkeletalControl_AnyThread()` 中接收 FK ComponentSpace Pose，执行修正，输出 `OutBoneTransforms`。
+
+---
+
+### 9.3 ChainIK：FABRIK 算法（正向-反向迭代）
+
+**源码位置**：`Source/Runtime/AnimationCore/Private/FABRIK.cpp`  
+**核心函数**：`AnimationCore::SolveFabrik(InOutChain, TargetPosition, MaximumReach, Precision, MaxIterations)`
+
+![FABRIK 算法三阶段图](Image/fabrik-chain-ik.svg)
+
+#### 算法流程
+
+**输入**：骨链 `P₀…Pₙ`（P₀ 为根，Pₙ 为末端），链接长度 `L₁…Lₙ`，目标 `T`
+
+**情况 1 — 目标超出最大伸展**：
+
+$$|T - P_0|^2 > \left(\sum_{i=1}^{n} L_i\right)^2$$
+
+将所有骨骼沿 `P₀→T` 方向拉直成一条线，按各段骨长累加放置。
+
+**情况 2 — 目标在可达范围内，迭代求解**：
+
+**前向传递（Forward Pass，Tip → Root）**：
+
+$$P_i = P_{i+1} + \hat{r}_{i,i+1} \cdot L_{i+1}, \quad \hat{r}_{i,i+1} = \frac{P_i - P_{i+1}}{|P_i - P_{i+1}|}$$
+
+从 `i = Tip-1` 倒数至 `i = 1`；先将 Tip 移到目标，再逐步向根部调整，保持每段骨长不变。
+
+**后向传递（Backward Pass，Root → Tip）**：
+
+$$P_i = P_{i-1} + \hat{r}_{i-1,i} \cdot L_i, \quad \hat{r}_{i-1,i} = \frac{P_i - P_{i-1}}{|P_i - P_{i-1}|}$$
+
+从 `i = 1` 到 `i = Tip`；恢复根节点位置，再从根向末端逐步调整。
+
+**收敛条件**：
+
+$$\left| L_{tip} - \text{dist}(P_{tip-1},\ T) \right| < \text{Precision}$$
+
+默认 `Precision = 0.01cm`，最多 `MaxIterations = 10` 次。
+
+**骨骼旋转修正**（`FABRIK.cpp` 迭代后执行）：
+
+$$\Delta R = \text{FQuat}\!\left(\hat{u} \times \hat{v},\ \arccos(\hat{u} \cdot \hat{v})\right), \quad \hat{u} = \text{OldBoneDir},\ \hat{v} = \text{NewBoneDir}$$
+
+```cpp
+// FABRIK.cpp 核心循环（简化）
+// Forward pass
+for (int32 i = TipBoneIndex - 1; i >= 1; --i) {
+    FVector Dir = (Chain[i].Position - Chain[i+1].Position).GetSafeNormal();
+    Chain[i].Position = Chain[i+1].Position + Dir * Chain[i+1].Length;
+}
+// Backward pass (root fixed)
+Chain[0].Position = RootPosition;
+for (int32 i = 1; i <= TipBoneIndex; ++i) {
+    FVector Dir = (Chain[i].Position - Chain[i-1].Position).GetSafeNormal();
+    Chain[i].Position = Chain[i-1].Position + Dir * Chain[i].Length;
+}
+```
+
+**ControlRig 对应节点**：`RigUnit_FABRIKItemArray`（`RigUnit_FABRIK.cpp`），内部直接调用 `AnimationCore::SolveFabrik()`，之后用 `FQuat::FindBetweenNormals()` 重新对齐每根骨骼朝向。
+
+**UE 中的 AnimGraph 节点**：`FABRIK` 节点；多关节腿链由 `AnimNode_LegIK` 自动选择 FABRIK 还是 TwoBoneIK（依据 `NumBonesInLimb`）。
+
+---
+
+### 9.4 SplineIK：骨骼链沿样条曲线变形
+
+**源码位置**：`Source/Runtime/AnimationCore/Private/SplineIK.cpp`  
+**核心函数**：`AnimationCore::SolveSplineIK(BoneTransforms, PositionSpline, RotationSpline, ScaleSpline, ...)`
+
+将 N 根骨骼沿一条 Catmull-Rom 样条分布，使骨链能弯曲成任意曲线形状（蛇身、脊柱、触手）。
+
+#### 算法步骤
+
+**① 拉伸比率**（控制骨链能否随样条伸缩）：
+
+$$\text{TotalStretchRatio} = \frac{\text{Lerp}(L_{\text{orig}},\ L_{\text{curr}},\ \alpha_{\text{stretch}})}{L_{\text{orig}}}$$
+
+其中 $L_{\text{orig}}$ 为原始样条长度，$L_{\text{curr}}$ 为当前样条长度，$\alpha_{\text{stretch}} \in [0,1]$ 为拉伸程度参数。
+
+**② 球面求交找样条参数**（对第 `i` 根骨骼）：
+
+在样条上找参数 $\alpha_i$，使得：
+
+$$|P(\alpha_i) - P_{\text{prev}}| = L_i \cdot \text{TotalStretchRatio}$$
+
+即在前一骨骼落点为圆心、骨长（含拉伸）为半径的球面与样条的第一个交点。  
+实现中用 `FindParamAtFirstSphereIntersection()` 沿样条线性近似步进求解。
+
+**③ 骨骼位置**：
+
+$$\text{BoneTransform}[i].\text{Location} = \text{PositionSpline.Eval}(\alpha_i)$$
+
+**④ 骨骼旋转**：
+
+$$R_i = R_{\text{roll}} \cdot \text{FindBetweenNormals}(\hat{u}_{\text{current}},\ \hat{v}_{\text{new}}) \cdot R_{\text{boneOffset}} \cdot \text{SplineRot.Eval}(\alpha_i)$$
+
+其中 $\hat{v}_{\text{new}}$ 为样条在 $\alpha_i$ 处的切线方向，$\text{FindBetweenNormals}$ 计算从当前骨骼轴到新方向的最短旋转。
+
+**ControlRig 对应节点**：`RigUnit_SplineIK`；`AnimGraph` 节点：`Spline IK`。
+
+---
+
+### 9.5 FootIK：FootPlacement 系统（接触约束 + 弹簧锁定）
+
+**源码位置**：`Plugins/Animation/AnimationWarping/Source/Runtime/Private/BoneControllers/AnimNode_FootPlacement.cpp`  
+**头文件**：`AnimNode_FootPlacement.h`
+
+FootPlacement 是比简单 RayHit 偏移更完整的脚步接触系统，解决了普通 FootIK 无法处理的"脚滑""穿插""骨盆抖动"问题。
+
+![FootPlacement 系统管线](Image/foot-placement-pipeline.svg)
+
+#### 核心数据结构
+
+```cpp
+// AnimNode_FootPlacement.h
+enum class EPlantType : uint8 {
+    Unplanted,   // 摆动相：脚随 FK 动画自由运动
+    Planted,     // 支撑相：脚锁定在 PlantPlane 上
+    Replanted,   // 重新落点：平滑过渡到新的锁定位置
+};
+
+struct FLegRuntimeData {
+    // 运动状态
+    float      Speed;                  // FK 脚速度（从曲线读取）
+    float      LockAlpha;              // 当前锁定混合比
+    float      DistanceToPlant;        // 脚到落地目标距离
+    bool       bWantsToPlant;          // 是否应当进入 Planted 状态
+    // 锁定信息
+    FPlane     PlantPlaneWS;           // 锁定地面平面（世界空间）
+    FQuat      TwistCorrection;        // 脚踝扭转修正
+    // 弹簧状态
+    FVectorSpringState PlantOffsetTranslationSpringState;
+    FQuatSpringState   PlantOffsetRotationSpringState;
+    FFloatSpringState  GroundHeightSpringState;
+    FQuatSpringState   GroundRotationSpringState;
+};
+```
+
+#### 核心流程
+
+**① 场景探测**：`FindPlantTraceImpact()`
+
+```cpp
+// AnimNode_FootPlacement.cpp
+World->SweepSingleByChannel(
+    HitResult,
+    TraceStart,     // IK 足位置 + StartOffset（向上偏移）
+    TraceEnd,       // IK 足位置 - EndOffset（向下偏移）
+    FQuat::Identity,
+    ECC_Visibility,
+    FCollisionShape::MakeSphere(Settings.SweepRadius)
+);
+// 若 !HitResult.bBlockingHit：fallback 到 CharacterMovementComponent 地面
+```
+
+**② 步态相位判断**：
+
+```cpp
+bWantsToPlant = (FootSpeedCurve.Eval(NormalizedTime) < PlantSpeedThreshold);
+// 脚速曲线低点 = 支撑相 = 脚应当贴地锁定
+```
+
+**③ 状态机转换**：
+
+```
+Unplanted ──(bWantsToPlant=true)──► Planted
+Planted   ──(锁定点不可达)──────► Replanted
+Replanted ──(新落点确认)──────► Planted
+Planted/Replanted ─(bWantsToPlant=false)─► Unplanted
+```
+
+**④ 弹簧平滑**：所有从旧位置到新锁定位置的过渡均通过 `FVectorSpringState` / `FQuatSpringState` 平滑，防止位置/旋转跳变。
+
+**⑤ 骨盆补偿**：与 StrideWarping 相同的 `FIKFootPelvisPullDownSolver`，迭代下移骨盆使所有腿的 IK 目标在可伸展范围内。
+
+**⑥ 腿部 IK**（`AnimNode_LegIK`）：
+
+```cpp
+// AnimNode_LegIK.cpp — EvaluateSkeletalControl_AnyThread
+OrientLegTowardsIK();  // FQuat::FindBetweenNormals(FKDir, IKDir) 旋转整条腿
+DoLegReachIK();        // SolveFABRIK() 或 SolveTwoBoneIK()
+AdjustKneeTwist();     // 修正膝关节朝向
+// 最终：FK 脚旋转替换为 IK 脚旋转
+FKLegBoneTransforms[0].SetRotation(IKFootRotation);
+```
+
+---
+
+### 9.6 ControlRig：程序化动画的运行时框架
+
+**源码位置**：`Plugins/Animation/ControlRig/Source/ControlRig/`
+
+ControlRig 是 UE 提供的可视化程序化动画编程框架，本质是一个**对骨骼层级进行操作的节点图虚拟机**。
+
+#### 核心组件
+
+| 组件 | 类 | 职责 |
+|------|---|------|
+| 骨骼层级 | `URigHierarchy` | 存储所有 Bones / Controls / Nulls / Curves 的变换 |
+| 运算单元 | `FRigUnit` | 每个节点操作（IK、Math、Transform 等），有 `Execute()` 方法 |
+| 虚拟机 | `URigVM` | 将 RigUnit 节点图编译为字节码，每帧执行 |
+| AnimBP 桥接 | `FAnimNode_ControlRigBase` | 在 AnimBP 评估阶段与 ControlRig 双向传输 Pose |
+
+#### AnimBP 到 ControlRig 的集成路径
+
+**源码**：`AnimNode_ControlRigBase.cpp`，关键路径：
+
+```
+FAnimNode_ControlRigBase::Evaluate_AnyThread()    // line 386
+  ├─ Source.Evaluate(SourcePose)                   // 获取上游 FK Pose
+  └─ ExecuteControlRig(SourcePose)                 // line 437+
+       ├─ UpdateInput(ControlRig, InOutput)         // FK Pose → RigHierarchy
+       ├─ ControlRig->Evaluate_AnyThread()          // line 497 — 执行 RigVM
+       │    └─ 按序执行所有 RigUnit（FABRIK/TwoBoneIK/SplineIK…）
+       └─ UpdateOutput(ControlRig, InOutput)        // RigHierarchy → AnimBP Pose
+```
+
+完整流程：
+
+1. `Source.Evaluate(SourcePose)`：从 AnimBP 上游节点获取 FK Pose（ComponentSpace）
+2. `UpdateInput()`：将 FK Pose 骨骼变换写入 `URigHierarchy`（当 `bTransferInputPose` = true）
+3. `ControlRig->Evaluate_AnyThread()`：执行 VM，按拓扑顺序运行所有 RigUnit  
+4. `UpdateOutput()`：将 `URigHierarchy` 修改后的变换读回 `FPoseContext`，供后续节点使用
+
+如果 `InternalBlendAlpha < 1.0`（部分混合），则对 ControlRig 输出做加性混合：
+
+```cpp
+// AnimNode_ControlRigBase.cpp lines 410-425
+FAnimationRuntime::ConvertPoseToAdditive(AdditivePose.Pose, SourcePose.Pose);
+FAnimationRuntime::AccumulateAdditivePose(BaseAnimPoseData, AdditivePoseData, 
+                                          InternalBlendAlpha, AAT_LocalSpaceBase);
+```
+
+#### 内置 IK RigUnit 节点
+
+| 节点 | 文件 | 适用场景 |
+|------|------|---------|
+| `RigUnit_TwoBoneIKSimple` | `Hierarchy/RigUnit_TwoBoneIK.cpp` | 四肢（2 骨节段）标准 IK |
+| `RigUnit_FABRIK` / `FABRIKItemArray` | `Hierarchy/RigUnit_FABRIK.cpp` | N 骨链，自由端效应器 |
+| `RigUnit_CCDIK` | `Hierarchy/RigUnit_CCDIK.cpp` | 循环坐标下降，适合角度约束多的链 |
+| `RigUnit_SpringIK` | `Hierarchy/RigUnit_SpringIK.cpp` | 弹簧阻尼 IK，有惯性感 |
+| `RigUnit_MultiFABRIK` | `Hierarchy/RigUnit_MultiFABRIK.cpp` | 多末端效应器 FABRIK |
+| `RigUnit_SplineIK` | `Hierarchy/RigUnit_SplineIK.cpp` | 骨链沿样条变形 |
+
+---
+
+### 9.7 实例：6 足蜘蛛程序化爬行（无动画资产）
+
+蜘蛛只有骨架，没有任何动画片段，全部运动由程序实时计算。关键难点：
+- 6 条腿必须协调，不能同时全部抬起
+- 需要爬墙（地面法线不是 WorldUp）
+- 台面完全随机，无法预录关键帧
+
+![6 足蜘蛛程序化爬行](Image/spider-procedural-gait.svg)
+
+#### 系统设计
+
+**① 身体参考系（Body Local Frame）**
+
+将所有计算移入以地面法线为"Up"的局部坐标系中：
+
+```cpp
+// 当前"上方向" = 所有已落地脚法线的加权平均
+FVector AvgNormal = FVector::ZeroVector;
+for (auto& Leg : PlantedLegs)
+    AvgNormal += Leg.SurfaceNormal;
+AvgNormal.Normalize();  // 用于替代 WorldUp
+// 旋转身体朝向 AvgNormal
+FQuat BodyOrientDelta = FQuat::FindBetweenNormals(GetActorUpVector(), AvgNormal);
+```
+
+爬墙时此计算天然正确，无需特殊分支。
+
+**② 理想落脚点（Ideal Foot Target）**
+
+6 个固定偏移量在身体局部坐标系中定义每条腿的理想位置：
+
+```cpp
+// 例：前左腿
+FVector IdealLocal = FVector(-80, -120, 0);  // 身体局部
+FVector IdealWorld = BodyTransform.TransformPosition(IdealLocal);
+// 沿局部"下方"方向 RayTrace 到地表
+FVector TraceDir = -BodyUp;  // 地面法线的反方向
+World->LineTraceSingleByChannel(HitResult, IdealWorld + BodyUp * 200,
+                                 IdealWorld + TraceDir * 200, ...);
+FVector FootTarget = HitResult.ImpactPoint;
+```
+
+**③ 步态控制（交替三足）**
+
+- **组 A**：腿 1, 3, 5（左前、左中、左后）
+- **组 B**：腿 2, 4, 6（右前、右中、右后）
+- 组 A 迈步时组 B 支撑，相位偏移 0.5 × 步态周期
+- 任意时刻至少 3 条腿着地，保持静态稳定性
+
+**④ 迈步触发**
+
+```cpp
+// 每条腿独立判断
+float DistToIdeal = FVector::Dist(CurrentFootPos, IdealFootPos);
+bool bShouldStep = (DistToIdeal > StepThreshold)        // 偏离理想位过远
+                || (LegStretchRatio > SoftStretchLimit); // 腿链快超出伸展极限
+```
+
+**⑤ 迈步动画（摆动弧线）**
+
+```cpp
+// 摆动相每帧更新
+float Alpha = StepTimer / StepDuration;          // 0 → 1
+float SmoothAlpha = FMath::SmoothStep(0, 1, Alpha);
+FVector FootPos = FMath::Lerp(LiftPos, LandTarget, SmoothAlpha);
+FootPos += BodyUp * (StepArcHeight * FMath::Sin(Alpha * PI)); // 抬脚弧线
+```
+
+**⑥ 每条腿 TwoBoneIK**
+
+```
+髋关节 (Hip) → 膝关节 (Knee) → 脚踝 (Foot)  × 6 条腿
+使用 ControlRig: RigUnit_TwoBoneIKSimple
+HingeAxis = 膝关节弯折轴（每条腿不同，需单独配置）
+```
+
+**⑦ 身体高度（Pelvis Height）**
+
+迭代调整骨盆在局部"Up"方向上的位置，使所有腿的目标都在 `[MinReach, MaxReach]` 范围内，参考 `FIKFootPelvisPullDownSolver` 的迭代思路。
+
+---
+
+### 9.8 实例：双足角色上楼梯（GDC 2016 Biomechanical Approach）
+
+**参考**：GDC 2016《Fitting the World: A Biomechanical Approach to Foot IK》—— Ubisoft，Assassin's Creed
+
+![上楼梯：响应式 vs 预测式](Image/stair-climbing-biomech.svg)
+
+#### 六大难点
+
+1. **台阶高度不均**：脚必须精确落在踏面，不能穿插或悬空
+2. **迈步时机预测**：IK 修正必须提前启动，响应式方案总是"慢一拍"
+3. **骨盆振荡**：每步骨盆随台阶高差上下波动，响应式骨盆有明显滞后感
+4. **膝关节朝向**：上楼梯时膝盖需前倾，与平地步行的外旋方向不同
+5. **高速适配**：跑步时无时间精确调整，需外推预测落点
+6. **平地→楼梯过渡**：脚必须在触到台沿之前就开始抬起
+
+#### 预测式仿生方案的核心思想
+
+**响应式（传统 FootIK）**：检测到地面高差 → 立即偏移脚 Z 轴 → 视觉跳变 + 骨盆滞后
+
+**预测式（GDC 2016）**：对齐动画相位与 IK 修正时机 → 提前将脚导向预测落点 → 全程弹簧平滑
+
+Ubisoft 在 Assassin's Creed 中使用骨骼事件（Bone Notify）标记每条腿的"开始支撑相"时刻，从该时刻起逐帧将脚引向 IK 目标，而非在触地瞬间突然修正。
+
+#### UE FootPlacement 上楼梯完整方案（源码对照）
+
+**步骤 1 — 提前探测踏面**
+
+```cpp
+// AnimNode_FootPlacement.cpp — FindPlantTraceImpact()
+// TraceStart = IK 脚位置 + Settings.StartOffset（向上 +50cm）
+// TraceEnd   = IK 脚位置 - Settings.EndOffset（向下 -50cm）
+// 对于楼梯：TraceEnd 会穿过当前台阶，ImpactPoint 落在踏面上
+World->SweepSingleByChannel(HitResult, TraceStart, TraceEnd, ...
+                             FCollisionShape::MakeSphere(SweepRadius));
+```
+
+**步骤 2 — 支撑相锁定踏面**
+
+```cpp
+// bWantsToPlant 由脚速曲线驱动（步态相位自动对应动画）
+// 当脚进入支撑相（速度曲线低值区间）→ 立即锁定到已探测的 ImpactPoint
+PlantData.PlantPlaneWS = FPlane(HitResult.ImpactPoint, HitResult.ImpactNormal);
+```
+
+这与 GDC 2016 的"对齐相位"本质相同：动画步态曲线即相位标记。
+
+**步骤 3 — 脚踝旋转对齐台阶法线**
+
+```cpp
+// 脚旋转 = Lerp(FK旋转, 地面对齐旋转, AlignmentAlpha)
+// AlignmentAlpha 随脚趾速度降低而增大（支撑相时完全对齐）
+// 使脚面贴合台阶角度，防止脚悬空或穿入踏面斜面
+```
+
+**步骤 4 — 骨盆高度平滑**
+
+```cpp
+// FIKFootPelvisPullDownSolver 迭代：
+// 对所有腿，若 IKTarget 距当前骨盆位置超出最大骨链长，则下移骨盆
+// 台阶较高时：骨盆被下拉 → 身体整体降低 → 腿伸展到踏面
+// Spring 插值防止骨盆每步跳变
+```
+
+**步骤 5 — FABRIK 腿部求解**
+
+```cpp
+// AnimNode_LegIK：FABRIK 将腿链延伸到锁定后的 IK 脚目标
+// 目标 = 台阶踏面上的 AlignedFootTransformWS
+// 膝关节朝向由 HingeRotationAxis 约束（朝前），避免内外翻
+```
+
+**FootPlacement 相对传统 FootIK 的优势**：
+
+| 问题 | 传统 RayHit Z 偏移 | FootPlacement |
+|------|--------------------|---------------|
+| 脚滑 | ✗ 无法防止 | ✓ 支撑相锁定 |
+| 穿插 | ✗ 仅偏移，无旋转 | ✓ PlantPlane 全 3D 对齐 |
+| 骨盆抖动 | ✗ 无骨盆补偿 | ✓ PelvisSolver + Spring |
+| 台阶过渡跳变 | ✗ 立即跳 | ✓ Spring 弹性过渡 |
+| 膝关节朝向 | ✗ 不处理 | ✓ AdjustKneeTwist |
+
+---
+
 ## 附录：关键源文件速查
 
 | 文件 | 路径 | 内容 |
@@ -1231,6 +1678,12 @@ if (IKLength > FKLength)
 | `AnimationRuntime.h` | `Runtime/Engine/Public/Animation/` | `AdvanceTime`, 工具函数 |
 | `AnimNode_StrideWarping.cpp` | `Plugins/Animation/AnimationWarping/Source/Runtime/Private/BoneControllers/` | StrideWarping 完整实现 |
 | `BoneControllerSolvers.cpp` | `Runtime/AnimGraphRuntime/Private/BoneControllers/` | 骨盆下拉迭代求解器 |
+| `FABRIK.cpp` | `Runtime/AnimationCore/Private/` | FABRIK 前向-后向迭代 IK 算法 |
+| `SplineIK.cpp` | `Runtime/AnimationCore/Private/` | SplineIK 样条映射算法 |
+| `AnimNode_FootPlacement.cpp` | `Plugins/Animation/AnimationWarping/Source/Runtime/Private/BoneControllers/` | FootPlacement 脚部锁定 + 弹簧系统 |
+| `AnimNode_LegIK.cpp` | `Runtime/AnimGraphRuntime/Private/BoneControllers/` | 腿部 IK：OrientLeg + FABRIK + KneeTwist |
+| `AnimNode_ControlRigBase.cpp` | `Plugins/Animation/ControlRig/Source/ControlRig/Private/` | ControlRig 与 AnimBP 集成桥接 |
+| `RigUnit_FABRIK.cpp` | `Plugins/Animation/ControlRig/Source/ControlRig/Private/Units/Highlevel/Hierarchy/` | ControlRig FABRIK RigUnit 实现 |
 
 ---
 

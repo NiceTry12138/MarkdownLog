@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520">
+  <defs>
+    <marker id="arrR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f85149"/>
+    </marker>
+    <marker id="arrG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrW" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="450" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="#e6edf3" font-family="Arial, sans-serif">双足角色上楼梯：响应式 vs 预测式（GDC 2016 Biomechanical IK）</text>
+
+  <!-- Divider line -->
+  <line x1="450" y1="36" x2="450" y2="510" stroke="#30363d" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- ===== LEFT: REACTIVE (BAD) ===== -->
+  <rect x="12" y="36" width="426" height="472" rx="6" fill="#1a0505" stroke="#f85149" stroke-width="1.5"/>
+  <text x="225" y="56" text-anchor="middle" font-size="14" font-weight="bold" fill="#f85149" font-family="Arial, sans-serif">响应式 IK（传统方案，问题多）</text>
+
+  <!-- Stair scene LEFT -->
+  <!-- Stairs -->
+  <rect x="60" y="290" width="80" height="80" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+  <rect x="140" y="260" width="80" height="110" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+  <rect x="220" y="230" width="80" height="140" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+  <rect x="300" y="200" width="80" height="170" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+
+  <!-- Ground line -->
+  <line x1="30" y1="370" x2="390" y2="370" stroke="#6e7681" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Character (stick figure at mid-stair) -->
+  <!-- Body at x=210 stepping on stair 3 -->
+  <!-- Spine -->
+  <line x1="210" y1="175" x2="210" y2="225" stroke="#8b949e" stroke-width="3"/>
+  <!-- Head -->
+  <circle cx="210" cy="166" r="12" fill="#21262d" stroke="#8b949e" stroke-width="2"/>
+  <!-- Arms -->
+  <line x1="210" y1="185" x2="186" y2="210" stroke="#8b949e" stroke-width="2"/>
+  <line x1="210" y1="185" x2="234" y2="210" stroke="#8b949e" stroke-width="2"/>
+  <!-- Pelvis -->
+  <circle cx="210" cy="228" r="5" fill="#8b949e"/>
+
+  <!-- Left leg: foot snapped high (step) - reactive jerk -->
+  <!-- Hip at 210,228 → knee at 185,258 → foot at 160,260 (snapped) -->
+  <line x1="210" y1="228" x2="185" y2="258" stroke="#f85149" stroke-width="2.5"/>
+  <line x1="185" y1="258" x2="158" y2="260" stroke="#f85149" stroke-width="2.5"/>
+  <circle cx="158" cy="260" r="6" fill="#f85149"/>
+  <!-- Snap arrow showing sudden jump -->
+  <line x1="158" y1="280" x2="158" y2="264" stroke="#f85149" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#arrR)"/>
+  <text x="100" y="285" font-size="9" fill="#f85149" font-family="Arial, sans-serif">脚突然弹起（Snap）</text>
+
+  <!-- Right leg: foot too late, penetrating -->
+  <!-- Hip at 210,228 → knee at 235,255 → foot at 250,290 (sinking into stair) -->
+  <line x1="210" y1="228" x2="235" y2="255" stroke="#ff7b72" stroke-width="2.5"/>
+  <line x1="235" y1="255" x2="248" y2="285" stroke="#ff7b72" stroke-width="2.5"/>
+  <!-- Foot partially below stair surface -->
+  <circle cx="248" cy="285" r="6" fill="#ff7b72"/>
+  <!-- Stair surface violation -->
+  <text x="290" y="290" font-size="9" fill="#ff7b72" font-family="Arial, sans-serif">脚穿入踏面</text>
+
+  <!-- Pelvis jitter arrow -->
+  <path d="M195,215 Q180,208 185,200 Q190,192 205,198 Q220,204 215,212 Q210,220 210,228" stroke="#f85149" stroke-width="1.5" fill="none"/>
+  <text x="148" y="198" font-size="9" fill="#f85149" text-anchor="middle" font-family="Arial, sans-serif">骨盆抖动</text>
+
+  <!-- Problem list -->
+  <rect x="24" y="310" width="406" height="188" rx="4" fill="#0d0808" stroke="#f85149" stroke-width="1"/>
+  <text x="227" y="328" text-anchor="middle" font-size="11" font-weight="bold" fill="#f85149" font-family="Arial, sans-serif">六大难点（GDC 2016 列举）</text>
+  <text x="30" y="345" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">① 台阶高度各异 → 脚必须精确落在踏面上，不能穿入或悬空</text>
+  <text x="30" y="361" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">② 迈步时机必须预测，非响应（反应太慢 = 脚滑/穿插）</text>
+  <text x="30" y="377" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">③ 每步骨盆高度变化 → 响应式骨盆调整有明显延迟感</text>
+  <text x="30" y="393" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">④ 膝关节朝向 在楼梯上与平地不同（需前倾 / 外旋）</text>
+  <text x="30" y="409" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">⑤ 高速奔跑 → 无时间调整，需根据速度外推落点</text>
+  <text x="30" y="425" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">⑥ 平地→楼梯过渡 → 脚需在遇到踏沿前就开始抬起</text>
+  <text x="30" y="444" font-size="10" fill="#ff7b72" font-family="Arial, sans-serif">响应式核心缺陷：</text>
+  <text x="30" y="459" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">检测到台阶 → 立即修正 → 画面跳变 / 关节弹出 / 穿插</text>
+  <text x="30" y="474" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">骨盆响应滞后 → 角色看起来"下沉"进楼梯</text>
+  <text x="30" y="489" font-size="9" fill="#444c56" font-family="Arial, sans-serif">传统 FootIK 只做 RayHit 后 Z 轴偏移，对楼梯几乎无效</text>
+
+  <!-- ===== RIGHT: BIOMECHANICAL PREDICTIVE ===== -->
+  <rect x="462" y="36" width="426" height="472" rx="6" fill="#0a1a0a" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="675" y="56" text-anchor="middle" font-size="14" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">预测式仿生方案（UE FootPlacement）</text>
+
+  <!-- Stair scene RIGHT (cleaner) -->
+  <rect x="510" y="290" width="80" height="80" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+  <rect x="590" y="260" width="80" height="110" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+  <rect x="670" y="230" width="80" height="140" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+  <rect x="750" y="200" width="80" height="170" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+
+  <!-- Character smooth posture -->
+  <!-- Spine slightly tilted forward -->
+  <line x1="662" y1="170" x2="658" y2="225" stroke="#8b949e" stroke-width="3"/>
+  <circle cx="665" cy="160" r="12" fill="#21262d" stroke="#56d364" stroke-width="2"/>
+  <line x1="660" y1="183" x2="636" y2="208" stroke="#8b949e" stroke-width="2"/>
+  <line x1="660" y1="183" x2="684" y2="208" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="658" cy="228" r="5" fill="#56d364"/>
+
+  <!-- Left foot locked on stair 3 (planted, clean) -->
+  <!-- Hip at 658,228 → knee at 635,258 → foot at 605,260 (locked on tread) -->
+  <line x1="658" y1="228" x2="633" y2="255" stroke="#3fb950" stroke-width="2.5"/>
+  <line x1="633" y1="255" x2="605" y2="260" stroke="#3fb950" stroke-width="2.5"/>
+  <circle cx="605" cy="260" r="7" fill="#3fb950"/>
+  <!-- Lock symbol -->
+  <rect x="597" y="252" width="16" height="10" rx="2" fill="none" stroke="#56d364" stroke-width="1"/>
+  <text x="640" y="246" font-size="9" fill="#56d364" font-family="Arial, sans-serif">Planted(锁定)</text>
+
+  <!-- Right foot swinging (predicted target shown) -->
+  <!-- Hip at 658,228 → knee at 682,255 → foot at 703,260 (coming down) -->
+  <line x1="658" y1="228" x2="682" y2="248" stroke="#ffa657" stroke-width="2.5"/>
+  <line x1="682" y1="248" x2="700" y2="245" stroke="#ffa657" stroke-width="2.5"/>
+  <circle cx="700" cy="245" r="7" fill="#ffa657"/>
+  <!-- Predicted landing target -->
+  <circle cx="735" cy="230" r="6" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <!-- Swing arc -->
+  <path d="M700,245 Q716,218 735,230" stroke="#ffa657" stroke-width="1.5" fill="none" stroke-dasharray="4,3"/>
+  <text x="740" y="218" font-size="9" fill="#56d364" font-family="Arial, sans-serif">预测落点</text>
+
+  <!-- Pelvis smooth arrow -->
+  <line x1="645" y1="220" x2="656" y2="225" stroke="#56d364" stroke-width="1.5"/>
+  <text x="618" y="218" font-size="9" fill="#56d364" text-anchor="middle" font-family="Arial, sans-serif">骨盆平滑</text>
+
+  <!-- Solution steps -->
+  <rect x="472" y="310" width="406" height="190" rx="4" fill="#0a1a0a" stroke="#238636" stroke-width="1"/>
+  <text x="675" y="328" text-anchor="middle" font-size="11" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">FootPlacement 上楼梯解决方案（UE 源码）</text>
+  <text x="478" y="345" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">① FindPlantTraceImpact(): SweepSphere ↓ 提前探测踏面 ImpactPoint</text>
+  <text x="478" y="361" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">② bWantsToPlant = 支撑相（脚速曲线低值）→ 锁定到踏面</text>
+  <text x="478" y="377" font-size="10" fill="#56d364" font-family="Arial, sans-serif">③ PlantPlane 旋转：脚踝旋转与踏面法线对齐（AlignmentAlpha 混合）</text>
+  <text x="478" y="393" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">④ FIKFootPelvisPullDownSolver 迭代 → 骨盆平滑下调适应台阶高差</text>
+  <text x="478" y="409" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">⑤ PlantOffsetTranslationSpringState → 弹簧插值防跳变</text>
+  <text x="478" y="425" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">⑥ AnimNode_LegIK (FABRIK/TwoBoneIK) → 腿链伸展到踏面目标</text>
+  <text x="478" y="441" font-size="10" fill="#3fb950" font-family="Arial, sans-serif">关键优势：脚锁定 = 防滑；提前探测 = 不穿插；弹簧 = 无跳变</text>
+  <text x="478" y="460" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">GDC 2016 核心思想：对齐动画相位与 IK 修正时机</text>
+  <text x="478" y="476" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">（Assassin's Creed 中通过骨骼事件预测落脚相位）</text>
+  <text x="478" y="492" font-size="9" fill="#444c56" font-family="Arial, sans-serif">UE FootPlacement 是对该方法论的工程化实现</text>
+</svg>

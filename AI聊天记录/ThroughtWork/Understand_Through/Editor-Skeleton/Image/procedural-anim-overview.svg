@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="900" height="500">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#388bfd"/>
+    </marker>
+    <marker id="arrG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ffa657"/>
+    </marker>
+    <marker id="arrP" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#bc8cff"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="500" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="17" font-weight="bold" fill="#e6edf3" font-family="Arial, sans-serif">程序化动画在 UE 动画管线中的位置</text>
+
+  <!-- ===== ROW 1: INPUTS ===== -->
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6e7681" font-family="Arial, sans-serif">— 输入层 —</text>
+
+  <!-- Input 1: FK Pose from AnimBP -->
+  <rect x="20" y="58" width="240" height="52" rx="5" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="140" y="77" text-anchor="middle" font-size="11" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">FK 骨骼姿势</text>
+  <text x="140" y="93" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">关键帧 / 运动捕捉 / 物理模拟</text>
+  <text x="140" y="106" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">AnimBP 评估输出的 ComponentSpacePose</text>
+
+  <!-- Input 2: Scene Query -->
+  <rect x="330" y="58" width="240" height="52" rx="5" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="450" y="77" text-anchor="middle" font-size="11" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">场景感知</text>
+  <text x="450" y="93" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">LineTrace / SweepSphere 地形查询</text>
+  <text x="450" y="106" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">CharacterMovementComponent 状态</text>
+
+  <!-- Input 3: Game Logic -->
+  <rect x="640" y="58" width="240" height="52" rx="5" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="760" y="77" text-anchor="middle" font-size="11" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">游戏状态</text>
+  <text x="760" y="93" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">速度 / 步态相位 / 自定义逻辑</text>
+  <text x="760" y="106" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">BlueprintThreadSafeUpdateAnimation</text>
+
+  <!-- Arrows from inputs -->
+  <line x1="140" y1="110" x2="140" y2="134" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="450" y1="110" x2="450" y2="134" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="760" y1="110" x2="760" y2="134" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="140" y1="134" x2="450" y2="144" stroke="#8b949e" stroke-width="1"/>
+  <line x1="760" y1="134" x2="450" y2="144" stroke="#8b949e" stroke-width="1"/>
+
+  <!-- ===== ROW 2: PROCEDURAL LAYER ===== -->
+  <rect x="20" y="148" width="860" height="200" rx="7" fill="#0f1a2e" stroke="#1f6feb" stroke-width="1.5"/>
+  <text x="450" y="169" text-anchor="middle" font-size="14" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">程序化动画求解层（Procedural Animation Layer）</text>
+
+  <!-- Sub-box 1: SplineIK -->
+  <rect x="35" y="178" width="245" height="156" rx="5" fill="#0a1929" stroke="#8957e5" stroke-width="1.2"/>
+  <text x="158" y="197" text-anchor="middle" font-size="12" font-weight="bold" fill="#d2a8ff" font-family="Arial, sans-serif">SplineIK（脊柱 / 触手）</text>
+  <text x="158" y="213" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">将 N 根骨骼映射到样条曲线上</text>
+  <text x="158" y="228" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">每骨骼参数：球面求交 → 位置</text>
+  <text x="158" y="247" text-anchor="middle" font-size="10" fill="#cae8ff" font-family="Arial, sans-serif">AnimationCore::SolveSplineIK()</text>
+  <text x="158" y="263" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">用途：蛇身、尾巴、脊柱弯曲</text>
+  <text x="158" y="279" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">支持 Stretch/Twist/Roll</text>
+  <text x="158" y="295" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">ControlRig: RigUnit_SplineIK</text>
+  <text x="158" y="328" text-anchor="middle" font-size="10" fill="#bc8cff" font-family="Arial, sans-serif">来源: AnimationCore/SplineIK.cpp</text>
+
+  <!-- Sub-box 2: FootPlacement -->
+  <rect x="327" y="178" width="246" height="156" rx="5" fill="#0a1929" stroke="#238636" stroke-width="1.2"/>
+  <text x="450" y="197" text-anchor="middle" font-size="12" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">FootIK（脚部接触约束）</text>
+  <text x="450" y="213" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">SweepSphere 检测地面高度</text>
+  <text x="450" y="228" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">状态机：Unplanted/Planted/Replanted</text>
+  <text x="450" y="247" text-anchor="middle" font-size="10" fill="#cae8ff" font-family="Arial, sans-serif">AnimNode_FootPlacement</text>
+  <text x="450" y="263" text-anchor="middle" font-size="10" fill="#56d364" font-family="Arial, sans-serif">脚锁定 + 弹簧平滑 + 骨盆补偿</text>
+  <text x="450" y="279" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">用途：不平地面、楼梯适应</text>
+  <text x="450" y="295" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">AnimNode_LegIK 驱动腿部链</text>
+  <text x="450" y="328" text-anchor="middle" font-size="10" fill="#3fb950" font-family="Arial, sans-serif">来源: AnimationWarping/FootPlacement</text>
+
+  <!-- Sub-box 3: ChainIK / FABRIK -->
+  <rect x="620" y="178" width="246" height="156" rx="5" fill="#0a1929" stroke="#bb8009" stroke-width="1.2"/>
+  <text x="743" y="197" text-anchor="middle" font-size="12" font-weight="bold" fill="#e3b341" font-family="Arial, sans-serif">ChainIK / FABRIK（链式 IK）</text>
+  <text x="743" y="213" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">N 骨骼链：前向-后向迭代求解</text>
+  <text x="743" y="228" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">收敛判断：|Tip - Target| &lt; Precision</text>
+  <text x="743" y="247" text-anchor="middle" font-size="10" fill="#cae8ff" font-family="Arial, sans-serif">AnimationCore::SolveFabrik()</text>
+  <text x="743" y="263" text-anchor="middle" font-size="10" fill="#e3b341" font-family="Arial, sans-serif">ControlRig: RigUnit_FABRIKItemArray</text>
+  <text x="743" y="279" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">用途：触手、蜘蛛腿、机械臂</text>
+  <text x="743" y="295" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">配合 TwoBoneIK / CCDIK 混用</text>
+  <text x="743" y="328" text-anchor="middle" font-size="10" fill="#e3b341" font-family="Arial, sans-serif">来源: AnimationCore/FABRIK.cpp</text>
+
+  <!-- Arrow out -->
+  <line x1="450" y1="348" x2="450" y2="370" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ===== ROW 3: CONTROL RIG WRAPPER ===== -->
+  <rect x="120" y="372" width="660" height="36" rx="5" fill="#1e1133" stroke="#8957e5" stroke-width="1.2"/>
+  <text x="450" y="388" text-anchor="middle" font-size="11" font-weight="bold" fill="#bc8cff" font-family="Arial, sans-serif">ControlRig 运行时框架</text>
+  <text x="450" y="402" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">RigHierarchy → RigVM 执行 RigUnits → AnimNode_ControlRig 桥接 AnimBP ↔ ControlRig</text>
+
+  <!-- Arrow out -->
+  <line x1="450" y1="410" x2="450" y2="430" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ===== ROW 4: OUTPUT ===== -->
+  <rect x="250" y="432" width="400" height="36" rx="5" fill="#21262d" stroke="#f85149" stroke-width="1.2"/>
+  <text x="450" y="449" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff7b72" font-family="Arial, sans-serif">OutBoneTransforms → 写回骨骼变换 → GPU 渲染</text>
+  <text x="450" y="463" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">所有程序化修改在 EvaluateSkeletalControl_AnyThread() 中完成</text>
+</svg>

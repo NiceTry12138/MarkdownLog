@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrY" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#e3b341"/>
+    </marker>
+    <marker id="arrB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#388bfd"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="560" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="450" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="#e6edf3" font-family="Arial, sans-serif">FootPlacement 系统 — AnimNode_FootPlacement.cpp</text>
+
+  <!-- ===== LEFT: SCENE TRACE ===== -->
+  <rect x="14" y="36" width="310" height="510" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="169" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#8b949e" font-family="Arial, sans-serif">① 场景探测（FindPlantTraceImpact）</text>
+
+  <!-- Terrain (uneven) -->
+  <path d="M30,390 L90,390 L110,350 L160,350 L180,320 L230,320 L250,350 L310,350 L320,390" stroke="#444c56" stroke-width="2" fill="#1a2030" stroke-linejoin="round"/>
+  <text x="60" y="415" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">地形（不平）</text>
+
+  <!-- FK Foot (in air) -->
+  <circle cx="130" cy="280" r="8" fill="#ffa657" stroke="#ff7b72" stroke-width="1.5"/>
+  <text x="142" y="283" font-size="10" fill="#ffa657" font-family="Arial, sans-serif">FK Foot 位置</text>
+
+  <!-- SweepSphere trace down -->
+  <line x1="130" y1="288" x2="130" y2="340" stroke="#388bfd" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrB)"/>
+  <!-- Sphere at start -->
+  <circle cx="130" cy="305" r="14" fill="none" stroke="#388bfd" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="148" y="308" font-size="9" fill="#388bfd" font-family="Arial, sans-serif">SweepRadius</text>
+
+  <!-- Impact point -->
+  <circle cx="130" cy="350" r="5" fill="#f85149" stroke="#ff7b72" stroke-width="1.5"/>
+  <text x="138" y="348" font-size="10" fill="#f85149" font-family="Arial, sans-serif">ImpactPoint</text>
+  <!-- Impact normal arrow -->
+  <line x1="130" y1="350" x2="108" y2="320" stroke="#79c0ff" stroke-width="1.5" marker-end="url(#arrB)"/>
+  <text x="80" y="316" font-size="9" fill="#79c0ff" text-anchor="middle" font-family="Arial, sans-serif">ImpactNormal</text>
+
+  <!-- TraceSettings box -->
+  <rect x="25" y="76" width="290" height="86" rx="4" fill="#0f2033" stroke="#1f6feb" stroke-width="1"/>
+  <text x="170" y="93" text-anchor="middle" font-size="11" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">FFootPlacementTraceSettings</text>
+  <text x="30" y="109" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">StartOffset: 向上偏移起始点（防止起点在地面以下）</text>
+  <text x="30" y="123" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">EndOffset: 向下偏移终止点（脚踩入多深）</text>
+  <text x="30" y="137" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">SweepRadius: 球扫半径（过滤小障碍）</text>
+  <text x="30" y="151" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">World::SweepSingleByChannel() — 物理通道检测</text>
+
+  <!-- Plant Plane box -->
+  <rect x="25" y="170" width="290" height="56" rx="4" fill="#0f1a2e" stroke="#1f6feb" stroke-width="1"/>
+  <text x="170" y="187" text-anchor="middle" font-size="11" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">PlantPlane（脚落点平面）</text>
+  <text x="30" y="203" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">FPlane(ImpactPoint, ImpactNormal) — 3D 接触面</text>
+  <text x="30" y="218" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">后续所有脚锁定操作都参考此平面</text>
+
+  <!-- Speed curve box -->
+  <rect x="25" y="234" width="290" height="46" rx="4" fill="#0f1a2e" stroke="#1f6feb" stroke-width="1"/>
+  <text x="170" y="252" text-anchor="middle" font-size="10" font-weight="bold" fill="#79c0ff" font-family="Arial, sans-serif">bWantsToPlant = SpeedCurve(FootSpeed) &lt; Threshold</text>
+  <text x="30" y="268" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">脚速度低时 = 支撑相（应当落地锁定）</text>
+
+  <!-- AlignedFoot / spring -->
+  <text x="169" y="440" text-anchor="middle" font-size="10" fill="#56d364" font-family="Arial, sans-serif">AlignedFootTransformWS（地面对齐后的脚位置）</text>
+  <text x="169" y="455" text-anchor="middle" font-size="9" fill="#6e7681" font-family="Arial, sans-serif">= 脚骨 XY 锁定 + 地面法线对齐旋转</text>
+
+  <!-- ===== CENTER: STATE MACHINE ===== -->
+  <rect x="338" y="36" width="250" height="510" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="463" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#8b949e" font-family="Arial, sans-serif">② 脚植入状态机</text>
+
+  <!-- State: Unplanted -->
+  <rect x="355" y="72" width="216" height="44" rx="5" fill="#1a0505" stroke="#f85149" stroke-width="1.5"/>
+  <text x="463" y="91" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff7b72" font-family="Arial, sans-serif">Unplanted（摆动相）</text>
+  <text x="463" y="107" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">脚随 FK 动画自由运动</text>
+
+  <!-- Arrow down to Planted -->
+  <line x1="463" y1="116" x2="463" y2="165" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <text x="490" y="148" font-size="9" fill="#3fb950" font-family="Arial, sans-serif">bWantsToPlant = true</text>
+
+  <!-- State: Planted -->
+  <rect x="355" y="168" width="216" height="44" rx="5" fill="#0a1a0a" stroke="#3fb950" stroke-width="2"/>
+  <text x="463" y="187" text-anchor="middle" font-size="12" font-weight="bold" fill="#56d364" font-family="Arial, sans-serif">Planted（支撑相锁定）</text>
+  <text x="463" y="203" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">脚位置锁定在 PlantPlane</text>
+
+  <!-- Arrow: Planted -> Replanted -->
+  <line x1="463" y1="212" x2="463" y2="265" stroke="#e3b341" stroke-width="1.5" marker-end="url(#arrY)"/>
+  <text x="490" y="245" font-size="9" fill="#e3b341" font-family="Arial, sans-serif">锁定点不可达</text>
+
+  <!-- State: Replanted -->
+  <rect x="355" y="268" width="216" height="44" rx="5" fill="#1a1500" stroke="#e3b341" stroke-width="1.5"/>
+  <text x="463" y="287" text-anchor="middle" font-size="12" font-weight="bold" fill="#f0c060" font-family="Arial, sans-serif">Replanted（重新落点）</text>
+  <text x="463" y="303" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">平滑过渡到新落点</text>
+
+  <!-- Replanted → Planted -->
+  <path d="M355,280 Q310,270 310,190 Q310,180 355,185" stroke="#e3b341" stroke-width="1" fill="none" stroke-dasharray="4,3" marker-end="url(#arrY)"/>
+  <text x="296" y="230" font-size="9" fill="#e3b341" text-anchor="middle" font-family="Arial, sans-serif">新落点确认</text>
+
+  <!-- Arrow: Planted/Replanted → Unplanted -->
+  <path d="M571,180 Q600,180 600,90 Q600,80 571,82" stroke="#f85149" stroke-width="1" fill="none" stroke-dasharray="4,3" marker-end="url(#arrB)"/>
+  <text x="612" y="133" font-size="9" fill="#f85149" font-family="Arial, sans-serif">bWantsToPlant</text>
+  <text x="612" y="144" font-size="9" fill="#f85149" font-family="Arial, sans-serif">= false</text>
+
+  <!-- Spring interpolation box -->
+  <rect x="355" y="328" width="216" height="70" rx="4" fill="#0f2033" stroke="#1f6feb" stroke-width="1"/>
+  <text x="463" y="345" text-anchor="middle" font-size="11" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">弹簧插值平滑</text>
+  <text x="360" y="361" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">PlantOffsetTranslationSpringState</text>
+  <text x="360" y="375" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">PlantOffsetRotationSpringState</text>
+  <text x="360" y="389" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">防止锁定位置跳变</text>
+
+  <!-- Ground alignment box -->
+  <rect x="355" y="406" width="216" height="56" rx="4" fill="#0a1a0a" stroke="#238636" stroke-width="1"/>
+  <text x="463" y="423" text-anchor="middle" font-size="11" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">地面法线旋转对齐</text>
+  <text x="360" y="440" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">AlignmentAlpha: 脚趾速度 → 混入比</text>
+  <text x="360" y="454" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">GroundRotationSpringState 弹簧</text>
+
+  <!-- Pelvis box -->
+  <rect x="355" y="470" width="216" height="60" rx="4" fill="#1e1133" stroke="#8957e5" stroke-width="1"/>
+  <text x="463" y="488" text-anchor="middle" font-size="11" font-weight="bold" fill="#d2a8ff" font-family="Arial, sans-serif">骨盆高度补偿</text>
+  <text x="360" y="504" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">FIKFootPelvisPullDownSolver</text>
+  <text x="360" y="519" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">迭代拉低骨盆防过伸（同 StrideWarping）</text>
+
+  <!-- ===== RIGHT: OUTPUT / IK ===== -->
+  <rect x="602" y="36" width="284" height="510" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="744" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#8b949e" font-family="Arial, sans-serif">③ 腿部 IK 求解 (AnimNode_LegIK)</text>
+
+  <!-- Step 1: Orient leg to IK target -->
+  <rect x="614" y="65" width="260" height="72" rx="4" fill="#0f2033" stroke="#1f6feb" stroke-width="1"/>
+  <text x="744" y="82" text-anchor="middle" font-size="11" font-weight="bold" fill="#58a6ff" font-family="Arial, sans-serif">OrientLegTowardsIK()</text>
+  <text x="619" y="98" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">InitDir = normalize(FKFoot - Hip)</text>
+  <text x="619" y="113" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">TargetDir = normalize(IKFoot - Hip)</text>
+  <text x="619" y="128" font-size="10" fill="#79c0ff" font-family="Arial, sans-serif">ΔR = FindBetweenNormals → 旋转整条腿</text>
+
+  <line x1="744" y1="137" x2="744" y2="155" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 2: FABRIK reach -->
+  <rect x="614" y="158" width="260" height="86" rx="4" fill="#0a1a0a" stroke="#238636" stroke-width="1"/>
+  <text x="744" y="175" text-anchor="middle" font-size="11" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">DoLegReachIK() — FABRIK</text>
+  <text x="619" y="191" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">若腿数 &gt; 2：SolveFABRIK(Target, Precision)</text>
+  <text x="619" y="206" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">若腿数 = 2：SolveTwoBoneIK()</text>
+  <text x="619" y="221" font-size="10" fill="#56d364" font-family="Arial, sans-serif">目标 = 锁定后的 IK 脚目标位置</text>
+  <text x="619" y="236" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">SoftPercentLength: 软限制防止完全伸直</text>
+
+  <line x1="744" y1="244" x2="744" y2="262" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 3: Knee twist -->
+  <rect x="614" y="265" width="260" height="52" rx="4" fill="#1f1500" stroke="#d1812b" stroke-width="1"/>
+  <text x="744" y="282" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffa657" font-family="Arial, sans-serif">AdjustKneeTwist()</text>
+  <text x="619" y="298" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">修正膝关节朝向（防止内/外翻）</text>
+  <text x="619" y="312" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">TwistOffsetDegrees 从动画曲线读取</text>
+
+  <line x1="744" y1="317" x2="744" y2="335" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 4: Override foot rotation -->
+  <rect x="614" y="338" width="260" height="44" rx="4" fill="#1e1133" stroke="#8957e5" stroke-width="1"/>
+  <text x="744" y="355" text-anchor="middle" font-size="11" font-weight="bold" fill="#d2a8ff" font-family="Arial, sans-serif">FK 脚旋转 → IK 脚旋转</text>
+  <text x="619" y="371" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">FKLegBoneTransforms[0].SetRotation(IKFootRotation)</text>
+
+  <line x1="744" y1="382" x2="744" y2="400" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 5: Output -->
+  <rect x="614" y="403" width="260" height="44" rx="4" fill="#21262d" stroke="#f85149" stroke-width="1.2"/>
+  <text x="744" y="420" text-anchor="middle" font-size="11" font-weight="bold" fill="#ff7b72" font-family="Arial, sans-serif">OutBoneTransforms 输出</text>
+  <text x="619" y="436" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">所有 FK 腿骨的修正变换写回</text>
+
+  <!-- Summary note -->
+  <rect x="614" y="455" width="260" height="78" rx="4" fill="#0d1117" stroke="#30363d" stroke-width="1"/>
+  <text x="744" y="472" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#e6edf3" font-family="Arial, sans-serif">完整流水线</text>
+  <text x="619" y="487" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">FK Pose → Trace找落点 → 状态机锁定</text>
+  <text x="619" y="502" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">→ Spring平滑 → 骨盆下拉 → LegIK</text>
+  <text x="619" y="517" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">→ 修正FK骨骼 → OutBoneTransforms</text>
+  <text x="619" y="528" font-size="9" fill="#444c56" font-family="Arial, sans-serif">全部在 EvaluateSkeletalControl_AnyThread() 完成</text>
+</svg>

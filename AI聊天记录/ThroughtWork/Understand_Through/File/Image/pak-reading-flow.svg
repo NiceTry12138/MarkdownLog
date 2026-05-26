@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="740" viewBox="0 0 860 740">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 Z" fill="#555"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="860" height="740" fill="#f8f9fa" rx="8"/>
+  <text x="430" y="30" font-family="Arial,sans-serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#1a1a2e">PAK 文件读取流程（FPakFile::Initialize + LoadIndex）</text>
+  <text x="430" y="50" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">源码：Engine/Source/Runtime/PakFile/Private/IPlatformFilePak.cpp  FPakFile::Initialize()  &amp;  LoadIndexInternal()</text>
+
+  <!-- Step 1 -->
+  <rect x="60" y="66" width="740" height="56" fill="#2980b9" rx="6"/>
+  <text x="430" y="88" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 1：FPakPlatformFile::Mount() 触发 FPakFile 构造</text>
+  <text x="430" y="106" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">FPakFile(IPlatformFile* LowerLevel, const TCHAR* Filename, bool bIsSigned)</text>
+  <text x="430" y="118" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">通过 LowerLevel（物理文件系统）打开 .pak 文件，创建 FArchive 读取器</text>
+
+  <line x1="430" y1="122" x2="430" y2="142" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="60" y="144" width="740" height="66" fill="#16a085" rx="6"/>
+  <text x="430" y="166" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 2：从文件末尾读取 FPakInfo（Trailer）</text>
+  <text x="430" y="184" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">CachedTotalSize = Reader.TotalSize()</text>
+  <text x="430" y="198" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">FileInfoPos = CachedTotalSize - Info.GetSerializedSize(version)</text>
+  <text x="430" y="210" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">Reader.Seek(FileInfoPos) → Info.Serialize(Reader) → 验证 Info.Magic == 0x5A6F12E1</text>
+
+  <line x1="430" y1="210" x2="430" y2="230" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="60" y="232" width="740" height="56" fill="#8e44ad" rx="6"/>
+  <text x="430" y="254" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 3：版本兼容性处理（从最新版本往旧版本回退）</text>
+  <text x="430" y="272" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">CompatibleVersion 从 PakFile_Version_Latest 开始递减，直到找到与 Info.Magic 匹配的版本</text>
+  <text x="430" y="284" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">这允许新版引擎读取旧版 .pak 文件（向后兼容）</text>
+
+  <line x1="430" y1="288" x2="430" y2="308" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="60" y="310" width="740" height="70" fill="#e67e22" rx="6"/>
+  <text x="430" y="332" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 4：LoadIndexInternal — 读取 Primary Index</text>
+  <text x="430" y="350" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">Reader.Seek(Info.IndexOffset) → 读取 Info.IndexSize 字节到 PrimaryIndexData[]</text>
+  <text x="430" y="364" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">DecryptAndValidateIndex：若 bEncryptedIndex 则 AES 解密，然后 SHA1 校验（对比 Info.IndexHash）</text>
+  <text x="430" y="378" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">FMemoryReader PrimaryIndexReader → 读取 MountPoint, NumEntries, PathHashSeed</text>
+
+  <line x1="430" y1="380" x2="430" y2="400" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 5 -->
+  <rect x="60" y="402" width="740" height="70" fill="#c0392b" rx="6"/>
+  <text x="430" y="424" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 5：读取 Secondary Indexes（PathHashIndex / DirectoryIndex）</text>
+  <text x="430" y="442" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">从 PrimaryIndex 中读取 PathHashIndex 和 FullDirectoryIndex 的 Offset/Size/Hash</text>
+  <text x="430" y="456" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">Seek 到对应位置，读取并解密/校验；反序列化为 PathHashIndex（TMap&lt;uint64,FPakEntryLocation&gt;）</text>
+  <text x="430" y="470" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">同时反序列化 PrunedDirectoryIndex（TMap&lt;DirPath, TMap&lt;FileName, FPakEntryLocation&gt;&gt;）</text>
+
+  <line x1="430" y1="472" x2="430" y2="492" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 6 -->
+  <rect x="60" y="494" width="740" height="56" fill="#2c3e50" rx="6"/>
+  <text x="430" y="516" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 6：解码 FPakEntry（DecodePakEntry）</text>
+  <text x="430" y="534" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aec">EncodedPakEntries 字节流 → 按需解码为 FPakEntry（含 Offset/Size/Hash 等字段）</text>
+  <text x="430" y="546" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#8ab">FPakEntryLocation 记录了条目在 EncodedPakEntries 中的偏移（>=0）或在 NonEncodableEntries 的索引（&lt;0）</text>
+
+  <line x1="430" y1="550" x2="430" y2="570" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 7 -->
+  <rect x="200" y="572" width="460" height="56" fill="#1a5276" rx="6"/>
+  <text x="430" y="594" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 7：挂载完成，注册到 FPakPlatformFile</text>
+  <text x="430" y="612" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#a8d">bIsValid = true；FPakFile 被添加到 FPakPlatformFile::PakFiles 列表</text>
+  <text x="430" y="624" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#a8d">此后对该 PAK 内文件的请求，通过 PathHashIndex 查找 FPakEntry → 读取数据 → 解压/解密返回</text>
+
+  <!-- Runtime read flow -->
+  <rect x="60" y="650" width="740" height="76" fill="#fff" rx="6" stroke="#4a90d9" stroke-width="2"/>
+  <text x="430" y="672" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1a1a2e">运行时文件读取流程（当游戏请求读取某文件）</text>
+  <text x="80" y="692" font-family="Arial,sans-serif" font-size="11" fill="#333">① 上层通过 FPlatformFileManager::Get().GetPlatformFile().OpenRead("../../../Game/Content/BP_Enemy.uasset")</text>
+  <text x="80" y="708" font-family="Arial,sans-serif" font-size="11" fill="#555">② FPakPlatformFile 用 FNV64 对路径哈希 → PathHashIndex.Find(hash) → 得到 FPakEntryLocation</text>
+  <text x="80" y="724" font-family="Arial,sans-serif" font-size="11" fill="#555">③ 解码 FPakEntry（得到 Offset/Size）→ Reader.Seek(Offset) → 读取 Size 字节 → 解密/解压 → 返回数据</text>
+</svg>

@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="680" viewBox="0 0 1080 680">
+  <rect x="0" y="0" width="1080" height="680" fill="#f8f9fa" rx="8"/>
+  <text x="540" y="28" font-family="Arial,sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a1a2e">示例文件集合通过 IoStore 打包后的数据分布</text>
+  <text x="540" y="46" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">相同文件 → game.utoc（目录）+ game.ucas（数据分区）+ game.pak（元数据）</text>
+
+  <!-- .utoc section -->
+  <text x="30" y="68" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#2980b9">game.utoc（目录文件，仅含元数据，无实际资产数据）</text>
+
+  <rect x="30" y="76" width="1020" height="32" fill="#2980b9" rx="3"/>
+  <text x="540" y="96" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">FIoStoreTocHeader：TocEntryCount=27（9个包×约3个Chunk） | PartitionCount=1 | ContainerId | CompressionBlockSize=65536</text>
+
+  <rect x="30" y="112" width="1020" height="28" fill="#27ae60" rx="3"/>
+  <text x="540" y="128" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">ChunkIds[27]：每个 12B，PackageId(FNV64 of 包名) + ChunkType（ExportBundle/BulkData/...）</text>
+
+  <!-- ChunkIds examples -->
+  <rect x="30" y="144" width="1020" height="50" fill="#fff" rx="3" stroke="#27ae60" stroke-width="1"/>
+  <rect x="38" y="150" width="108" height="38" fill="#e74c3c" rx="2"/>
+  <text x="92" y="166" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_1</text>
+  <text x="92" y="178" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">ID=FNV64("/Game/...</text>
+  <text x="92" y="186" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">Type=BulkData</text>
+
+  <rect x="150" y="150" width="108" height="38" fill="#c0392b" rx="2"/>
+  <text x="204" y="166" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_1</text>
+  <text x="204" y="178" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">ID=FNV64("/Game/...</text>
+  <text x="204" y="186" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">Type=ExportBundle</text>
+
+  <rect x="262" y="150" width="108" height="38" fill="#e74c3c" rx="2"/>
+  <text x="316" y="166" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_2</text>
+  <text x="316" y="178" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">Type=BulkData</text>
+
+  <rect x="374" y="150" width="108" height="38" fill="#8e44ad" rx="2"/>
+  <text x="428" y="166" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BP_EnemyBase</text>
+  <text x="428" y="178" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">ID=FNV64("/Game/...</text>
+  <text x="428" y="186" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">Type=ExportBundle</text>
+
+  <rect x="486" y="150" width="108" height="38" fill="#8e44ad" rx="2"/>
+  <text x="540" y="166" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BP_Enemy</text>
+  <text x="540" y="178" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">Type=ExportBundle</text>
+
+  <text x="606" y="176" font-family="Arial,sans-serif" font-size="14" fill="#aaa" text-anchor="middle">···</text>
+
+  <rect x="630" y="150" width="108" height="38" fill="#16a085" rx="2"/>
+  <text x="684" y="166" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">L_WorldMap</text>
+  <text x="684" y="178" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#cef">Type=ExportBundle</text>
+
+  <rect x="742" y="150" width="108" height="38" fill="#2c3e50" rx="2"/>
+  <text x="796" y="166" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">ContainerHeader</text>
+  <text x="796" y="178" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#aec">Type=ContainerHdr</text>
+  <text x="796" y="186" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#8ab">特殊 Chunk！</text>
+
+  <rect x="30" y="198" width="1020" height="24" fill="#e67e22" rx="3"/>
+  <text x="540" y="214" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">ChunkOffsetLengths[27]：每个 10B，对应 Chunk 在 .ucas 中的 Offset(40bit) + Length(24bit)</text>
+
+  <rect x="30" y="226" width="1020" height="24" fill="#c0392b" rx="3"/>
+  <text x="540" y="242" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">CompressionBlocks[]：记录每个 Chunk 被切成多少个 64KB 压缩块，以及每块的偏移/压缩大小/解压大小/算法</text>
+
+  <rect x="30" y="254" width="1020" height="20" fill="#1a5276" rx="3"/>
+  <text x="540" y="268" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">ChunkPerfectHashSeeds[] + DirectoryIndex（可选）+ ChunkBlockSignatures（可选签名）</text>
+
+  <!-- .ucas section -->
+  <text x="30" y="292" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#e67e22">game.ucas（数据分区，纯二进制压缩块，按 Chunk 顺序连续存储）</text>
+
+  <!-- UCAS layout -->
+  <rect x="30" y="300" width="90" height="70" fill="#c0392b" rx="3"/>
+  <text x="75" y="316" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_1</text>
+  <text x="75" y="328" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">BulkData</text>
+  <text x="75" y="340" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">块0:64KB</text>
+  <text x="75" y="352" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">块1:64KB</text>
+  <text x="75" y="364" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">(Mip数据)</text>
+
+  <rect x="124" y="300" width="90" height="70" fill="#e74c3c" rx="3"/>
+  <text x="169" y="316" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_1</text>
+  <text x="169" y="328" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">ExportBundle</text>
+  <text x="169" y="340" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">块0:4KB</text>
+  <text x="169" y="352" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">(Header)</text>
+
+  <rect x="218" y="300" width="90" height="70" fill="#c0392b" rx="3"/>
+  <text x="263" y="316" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">T_Enemy_2</text>
+  <text x="263" y="328" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">BulkData</text>
+  <text x="263" y="340" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">块0:64KB</text>
+  <text x="263" y="352" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#fcc">块1:64KB</text>
+
+  <rect x="312" y="300" width="60" height="70" fill="#555" rx="3"/>
+  <text x="342" y="340" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#aaa">···</text>
+
+  <rect x="376" y="300" width="100" height="70" fill="#8e44ad" rx="3"/>
+  <text x="426" y="316" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BP_EnemyBase</text>
+  <text x="426" y="328" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">ExportBundle</text>
+  <text x="426" y="340" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">块0:12KB</text>
+  <text x="426" y="352" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">(全部导出数据)</text>
+
+  <rect x="480" y="300" width="100" height="70" fill="#8e44ad" rx="3"/>
+  <text x="530" y="316" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BP_Enemy</text>
+  <text x="530" y="328" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">ExportBundle</text>
+  <text x="530" y="340" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#e8d8ff">块0:8KB</text>
+
+  <rect x="584" y="300" width="60" height="70" fill="#555" rx="3"/>
+  <text x="614" y="340" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#aaa">···</text>
+
+  <rect x="648" y="300" width="100" height="70" fill="#16a085" rx="3"/>
+  <text x="698" y="316" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">L_WorldMap</text>
+  <text x="698" y="328" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#cef">ExportBundle</text>
+  <text x="698" y="340" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#cef">块0:64KB</text>
+  <text x="698" y="352" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#cef">（关卡数据）</text>
+
+  <rect x="752" y="300" width="100" height="70" fill="#2c3e50" rx="3"/>
+  <text x="802" y="316" font-family="Arial,sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">ContainerHeader</text>
+  <text x="802" y="328" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#aec">特殊 Chunk</text>
+  <text x="802" y="340" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#aec">PackageId→Name</text>
+  <text x="802" y="352" font-family="Arial,sans-serif" font-size="8" text-anchor="middle" fill="#aec">映射表</text>
+
+  <!-- .pak section -->
+  <text x="30" y="390" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#c0392b">game.pak（元数据兼容文件，不含 Asset 的实际数据）</text>
+  <rect x="30" y="398" width="1020" height="36" fill="#c0392b" rx="3"/>
+  <text x="540" y="416" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">PAK 格式，但 File Data 区仅包含 FIoContainerHeader 序列化数据（而非原始资产数据）</text>
+  <text x="540" y="430" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#fcc">内容：PackageId ↔ PackageName 映射 | StoreEntries（ImportedPackages 依赖图）| ExportMap 摘要</text>
+
+  <!-- Comparison table -->
+  <rect x="30" y="448" width="1020" height="140" fill="#fff" rx="6" stroke="#4a90d9" stroke-width="2"/>
+  <text x="40" y="468" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1a1a2e">PAK vs IoStore 关键对比（以本示例为参考）：</text>
+
+  <!-- Table header -->
+  <rect x="40" y="476" width="200" height="22" fill="#1a1a2e" rx="2"/>
+  <rect x="244" y="476" width="380" height="22" fill="#2980b9" rx="2"/>
+  <rect x="628" y="476" width="412" height="22" fill="#e67e22" rx="2"/>
+  <text x="140" y="491" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="white">维度</text>
+  <text x="434" y="491" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="white">PAK 模式</text>
+  <text x="834" y="491" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="white">IoStore 模式</text>
+
+  <text x="44" y="511" font-family="Arial,sans-serif" font-size="10" fill="#333">输出文件</text>
+  <text x="248" y="511" font-family="Arial,sans-serif" font-size="10" fill="#333">1 个 Game.pak（约 358KB）</text>
+  <text x="632" y="511" font-family="Arial,sans-serif" font-size="10" fill="#333">game.utoc（~8KB）+ game.ucas（~350KB）+ game.pak（~5KB）</text>
+
+  <text x="44" y="527" font-family="Arial,sans-serif" font-size="10" fill="#333">索引结构</text>
+  <text x="248" y="527" font-family="Arial,sans-serif" font-size="10" fill="#333">路径字符串哈希 → FPakEntry（含Offset/Size）</text>
+  <text x="632" y="527" font-family="Arial,sans-serif" font-size="10" fill="#333">PackageId(uint64) → ChunkId → FIoOffsetAndLength（无路径字符串）</text>
+
+  <text x="44" y="543" font-family="Arial,sans-serif" font-size="10" fill="#333">加载粒度</text>
+  <text x="248" y="543" font-family="Arial,sans-serif" font-size="10" fill="#333">整个文件（uasset+uexp 必须一次读完）</text>
+  <text x="632" y="543" font-family="Arial,sans-serif" font-size="10" fill="#333">Chunk 粒度（ExportBundle / BulkData 独立请求）</text>
+
+  <text x="44" y="559" font-family="Arial,sans-serif" font-size="10" fill="#333">并发 I/O</text>
+  <text x="248" y="559" font-family="Arial,sans-serif" font-size="10" fill="#333">有限（同一 PAK 需共享 Reader）</text>
+  <text x="632" y="559" font-family="Arial,sans-serif" font-size="10" fill="#333">原生支持（FIoBatch 批量请求，多 Chunk 并发）</text>
+
+  <text x="44" y="575" font-family="Arial,sans-serif" font-size="10" fill="#333">内存占用（索引）</text>
+  <text x="248" y="575" font-family="Arial,sans-serif" font-size="10" fill="#333">较高（路径字符串 + FPakEntry 结构体）</text>
+  <text x="632" y="575" font-family="Arial,sans-serif" font-size="10" fill="#333">较低（仅 uint64 ChunkId + 10B OffsetLength）</text>
+</svg>

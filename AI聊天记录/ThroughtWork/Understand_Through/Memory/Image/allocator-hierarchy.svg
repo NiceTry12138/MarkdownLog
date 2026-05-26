@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="620" fill="#f8f9fa"/>
+
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">UE5 内存分配器继承层次结构</text>
+
+  <!-- Base class FMalloc -->
+  <rect x="380" y="50" width="240" height="50" rx="8" fill="#3b5bdb" stroke="#364fc7" stroke-width="2"/>
+  <text x="500" y="70" text-anchor="middle" font-size="14" font-weight="bold" fill="white">FMalloc</text>
+  <text x="500" y="88" text-anchor="middle" font-size="11" fill="#d0d8ff">纯虚基类 (MemoryBase.h)</text>
+
+  <!-- System wrappers category -->
+  <rect x="20" y="140" width="960" height="30" rx="4" fill="#e9ecef" stroke="#ced4da"/>
+  <text x="500" y="160" text-anchor="middle" font-size="12" fill="#495057" font-weight="bold">系统封装型（委托给 OS/第三方库）</text>
+
+  <!-- Row 1: System allocators -->
+  <!-- MallocAnsi -->
+  <rect x="30" y="185" width="160" height="55" rx="6" fill="#74c0fc" stroke="#339af0" stroke-width="1.5"/>
+  <text x="110" y="206" text-anchor="middle" font-size="13" font-weight="bold" fill="#1c3e6e">FMallocAnsi</text>
+  <text x="110" y="222" text-anchor="middle" font-size="10" fill="#1c3e6e">ANSI C malloc/free</text>
+  <text x="110" y="236" text-anchor="middle" font-size="10" fill="#1c3e6e">跨平台基础分配器</text>
+
+  <!-- MallocTBB -->
+  <rect x="205" y="185" width="160" height="55" rx="6" fill="#74c0fc" stroke="#339af0" stroke-width="1.5"/>
+  <text x="285" y="206" text-anchor="middle" font-size="13" font-weight="bold" fill="#1c3e6e">FMallocTBB</text>
+  <text x="285" y="222" text-anchor="middle" font-size="10" fill="#1c3e6e">Intel TBB 可扩展分配器</text>
+  <text x="285" y="236" text-anchor="middle" font-size="10" fill="#1c3e6e">多核高性能</text>
+
+  <!-- MallocMimalloc -->
+  <rect x="380" y="185" width="160" height="55" rx="6" fill="#74c0fc" stroke="#339af0" stroke-width="1.5"/>
+  <text x="460" y="206" text-anchor="middle" font-size="13" font-weight="bold" fill="#1c3e6e">FMallocMimalloc</text>
+  <text x="460" y="222" text-anchor="middle" font-size="10" fill="#1c3e6e">Microsoft mimalloc</text>
+  <text x="460" y="236" text-anchor="middle" font-size="10" fill="#1c3e6e">低碎片高效分配</text>
+
+  <!-- MallocLibpas -->
+  <rect x="555" y="185" width="160" height="55" rx="6" fill="#74c0fc" stroke="#339af0" stroke-width="1.5"/>
+  <text x="635" y="206" text-anchor="middle" font-size="13" font-weight="bold" fill="#1c3e6e">FMallocLibpas</text>
+  <text x="635" y="222" text-anchor="middle" font-size="10" fill="#1c3e6e">Phil's Awesome System</text>
+  <text x="635" y="236" text-anchor="middle" font-size="10" fill="#1c3e6e">WebKit/Apple 平台</text>
+
+  <!-- UE Binned category -->
+  <rect x="20" y="265" width="960" height="30" rx="4" fill="#e9ecef" stroke="#ced4da"/>
+  <text x="500" y="285" text-anchor="middle" font-size="12" fill="#495057" font-weight="bold">UE 内置分箱型（Pool / Bin 算法）</text>
+
+  <!-- Row 2: Binned allocators -->
+  <!-- MallocBinned -->
+  <rect x="30" y="310" width="150" height="65" rx="6" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="105" y="330" text-anchor="middle" font-size="13" font-weight="bold" fill="#2b5c00">FMallocBinned</text>
+  <text x="105" y="346" text-anchor="middle" font-size="10" fill="#2b5c00">Binned1 传统版本</text>
+  <text x="105" y="360" text-anchor="middle" font-size="10" fill="#2b5c00">41个尺寸分箱</text>
+  <text x="105" y="374" text-anchor="middle" font-size="10" fill="#2b5c00">全平台兼容</text>
+
+  <!-- MallocBinned2 -->
+  <rect x="195" y="310" width="150" height="65" rx="6" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="270" y="330" text-anchor="middle" font-size="13" font-weight="bold" fill="#2b5c00">FMallocBinned2</text>
+  <text x="270" y="346" text-anchor="middle" font-size="10" fill="#2b5c00">TLS无锁缓存</text>
+  <text x="270" y="360" text-anchor="middle" font-size="10" fill="#2b5c00">Bundle回收机制</text>
+  <text x="270" y="374" text-anchor="middle" font-size="10" fill="#2b5c00">45个尺寸分箱</text>
+
+  <!-- MallocBinned3 -->
+  <rect x="360" y="310" width="150" height="65" rx="6" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="435" y="330" text-anchor="middle" font-size="13" font-weight="bold" fill="#2b5c00">FMallocBinned3</text>
+  <text x="435" y="346" text-anchor="middle" font-size="10" fill="#2b5c00">虚拟内存直接管理</text>
+  <text x="435" y="360" text-anchor="middle" font-size="10" fill="#2b5c00">位树(BitTree)索引</text>
+  <text x="435" y="374" text-anchor="middle" font-size="10" fill="#2b5c00">128KB小池上限</text>
+
+  <!-- MallocBinnedArena -->
+  <rect x="525" y="310" width="150" height="65" rx="6" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="600" y="330" text-anchor="middle" font-size="13" font-weight="bold" fill="#2b5c00">FMallocBinnedArena</text>
+  <text x="600" y="346" text-anchor="middle" font-size="10" fill="#2b5c00">可配置竞技场</text>
+  <text x="600" y="360" text-anchor="middle" font-size="10" fill="#2b5c00">自定义VM/分配函数</text>
+  <text x="600" y="374" text-anchor="middle" font-size="10" fill="#2b5c00">含BinnedGPU</text>
+
+  <!-- MallocBinnedGPU -->
+  <rect x="690" y="310" width="150" height="65" rx="6" fill="#63e6be" stroke="#099268" stroke-width="1.5"/>
+  <text x="765" y="330" text-anchor="middle" font-size="13" font-weight="bold" fill="#0c4a3a">FMallocBinnedGPU</text>
+  <text x="765" y="346" text-anchor="middle" font-size="10" fill="#0c4a3a">GPU专用分配器</text>
+  <text x="765" y="360" text-anchor="middle" font-size="10" fill="#0c4a3a">CPU代理+GPU内存</text>
+  <text x="765" y="374" text-anchor="middle" font-size="10" fill="#0c4a3a">基于Arena架构</text>
+
+  <!-- Common base -->
+  <rect x="855" y="310" width="130" height="65" rx="6" fill="#e9ecef" stroke="#adb5bd" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="920" y="330" text-anchor="middle" font-size="11" font-weight="bold" fill="#495057">BinnedCommon</text>
+  <text x="920" y="346" text-anchor="middle" font-size="10" fill="#495057">TMallocBinnedCommon</text>
+  <text x="920" y="360" text-anchor="middle" font-size="10" fill="#495057">公共基础模板</text>
+  <text x="920" y="374" text-anchor="middle" font-size="10" fill="#495057">TLS/Bundle机制</text>
+
+  <!-- Debug category -->
+  <rect x="20" y="405" width="960" height="30" rx="4" fill="#ffe8cc" stroke="#f59f00"/>
+  <text x="500" y="425" text-anchor="middle" font-size="12" fill="#7c4d00" font-weight="bold">调试检测型（仅用于开发调试，不用于发布版本）</text>
+
+  <!-- MallocStomp -->
+  <rect x="170" y="450" width="200" height="65" rx="6" fill="#ffa94d" stroke="#f76707" stroke-width="1.5"/>
+  <text x="270" y="470" text-anchor="middle" font-size="13" font-weight="bold" fill="#6e2c00">FMallocStomp</text>
+  <text x="270" y="486" text-anchor="middle" font-size="10" fill="#6e2c00">越界写检测(保护页)</text>
+  <text x="270" y="500" text-anchor="middle" font-size="10" fill="#6e2c00">xxHash哨兵验证</text>
+  <text x="270" y="514" text-anchor="middle" font-size="10" fill="#6e2c00">非线程安全</text>
+
+  <!-- MallocStomp2 -->
+  <rect x="390" y="450" width="200" height="65" rx="6" fill="#ffa94d" stroke="#f76707" stroke-width="1.5"/>
+  <text x="490" y="470" text-anchor="middle" font-size="13" font-weight="bold" fill="#6e2c00">FMallocStomp2</text>
+  <text x="490" y="486" text-anchor="middle" font-size="10" fill="#6e2c00">增强版越界检测</text>
+  <text x="490" y="500" text-anchor="middle" font-size="10" fill="#6e2c00">32TB虚拟地址分块</text>
+  <text x="490" y="514" text-anchor="middle" font-size="10" fill="#6e2c00">线程安全原子分配</text>
+
+  <!-- Arrows from FMalloc to categories -->
+  <!-- Arrow to row 1 -->
+  <line x1="500" y1="100" x2="110" y2="185" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="285" y2="185" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="460" y2="185" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="635" y2="185" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Arrow to row 2 -->
+  <line x1="500" y1="100" x2="105" y2="310" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="270" y2="310" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="435" y2="310" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="600" y2="310" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="765" y2="310" stroke="#adb5bd" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Arrow to debug row -->
+  <line x1="500" y1="100" x2="270" y2="450" stroke="#f59f00" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="500" y1="100" x2="490" y2="450" stroke="#f59f00" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <!-- Legend -->
+  <rect x="30" y="555" width="14" height="14" fill="#74c0fc" stroke="#339af0"/>
+  <text x="50" y="567" font-size="11" fill="#333">系统封装</text>
+  <rect x="140" y="555" width="14" height="14" fill="#a9e34b" stroke="#74b816"/>
+  <text x="160" y="567" font-size="11" fill="#333">UE内置分箱</text>
+  <rect x="270" y="555" width="14" height="14" fill="#63e6be" stroke="#099268"/>
+  <text x="290" y="567" font-size="11" fill="#333">GPU专用</text>
+  <rect x="380" y="555" width="14" height="14" fill="#ffa94d" stroke="#f76707"/>
+  <text x="400" y="567" font-size="11" fill="#333">调试检测</text>
+  <rect x="490" y="555" width="14" height="14" fill="#e9ecef" stroke="#adb5bd" stroke-dasharray="3,2"/>
+  <text x="510" y="567" font-size="11" fill="#333">公共基础（非独立使用）</text>
+
+  <!-- BinnedCommon dotted line to Binned2/3 -->
+  <line x1="920" y1="310" x2="920" y2="288" stroke="#adb5bd" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="920" y="302" text-anchor="middle" font-size="9" fill="#868e96">被Binned2/3继承</text>
+</svg>

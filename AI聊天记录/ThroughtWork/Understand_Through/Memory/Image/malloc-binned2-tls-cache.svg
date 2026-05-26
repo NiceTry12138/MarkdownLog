@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arw" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1971c2"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="580" fill="#f8f9fa"/>
+  <text x="500" y="28" text-anchor="middle" font-size="17" font-weight="bold" fill="#222">MallocBinned2 — TLS缓存 + Bundle 回收机制</text>
+
+  <!-- Three-tier architecture -->
+  <!-- Tier 1: TLS -->
+  <rect x="20" y="45" width="960" height="130" rx="8" fill="#e7f5ff" stroke="#339af0" stroke-width="2"/>
+  <text x="30" y="63" font-size="13" font-weight="bold" fill="#1971c2">第一层：线程本地存储 (TLS) — FPerThreadFreeBlockLists</text>
+  <text x="30" y="78" font-size="10" fill="#555">每个线程独享，无锁访问，读写最快，存放刚释放/待分配的小块束(Bundle)</text>
+
+  <!-- TLS for thread 1 -->
+  <rect x="30" y="85" width="200" height="80" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="1.5"/>
+  <text x="130" y="103" text-anchor="middle" font-size="11" font-weight="bold" fill="#3b5bdb">Thread 1 TLS Cache</text>
+  <text x="130" y="118" text-anchor="middle" font-size="10" fill="#333">FreeLists[0..44]</text>
+  <text x="130" y="132" text-anchor="middle" font-size="10" fill="#333">每个池一个束节点链</text>
+  <text x="130" y="146" text-anchor="middle" font-size="10" fill="#333">无锁 Malloc/Free</text>
+  <text x="130" y="160" text-anchor="middle" font-size="10" fill="#555">AllocatedMemory 统计</text>
+
+  <!-- TLS for thread 2 -->
+  <rect x="245" y="85" width="200" height="80" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="1.5"/>
+  <text x="345" y="103" text-anchor="middle" font-size="11" font-weight="bold" fill="#3b5bdb">Thread 2 TLS Cache</text>
+  <text x="345" y="118" text-anchor="middle" font-size="10" fill="#333">FreeLists[0..44]</text>
+  <text x="345" y="132" text-anchor="middle" font-size="10" fill="#333">每个池一个束节点链</text>
+  <text x="345" y="146" text-anchor="middle" font-size="10" fill="#333">无锁 Malloc/Free</text>
+  <text x="345" y="160" text-anchor="middle" font-size="10" fill="#555">AllocatedMemory 统计</text>
+
+  <!-- TLS for thread N -->
+  <rect x="460" y="85" width="200" height="80" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="1.5"/>
+  <text x="560" y="103" text-anchor="middle" font-size="11" font-weight="bold" fill="#3b5bdb">Thread N TLS Cache</text>
+  <text x="560" y="118" text-anchor="middle" font-size="10" fill="#333">FreeLists[0..44]</text>
+  <text x="560" y="132" text-anchor="middle" font-size="10" fill="#333">每个池一个束节点链</text>
+  <text x="560" y="146" text-anchor="middle" font-size="10" fill="#333">无锁 Malloc/Free</text>
+  <text x="560" y="160" text-anchor="middle" font-size="10" fill="#555">AllocatedMemory 统计</text>
+
+  <text x="680" y="130" font-size="16" fill="#adb5bd">...</text>
+
+  <!-- Bundle recycler box -->
+  <rect x="700" y="85" width="270" height="80" rx="6" fill="#fff3bf" stroke="#f59f00" stroke-width="1.5"/>
+  <text x="835" y="103" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c4d00">Bundle = 一组同尺寸的空闲块</text>
+  <text x="835" y="120" text-anchor="middle" font-size="10" fill="#333">FBundleNode 链表</text>
+  <text x="835" y="135" text-anchor="middle" font-size="10" fill="#333">NextNodeInCurrentBundle → 同束下一块</text>
+  <text x="835" y="150" text-anchor="middle" font-size="10" fill="#333">NextBundle → 下一个束</text>
+  <text x="835" y="163" text-anchor="middle" font-size="10" fill="#7c4d00">捆绑传递，减少锁竞争</text>
+
+  <!-- Tier 2: Global Recycler -->
+  <rect x="20" y="195" width="960" height="110" rx="8" fill="#fff3bf" stroke="#f59f00" stroke-width="2"/>
+  <text x="30" y="213" font-size="13" font-weight="bold" fill="#7c4d00">第二层：全局回收器 — FGlobalRecycler</text>
+  <text x="30" y="228" font-size="10" fill="#555">持有待归还的Bundle，允许多线程用CAS原子操作访问，避免锁瓶颈</text>
+
+  <!-- Pool slots in global recycler -->
+  <!-- Pool 0 -->
+  <rect x="30" y="238" width="80" height="55" rx="4" fill="#ffe8cc" stroke="#f76707" stroke-width="1.5"/>
+  <text x="70" y="255" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">Pool [0]</text>
+  <text x="70" y="268" text-anchor="middle" font-size="9" fill="#333">16字节</text>
+  <text x="70" y="280" text-anchor="middle" font-size="9" fill="#555">FreeBundles[0..7]</text>
+  <text x="70" y="290" text-anchor="middle" font-size="8" fill="#888">CacheLinePadded</text>
+
+  <rect x="120" y="238" width="80" height="55" rx="4" fill="#ffe8cc" stroke="#f76707" stroke-width="1.5"/>
+  <text x="160" y="255" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">Pool [1]</text>
+  <text x="160" y="268" text-anchor="middle" font-size="9" fill="#333">32字节</text>
+  <text x="160" y="280" text-anchor="middle" font-size="9" fill="#555">FreeBundles[0..7]</text>
+  <text x="160" y="290" text-anchor="middle" font-size="8" fill="#888">CacheLinePadded</text>
+
+  <text x="215" y="270" font-size="16" fill="#adb5bd">...</text>
+
+  <rect x="235" y="238" width="80" height="55" rx="4" fill="#ffe8cc" stroke="#f76707" stroke-width="1.5"/>
+  <text x="275" y="255" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">Pool [44]</text>
+  <text x="275" y="268" text-anchor="middle" font-size="9" fill="#333">32752字节</text>
+  <text x="275" y="280" text-anchor="middle" font-size="9" fill="#555">FreeBundles[0..7]</text>
+  <text x="275" y="290" text-anchor="middle" font-size="8" fill="#888">CacheLinePadded</text>
+
+  <!-- CAS note -->
+  <rect x="340" y="238" width="280" height="55" rx="4" fill="#fff9db" stroke="#f59f00"/>
+  <text x="480" y="255" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c4d00">PushBundle / PopBundle</text>
+  <text x="480" y="270" text-anchor="middle" font-size="10" fill="#333">InterlockedCompareExchangePointer (CAS)</text>
+  <text x="480" y="285" text-anchor="middle" font-size="10" fill="#333">无锁操作，每个PoolIndex最多存MaxBundles个束</text>
+  <text x="480" y="296" text-anchor="middle" font-size="10" fill="#555">默认 MaxBundlesBeforeRecycle=8</text>
+
+  <!-- Tier 3: Pool Table -->
+  <rect x="20" y="325" width="960" height="115" rx="8" fill="#d3f9d8" stroke="#40c057" stroke-width="2"/>
+  <text x="30" y="343" font-size="13" font-weight="bold" fill="#2f9e44">第三层：全局池表 — SmallPoolTables[45] (加互斥锁访问)</text>
+  <text x="30" y="358" font-size="10" fill="#555">持有实际OS页，分配/释放小块时需要加 Mutex 锁，是慢路径</text>
+
+  <!-- Pool table entries -->
+  <rect x="30" y="365" width="110" height="60" rx="4" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="85" y="382" text-anchor="middle" font-size="9" font-weight="bold" fill="#2b5c00">FPoolTable[0]</text>
+  <text x="85" y="396" text-anchor="middle" font-size="9" fill="#333">BlockSize=16</text>
+  <text x="85" y="408" text-anchor="middle" font-size="9" fill="#333">ActivePools链表</text>
+  <text x="85" y="420" text-anchor="middle" font-size="9" fill="#333">ExhaustedPools</text>
+
+  <text x="150" y="400" font-size="16" fill="#adb5bd">...</text>
+
+  <rect x="170" y="365" width="110" height="60" rx="4" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="225" y="382" text-anchor="middle" font-size="9" font-weight="bold" fill="#2b5c00">FPoolTable[44]</text>
+  <text x="225" y="396" text-anchor="middle" font-size="9" fill="#333">BlockSize=32752</text>
+  <text x="225" y="408" text-anchor="middle" font-size="9" fill="#333">ActivePools链表</text>
+  <text x="225" y="420" text-anchor="middle" font-size="9" fill="#333">ExhaustedPools</text>
+
+  <!-- FFreeBlock page structure -->
+  <rect x="320" y="355" width="650" height="75" rx="4" fill="#fff9db" stroke="#f59f00" stroke-width="1.5"/>
+  <text x="645" y="373" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c4d00">一个 OS Page (4KB/64KB) 的内部布局</text>
+
+  <rect x="330" y="382" width="100" height="32" rx="3" fill="#ffa94d" stroke="#f76707" stroke-width="1.5"/>
+  <text x="380" y="397" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">FFreeBlock</text>
+  <text x="380" y="408" text-anchor="middle" font-size="8" fill="#6e2c00">BookKeeping头</text>
+
+  <rect x="434" y="382" width="60" height="32" rx="3" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="464" y="397" text-anchor="middle" font-size="9" fill="#2b5c00">Block N-1</text>
+
+  <rect x="498" y="382" width="60" height="32" rx="3" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="528" y="397" text-anchor="middle" font-size="9" fill="#2b5c00">Block N-2</text>
+
+  <text x="575" y="400" font-size="14" fill="#adb5bd">...</text>
+
+  <rect x="595" y="382" width="55" height="32" rx="3" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="622" y="397" text-anchor="middle" font-size="9" fill="#2b5c00">Block 0</text>
+
+  <text x="662" y="403" font-size="10" fill="#333">← 分配方向</text>
+
+  <!-- FFreeBlock detail -->
+  <rect x="700" y="375" width="260" height="52" rx="4" fill="#ffe8cc" stroke="#f76707" stroke-width="1.5"/>
+  <text x="830" y="393" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">FFreeBlock 字段</text>
+  <text x="700" y="408" font-size="8" fill="#333">  BlockSize(u16), PoolIndex(u8), Canary(u8), NumFreeBlocks(u32)</text>
+  <text x="700" y="420" font-size="8" fill="#333">  NextFreeBlock(void*) — 指向下一个FFreeBlock</text>
+
+  <!-- Allocation flow arrows -->
+  <!-- Alloc fast path -->
+  <rect x="20" y="460" width="960" height="110" rx="8" fill="#f8f0ff" stroke="#ae3ec9" stroke-width="2"/>
+  <text x="30" y="478" font-size="13" font-weight="bold" fill="#862e9c">分配流程 (小块 MallocExternalSmall)</text>
+
+  <rect x="30" y="488" width="130" height="70" rx="4" fill="#e9d8fd" stroke="#9c36b5" stroke-width="1.5"/>
+  <text x="95" y="505" text-anchor="middle" font-size="10" font-weight="bold" fill="#5c0070">① 查 TLS 缓存</text>
+  <text x="95" y="520" text-anchor="middle" font-size="9" fill="#333">BoundSizeToPoolIndex</text>
+  <text x="95" y="534" text-anchor="middle" font-size="9" fill="#333">Lists→Malloc(PoolIndex)</text>
+  <text x="95" y="548" text-anchor="middle" font-size="9" fill="#2f9e44">命中→直接返回</text>
+
+  <line x1="160" y1="523" x2="175" y2="523" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="175" y="488" width="130" height="70" rx="4" fill="#e9d8fd" stroke="#9c36b5" stroke-width="1.5"/>
+  <text x="240" y="505" text-anchor="middle" font-size="10" font-weight="bold" fill="#5c0070">② 尝试全局回收器</text>
+  <text x="240" y="520" text-anchor="middle" font-size="9" fill="#333">ObtainRecycledPartial</text>
+  <text x="240" y="534" text-anchor="middle" font-size="9" fill="#333">PopBundle from</text>
+  <text x="240" y="548" text-anchor="middle" font-size="9" fill="#333">GGlobalRecycler</text>
+
+  <line x1="305" y1="523" x2="320" y2="523" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="320" y="488" width="130" height="70" rx="4" fill="#e9d8fd" stroke="#9c36b5" stroke-width="1.5"/>
+  <text x="385" y="505" text-anchor="middle" font-size="10" font-weight="bold" fill="#5c0070">③ 加锁访问PoolTable</text>
+  <text x="385" y="520" text-anchor="middle" font-size="9" fill="#333">FScopeLock(Mutex)</text>
+  <text x="385" y="534" text-anchor="middle" font-size="9" fill="#333">Table.ActivePools</text>
+  <text x="385" y="548" text-anchor="middle" font-size="9" fill="#333">Pool→AllocRegularBlock</text>
+
+  <line x1="450" y1="523" x2="465" y2="523" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="465" y="488" width="130" height="70" rx="4" fill="#e9d8fd" stroke="#9c36b5" stroke-width="1.5"/>
+  <text x="530" y="505" text-anchor="middle" font-size="10" font-weight="bold" fill="#5c0070">④ 预填TLS缓存</text>
+  <text x="530" y="520" text-anchor="middle" font-size="9" fill="#333">GMallocBinned2AllocExtra</text>
+  <text x="530" y="534" text-anchor="middle" font-size="9" fill="#333">预取32个块到TLS</text>
+  <text x="530" y="548" text-anchor="middle" font-size="9" fill="#2f9e44">减少后续加锁次数</text>
+
+  <line x1="595" y1="523" x2="610" y2="523" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="610" y="488" width="130" height="70" rx="4" fill="#e9d8fd" stroke="#9c36b5" stroke-width="1.5"/>
+  <text x="675" y="505" text-anchor="middle" font-size="10" font-weight="bold" fill="#5c0070">⑤ 检查池耗尽</text>
+  <text x="675" y="520" text-anchor="middle" font-size="9" fill="#333">HasFreeRegularBlock()</text>
+  <text x="675" y="534" text-anchor="middle" font-size="9" fill="#333">→ ExhaustedPools</text>
+  <text x="675" y="548" text-anchor="middle" font-size="9" fill="#333">或留在ActivePools</text>
+
+  <line x1="740" y1="523" x2="755" y2="523" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="755" y="488" width="130" height="70" rx="4" fill="#d3f9d8" stroke="#40c057" stroke-width="1.5"/>
+  <text x="820" y="505" text-anchor="middle" font-size="10" font-weight="bold" fill="#2f9e44">⑥ 返回指针</text>
+  <text x="820" y="520" text-anchor="middle" font-size="9" fill="#333">返回对齐后的</text>
+  <text x="820" y="534" text-anchor="middle" font-size="9" fill="#333">内存指针</text>
+  <text x="820" y="548" text-anchor="middle" font-size="9" fill="#2f9e44">完成分配</text>
+
+  <!-- Inter-tier arrows -->
+  <line x1="130" y1="160" x2="130" y2="195" stroke="#1971c2" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arw)"/>
+  <text x="115" y="193" font-size="9" fill="#1971c2">满束</text>
+  <line x1="345" y1="160" x2="275" y2="195" stroke="#1971c2" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arw)"/>
+  <line x1="275" y1="293" x2="275" y2="325" stroke="#1971c2" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arw)"/>
+  <text x="280" y="315" font-size="9" fill="#1971c2">回收</text>
+</svg>

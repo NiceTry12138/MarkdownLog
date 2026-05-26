@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="540" viewBox="0 0 880 540">
+  <defs>
+    <marker id="arrowInherit" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto">
+      <polygon points="0 0, 12 5, 0 10" fill="none" stroke="#334155" stroke-width="1.5"/>
+    </marker>
+    <marker id="arrowDash" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7C3AED"/>
+    </marker>
+  </defs>
+
+  <rect width="880" height="540" fill="#F8FAFC" rx="8"/>
+  <text x="440" y="30" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#1E293B">UE 反射系统类继承层次</text>
+  <text x="440" y="50" text-anchor="middle" font-family="Arial" font-size="12" fill="#64748B">（每个类存储哪些数据，分层展示）</text>
+
+  <!-- LAYER 1: UObjectBase -->
+  <rect x="300" y="65" width="280" height="90" rx="6" fill="#1E40AF" stroke="#1D4ED8" stroke-width="2"/>
+  <text x="440" y="85" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">UObjectBase</text>
+  <line x1="300" y1="92" x2="580" y2="92" stroke="#93C5FD" stroke-width="1"/>
+  <text x="310" y="108" font-family="Consolas,monospace" font-size="10" fill="#BFDBFE">ClassPrivate : UClass*  // 我是哪个类</text>
+  <text x="310" y="122" font-family="Consolas,monospace" font-size="10" fill="#BFDBFE">NamePrivate  : FName    // 对象名称</text>
+  <text x="310" y="136" font-family="Consolas,monospace" font-size="10" fill="#BFDBFE">OuterPrivate : UObject* // 父对象</text>
+  <text x="310" y="150" font-family="Consolas,monospace" font-size="10" fill="#BFDBFE">InternalIndex: int32    // GUObjectArray索引</text>
+
+  <!-- Inheritance lines from UObjectBase down -->
+  <line x1="440" y1="155" x2="440" y2="175" stroke="#334155" stroke-width="2"/>
+  <line x1="440" y1="175" x2="440" y2="195" stroke="#334155" stroke-width="2" marker-end="url(#arrowInherit)"/>
+
+  <!-- LAYER 2: UObject -->
+  <rect x="300" y="195" width="280" height="50" rx="6" fill="#1D4ED8" stroke="#2563EB" stroke-width="2"/>
+  <text x="440" y="217" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">UObject</text>
+  <text x="440" y="237" text-anchor="middle" font-family="Arial" font-size="10" fill="#BFDBFE">（添加序列化/GC/网络等高层功能；无新数据成员）</text>
+
+  <!-- Inheritance: UObject -> UField -->
+  <line x1="440" y1="245" x2="440" y2="265" stroke="#334155" stroke-width="2"/>
+  <line x1="440" y1="265" x2="440" y2="285" stroke="#334155" stroke-width="2" marker-end="url(#arrowInherit)"/>
+
+  <!-- LAYER 3: UField -->
+  <rect x="300" y="285" width="280" height="50" rx="6" fill="#0369A1" stroke="#0284C7" stroke-width="2"/>
+  <text x="440" y="308" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">UField</text>
+  <text x="310" y="328" font-family="Consolas,monospace" font-size="10" fill="#BAE6FD">Next : UField*  // 反射字段链表的next指针</text>
+
+  <!-- Inheritance: UField -> UStruct -->
+  <line x1="440" y1="335" x2="440" y2="355" stroke="#334155" stroke-width="2"/>
+  <line x1="440" y1="355" x2="440" y2="375" stroke="#334155" stroke-width="2" marker-end="url(#arrowInherit)"/>
+
+  <!-- LAYER 4: UStruct -->
+  <rect x="240" y="375" width="400" height="120" rx="6" fill="#0F766E" stroke="#0D9488" stroke-width="2"/>
+  <text x="440" y="397" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">UStruct</text>
+  <line x1="240" y1="402" x2="640" y2="402" stroke="#99F6E4" stroke-width="1"/>
+  <text x="250" y="418" font-family="Consolas,monospace" font-size="10" fill="#CCFBF1">SuperStruct      : UStruct*  // 父结构/类</text>
+  <text x="250" y="432" font-family="Consolas,monospace" font-size="10" fill="#CCFBF1">Children         : UField*   // 子函数等（链表头）</text>
+  <text x="250" y="446" font-family="Consolas,monospace" font-size="10" fill="#CCFBF1">ChildProperties  : FField*   // 属性链表头 (FProperty系)</text>
+  <text x="250" y="460" font-family="Consolas,monospace" font-size="10" fill="#CCFBF1">PropertiesSize   : int32     // 总属性内存大小</text>
+  <text x="250" y="474" font-family="Consolas,monospace" font-size="10" fill="#CCFBF1">PropertyLink     : FProperty*// 从派生到基类的属性链</text>
+  <text x="250" y="488" font-family="Consolas,monospace" font-size="10" fill="#CCFBF1">Script           : TArray&lt;uint8&gt; // Blueprint字节码</text>
+
+  <!-- From UStruct, three children -->
+  <line x1="440" y1="495" x2="440" y2="510" stroke="#334155" stroke-width="1.5"/>
+  <line x1="140" y1="510" x2="740" y2="510" stroke="#334155" stroke-width="1.5"/>
+  
+  <!-- Arrow to UClass -->
+  <line x1="740" y1="510" x2="740" y2="525" stroke="#334155" stroke-width="1.5"/>
+  <!-- Arrow to UScriptStruct -->
+  <line x1="440" y1="510" x2="440" y2="525" stroke="#334155" stroke-width="1.5"/>
+  <!-- Arrow to UFunction -->
+  <line x1="140" y1="510" x2="140" y2="525" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- UFunction -->
+  <rect x="20" y="525" width="240" height="0" rx="0"/>
+  <!-- We need to extend the SVG height, let me just place arrows pointing down with labels -->
+
+  <!-- Labels for children at bottom -->
+  <rect x="20" y="520" width="220" height="14" rx="3" fill="#7C3AED"/>
+  <text x="130" y="532" text-anchor="middle" font-family="Arial" font-size="10" fill="white">▼ UFunction（函数描述）</text>
+
+  <rect x="330" y="520" width="220" height="14" rx="3" fill="#059669"/>
+  <text x="440" y="532" text-anchor="middle" font-family="Arial" font-size="10" fill="white">▼ UScriptStruct（纯C++结构体）</text>
+
+  <rect x="640" y="520" width="220" height="14" rx="3" fill="#DC2626"/>
+  <text x="750" y="532" text-anchor="middle" font-family="Arial" font-size="10" fill="white">▼ UClass（完整类描述）</text>
+
+  <!-- Legend -->
+  <rect x="20" y="65" width="250" height="130" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="145" y="85" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#334155">继承关系说明</text>
+  <line x1="30" y1="95" x2="270" y2="95" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="30" y="112" font-family="Arial" font-size="11" fill="#475569">每个子类都拥有所有父类的字段</text>
+  <text x="30" y="130" font-family="Arial" font-size="11" fill="#475569">加上自己新增的字段。</text>
+  <text x="30" y="150" font-family="Arial" font-size="11" fill="#475569">• UClass 继承 UStruct</text>
+  <text x="30" y="166" font-family="Arial" font-size="11" fill="#475569">• UStruct 继承 UField</text>
+  <text x="30" y="182" font-family="Arial" font-size="11" fill="#475569">• UField 继承 UObject</text>
+
+  <!-- Note: FField vs UField -->
+  <rect x="620" y="65" width="240" height="115" rx="6" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1"/>
+  <text x="740" y="85" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#C2410C">FField 与 UField 的区别</text>
+  <line x1="620" y1="92" x2="860" y2="92" stroke="#FDBA74" stroke-width="1"/>
+  <text x="630" y="108" font-family="Arial" font-size="10" fill="#7C2D12">UField：继承自UObject，参与GC，</text>
+  <text x="630" y="122" font-family="Arial" font-size="10" fill="#7C2D12">用于类级别元数据（UFunction等）</text>
+  <text x="630" y="140" font-family="Arial" font-size="10" fill="#7C2D12">FField：不继承UObject，更轻量，</text>
+  <text x="630" y="154" font-family="Arial" font-size="10" fill="#7C2D12">用于属性（FProperty = FField子类）</text>
+  <text x="630" y="170" font-family="Arial" font-size="10" fill="#7C2D12">UE4.25+引入FProperty替代UProperty</text>
+</svg>

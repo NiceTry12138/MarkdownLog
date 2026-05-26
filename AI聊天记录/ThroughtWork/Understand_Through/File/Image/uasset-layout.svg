@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="860" viewBox="0 0 1080 860">
+  <rect x="0" y="0" width="1080" height="860" fill="#f8f9fa" rx="8"/>
+  <text x="540" y="28" font-family="Arial,sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a1a2e">uasset 文件数据分布：BP_EnemyBase.uasset 与 BP_Enemy.uasset</text>
+  <text x="540" y="46" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">源码：Engine/Source/Runtime/CoreUObject/Public/UObject/PackageFileSummary.h  ObjectResource.h</text>
+
+  <!-- ===== BP_EnemyBase.uasset ===== -->
+  <text x="30" y="68" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#2980b9">BP_EnemyBase.uasset</text>
+  <text x="30" y="84" font-family="Arial,sans-serif" font-size="11" fill="#555">类继承：Actor → BP_EnemyBase，属性：int32 Hp</text>
+
+  <!-- FPackageFileSummary -->
+  <rect x="30" y="92" width="490" height="40" fill="#2980b9" rx="4"/>
+  <text x="275" y="110" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">① FPackageFileSummary（文件头部总摘要）</text>
+  <text x="275" y="126" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#d0e8ff">Magic(4B) | FileVersion | PackageFlags | TotalHeaderSize | PackageName</text>
+  <text x="30" y="138" font-family="Arial,sans-serif" font-size="10" fill="#888">各表偏移：NameOffset | ExportOffset | ImportOffset | DependsOffset | AssetRegistryDataOffset | BulkDataStartOffset ...</text>
+
+  <!-- Name Map -->
+  <rect x="30" y="148" width="490" height="32" fill="#27ae60" rx="4"/>
+  <text x="275" y="162" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">② NameMap（名称表）—— NameCount 个 FNameEntry</text>
+  <text x="275" y="176" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#cef">"BP_EnemyBase", "Actor", "Hp", "int32", "BlueprintGeneratedClass", "/Script/Engine", ... 等字符串</text>
+
+  <!-- Import Map -->
+  <rect x="30" y="186" width="490" height="48" fill="#16a085" rx="4"/>
+  <text x="275" y="202" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">③ ImportMap（导入表）—— ImportCount 个 FObjectImport</text>
+  <text x="40" y="218" font-family="Arial,sans-serif" font-size="10" fill="#cef">Import[0]: /Script/Engine → Actor（引用自 Engine 包）</text>
+  <text x="40" y="228" font-family="Arial,sans-serif" font-size="10" fill="#cef">Import[1]: /Script/CoreUObject → int32（属性类型）</text>
+
+  <!-- Export Map -->
+  <rect x="30" y="240" width="490" height="80" fill="#8e44ad" rx="4"/>
+  <text x="275" y="256" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">④ ExportMap（导出表）—— ExportCount 个 FObjectExport</text>
+  <text x="40" y="272" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">Export[0]: BP_EnemyBase_C（UBlueprintGeneratedClass）</text>
+  <text x="40" y="284" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">  ClassIndex → Import[0](Actor_C 是父类), SuperIndex → Import[0](Actor)</text>
+  <text x="40" y="296" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">  SerialOffset, SerialSize（指向 Export Data 区的该对象数据位置）</text>
+  <text x="40" y="308" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">Export[1]: Default__BP_EnemyBase_C（CDO，默认对象）</text>
+
+  <!-- Depends Map -->
+  <rect x="30" y="326" width="490" height="28" fill="#e67e22" rx="4"/>
+  <text x="275" y="344" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">⑤ DependsMap（依赖表）—— ExportCount 个依赖列表</text>
+  <text x="275" y="356" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#fcc">记录每个 Export 在加载时依赖的其他 Import 或 Export 的索引</text>
+
+  <!-- Asset Registry Data -->
+  <rect x="30" y="360" width="490" height="24" fill="#c0392b" rx="4"/>
+  <text x="275" y="376" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">⑥ AssetRegistryData：资产标签（FAssetData Tags，如 AssetClass, ParentClass 等）</text>
+
+  <!-- Export Data -->
+  <rect x="30" y="390" width="490" height="80" fill="#1a5276" rx="4"/>
+  <text x="275" y="408" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">⑦ Export Data（实际对象序列化数据）</text>
+  <text x="40" y="424" font-family="Arial,sans-serif" font-size="10" fill="#a8d">Export[0] Data（BP_EnemyBase_C）：UBlueprintGeneratedClass 的全部属性</text>
+  <text x="40" y="438" font-family="Arial,sans-serif" font-size="10" fill="#a8d">  包括：FunctionMap, PropertyData, Bytecode, ClassFlags, SuperClass 引用...</text>
+  <text x="40" y="452" font-family="Arial,sans-serif" font-size="10" fill="#a8d">Export[1] Data（Default__BP_EnemyBase_C 即 CDO）：</text>
+  <text x="40" y="464" font-family="Arial,sans-serif" font-size="10" fill="#a8d">  Hp = 0（int32 默认值）</text>
+
+  <!-- Preload Dependencies -->
+  <rect x="30" y="476" width="490" height="22" fill="#2c3e50" rx="4"/>
+  <text x="275" y="491" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">⑧ PreloadDependencies（预加载依赖，加速异步加载顺序控制）</text>
+
+
+  <!-- ===== BP_Enemy.uasset ===== -->
+  <text x="560" y="68" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#c0392b">BP_Enemy.uasset</text>
+  <text x="560" y="84" font-family="Arial,sans-serif" font-size="11" fill="#555">类继承：Actor → BP_EnemyBase → BP_Enemy，属性：bool bAlive（继承 Hp）</text>
+
+  <rect x="560" y="92" width="490" height="40" fill="#2980b9" rx="4"/>
+  <text x="805" y="110" font-family="Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">① FPackageFileSummary</text>
+  <text x="805" y="126" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#d0e8ff">同 BP_EnemyBase，但 PackageName = "/Game/Blueprints/BP_Enemy"</text>
+
+  <rect x="560" y="148" width="490" height="32" fill="#27ae60" rx="4"/>
+  <text x="805" y="162" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">② NameMap</text>
+  <text x="805" y="176" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#cef">"BP_Enemy", "BP_EnemyBase", "bAlive", "bool", "Actor", ... （比 BP_EnemyBase 多了父类名引用）</text>
+
+  <rect x="560" y="186" width="490" height="56" fill="#16a085" rx="4"/>
+  <text x="805" y="202" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">③ ImportMap（比 BP_EnemyBase 多了对父类包的引用）</text>
+  <text x="570" y="218" font-family="Arial,sans-serif" font-size="10" fill="#cef">Import[0]: /Script/Engine → Actor</text>
+  <text x="570" y="230" font-family="Arial,sans-serif" font-size="10" fill="#cef">Import[1]: /Game/Blueprints/BP_EnemyBase → BP_EnemyBase_C（父类！）</text>
+  <text x="570" y="242" font-family="Arial,sans-serif" font-size="10" fill="#cef">Import[2]: /Script/CoreUObject → bool（bAlive 类型）</text>
+
+  <rect x="560" y="248" width="490" height="80" fill="#8e44ad" rx="4"/>
+  <text x="805" y="264" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">④ ExportMap</text>
+  <text x="570" y="280" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">Export[0]: BP_Enemy_C（UBlueprintGeneratedClass）</text>
+  <text x="570" y="292" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">  ClassIndex → Import[1](BP_EnemyBase_C 的 Class 是 BPGC)</text>
+  <text x="570" y="304" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">  SuperIndex → Import[1](BP_EnemyBase_C，父类！)</text>
+  <text x="570" y="316" font-family="Arial,sans-serif" font-size="10" fill="#e8d8ff">Export[1]: Default__BP_Enemy_C（CDO）</text>
+
+  <rect x="560" y="334" width="490" height="28" fill="#e67e22" rx="4"/>
+  <text x="805" y="348" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">⑤ DependsMap</text>
+  <text x="805" y="358" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#fcc">Export[0] 依赖 Import[1]（BP_EnemyBase_C 必须先加载）</text>
+
+  <rect x="560" y="368" width="490" height="24" fill="#c0392b" rx="4"/>
+  <text x="805" y="384" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">⑥ AssetRegistryData：ParentClass = /Game/Blueprints/BP_EnemyBase.BP_EnemyBase_C</text>
+
+  <rect x="560" y="398" width="490" height="80" fill="#1a5276" rx="4"/>
+  <text x="805" y="414" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">⑦ Export Data</text>
+  <text x="570" y="430" font-family="Arial,sans-serif" font-size="10" fill="#a8d">Export[0] Data（BP_Enemy_C）：仅存储 BP_Enemy 自己新增的内容</text>
+  <text x="570" y="444" font-family="Arial,sans-serif" font-size="10" fill="#a8d">  新增 Property：bAlive（bool）定义 + Bytecode（函数）</text>
+  <text x="570" y="458" font-family="Arial,sans-serif" font-size="10" fill="#a8d">  父类 Hp 属性：不在此处序列化（由父类 BP_EnemyBase_C 负责）</text>
+  <text x="570" y="472" font-family="Arial,sans-serif" font-size="10" fill="#a8d">Export[1] Data（CDO）：bAlive = false（默认值）</text>
+
+  <rect x="560" y="484" width="490" height="22" fill="#2c3e50" rx="4"/>
+  <text x="805" y="499" font-family="Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="white">⑧ PreloadDependencies：必须在 BP_EnemyBase 加载完成后才能预加载 BP_Enemy</text>
+
+  <!-- Comparison note -->
+  <rect x="30" y="516" width="1020" height="80" fill="#fff" rx="6" stroke="#4a90d9" stroke-width="2"/>
+  <text x="40" y="534" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1a1a2e">关键对比：</text>
+  <text x="40" y="552" font-family="Arial,sans-serif" font-size="11" fill="#333">• BP_EnemyBase.uasset 的 ImportMap 只需引用 /Script/Engine 中的 Actor（引擎内置类，无需跨包加载 uasset）</text>
+  <text x="40" y="568" font-family="Arial,sans-serif" font-size="11" fill="#333">• BP_Enemy.uasset 的 ImportMap 多了 Import[1]: /Game/Blueprints/BP_EnemyBase.BP_EnemyBase_C —— 这告诉加载器：在加载 BP_Enemy 之前，先去加载 BP_EnemyBase.uasset</text>
+  <text x="40" y="584" font-family="Arial,sans-serif" font-size="11" fill="#333">• Export Data 中只存自己这个类"新增"的内容。Hp 属性在 BP_EnemyBase_C 的 Export Data 里，BP_Enemy_C 运行时通过 SuperClass 链条继承访问 Hp</text>
+
+  <!-- FPackageIndex explanation -->
+  <rect x="30" y="606" width="1020" height="80" fill="#fff" rx="6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="40" y="624" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1a1a2e">FPackageIndex（索引编码规则）：</text>
+  <text x="40" y="642" font-family="Arial,sans-serif" font-size="11" fill="#555">• Index &gt; 0：指向 ExportMap[Index - 1]（本包内的对象），如 ExportIndex=1 → ExportMap[0]</text>
+  <text x="40" y="658" font-family="Arial,sans-serif" font-size="11" fill="#555">• Index &lt; 0：指向 ImportMap[-(Index+1)]（其他包的对象），如 ImportIndex=-1 → ImportMap[0]（Actor）</text>
+  <text x="40" y="674" font-family="Arial,sans-serif" font-size="11" fill="#555">• Index = 0：空引用（NULL，如顶层 UPackage 对象的 OuterIndex = 0）</text>
+
+  <!-- .uexp note -->
+  <rect x="30" y="696" width="1020" height="46" fill="#fff" rx="6" stroke="#e67e22" stroke-width="2"/>
+  <text x="40" y="714" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#e67e22">注：.uexp 文件</text>
+  <text x="40" y="730" font-family="Arial,sans-serif" font-size="11" fill="#555">非 IoStore 模式的 Cook 会将 Export Data 拆出到同名的 .uexp 文件中（减少 .uasset 的大小便于热更新）；IoStore 模式下两者合并为 ExportBundle Chunk 写入 .ucas</text>
+
+  <!-- ubulk note -->
+  <rect x="30" y="750" width="1020" height="46" fill="#fff" rx="6" stroke="#c0392b" stroke-width="2"/>
+  <text x="40" y="768" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#c0392b">注：.ubulk 文件（BulkData）</text>
+  <text x="40" y="784" font-family="Arial,sans-serif" font-size="11" fill="#555">贴图的 Mip 数据、静态网格顶点数据等大体积二进制数据会单独存储在 .ubulk 文件（非按需加载）或 .uptnl（Optional BulkData，仅高清包才加载）</text>
+  <text x="40" y="800" font-family="Arial,sans-serif" font-size="11" fill="#555">FPackageFileSummary.BulkDataStartOffset 记录了 BulkData 在 .uasset/.uexp 内的起始偏移（文件内联 BulkData）或指向外部 .ubulk 文件</text>
+</svg>

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="480" viewBox="0 0 900 480">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+  <rect width="900" height="480" fill="#f8f9fa"/>
+  <text x="450" y="28" text-anchor="middle" font-size="17" font-weight="bold" fill="#222">MallocAnsi — 手动对齐路径内存布局（非平台对齐malloc情形）</text>
+
+  <!-- Platform path label -->
+  <text x="20" y="62" font-size="13" font-weight="bold" fill="#1971c2">平台路径1: PLATFORM_USES__ALIGNED_MALLOC (Windows)</text>
+  <!-- Windows box -->
+  <rect x="20" y="70" width="860" height="60" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="1.5"/>
+  <rect x="30" y="78" width="200" height="42" rx="4" fill="#4c6ef5"/>
+  <text x="130" y="100" text-anchor="middle" font-size="13" fill="white" font-weight="bold">_aligned_malloc(Size, Align)</text>
+  <text x="130" y="114" text-anchor="middle" font-size="10" fill="#dbe4ff">直接系统调用，OS保证对齐</text>
+  <text x="400" y="102" font-size="11" fill="#364fc7">→ 系统直接分配对齐内存，无额外开销</text>
+  <text x="400" y="118" font-size="11" fill="#364fc7">→ 释放用 _aligned_free()，回收用 _aligned_realloc()</text>
+
+  <!-- Platform path label 2 -->
+  <text x="20" y="158" font-size="13" font-weight="bold" fill="#2f9e44">平台路径2: PLATFORM_USE_ANSI_POSIX_MALLOC (Linux/macOS)</text>
+  <!-- POSIX box -->
+  <rect x="20" y="166" width="860" height="60" rx="6" fill="#d3f9d8" stroke="#40c057" stroke-width="1.5"/>
+  <rect x="30" y="174" width="220" height="42" rx="4" fill="#40c057"/>
+  <text x="140" y="196" text-anchor="middle" font-size="13" fill="white" font-weight="bold">posix_memalign(&amp;ptr, Align, Size)</text>
+  <text x="140" y="210" text-anchor="middle" font-size="10" fill="#d3f9d8">POSIX标准调用</text>
+  <text x="400" y="198" font-size="11" fill="#2f9e44">→ 由 POSIX 标准保证返回的指针是 Align 的倍数</text>
+  <text x="400" y="214" font-size="11" fill="#2f9e44">→ 释放用标准 free(ptr)</text>
+
+  <!-- Platform path label 3 -->
+  <text x="20" y="255" font-size="13" font-weight="bold" fill="#c2255c">平台路径3: 通用回退路径（其他平台）</text>
+  <!-- Generic manual align layout -->
+  <rect x="20" y="263" width="860" height="175" rx="6" fill="#ffe0f0" stroke="#c2255c" stroke-width="1.5"/>
+
+  <!-- Memory layout diagram -->
+  <!-- raw malloc block -->
+  <text x="30" y="288" font-size="11" fill="#862e4a" font-weight="bold">原始 malloc 返回地址 (Ptr)</text>
+  <line x1="30" y1="292" x2="30" y2="305" stroke="#862e4a" stroke-width="1.5"/>
+
+  <!-- Memory cells -->
+  <!-- Cell 1: original ptr -->
+  <rect x="30" y="305" width="90" height="36" rx="3" fill="#f783ac" stroke="#c2255c" stroke-width="1.5"/>
+  <text x="75" y="322" text-anchor="middle" font-size="9" fill="#5c0d24" font-weight="bold">SIZE_T</text>
+  <text x="75" y="333" text-anchor="middle" font-size="9" fill="#5c0d24">original_size</text>
+
+  <!-- Cell 2: original size -->
+  <rect x="124" y="305" width="90" height="36" rx="3" fill="#f783ac" stroke="#c2255c" stroke-width="1.5"/>
+  <text x="169" y="322" text-anchor="middle" font-size="9" fill="#5c0d24" font-weight="bold">void*</text>
+  <text x="169" y="333" text-anchor="middle" font-size="9" fill="#5c0d24">original_ptr</text>
+
+  <!-- Alignment padding -->
+  <rect x="218" y="305" width="130" height="36" rx="3" fill="#ffd8e4" stroke="#c2255c" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="283" y="322" text-anchor="middle" font-size="9" fill="#862e4a">对齐填充</text>
+  <text x="283" y="333" text-anchor="middle" font-size="9" fill="#862e4a">(0~Alignment-1 字节)</text>
+
+  <!-- User data -->
+  <rect x="352" y="305" width="300" height="36" rx="3" fill="#a5d8ff" stroke="#1c7ed6" stroke-width="2"/>
+  <text x="502" y="318" text-anchor="middle" font-size="12" font-weight="bold" fill="#1c3e6e">用户数据区</text>
+  <text x="502" y="333" text-anchor="middle" font-size="10" fill="#1c3e6e">Size 字节，起始地址对齐到 Alignment</text>
+
+  <!-- End -->
+  <rect x="656" y="305" width="50" height="36" rx="3" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1"/>
+  <text x="681" y="326" text-anchor="middle" font-size="9" fill="#868e96">尾部</text>
+
+  <!-- Labels -->
+  <text x="75" y="354" text-anchor="middle" font-size="10" fill="#862e4a">sizeof(SIZE_T)</text>
+  <text x="169" y="354" text-anchor="middle" font-size="10" fill="#862e4a">sizeof(void*)</text>
+  <text x="283" y="354" text-anchor="middle" font-size="10" fill="#862e4a">可变长</text>
+  <text x="502" y="354" text-anchor="middle" font-size="10" fill="#1c7ed6">返回给调用者的指针 → Result</text>
+
+  <!-- Bracket from Ptr to Result -->
+  <text x="30" y="375" font-size="11" fill="#862e4a">malloc 总申请：Size + Alignment + sizeof(void*) + sizeof(SIZE_T)</text>
+
+  <!-- Code annotations -->
+  <text x="30" y="395" font-size="10" fill="#555">分配:</text>
+  <text x="30" y="410" font-size="10" fill="#333" font-family="monospace">void* Ptr = malloc(Size + Alignment + sizeof(void*) + sizeof(SIZE_T));</text>
+  <text x="30" y="425" font-size="10" fill="#333" font-family="monospace">Result = Align((uint8*)Ptr + sizeof(void*) + sizeof(SIZE_T), Alignment);</text>
+  <text x="30" y="440" font-size="10" fill="#333" font-family="monospace">*(void**)((uint8*)Result - sizeof(void*)) = Ptr; // 保存原始指针用于 free</text>
+
+  <!-- Return pointer arrow -->
+  <line x1="352" y1="305" x2="352" y2="286" stroke="#1c7ed6" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="360" y="283" font-size="11" fill="#1c7ed6" font-weight="bold">← 对齐后返回给用户的 Result 指针</text>
+
+  <!-- Alignment formula -->
+  <text x="20" y="462" font-size="12" fill="#2f9e44" font-weight="bold">对齐判断: Alignment = Max(Size &gt;= 16 ? 16 : 8, RequestedAlignment)</text>
+</svg>

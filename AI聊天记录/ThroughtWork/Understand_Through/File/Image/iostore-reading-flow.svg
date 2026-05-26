@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="680" viewBox="0 0 880 680">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 Z" fill="#555"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="880" height="680" fill="#f8f9fa" rx="8"/>
+  <text x="440" y="30" font-family="Arial,sans-serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#1a1a2e">IoStore 文件读取流程（FFileIoStore::Mount + Resolve + ReadBlocks）</text>
+  <text x="440" y="50" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">源码：Engine/Source/Runtime/PakFile/Private/IoDispatcherFileBackend.cpp  FFileIoStoreReader::Open()</text>
+
+  <!-- Step 1 -->
+  <rect x="60" y="64" width="760" height="54" fill="#2980b9" rx="6"/>
+  <text x="440" y="85" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 1：FFileIoStore::Mount(InTocPath) 触发容器挂载</text>
+  <text x="440" y="103" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">接收 .utoc 文件路径；创建 FFileIoStoreReader，调用 Open(InTocFilePath, InOrder)</text>
+  <text x="440" y="115" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">由 FPakPlatformFile::InitializeNewAsyncIO() 在找到 global.utoc / [game].utoc 时触发</text>
+
+  <line x1="440" y1="118" x2="440" y2="138" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="60" y="140" width="760" height="66" fill="#16a085" rx="6"/>
+  <text x="440" y="161" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 2：读取并解析 .utoc（FIoStoreTocResource::Read）</text>
+  <text x="440" y="179" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">用 IPlatformFile 打开 .utoc，读取 FIoStoreTocHeader，校验 TocMagic("-==--==--==--==-")</text>
+  <text x="440" y="193" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">加载 ChunkIds[], ChunkOffsetLengths[], CompressionBlocks[], CompressionMethodNames</text>
+  <text x="440" y="205" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">解密（若加密容器）：读取 EncryptionKeyGuid，从 UE::FEncryptionKeyManager 获取密钥</text>
+
+  <line x1="440" y1="206" x2="440" y2="226" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="60" y="228" width="760" height="54" fill="#8e44ad" rx="6"/>
+  <text x="440" y="249" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 3：打开对应的 .ucas 分区文件</text>
+  <text x="440" y="267" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">遍历 PartitionCount，对 PartitionIndex=0 打开 xxxx.ucas，对 i&gt;0 打开 xxxx_si.ucas</text>
+  <text x="440" y="279" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">PlatformImpl.OpenContainer(*ContainerFilePath, Partition.FileHandle, Partition.FileSize)</text>
+
+  <line x1="440" y1="282" x2="440" y2="302" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="60" y="304" width="760" height="66" fill="#e67e22" rx="6"/>
+  <text x="440" y="326" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 4：构建完美哈希映射（ChunkId → OffsetAndLength）</text>
+  <text x="440" y="344" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">若 .utoc 包含 ChunkPerfectHashSeeds，使用 PerfectHashMap（零碰撞，查找 O(1)）</text>
+  <text x="440" y="358" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">FindChunkInternal: Hash(0, ChunkId)%SeedCount → Seed → Hash(Seed, ChunkId)%ChunkCount → Slot</text>
+  <text x="440" y="370" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">否则退回 TocImperfectHashMapFallback（普通 TMap）</text>
+
+  <line x1="440" y1="370" x2="440" y2="390" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 5: Runtime Request -->
+  <rect x="60" y="392" width="760" height="80" fill="#c0392b" rx="6"/>
+  <text x="440" y="414" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 5：运行时读取请求（FIoBatch::Read → Resolve → ReadBlocks）</text>
+  <text x="440" y="432" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">异步加载系统创建 FIoChunkId（包含 PackageId + ChunkType）</text>
+  <text x="440" y="446" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">FFileIoStore::Resolve() 调用 FindChunkInternal(ChunkId) → 得到 FIoOffsetAndLength</text>
+  <text x="440" y="460" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">将 FIoOffsetAndLength 拆分成若干 FIoStoreTocCompressedBlockEntry（压缩块列表）</text>
+  <text x="440" y="472" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">提交异步读取请求：从对应分区 .ucas 文件的 BlockOffset 处读取 CompressedSize 字节</text>
+
+  <line x1="440" y1="472" x2="440" y2="492" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 6 -->
+  <rect x="60" y="494" width="760" height="54" fill="#2c3e50" rx="6"/>
+  <text x="440" y="516" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 6：解压缩 + 解密，返回原始 Chunk 数据</text>
+  <text x="440" y="534" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aec">所有压缩块读取完毕 → 按 CompressionMethodIndex 解压（Oodle/Zlib 等）</text>
+  <text x="440" y="546" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#8ab">若 ContainerFlags 包含 Encrypted → AES 解密 → 拼合成完整的 Chunk 数据 → FIoBuffer 返回给请求方</text>
+
+  <!-- Result -->
+  <rect x="200" y="568" width="480" height="50" fill="#1a1a2e" rx="8"/>
+  <text x="440" y="590" font-family="Arial,sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">✓ 请求方（AsyncLoading2）收到 FIoBuffer</text>
+  <text x="440" y="608" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aaa">即为该 Package 的 ExportBundle 二进制数据，可直接反序列化为 UObject</text>
+
+  <!-- Note -->
+  <rect x="60" y="632" width="760" height="36" fill="#fff" rx="6" stroke="#ddd" stroke-width="1"/>
+  <text x="80" y="650" font-family="Arial,sans-serif" font-size="11" fill="#555">全程异步 + 批量（FIoBatch）：不同 Chunk 的读取请求可以并行提交，IoDispatcher 按优先级调度磁盘 I/O，提升加载速度</text>
+  <text x="80" y="662" font-family="Arial,sans-serif" font-size="11" fill="#555">签名校验（若启用）：每个压缩块都有 FIoStoreTocEntryMeta.ChunkHash（SHA1），读取后校验防止数据损坏</text>
+</svg>

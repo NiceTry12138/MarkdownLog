@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+  <rect width="960" height="520" fill="#f8f9fa"/>
+  <text x="480" y="28" text-anchor="middle" font-size="17" font-weight="bold" fill="#222">MallocStomp — 保护页内存布局（越界写检测原理）</text>
+
+  <!-- Mode selector -->
+  <rect x="20" y="42" width="920" height="30" rx="4" fill="#e9ecef" stroke="#adb5bd"/>
+  <text x="480" y="62" text-anchor="middle" font-size="12" fill="#555">FMallocStomp(bUseUnderrunMode=false) — 默认模式: 检测越界写（Overrun）</text>
+
+  <!-- OVERRUN MODE LAYOUT -->
+  <text x="20" y="95" font-size="13" font-weight="bold" fill="#c92a2a">Overrun 模式 — 保护页放在数据末尾（检测缓冲区溢出）</text>
+
+  <!-- Page layout for overrun -->
+  <rect x="20" y="100" width="920" height="130" rx="6" fill="#fff0f6" stroke="#f76707" stroke-width="1.5"/>
+
+  <!-- FullAllocationPointer label -->
+  <line x1="30" y1="108" x2="30" y2="122" stroke="#333" stroke-width="1.5"/>
+  <text x="32" y="120" font-size="10" fill="#333">↑ FullAllocationPointer</text>
+
+  <!-- Page 0~N: valid pages -->
+  <rect x="30" y="120" width="560" height="50" rx="4" fill="#d3f9d8" stroke="#40c057" stroke-width="2"/>
+  <text x="310" y="142" text-anchor="middle" font-size="12" font-weight="bold" fill="#2b5c00">有效内存区域 (AllocFullPageSize)</text>
+  <text x="310" y="158" text-anchor="middle" font-size="10" fill="#2b5c00">N个完整页 = ⌈(AlignedSize + sizeof(FAllocationData)) / PageSize⌉ × PageSize</text>
+
+  <!-- Inside: AllocationData -->
+  <rect x="32" y="122" width="90" height="46" rx="3" fill="#ffa94d" stroke="#f76707" stroke-width="1.5"/>
+  <text x="77" y="140" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">FAllocationData</text>
+  <text x="77" y="153" text-anchor="middle" font-size="8" fill="#6e2c00">FullAllocPtr</text>
+  <text x="77" y="164" text-anchor="middle" font-size="8" fill="#6e2c00">FullSize/Size</text>
+
+  <!-- User data -->
+  <rect x="126" y="122" width="462" height="46" rx="3" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="357" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#2b5c00">用户数据区 (AlignedSize 字节)</text>
+  <text x="357" y="160" text-anchor="middle" font-size="10" fill="#2b5c00">紧靠末尾，末尾对齐到页边界</text>
+
+  <!-- Guard page -->
+  <rect x="594" y="120" width="100" height="50" rx="4" fill="#ffe3e3" stroke="#c92a2a" stroke-width="3"/>
+  <text x="644" y="141" text-anchor="middle" font-size="11" font-weight="bold" fill="#c92a2a">GUARD PAGE</text>
+  <text x="644" y="157" text-anchor="middle" font-size="9" fill="#c92a2a">不可读写(NOACCESS)</text>
+
+  <!-- Arrow pointing to guard page -->
+  <line x1="644" y1="170" x2="644" y2="195" stroke="#c92a2a" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="650" y="195" font-size="10" fill="#c92a2a">越界写→触发访问异常!</text>
+
+  <!-- Pointer label -->
+  <line x1="126" y1="108" x2="126" y2="122" stroke="#1971c2" stroke-width="2"/>
+  <text x="128" y="117" font-size="10" fill="#1971c2" font-weight="bold">↑ ReturnedPointer (用户拿到的指针)</text>
+
+  <!-- Formulas -->
+  <rect x="20" y="240" width="920" height="80" rx="6" fill="#e7f5ff" stroke="#339af0" stroke-width="1.5"/>
+  <text x="30" y="258" font-size="12" font-weight="bold" fill="#1971c2">Overrun 模式关键计算公式</text>
+  <text x="30" y="276" font-size="11" fill="#333" font-family="monospace">AlignedSize = (Size + Alignment - 1) &amp; -(int32)Alignment</text>
+  <text x="30" y="293" font-size="11" fill="#333" font-family="monospace">AllocFullPageSize = (AlignedSize + AlignmentSize + sizeof(FAllocationData) + PageSize-1) &amp; -PageSize</text>
+  <text x="30" y="310" font-size="11" fill="#333" font-family="monospace">TotalAllocationSize = AllocFullPageSize + PageSize  // 多出一个保护页</text>
+  <text x="30" y="326" font-size="11" fill="#555">ReturnedPointer = AlignDown(FullAllocationPointer + AllocFullPageSize - AlignedSize, Alignment)</text>
+
+  <!-- UNDERRUN MODE LAYOUT -->
+  <text x="20" y="355" font-size="13" font-weight="bold" fill="#862e9c">Underrun 模式 (bUseUnderrunMode=true) — 保护页放在数据前端（检测越界读写起始前）</text>
+
+  <rect x="20" y="360" width="920" height="100" rx="6" fill="#f8f0ff" stroke="#9c36b5" stroke-width="1.5"/>
+
+  <!-- Guard page -->
+  <rect x="30" y="375" width="100" height="50" rx="4" fill="#ffe3e3" stroke="#c92a2a" stroke-width="3"/>
+  <text x="80" y="398" text-anchor="middle" font-size="11" font-weight="bold" fill="#c92a2a">GUARD PAGE</text>
+  <text x="80" y="412" text-anchor="middle" font-size="9" fill="#c92a2a">不可读写</text>
+
+  <!-- AllocationData in underrun mode -->
+  <rect x="134" y="375" width="90" height="50" rx="3" fill="#ffa94d" stroke="#f76707" stroke-width="1.5"/>
+  <text x="179" y="393" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">FAllocationData</text>
+  <text x="179" y="406" text-anchor="middle" font-size="8" fill="#6e2c00">哨兵值 Sentinel</text>
+  <text x="179" y="417" text-anchor="middle" font-size="8" fill="#6e2c00">= xxHash64(this)</text>
+
+  <!-- User data -->
+  <rect x="228" y="375" width="500" height="50" rx="3" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="478" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#2b5c00">用户数据区 (AlignedSize 字节)</text>
+  <text x="478" y="415" text-anchor="middle" font-size="10" fill="#2b5c00">从 PageSize + AlignedAllocationData 处开始</text>
+
+  <!-- ReturnedPointer -->
+  <line x1="228" y1="365" x2="228" y2="375" stroke="#1971c2" stroke-width="2"/>
+  <text x="230" y="374" font-size="10" fill="#1971c2" font-weight="bold">↑ ReturnedPointer</text>
+
+  <!-- Arrow from underrun -->
+  <line x1="80" y1="375" x2="80" y2="355" stroke="#c92a2a" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="30" y="352" font-size="10" fill="#c92a2a">向前越界→触发异常!</text>
+
+  <!-- Sentinel explanation -->
+  <rect x="20" y="475" width="920" height="38" rx="4" fill="#fff9db" stroke="#f59f00" stroke-width="1.5"/>
+  <text x="30" y="491" font-size="11" font-weight="bold" fill="#7c4d00">哨兵值 (Sentinel):</text>
+  <text x="30" y="507" font-size="10" fill="#333">Free时会验证: AllocData.Sentinel == FXxHash64::HashBuffer(AllocData, offsetof(FAllocationData, Sentinel)).Hash   → 不符合则内存被破坏!</text>
+</svg>

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="820" viewBox="0 0 860 820">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 Z" fill="#555"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 Z" fill="#4a90d9"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="860" height="820" fill="#f8f9fa" rx="8"/>
+  <text x="430" y="30" font-family="Arial,sans-serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#1a1a2e">PAK 文件生成流程（UnrealPak / PakFileUtilities::CreatePakFile）</text>
+  <text x="430" y="50" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">源码：Engine/Source/Developer/PakFileUtilities/Private/PakFileUtilities.cpp  CreatePakFile() → WritePakFooter()</text>
+
+  <!-- Step 1 -->
+  <rect x="60" y="68" width="740" height="60" fill="#4a90d9" rx="6"/>
+  <text x="430" y="92" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 1：Cook（烹饪）阶段 —— 生成原始 uasset 文件</text>
+  <text x="430" y="110" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">游戏内容（蓝图/贴图/网格体等）由 UnrealEditor 的 Cook 命令行进行烹饪，输出到 Saved/Cooked/[Platform]/[Project]/Content/ 目录</text>
+  <text x="430" y="124" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">例如：BP_Enemy.uasset, T_Enemy_1.uasset 等</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="430" y1="128" x2="430" y2="148" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="60" y="150" width="740" height="56" fill="#27ae60" rx="6"/>
+  <text x="430" y="172" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 2：收集文件列表（FPakInputPair[]）</text>
+  <text x="430" y="190" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">读取 -create 参数指定的 ResponseFile（*.txt）；每行包含：源文件路径 + 在 PAK 内的相对路径</text>
+  <text x="430" y="202" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#cef">例如："Content/BP_Enemy.uasset"  "../../../Game/Content/BP_Enemy.uasset"</text>
+
+  <line x1="430" y1="206" x2="430" y2="226" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="60" y="228" width="740" height="70" fill="#8e44ad" rx="6"/>
+  <text x="430" y="250" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 3：逐文件写入 PAK（WritePakEntry）</text>
+  <text x="430" y="268" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">对每个文件：① 读取源文件到内存 Buffer</text>
+  <text x="430" y="282" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">② 按 -compress 参数尝试压缩（Oodle/Zlib/Gzip），选最小压缩结果</text>
+  <text x="430" y="296" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#e8d8ff">③ 若 -encrypt 则用 AES-256 加密 → Write(Buffer) 到 .pak → 记录 FPakEntry（Offset, Size, Hash）</text>
+
+  <line x1="430" y1="298" x2="430" y2="318" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="60" y="320" width="740" height="72" fill="#e67e22" rx="6"/>
+  <text x="430" y="344" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 4：构建索引（EncodePakEntriesIntoIndex）</text>
+  <text x="430" y="362" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">遍历所有 FPakEntry，将可编码的条目紧凑写入 EncodedPakEntries（字节流），不可编码的放入 NonEncodableEntries</text>
+  <text x="430" y="376" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">同时生成：PathHashIndex（FNV64 Hash→位置）和 DirectoryIndex（目录树→位置）</text>
+  <text x="430" y="390" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">按 DirectoryIndexKeepFiles 配置对 DirectoryIndex 进行 Pruning（裁剪），生成 PrunedDirectoryIndex</text>
+
+  <line x1="430" y1="392" x2="430" y2="412" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 5 -->
+  <rect x="60" y="414" width="740" height="86" fill="#c0392b" rx="6"/>
+  <text x="430" y="436" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 5：写入 Primary Index + Secondary Indexes</text>
+  <text x="430" y="454" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">PrimaryIndex 内容：[MountPoint] [NumEntries] [PathHashSeed] [placeholder↔SecondaryIdx] [EncodedPakEntries] [NonEncodableEntries]</text>
+  <text x="430" y="470" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">PathHashIndex 内容：[PathHashIndex Map] [PrunedDirectoryIndex]</text>
+  <text x="430" y="486" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">FullDirectoryIndex 内容：[DirectoryIndex Map]（仅开发模式写入）</text>
+  <text x="430" y="500" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">每个 Index 独立加密（若开启）→ SHA1 → 记录 Hash 回填到 PrimaryIndex 的 placeholder</text>
+
+  <line x1="430" y1="500" x2="430" y2="520" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 6 -->
+  <rect x="60" y="522" width="740" height="56" fill="#2c3e50" rx="6"/>
+  <text x="430" y="546" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">步骤 6：写入 FPakInfo（Trailer）</text>
+  <text x="430" y="564" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aec">Footer.Info.IndexOffset = 当前 PakHandle.Tell() 记录在步骤 5 开始时</text>
+  <text x="430" y="578" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#8ab">Info.Serialize(PakHandle, FPakFile_Version_Latest) → 写入 [EncKeyGuid][bEncrypted][Magic][Version][IndexOffset][IndexSize][IndexHash][CompressionMethods]</text>
+
+  <line x1="430" y1="578" x2="430" y2="598" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Final result box -->
+  <rect x="200" y="600" width="460" height="80" fill="#1a1a2e" rx="8"/>
+  <text x="430" y="623" font-family="Arial,sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">✓ 输出：Game.pak</text>
+  <text x="430" y="643" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aaa">[File1_Data][File2_Data]···[FileN_Data]</text>
+  <text x="430" y="659" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aaa">[PrimaryIndex][PathHashIndex][FullDirectoryIndex][FPakInfo]</text>
+  <text x="430" y="675" font-family="Arial,sans-serif" font-size="10" text-anchor="middle" fill="#666">文件大小 = 所有 File Data 之和 + 索引区 + Trailer</text>
+
+  <!-- Note box -->
+  <rect x="60" y="700" width="740" height="100" fill="#fff" rx="6" stroke="#ddd" stroke-width="1"/>
+  <text x="80" y="720" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#333">关键说明：</text>
+  <text x="80" y="740" font-family="Arial,sans-serif" font-size="11" fill="#555">• MountPoint（挂载点）：定义了 PAK 内路径到引擎虚拟路径的映射，例如 "/Game/" → PAK 内所有文件都以此为根</text>
+  <text x="80" y="758" font-family="Arial,sans-serif" font-size="11" fill="#555">• FPakEntry.Offset 是绝对偏移（相对文件开头），FPakEntry.Hash 是原始内容 SHA1（用于运行时验证）</text>
+  <text x="80" y="776" font-family="Arial,sans-serif" font-size="11" fill="#555">• IndexOffset 在 Info 里指向 PrimaryIndex 起始，IndexSize 是 PrimaryIndex 的字节数（不含 Secondary Indexes）</text>
+  <text x="80" y="794" font-family="Arial,sans-serif" font-size="11" fill="#555">• 整个过程由 UnrealPak.exe 调用，也可由 UAT（Automation Tool）在打包时自动触发</text>
+</svg>

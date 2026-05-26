@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+  <rect width="960" height="500" fill="#f8f9fa"/>
+  <text x="480" y="28" text-anchor="middle" font-size="17" font-weight="bold" fill="#222">MallocStomp2 — 虚拟地址块管理与释放后检测</text>
+
+  <!-- Address space blocks -->
+  <text x="20" y="58" font-size="13" font-weight="bold" fill="#1971c2">虚拟地址空间管理 (总目标: 32 TB)</text>
+
+  <!-- Block 0 -->
+  <rect x="20" y="65" width="200" height="90" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="2"/>
+  <text x="120" y="83" text-anchor="middle" font-size="11" font-weight="bold" fill="#3b5bdb">Block[0] 64GB</text>
+  <text x="120" y="98" text-anchor="middle" font-size="10" fill="#333">StartAddress</text>
+  <text x="120" y="112" text-anchor="middle" font-size="10" fill="#333">EndAddress</text>
+  <line x1="20" y1="118" x2="220" y2="118" stroke="#4c6ef5" stroke-width="1"/>
+  <text x="120" y="133" text-anchor="middle" font-size="10" fill="#555">CurrentAddress (atomic)</text>
+  <text x="120" y="147" text-anchor="middle" font-size="9" fill="#888">线性增长，不回收</text>
+
+  <!-- Block 1 -->
+  <rect x="230" y="65" width="200" height="90" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="2"/>
+  <text x="330" y="83" text-anchor="middle" font-size="11" font-weight="bold" fill="#3b5bdb">Block[1] 64GB</text>
+  <text x="330" y="98" text-anchor="middle" font-size="10" fill="#333">StartAddress</text>
+  <text x="330" y="112" text-anchor="middle" font-size="10" fill="#333">EndAddress</text>
+  <line x1="230" y1="118" x2="430" y2="118" stroke="#4c6ef5" stroke-width="1"/>
+  <text x="330" y="133" text-anchor="middle" font-size="10" fill="#555">CurrentAddress (atomic)</text>
+  <text x="330" y="147" text-anchor="middle" font-size="9" fill="#888">Block[0]满后启用</text>
+
+  <!-- Dots -->
+  <text x="445" y="115" font-size="18" fill="#adb5bd">...</text>
+
+  <!-- Block N -->
+  <rect x="480" y="65" width="200" height="90" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="2"/>
+  <text x="580" y="83" text-anchor="middle" font-size="11" font-weight="bold" fill="#3b5bdb">Block[N] 最多4096块</text>
+  <text x="580" y="98" text-anchor="middle" font-size="10" fill="#333">累计: ≤32 TB</text>
+  <line x1="480" y1="118" x2="680" y2="118" stroke="#4c6ef5" stroke-width="1"/>
+  <text x="580" y="133" text-anchor="middle" font-size="10" fill="#555">CAS切换块</text>
+  <text x="580" y="147" text-anchor="middle" font-size="9" fill="#888">CurrentAddressSpaceStompDataBlockIndex</text>
+
+  <!-- Alloc from block -->
+  <rect x="700" y="65" width="240" height="90" rx="6" fill="#d3f9d8" stroke="#40c057" stroke-width="2"/>
+  <text x="820" y="83" text-anchor="middle" font-size="11" font-weight="bold" fill="#2f9e44">FAddressSpaceStompDataBlock::Malloc()</text>
+  <text x="820" y="100" text-anchor="middle" font-size="10" fill="#333">UPTRINT Ret = CurrentAddress.fetch_add(InSizeToAllocate)</text>
+  <text x="820" y="115" text-anchor="middle" font-size="10" fill="#333">if Ret+size &gt; EndAddress → return nullptr</text>
+  <text x="820" y="130" text-anchor="middle" font-size="10" fill="#333">VirtualAlloc(Ret, size-PageSize, MEM_COMMIT)</text>
+  <text x="820" y="145" text-anchor="middle" font-size="10" fill="#333">最后一页不提交 = 保护页</text>
+
+  <!-- Per-allocation layout -->
+  <text x="20" y="182" font-size="13" font-weight="bold" fill="#7c4d00">单次分配的内存布局 (Overrun 模式默认)</text>
+
+  <rect x="20" y="190" width="920" height="100" rx="6" fill="#fff3bf" stroke="#f59f00" stroke-width="1.5"/>
+
+  <!-- Parts -->
+  <rect x="30" y="205" width="80" height="40" rx="3" fill="#ffa94d" stroke="#f76707" stroke-width="1.5"/>
+  <text x="70" y="222" text-anchor="middle" font-size="9" font-weight="bold" fill="#6e2c00">FAllocationData</text>
+  <text x="70" y="235" text-anchor="middle" font-size="8" fill="#6e2c00">Sentinel=0xDEAD</text>
+  <text x="70" y="246" text-anchor="middle" font-size="8" fill="#6e2c00">BEEF (固定值)</text>
+
+  <rect x="114" y="205" width="520" height="40" rx="3" fill="#a9e34b" stroke="#74b816" stroke-width="1.5"/>
+  <text x="374" y="227" text-anchor="middle" font-size="12" font-weight="bold" fill="#2b5c00">用户数据区 (AlignedSize = (Size + Align-1) &amp; ~(Align-1))</text>
+
+  <rect x="638" y="205" width="120" height="40" rx="3" fill="#ffe3e3" stroke="#c92a2a" stroke-width="3"/>
+  <text x="698" y="222" text-anchor="middle" font-size="11" font-weight="bold" fill="#c92a2a">GUARD PAGE</text>
+  <text x="698" y="237" text-anchor="middle" font-size="9" fill="#c92a2a">最后一页未提交</text>
+
+  <!-- End unused -->
+  <rect x="762" y="205" width="170" height="40" rx="3" fill="#f1f3f5" stroke="#adb5bd" stroke-width="1"/>
+  <text x="847" y="228" text-anchor="middle" font-size="9" fill="#868e96">Block剩余空间</text>
+
+  <!-- Size formula -->
+  <text x="30" y="260" font-size="10" fill="#333" font-family="monospace">AllocFullPageSize = ⌈(AlignedSize + sizeof(FAllocationData)) / PageSize⌉ × PageSize</text>
+  <text x="30" y="275" font-size="10" fill="#333" font-family="monospace">TotalAllocationSize = AllocFullPageSize + PageSize</text>
+  <text x="30" y="290" font-size="10" fill="#555">其中: memset(ReturnedPointer, 0, Size) — 归零避免未初始化读漏报</text>
+
+  <!-- Free behavior -->
+  <rect x="20" y="310" width="920" height="100" rx="6" fill="#f8f0ff" stroke="#9c36b5" stroke-width="1.5"/>
+  <text x="30" y="328" font-size="12" font-weight="bold" fill="#862e9c">释放行为 — 释放物理内存但保留虚拟地址 (use-after-free 检测)</text>
+  <text x="30" y="346" font-size="11" fill="#333">VirtualFree(ptr, size-PageSize, MEM_DECOMMIT)  // 释放物理页但保留虚拟地址映射</text>
+  <text x="30" y="362" font-size="11" fill="#333">虚拟地址不归还OS → 再次访问 = 访问冲突异常 (use-after-free 立即崩溃)</text>
+  <text x="30" y="378" font-size="11" fill="#555">检查Sentinel: AllocDataPtr→Sentinel != 0xDEADBEEFDEADBEEF → 内存下溢!</text>
+  <text x="30" y="394" font-size="11" fill="#555">Free时验证哨兵，分配时零初始化，比Stomp1 更高可靠性</text>
+
+  <!-- TLS disable -->
+  <rect x="20" y="420" width="920" height="68" rx="6" fill="#e7f5ff" stroke="#339af0" stroke-width="1.5"/>
+  <text x="30" y="438" font-size="12" font-weight="bold" fill="#1971c2">FScopeDisableMallocStomp2 — TLS 禁用机制</text>
+  <text x="30" y="455" font-size="11" fill="#333">Stomp2 可以通过 TLS 计数器临时禁用，仅处理 MinSize~MaxSize 范围内的分配</text>
+  <text x="30" y="470" font-size="11" fill="#333">超出范围 → 委托给 UsedMalloc (内层分配器)处理，保证引擎内部分配不受干扰</text>
+  <text x="30" y="484" font-size="11" fill="#555">通过 OverrideIfEnabled() 包装现有分配器，运行时启用 -stomp2malloc 命令行参数激活</text>
+</svg>

@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="580" viewBox="0 0 960 580">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+  <rect width="960" height="580" fill="#f8f9fa"/>
+  <text x="480" y="28" text-anchor="middle" font-size="17" font-weight="bold" fill="#222">MallocBinned3 — FBitTree 层次位图与每池独立VM</text>
+
+  <!-- FBitTree structure -->
+  <text x="20" y="58" font-size="13" font-weight="bold" fill="#1971c2">FBitTree — 用于快速查找空闲块的层次位图（64叉树）</text>
+
+  <!-- Level 0 (root) -->
+  <text x="30" y="80" font-size="11" fill="#555">层0 (root, 1个uint64):</text>
+  <rect x="160" y="68" width="40" height="24" rx="3" fill="#3b5bdb" stroke="#364fc7"/>
+  <text x="180" y="84" text-anchor="middle" font-size="9" fill="white">bit0</text>
+  <text x="220" y="84" font-size="9" fill="#333">每位为1=对应64块子节点中有空闲块</text>
+
+  <!-- Level 1 -->
+  <text x="30" y="116" font-size="11" fill="#555">层1 (N个uint64):</text>
+  <rect x="160" y="104" width="40" height="24" rx="3" fill="#4dabf7" stroke="#1971c2"/>
+  <text x="180" y="120" text-anchor="middle" font-size="9" fill="white">bit0</text>
+  <rect x="205" y="104" width="40" height="24" rx="3" fill="#4dabf7" stroke="#1971c2"/>
+  <text x="225" y="120" text-anchor="middle" font-size="9" fill="white">bit1</text>
+  <text x="250" y="110" font-size="14" fill="#adb5bd">...</text>
+  <rect x="280" y="104" width="40" height="24" rx="3" fill="#4dabf7" stroke="#1971c2"/>
+  <text x="300" y="120" text-anchor="middle" font-size="9" fill="white">bit63</text>
+  <text x="325" y="116" font-size="9" fill="#333">根节点第0位对应此行64个子节点</text>
+
+  <!-- Level N (leaf) -->
+  <text x="30" y="152" font-size="11" fill="#555">层N (叶, M个uint64):</text>
+  <rect x="160" y="140" width="40" height="24" rx="3" fill="#a9e34b" stroke="#74b816"/>
+  <text x="180" y="156" text-anchor="middle" font-size="9" fill="#2b5c00">bit0</text>
+  <text x="205" y="152" font-size="14" fill="#adb5bd">...</text>
+  <rect x="240" y="140" width="40" height="24" rx="3" fill="#a9e34b" stroke="#74b816"/>
+  <text x="260" y="156" text-anchor="middle" font-size="9" fill="#2b5c00">bitN</text>
+  <text x="285" y="152" font-size="9" fill="#333">每位=1表示对应内存块空闲可分配</text>
+
+  <!-- Tree lines -->
+  <line x1="180" y1="92" x2="180" y2="104" stroke="#3b5bdb" stroke-width="1.5"/>
+  <line x1="180" y1="92" x2="225" y2="104" stroke="#3b5bdb" stroke-width="1.5"/>
+  <line x1="180" y1="92" x2="300" y2="104" stroke="#3b5bdb" stroke-width="1.5"/>
+  <line x1="180" y1="128" x2="180" y2="140" stroke="#4dabf7" stroke-width="1.5"/>
+
+  <!-- FBitTree struct -->
+  <rect x="500" y="50" width="440" height="140" rx="6" fill="#dbe4ff" stroke="#4c6ef5" stroke-width="1.5"/>
+  <text x="720" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#3b5bdb">FBitTree 数据结构 (FBitTreeNode数组)</text>
+  <text x="510" y="88" font-size="10" fill="#333">uint64*  Bits        // 完整位数组，所有层展开</text>
+  <text x="510" y="104" font-size="10" fill="#333">uint32   Capacity    // 实际管理的块数</text>
+  <text x="510" y="120" font-size="10" fill="#333">uint32   DesiredCapacity // 期望管理块数</text>
+  <text x="510" y="136" font-size="10" fill="#333">uint32   Rows        // 总层数</text>
+  <text x="510" y="152" font-size="10" fill="#333">uint32   OffsetOfLastRow // 叶子层在Bits数组中的偏移</text>
+  <text x="510" y="168" font-size="10" fill="#333">uint32   AllocationSize // 整个位图占用字节数</text>
+
+  <!-- AllocBit / FreeBit operations -->
+  <rect x="500" y="200" width="440" height="60" rx="4" fill="#d3f9d8" stroke="#40c057" stroke-width="1.5"/>
+  <text x="720" y="218" text-anchor="middle" font-size="11" font-weight="bold" fill="#2f9e44">AllocBit() — O(log₆₄ N) 复杂度</text>
+  <text x="510" y="234" font-size="10" fill="#333">从根层找到非零bit → 移动到子层 → ... → 叶子层 → 清零该bit → 返回该bit全局index</text>
+  <text x="510" y="250" font-size="10" fill="#333">CountTrailingZeros64(word) — 一次CPU指令找出最低置1位，极快</text>
+
+  <!-- FPoolTable -->
+  <text x="20" y="215" font-size="13" font-weight="bold" fill="#c92a2a">FPoolTable — 每个池尺寸的管理结构</text>
+  <rect x="20" y="220" width="460" height="160" rx="6" fill="#ffe0f0" stroke="#c2255c" stroke-width="1.5"/>
+  <text x="30" y="238" font-size="10" fill="#333" font-weight="bold">FPoolTable 字段:</text>
+  <text x="30" y="255" font-size="10" fill="#333">uint32  BlockSize                      // 此分箱对应的块大小</text>
+  <text x="30" y="271" font-size="10" fill="#333">uint16  BlocksPerBlockOfBlocks         // 每个OS页组有多少块</text>
+  <text x="30" y="287" font-size="10" fill="#333">uint8   PagesPlatformForBlockOfBlocks  // OS页组包含的平台页数</text>
+  <text x="30" y="303" font-size="10" fill="#333">FBitTree BlockOfBlockAllocationBits    // 哪个OS页组有空闲块</text>
+  <text x="30" y="319" font-size="10" fill="#333">FBitTree BlockOfBlockIsExhausted       // 哪个OS页组已耗尽</text>
+  <text x="30" y="335" font-size="10" fill="#333">uint32  NumEverUsedBlockOfBlocks       // 曾经使用过的最大OS页组数</text>
+  <text x="30" y="351" font-size="10" fill="#333">FPoolInfoSmall** PoolInfos             // Pool信息指针数组</text>
+  <text x="30" y="367" font-size="10" fill="#333">uint64  UnusedAreaOffsetLow            // 大小类的最低未使用区域</text>
+
+  <!-- Small pool alloc logic -->
+  <rect x="20" y="398" width="460" height="165" rx="6" fill="#e7f5ff" stroke="#339af0" stroke-width="1.5"/>
+  <text x="30" y="416" font-size="12" font-weight="bold" fill="#1971c2">MallocBinned3 小块分配过程</text>
+  <text x="30" y="434" font-size="11" fill="#333">① BoundSizeToPoolIndex(Size) → PoolIndex</text>
+  <text x="30" y="452" font-size="11" fill="#333">② FPoolTable&amp;Table = SmallPoolTables[PoolIndex]</text>
+  <text x="30" y="470" font-size="11" fill="#333">③ BitTree.AllocBit() → BlockOfBlocksIndex (找到有空闲的OS页组)</text>
+  <text x="30" y="488" font-size="11" fill="#333">④ GetFrontPool(Table, PoolIndex, BlockOfBlocksIndex)</text>
+  <text x="30" y="506" font-size="11" fill="#333">⑤ Pool→AllocateRegularBlock(BlockOfBlocksPtr, BlockSize)</text>
+  <text x="30" y="522" font-size="11" fill="#555">   → return (uint8*)this + NumFreeBlocks*(BlockSizeShifted&lt;&lt;MinAlignShift)</text>
+  <text x="30" y="538" font-size="11" fill="#555">   其中 BlockSizeShifted = BlockSize&gt;&gt;BINNED3_MINIMUM_ALIGNMENT_SHIFT (节省空间)</text>
+  <text x="30" y="556" font-size="11" fill="#333">⑥ 若 Pool.NumFreeBlocks==0 → BitTree.IsExhausted(idx)=true</text>
+
+  <!-- VM per pool (Windows) -->
+  <rect x="500" y="270" width="440" height="160" rx="6" fill="#fff9db" stroke="#f59f00" stroke-width="1.5"/>
+  <text x="720" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c4d00">BINNED3_USE_SEPARATE_VM_PER_POOL (Windows)</text>
+  <text x="510" y="308" font-size="10" fill="#333">每个池尺寸预留独立的虚拟地址段</text>
+  <!-- Address space visualisation -->
+  <rect x="510" y="315" width="50" height="20" rx="2" fill="#dbe4ff" stroke="#4c6ef5"/>
+  <text x="535" y="328" text-anchor="middle" font-size="8" fill="#3b5bdb">Pool[0]</text>
+  <rect x="565" y="315" width="50" height="20" rx="2" fill="#d3f9d8" stroke="#40c057"/>
+  <text x="590" y="328" text-anchor="middle" font-size="8" fill="#2b5c00">Pool[1]</text>
+  <rect x="620" y="315" width="50" height="20" rx="2" fill="#ffe8cc" stroke="#f76707"/>
+  <text x="645" y="328" text-anchor="middle" font-size="8" fill="#6e2c00">Pool[2]</text>
+  <text x="680" y="326" font-size="12" fill="#adb5bd">...</text>
+  <rect x="695" y="315" width="60" height="20" rx="2" fill="#ffd8e4" stroke="#c2255c"/>
+  <text x="725" y="328" text-anchor="middle" font-size="8" fill="#862e4a">Pool[N]</text>
+  <text x="510" y="355" font-size="10" fill="#333">优点: 指针所属分箱可由虚拟地址直接推算 → O(1) 的 Free() 路由</text>
+  <text x="510" y="371" font-size="10" fill="#333">    无需哈希表，减少寻址开销</text>
+  <text x="510" y="387" font-size="10" fill="#555">FPlatformVirtualMemoryBlock::AllocateVirtual(AlignedSize, Alignment)</text>
+  <text x="510" y="403" font-size="10" fill="#555">Block.Commit(0, AlignedSize) — 按需提交物理页</text>
+
+  <!-- FFreeBlock -->
+  <rect x="500" y="440" width="440" height="115" rx="6" fill="#ffe0f0" stroke="#c2255c" stroke-width="1.5"/>
+  <text x="720" y="460" text-anchor="middle" font-size="12" font-weight="bold" fill="#862e4a">FFreeBlock (位于OS页组开头)</text>
+  <text x="510" y="478" font-size="10" fill="#333">uint16 BlockSizeShifted  (=BlockSize&gt;&gt;BINNED3_MINIMUM_ALIGNMENT_SHIFT)</text>
+  <text x="510" y="494" font-size="10" fill="#333">uint8  PoolIndex         (所属分箱索引)</text>
+  <text x="510" y="510" font-size="10" fill="#333">uint8  Canary=0xe7       (完整性标记)</text>
+  <text x="510" y="526" font-size="10" fill="#333">uint32 NumFreeBlocks     (剩余可分配块数)</text>
+  <text x="510" y="542" font-size="10" fill="#333">uint32 NextFreeIndex=MAX_uint32  (空闲链无使用)</text>
+</svg>

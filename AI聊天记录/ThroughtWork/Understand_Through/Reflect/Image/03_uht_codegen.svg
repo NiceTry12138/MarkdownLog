@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#D97706"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="600" fill="#F8FAFC" rx="8"/>
+  <text x="450" y="28" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#1E293B">UHT代码生成流程：UCLASS宏到.gen.cpp</text>
+
+  <!-- Step 1: Input header -->
+  <rect x="20" y="50" width="260" height="200" rx="6" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="150" y="72" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#1D4ED8">APatrolNPC.h (你写的)</text>
+  <rect x="30" y="82" width="240" height="158" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="40" y="100" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">// CURRENT_FILE_ID = FID_APatrolNPC_h</text>
+  <text x="40" y="116" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">UCLASS(BlueprintType)</text>
+  <text x="40" y="132" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">class APatrolNPC</text>
+  <text x="40" y="148" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">    : public ACharacter {</text>
+  <text x="40" y="164" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">  GENERATED_BODY()    // 第42行</text>
+  <text x="40" y="180" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">  UPROPERTY(EditAnywhere)</text>
+  <text x="40" y="196" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">  float PatrolSpeed;</text>
+  <text x="40" y="212" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">  UFUNCTION(BlueprintCallable)</text>
+  <text x="40" y="228" font-family="Consolas,monospace" font-size="10" fill="#1E3A5F">  void Attack(float Damage);</text>
+
+  <!-- Arrow 1 -->
+  <line x1="280" y1="150" x2="320" y2="150" stroke="#D97706" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <text x="300" y="143" text-anchor="middle" font-family="Arial" font-size="10" fill="#D97706" font-weight="bold">UHT</text>
+  <text x="300" y="158" text-anchor="middle" font-family="Arial" font-size="9" fill="#D97706">解析</text>
+
+  <!-- Step 2: generated.h -->
+  <rect x="320" y="50" width="270" height="200" rx="6" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5"/>
+  <text x="455" y="72" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#065F46">APatrolNPC.generated.h (UHT生成)</text>
+  <rect x="330" y="82" width="250" height="158" rx="4" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
+  <text x="340" y="100" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// GENERATED_BODY()展开为以下宏名：</text>
+  <text x="340" y="116" font-family="Consolas,monospace" font-size="10" fill="#064E3B">// FID_APatrolNPC_h_42_GENERATED_BODY</text>
+  <text x="340" y="132" font-family="Consolas,monospace" font-size="10" fill="#064E3B">#define FID_...42_GENERATED_BODY \</text>
+  <text x="340" y="148" font-family="Consolas,monospace" font-size="10" fill="#064E3B">  DECLARE_CLASS(APatrolNPC,      \</text>
+  <text x="340" y="164" font-family="Consolas,monospace" font-size="10" fill="#064E3B">    ACharacter, 0, 0,            \</text>
+  <text x="340" y="180" font-family="Consolas,monospace" font-size="10" fill="#064E3B">    "/Script/MyGame",            \</text>
+  <text x="340" y="196" font-family="Consolas,monospace" font-size="10" fill="#064E3B">    NO_API)                      \</text>
+  <text x="340" y="212" font-family="Consolas,monospace" font-size="10" fill="#064E3B">  // + StaticClass(), 构造器等...</text>
+  <text x="340" y="228" font-family="Consolas,monospace" font-size="10" fill="#064E3B">  // DECLARE_CLASS宏展开见下方</text>
+
+  <!-- Arrow 2 -->
+  <line x1="590" y1="150" x2="630" y2="150" stroke="#D97706" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+  <!-- Step 3: gen.cpp -->
+  <rect x="630" y="50" width="255" height="200" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+  <text x="757" y="72" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#92400E">APatrolNPC.gen.cpp (UHT生成)</text>
+  <rect x="640" y="82" width="235" height="158" rx="4" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1"/>
+  <text x="650" y="100" font-family="Consolas,monospace" font-size="10" fill="#78350F">// 1. 属性注册静态数据</text>
+  <text x="650" y="116" font-family="Consolas,monospace" font-size="10" fill="#78350F">static FFloatPropertyParams</text>
+  <text x="650" y="128" font-family="Consolas,monospace" font-size="10" fill="#78350F">  Z_Prop_PatrolSpeed = {...};</text>
+  <text x="650" y="144" font-family="Consolas,monospace" font-size="10" fill="#78350F">// 2. 函数列表</text>
+  <text x="650" y="160" font-family="Consolas,monospace" font-size="10" fill="#78350F">void StaticRegisterNatives</text>
+  <text x="650" y="172" font-family="Consolas,monospace" font-size="10" fill="#78350F">  APatrolNPC(UClass* C){</text>
+  <text x="650" y="184" font-family="Consolas,monospace" font-size="10" fill="#78350F">    UE::UHT::AddFunction(C,...);</text>
+  <text x="650" y="196" font-family="Consolas,monospace" font-size="10" fill="#78350F">// 3. 注册宏</text>
+  <text x="650" y="212" font-family="Consolas,monospace" font-size="10" fill="#78350F">IMPLEMENT_CLASS(APatrolNPC, CRC)</text>
+  <text x="650" y="228" font-family="Consolas,monospace" font-size="10" fill="#78350F">// → 生成GetPrivateStaticClass()</text>
+
+  <!-- Section 2: IMPLEMENT_CLASS expansion -->
+  <rect x="20" y="275" width="860" height="155" rx="6" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.5"/>
+  <text x="450" y="295" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#6D28D9">IMPLEMENT_CLASS(APatrolNPC, CRC) 宏展开内容</text>
+
+  <!-- Box A: Z_Registration_Info -->
+  <rect x="30" y="305" width="200" height="115" rx="4" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="130" y="322" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4C1D95">① 注册信息结构</text>
+  <text x="40" y="340" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">FClassRegistrationInfo</text>
+  <text x="40" y="354" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">Z_Registration_Info_UClass_</text>
+  <text x="40" y="366" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">APatrolNPC;</text>
+  <text x="40" y="384" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">// 存储两个单例指针：</text>
+  <text x="40" y="396" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">// InnerSingleton(原始UClass)</text>
+  <text x="40" y="408" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">// OuterSingleton(完成初始化)</text>
+
+  <!-- Arrow -->
+  <line x1="230" y1="362" x2="250" y2="362" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Box B: GetPrivateStaticClass -->
+  <rect x="250" y="305" width="195" height="115" rx="4" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="347" y="322" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4C1D95">② GetPrivateStaticClass()</text>
+  <text x="258" y="340" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">UClass* GetPrivateStaticClass()</text>
+  <text x="258" y="354" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">{</text>
+  <text x="258" y="366" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">  if (!Singleton) {</text>
+  <text x="258" y="378" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">    GetPrivateStaticClassBody(</text>
+  <text x="258" y="390" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">      PackageName,ClassName,</text>
+  <text x="258" y="402" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">      Singleton, sizeof(T),</text>
+  <text x="258" y="414" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">      &amp;Super::StaticClass);</text>
+
+  <!-- Arrow -->
+  <line x1="445" y1="362" x2="465" y2="362" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Box C: Z_Construct_UClass -->
+  <rect x="465" y="305" width="205" height="115" rx="4" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="567" y="322" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4C1D95">③ Z_Construct_UClass_APatrolNPC()</text>
+  <text x="475" y="340" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">UClass* Z_Construct_UClass_() {</text>
+  <text x="475" y="354" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">  if (!OuterSingleton) {</text>
+  <text x="475" y="366" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">    // 添加属性</text>
+  <text x="475" y="378" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">    AddProperty(FloatProp);</text>
+  <text x="475" y="390" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">    // 添加函数</text>
+  <text x="475" y="402" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">    StaticRegisterNatives(C);</text>
+  <text x="475" y="414" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">    Class-&gt;StaticLink();</text>
+
+  <!-- Arrow -->
+  <line x1="670" y1="362" x2="695" y2="362" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Box D: FRegisterCompiledInInfo -->
+  <rect x="695" y="305" width="175" height="115" rx="4" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="782" y="322" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4C1D95">④ 自动注册</text>
+  <text x="703" y="340" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">static FRegisterCompiledInInfo</text>
+  <text x="703" y="354" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">AutoInitialize_APatrolNPC(</text>
+  <text x="703" y="366" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">  &amp;Z_Construct_UClass_...,</text>
+  <text x="703" y="378" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">  APatrolNPC::StaticClass,</text>
+  <text x="703" y="390" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">  ...)</text>
+  <text x="703" y="406" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">// 全局静态变量，进程</text>
+  <text x="703" y="418" font-family="Consolas,monospace" font-size="9" fill="#5B21B6">// 启动时自动执行注册</text>
+
+  <!-- Section 3: startup flow -->
+  <rect x="20" y="450" width="860" height="130" rx="6" fill="#F0FDF4" stroke="#16A34A" stroke-width="1.5"/>
+  <text x="450" y="470" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#15803D">程序启动时的注册时序</text>
+  
+  <!-- Steps in startup -->
+  <rect x="30" y="478" width="100" height="40" rx="4" fill="#16A34A"/>
+  <text x="80" y="496" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">1. 全局静态</text>
+  <text x="80" y="511" text-anchor="middle" font-family="Arial" font-size="10" fill="white">变量初始化</text>
+  <line x1="130" y1="498" x2="155" y2="498" stroke="#16A34A" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="155" y="478" width="120" height="40" rx="4" fill="#15803D"/>
+  <text x="215" y="496" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">2. AutoInitialize_</text>
+  <text x="215" y="511" text-anchor="middle" font-family="Arial" font-size="10" fill="white">APatrolNPC构造</text>
+  <line x1="275" y1="498" x2="300" y2="498" stroke="#16A34A" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="300" y="478" width="130" height="40" rx="4" fill="#166534"/>
+  <text x="365" y="496" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">3. 加入注册队列</text>
+  <text x="365" y="511" text-anchor="middle" font-family="Arial" font-size="10" fill="white">GetRegistrationQueue()</text>
+  <line x1="430" y1="498" x2="455" y2="498" stroke="#16A34A" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="455" y="478" width="145" height="40" rx="4" fill="#14532D"/>
+  <text x="527" y="496" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">4. ProcessNewlyLoaded</text>
+  <text x="527" y="511" text-anchor="middle" font-family="Arial" font-size="10" fill="white">UObjects() 消费队列</text>
+  <line x1="600" y1="498" x2="625" y2="498" stroke="#16A34A" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="625" y="478" width="120" height="40" rx="4" fill="#16A34A"/>
+  <text x="685" y="496" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">5. Z_Construct_UClass</text>
+  <text x="685" y="511" text-anchor="middle" font-family="Arial" font-size="10" fill="white">构建完整UClass</text>
+  <line x1="745" y1="498" x2="770" y2="498" stroke="#16A34A" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="770" y="478" width="100" height="40" rx="4" fill="#15803D"/>
+  <text x="820" y="496" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">6. 创建CDO</text>
+  <text x="820" y="511" text-anchor="middle" font-family="Arial" font-size="10" fill="white">ClassDefaultObject</text>
+
+  <text x="450" y="556" text-anchor="middle" font-family="Arial" font-size="11" fill="#166534">全部完成后，APatrolNPC::StaticClass() 即可正常使用，反射系统准备就绪。</text>
+</svg>

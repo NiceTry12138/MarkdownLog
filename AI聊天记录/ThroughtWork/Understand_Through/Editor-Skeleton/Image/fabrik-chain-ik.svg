@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 930 500" width="930" height="500">
+  <defs>
+    <marker id="arrW" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#e6edf3"/>
+    </marker>
+    <marker id="arrR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f85149"/>
+    </marker>
+    <marker id="arrB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#388bfd"/>
+    </marker>
+    <marker id="arrG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+  <!-- Background -->
+  <rect width="930" height="500" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="465" y="28" text-anchor="middle" font-size="17" font-weight="bold" fill="#e6edf3" font-family="Arial, sans-serif">FABRIK 算法（前向-后向迭代 IK） — AnimationCore/FABRIK.cpp</text>
+
+  <!-- ===== PANEL DIVIDERS ===== -->
+  <rect x="12" y="44" width="286" height="436" rx="5" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="322" y="44" width="286" height="436" rx="5" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="632" y="44" width="286" height="436" rx="5" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+
+  <!-- Panel labels -->
+  <text x="155" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#8b949e" font-family="Arial, sans-serif">① 初始状态</text>
+  <text x="465" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#388bfd" font-family="Arial, sans-serif">② 前向传递（Tip → Root）</text>
+  <text x="775" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#3fb950" font-family="Arial, sans-serif">③ 后向传递（Root → Tip）收敛</text>
+
+  <!-- ===== PANEL 1: INITIAL STATE ===== -->
+  <!-- Bones: P0(155,135) P1(200,225) P2(170,320) P3(215,410) Target(265,420) -->
+  <!-- Bone segments -->
+  <line x1="155" y1="135" x2="200" y2="225" stroke="#444c56" stroke-width="3"/>
+  <line x1="200" y1="225" x2="170" y2="320" stroke="#444c56" stroke-width="3"/>
+  <line x1="170" y1="320" x2="215" y2="410" stroke="#444c56" stroke-width="3"/>
+  <!-- Target X -->
+  <line x1="258" y1="413" x2="272" y2="427" stroke="#f85149" stroke-width="2.5"/>
+  <line x1="272" y1="413" x2="258" y2="427" stroke="#f85149" stroke-width="2.5"/>
+  <text x="278" y="425" font-size="10" fill="#f85149" font-family="Arial, sans-serif">Target T</text>
+  <!-- Joints -->
+  <circle cx="155" cy="135" r="9" fill="#388bfd" stroke="#79c0ff" stroke-width="1.5"/>
+  <circle cx="200" cy="225" r="7" fill="#6e7681" stroke="#8b949e" stroke-width="1.5"/>
+  <circle cx="170" cy="320" r="7" fill="#6e7681" stroke="#8b949e" stroke-width="1.5"/>
+  <circle cx="215" cy="410" r="8" fill="#ffa657" stroke="#ff7b72" stroke-width="1.5"/>
+  <!-- Labels -->
+  <text x="136" y="131" font-size="10" fill="#79c0ff" text-anchor="end" font-family="Arial, sans-serif">P₀ (Root)</text>
+  <text x="210" y="222" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">P₁</text>
+  <text x="152" y="317" font-size="10" fill="#8b949e" text-anchor="end" font-family="Arial, sans-serif">P₂</text>
+  <text x="226" y="413" font-size="10" fill="#ffa657" font-family="Arial, sans-serif">P₃ (Tip)</text>
+  <!-- Length labels -->
+  <text x="195" y="187" font-size="9" fill="#6e7681" text-anchor="middle" font-family="Arial, sans-serif">L₁</text>
+  <text x="178" y="278" font-size="9" fill="#6e7681" text-anchor="middle" font-family="Arial, sans-serif">L₂</text>
+  <text x="203" y="370" font-size="9" fill="#6e7681" text-anchor="middle" font-family="Arial, sans-serif">L₃</text>
+  <!-- Distance note -->
+  <line x1="215" y1="410" x2="265" y2="420" stroke="#f85149" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="155" y="455" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">|Tip - T| &gt; Precision → 开始迭代</text>
+  <text x="155" y="470" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">骨链总长 L₁+L₂+L₃ ≥ |P₀-T|</text>
+
+  <!-- ===== PANEL 2: FORWARD PASS ===== -->
+  <!-- Forward pass: move P3 to T, then adjust P2, P1 back toward root. P0 floats. -->
+  <!-- P3' = T: (565, 420) -->
+  <!-- P2' adjusted from P3': (510, 380) -->
+  <!-- P1' adjusted from P2': (465, 285) -->
+  <!-- P0' floated from P1': (510, 200) -->
+  <!-- Ghost P0 original: (465, 135) dashed -->
+
+  <!-- Ghost original P0 position -->
+  <circle cx="465" cy="135" r="9" fill="none" stroke="#388bfd" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="448" y="128" font-size="9" fill="#6e7681" text-anchor="end" font-family="Arial, sans-serif">P₀ 原位</text>
+
+  <!-- Forward pass segments -->
+  <line x1="510" y1="200" x2="465" y2="285" stroke="#388bfd" stroke-width="2.5"/>
+  <line x1="465" y1="285" x2="510" y2="380" stroke="#388bfd" stroke-width="2.5"/>
+  <line x1="510" y1="380" x2="565" y2="420" stroke="#388bfd" stroke-width="2.5"/>
+
+  <!-- Joints -->
+  <circle cx="510" cy="200" r="9" fill="#1a3a5c" stroke="#388bfd" stroke-width="2"/>
+  <circle cx="465" cy="285" r="7" fill="#2a4060" stroke="#388bfd" stroke-width="1.5"/>
+  <circle cx="510" cy="380" r="7" fill="#2a4060" stroke="#388bfd" stroke-width="1.5"/>
+  <!-- P3' = T (highlighted) -->
+  <circle cx="565" cy="420" r="8" fill="#ffa657" stroke="#f85149" stroke-width="2.5"/>
+  <!-- Target X (same spot) -->
+  <line x1="558" y1="413" x2="572" y2="427" stroke="#f85149" stroke-width="2"/>
+  <line x1="572" y1="413" x2="558" y2="427" stroke="#f85149" stroke-width="2"/>
+
+  <!-- Labels -->
+  <text x="515" y="200" font-size="10" fill="#79c0ff" font-family="Arial, sans-serif">P₀' (浮动)</text>
+  <text x="448" y="285" font-size="10" fill="#79c0ff" text-anchor="end" font-family="Arial, sans-serif">P₁'</text>
+  <text x="515" y="378" font-size="10" fill="#79c0ff" font-family="Arial, sans-serif">P₂'</text>
+  <text x="571" y="418" font-size="10" fill="#ffa657" font-family="Arial, sans-serif">P₃'=T</text>
+
+  <!-- Forward arrows showing direction of computation -->
+  <text x="465" y="456" text-anchor="middle" font-size="10" fill="#388bfd" font-family="Arial, sans-serif">P₃'= T → P₂'= P₃'+d̂·L₃ → P₁'= P₂'+d̂·L₂</text>
+  <text x="465" y="470" text-anchor="middle" font-size="10" fill="#6e7681" font-family="Arial, sans-serif">d̂_i = normalize(P_i - P_{i+1})  (朝前一关节方向)</text>
+
+  <!-- Formula box -->
+  <rect x="330" y="75" width="268" height="40" rx="4" fill="#0f2033" stroke="#1f6feb" stroke-width="1"/>
+  <text x="464" y="91" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">前向：P_i = P_{i+1} + normalize(P_i − P_{i+1}) × L_{i+1}</text>
+  <text x="464" y="107" text-anchor="middle" font-size="10" fill="#79c0ff" font-family="Arial, sans-serif">从末端向根部逐步调整，保持骨长不变</text>
+
+  <!-- ===== PANEL 3: BACKWARD PASS (converged) ===== -->
+  <!-- P0 restored: (755, 135) -->
+  <!-- P1 adjusted from P0: (800, 235) -->
+  <!-- P2 adjusted from P1: (778, 330) -->
+  <!-- P3 adjusted (≈T): (840, 408) -->
+  <!-- Target T: (862, 418) -->
+
+  <!-- Segments -->
+  <line x1="755" y1="135" x2="800" y2="235" stroke="#3fb950" stroke-width="2.5"/>
+  <line x1="800" y1="235" x2="778" y2="330" stroke="#3fb950" stroke-width="2.5"/>
+  <line x1="778" y1="330" x2="840" y2="408" stroke="#3fb950" stroke-width="2.5"/>
+
+  <!-- Joints -->
+  <circle cx="755" cy="135" r="9" fill="#388bfd" stroke="#79c0ff" stroke-width="2"/>
+  <circle cx="800" cy="235" r="7" fill="#1a4025" stroke="#3fb950" stroke-width="1.5"/>
+  <circle cx="778" cy="330" r="7" fill="#1a4025" stroke="#3fb950" stroke-width="1.5"/>
+  <circle cx="840" cy="408" r="8" fill="#ffa657" stroke="#3fb950" stroke-width="2"/>
+
+  <!-- Target X -->
+  <line x1="855" y1="411" x2="869" y2="425" stroke="#f85149" stroke-width="2"/>
+  <line x1="869" y1="411" x2="855" y2="425" stroke="#f85149" stroke-width="2"/>
+  <text x="874" y="423" font-size="10" fill="#f85149" font-family="Arial, sans-serif">T</text>
+
+  <!-- Small dashed line from P3 to T showing near-convergence -->
+  <line x1="840" y1="408" x2="862" y2="418" stroke="#3fb950" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Labels -->
+  <text x="740" y="130" font-size="10" fill="#79c0ff" text-anchor="end" font-family="Arial, sans-serif">P₀ (restored)</text>
+  <text x="806" y="234" font-size="10" fill="#56d364" font-family="Arial, sans-serif">P₁''</text>
+  <text x="760" y="330" font-size="10" fill="#56d364" text-anchor="end" font-family="Arial, sans-serif">P₂''</text>
+  <text x="846" y="407" font-size="10" fill="#ffa657" font-family="Arial, sans-serif">P₃''≈T</text>
+
+  <!-- Convergence check -->
+  <rect x="641" y="430" width="268" height="42" rx="4" fill="#0a1a0a" stroke="#238636" stroke-width="1"/>
+  <text x="775" y="447" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">后向：P_i = P_{i-1} + normalize(P_i − P_{i-1}) × L_i</text>
+  <text x="775" y="462" text-anchor="middle" font-size="10" fill="#3fb950" font-family="Arial, sans-serif">收敛：|L_{tip} − |P_{tip-1} − T|| ≤ Precision（默认 0.01cm）</text>
+
+  <!-- Re-orientation note in panel 3 -->
+  <rect x="641" y="72" width="268" height="32" rx="4" fill="#1e1133" stroke="#8957e5" stroke-width="1"/>
+  <text x="775" y="86" text-anchor="middle" font-size="10" fill="#bc8cff" font-family="Arial, sans-serif">旋转修正：ΔR = FindBetweenNormals(OldDir, NewDir)</text>
+  <text x="775" y="99" text-anchor="middle" font-size="10" fill="#8b949e" font-family="Arial, sans-serif">沿骨间连线方向旋转每根骨骼</text>
+</svg>

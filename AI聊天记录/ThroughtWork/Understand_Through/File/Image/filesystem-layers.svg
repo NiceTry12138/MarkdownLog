@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="800" viewBox="0 0 1000 800">
+  <rect x="0" y="0" width="1000" height="800" fill="#f8f9fa" rx="8"/>
+  <text x="500" y="28" font-family="Arial,sans-serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#1a1a2e">UE 文件系统分层架构（IPlatformFile 链条）</text>
+  <text x="500" y="48" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#666">源码：Engine/Source/Runtime/Core/Public/GenericPlatform/GenericPlatformFile.h  HAL/PlatformFileManager.h</text>
+
+  <!-- Game Code / User Layer -->
+  <rect x="100" y="64" width="800" height="54" fill="#1a1a2e" rx="6"/>
+  <text x="500" y="87" font-family="Arial,sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">游戏代码 / 引擎系统（Game Code / Engine Systems）</text>
+  <text x="500" y="106" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aaa">FPlatformFileManager::Get().GetPlatformFile().OpenRead("../../../Game/Content/BP_Enemy.uasset")</text>
+
+  <!-- Arrow down -->
+  <line x1="500" y1="118" x2="500" y2="138" stroke="#555" stroke-width="2" stroke-dasharray="4,2"/>
+  <polygon points="494,134 506,134 500,142" fill="#555"/>
+
+  <!-- PlatformFileManager -->
+  <rect x="100" y="140" width="800" height="44" fill="#2c3e50" rx="6"/>
+  <text x="500" y="162" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">FPlatformFileManager（单例，管理整个 IPlatformFile 链）</text>
+  <text x="500" y="178" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#aec">维护 TopmostPlatformFile 指针；GetPlatformFile() 返回链顶端；SetPlatformFile() 设置新的顶端</text>
+
+  <!-- Arrow -->
+  <line x1="500" y1="184" x2="500" y2="204" stroke="#555" stroke-width="2"/>
+  <polygon points="494,200 506,200 500,208" fill="#555"/>
+
+  <!-- Layer label -->
+  <text x="30" y="220" font-family="Arial,sans-serif" font-size="10" fill="#888" text-anchor="middle" transform="rotate(-90,30,300)">高层（最先处理）</text>
+  <line x1="42" y1="124" x2="42" y2="592" stroke="#ccc" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Layer 1: FPakPlatformFile -->
+  <rect x="60" y="210" width="880" height="68" fill="#c0392b" rx="6"/>
+  <text x="500" y="230" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">Layer 1: FPakPlatformFile（PAK 文件系统层）</text>
+  <text x="500" y="248" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">文件路径 → FNV64 哈希 → 在 PakFiles[] 中查找 PathHashIndex</text>
+  <text x="500" y="264" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">若找到：从 .pak 中读取（内部代理到 FPakFileHandle::Read() → 解压解密返回）</text>
+  <text x="500" y="276" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fdd">若未找到：向下转发（GetLowerLevel()->OpenRead(filename)）</text>
+
+  <line x1="500" y1="278" x2="500" y2="298" stroke="#555" stroke-width="2"/>
+  <polygon points="494,294 506,294 500,302" fill="#555"/>
+
+  <!-- Layer 2: FFileIoStore / IoDispatcher -->
+  <rect x="60" y="300" width="880" height="68" fill="#e67e22" rx="6"/>
+  <text x="500" y="320" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">Layer 2: FFileIoStore / FIoDispatcher（IoStore 异步 I/O 层）</text>
+  <text x="500" y="338" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">不是 IPlatformFile 链的一部分，而是并行的异步 I/O 系统（AsyncLoading2 直接调用）</text>
+  <text x="500" y="352" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">FIoBatch::Read(ChunkId) → FFileIoStoreReader::Resolve(ChunkId) → .ucas 异步读取 → 解压解密 → FIoBuffer</text>
+  <text x="500" y="364" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#fff0cc">与 IPlatformFile 链并行，不拦截基于路径的文件请求</text>
+
+  <line x1="500" y1="368" x2="500" y2="388" stroke="#555" stroke-width="2"/>
+  <polygon points="494,384 506,384 500,392" fill="#555"/>
+
+  <!-- Layer 3: Sandbox / NetworkFile (optional) -->
+  <rect x="60" y="390" width="880" height="56" fill="#7f8c8d" rx="6" stroke-dasharray="8,4" stroke="#aaa"/>
+  <text x="500" y="413" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">Layer 3: FSandboxPlatformFile / FNetworkPlatformFile（可选）</text>
+  <text x="500" y="431" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#eee">沙盒文件系统（限制写路径）/ 网络文件系统（用于 Launch-On-Device 从 PC 读取 Cook 文件）</text>
+  <text x="500" y="443" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#ddd">不是每次都存在；开发阶段的特殊用途</text>
+
+  <line x1="500" y1="446" x2="500" y2="466" stroke="#555" stroke-width="2"/>
+  <polygon points="494,462 506,462 500,470" fill="#555"/>
+
+  <!-- Layer 4: Physical Platform File -->
+  <rect x="60" y="468" width="880" height="72" fill="#2980b9" rx="6"/>
+  <text x="500" y="490" font-family="Arial,sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="white">Layer 4: FGenericPlatformFile / 具体平台实现（物理文件系统）</text>
+  <text x="500" y="508" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">Win64: FWindowsPlatformFile | PS5: FPS5PlatformFile | Android: FAndroidPlatformFile | iOS: FIOSPlatformFile</text>
+  <text x="500" y="524" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">最终调用操作系统 API：CreateFile / fopen / read() / close()</text>
+  <text x="500" y="536" font-family="Arial,sans-serif" font-size="11" text-anchor="middle" fill="#d0e8ff">GetLowerLevel() 返回 nullptr（链的底部）</text>
+
+  <!-- Side: IPlatformFile interface -->
+  <rect x="60" y="556" width="880" height="86" fill="#fff" rx="6" stroke="#4a90d9" stroke-width="2"/>
+  <text x="80" y="574" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1a1a2e">IPlatformFile 接口（所有层都实现）：</text>
+  <text x="80" y="592" font-family="Arial,sans-serif" font-size="11" fill="#555">virtual bool Initialize(IPlatformFile* Inner, const TCHAR* CmdLine) = 0;  // 设置下一层（Inner）</text>
+  <text x="80" y="608" font-family="Arial,sans-serif" font-size="11" fill="#555">virtual IPlatformFile* GetLowerLevel() = 0;  virtual void SetLowerLevel(IPlatformFile*) = 0;  // 链管理</text>
+  <text x="80" y="624" font-family="Arial,sans-serif" font-size="11" fill="#555">virtual IFileHandle* OpenRead(const TCHAR* Filename) = 0;  // 打开文件读取句柄</text>
+  <text x="80" y="640" font-family="Arial,sans-serif" font-size="11" fill="#555">virtual bool FileExists(const TCHAR*) = 0;  virtual int64 FileSize(const TCHAR*) = 0;  // 文件信息查询</text>
+
+  <!-- Initialization order -->
+  <rect x="60" y="652" width="880" height="88" fill="#fff" rx="6" stroke="#27ae60" stroke-width="2"/>
+  <text x="80" y="672" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#27ae60">初始化顺序（引擎启动时）：</text>
+  <text x="80" y="690" font-family="Arial,sans-serif" font-size="11" fill="#555">① 物理文件系统首先可用（Startup）；② LaunchEngineLoop 检测是否有 .pak 文件 → 若有，创建 FPakPlatformFile 并压栈</text>
+  <text x="80" y="706" font-family="Arial,sans-serif" font-size="11" fill="#555">③ FPakPlatformFile::Initialize(LowerLevel, CmdLine) 挂载所有 .pak（含 global.pak/[game].pak）</text>
+  <text x="80" y="722" font-family="Arial,sans-serif" font-size="11" fill="#555">④ 若发现 global.utoc，调用 InitializeNewAsyncIO() → 初始化 FFileIoStore，挂载所有 .utoc 容器</text>
+  <text x="80" y="736" font-family="Arial,sans-serif" font-size="11" fill="#555">⑤ 之后所有文件请求先经过 FPakPlatformFile → 若未命中则走底层物理文件系统（开发/编辑器模式）</text>
+</svg>
