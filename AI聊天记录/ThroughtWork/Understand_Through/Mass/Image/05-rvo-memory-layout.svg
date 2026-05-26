@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="800" viewBox="0 0 1100 800">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="1100" height="800" fill="#f8fafc"/>
+  <text x="550" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#1e293b" text-anchor="middle">10个角色 RVO 避障：Mass 内存分布图</text>
+
+  <!-- ========= LEFT: Archetypes ========= -->
+  <!-- Archetype A label -->
+  <rect x="20" y="55" width="500" height="340" rx="10" fill="none" stroke="#db2777" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="270" y="75" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#9d174d" text-anchor="middle">Archetype A：{ Transform + Velocity + Force + AgentRadius }（6个 NPC 角色）</text>
+
+  <!-- Archetype A Chunk 0 -->
+  <rect x="30" y="86" width="480" height="295" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="270" y="104" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#0369a1" text-anchor="middle">Chunk[0] — 6个实体</text>
+
+  <!-- EntityHandle row -->
+  <rect x="40" y="112" width="460" height="30" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="55" y="128" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#1e40af">EntityHandle[]</text>
+  <!-- 6 cells -->
+  <rect x="150" y="114" width="46" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="173" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#1</text>
+  <rect x="200" y="114" width="46" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="223" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#2</text>
+  <rect x="250" y="114" width="46" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="273" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#3</text>
+  <rect x="300" y="114" width="46" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="323" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#4</text>
+  <rect x="350" y="114" width="46" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="373" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#5</text>
+  <rect x="400" y="114" width="46" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="423" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#6</text>
+
+  <!-- Transform row -->
+  <rect x="40" y="148" width="460" height="36" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="55" y="164" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#166534">FTransformFragment[]</text>
+  <text x="55" y="178" font-family="Arial,sans-serif" font-size="10" fill="#166534">各实体 3D 位置 / 旋转 / 缩放  (~80 Byte/个)</text>
+  <rect x="152" y="151" width="46" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="175" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr1</text>
+  <rect x="202" y="151" width="46" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="225" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr2</text>
+  <rect x="252" y="151" width="46" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="275" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr3</text>
+  <rect x="302" y="151" width="46" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="325" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr4</text>
+  <rect x="352" y="151" width="46" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="375" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr5</text>
+  <rect x="402" y="151" width="46" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="425" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr6</text>
+
+  <!-- Velocity row -->
+  <rect x="40" y="190" width="460" height="36" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1"/>
+  <text x="55" y="206" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#92400e">FMassVelocityFragment[]</text>
+  <text x="55" y="220" font-family="Arial,sans-serif" font-size="10" fill="#92400e">速度向量  (12 Byte/个)</text>
+  <rect x="152" y="193" width="46" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="175" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V1</text>
+  <rect x="202" y="193" width="46" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="225" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V2</text>
+  <rect x="252" y="193" width="46" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="275" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V3</text>
+  <rect x="302" y="193" width="46" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="325" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V4</text>
+  <rect x="352" y="193" width="46" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="375" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V5</text>
+  <rect x="402" y="193" width="46" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="425" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V6</text>
+
+  <!-- Force row -->
+  <rect x="40" y="232" width="460" height="36" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="55" y="248" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#9d174d">FMassForceFragment[]</text>
+  <text x="55" y="262" font-family="Arial,sans-serif" font-size="10" fill="#9d174d">RVO 计算结果力  (12 Byte/个)</text>
+  <rect x="152" y="235" width="46" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="175" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F1</text>
+  <rect x="202" y="235" width="46" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="225" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F2</text>
+  <rect x="252" y="235" width="46" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="275" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F3</text>
+  <rect x="302" y="235" width="46" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="325" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F4</text>
+  <rect x="352" y="235" width="46" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="375" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F5</text>
+  <rect x="402" y="235" width="46" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="425" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F6</text>
+
+  <!-- AgentRadius row -->
+  <rect x="40" y="274" width="460" height="36" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+  <text x="55" y="290" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#4c1d95">FMassAgentRadiusFragment[]</text>
+  <text x="55" y="304" font-family="Arial,sans-serif" font-size="10" fill="#4c1d95">碰撞半径  (4 Byte/个)</text>
+  <rect x="152" y="277" width="46" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="175" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">50cm</text>
+  <rect x="202" y="277" width="46" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="225" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">50cm</text>
+  <rect x="252" y="277" width="46" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="275" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">50cm</text>
+  <rect x="302" y="277" width="46" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="325" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">50cm</text>
+  <rect x="352" y="277" width="46" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="375" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">50cm</text>
+  <rect x="402" y="277" width="46" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="425" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">50cm</text>
+
+  <!-- SharedFragment for Archetype A -->
+  <rect x="40" y="316" width="460" height="28" rx="4" fill="#f1f5f9" stroke="#475569" stroke-width="1"/>
+  <text x="270" y="334" font-family="Arial,sans-serif" font-size="11" fill="#475569" text-anchor="middle">SharedFragment → FMassMovementParameters（MaxSpeed=200, MaxAcc=250）[外部共享池]</text>
+
+  <!-- ========= RIGHT: Archetype B (玩家角色) ========= -->
+  <rect x="560" y="55" width="510" height="340" rx="10" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="815" y="75" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#064e3b" text-anchor="middle">Archetype B：{ Transform + Velocity + Force + AgentRadius + PlayerTag }（4个玩家）</text>
+
+  <!-- Chunk 0 of B -->
+  <rect x="570" y="86" width="490" height="295" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="815" y="104" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">Chunk[0] — 4个实体</text>
+
+  <!-- EntityHandle row B -->
+  <rect x="580" y="112" width="470" height="30" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="595" y="128" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#1e40af">EntityHandle[]</text>
+  <rect x="700" y="114" width="56" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="728" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#7</text>
+  <rect x="762" y="114" width="56" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="790" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#8</text>
+  <rect x="824" y="114" width="56" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="852" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#9</text>
+  <rect x="886" y="114" width="56" height="24" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/><text x="914" y="130" font-family="Arial,sans-serif" font-size="9" fill="#1e40af" text-anchor="middle">E#10</text>
+
+  <!-- Transform B -->
+  <rect x="580" y="148" width="470" height="36" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="595" y="164" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#166534">FTransformFragment[]</text>
+  <rect x="700" y="151" width="56" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="728" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr7</text>
+  <rect x="762" y="151" width="56" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="790" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr8</text>
+  <rect x="824" y="151" width="56" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="852" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr9</text>
+  <rect x="886" y="151" width="56" height="28" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/><text x="914" y="169" font-family="Arial,sans-serif" font-size="9" fill="#166534" text-anchor="middle">Tr10</text>
+
+  <!-- Velocity B -->
+  <rect x="580" y="190" width="470" height="36" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1"/>
+  <text x="595" y="206" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#92400e">FMassVelocityFragment[]</text>
+  <rect x="700" y="193" width="56" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="728" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V7</text>
+  <rect x="762" y="193" width="56" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="790" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V8</text>
+  <rect x="824" y="193" width="56" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="852" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V9</text>
+  <rect x="886" y="193" width="56" height="28" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/><text x="914" y="211" font-family="Arial,sans-serif" font-size="9" fill="#92400e" text-anchor="middle">V10</text>
+
+  <!-- Force B -->
+  <rect x="580" y="232" width="470" height="36" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="595" y="248" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#9d174d">FMassForceFragment[]</text>
+  <rect x="700" y="235" width="56" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="728" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F7</text>
+  <rect x="762" y="235" width="56" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="790" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F8</text>
+  <rect x="824" y="235" width="56" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="852" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F9</text>
+  <rect x="886" y="235" width="56" height="28" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/><text x="914" y="253" font-family="Arial,sans-serif" font-size="9" fill="#9d174d" text-anchor="middle">F10</text>
+
+  <!-- AgentRadius B -->
+  <rect x="580" y="274" width="470" height="36" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1"/>
+  <text x="595" y="290" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#4c1d95">FMassAgentRadiusFragment[]</text>
+  <rect x="700" y="277" width="56" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="728" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">45cm</text>
+  <rect x="762" y="277" width="56" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="790" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">45cm</text>
+  <rect x="824" y="277" width="56" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="852" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">45cm</text>
+  <rect x="886" y="277" width="56" height="28" rx="2" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1"/><text x="914" y="295" font-family="Arial,sans-serif" font-size="9" fill="#4c1d95" text-anchor="middle">45cm</text>
+
+  <!-- Note: Tag -->
+  <rect x="580" y="316" width="470" height="28" rx="4" fill="#f1f5f9" stroke="#475569" stroke-width="1"/>
+  <text x="815" y="334" font-family="Arial,sans-serif" font-size="11" fill="#475569" text-anchor="middle">Tag: FMassPlayerControlledTag（存于 Archetype TagBitSet，不占 Chunk 内存）</text>
+
+  <!-- ========= Processor boxes ========= -->
+  <rect x="20" y="416" width="1060" height="50" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="550" y="440" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#064e3b" text-anchor="middle">URVOAvoidanceProcessor::Execute() — Query: {Transform:RO, Velocity:RO, AgentRadius:RO, Force:RW}</text>
+  <text x="550" y="456" font-family="Arial,sans-serif" font-size="11" fill="#064e3b" text-anchor="middle">同时匹配 Archetype A 和 B（均含这 4 个 Fragment），一次扫描两个 Archetype 的所有 Chunk，连续写入 Force</text>
+
+  <rect x="20" y="476" width="1060" height="50" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+  <text x="550" y="500" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#0369a1" text-anchor="middle">UMassApplyMovementProcessor::Execute() — Query: {Velocity:RW, Transform:RW, Force:RW, Tag:None(OffLOD)}</text>
+  <text x="550" y="516" font-family="Arial,sans-serif" font-size="11" fill="#0369a1" text-anchor="middle">利用 Force 更新 Velocity，利用 Velocity 更新 Transform.Location（仅对在 LOD 范围内的实体）</text>
+
+  <!-- EntityManager box (bottom) -->
+  <rect x="20" y="548" width="500" height="90" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="270" y="570" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#92400e" text-anchor="middle">FMassEntityManager (Entities 数组)</text>
+  <text x="35" y="590" font-family="Arial,sans-serif" font-size="11" fill="#92400e">Entities[1..10] 每项含：</text>
+  <text x="35" y="608" font-family="Arial,sans-serif" font-size="11" fill="#92400e">  CurrentArchetype (SharedPtr) → 指向 Archetype A 或 B</text>
+  <text x="35" y="625" font-family="Arial,sans-serif" font-size="11" fill="#92400e">  SerialNumber — 用于校验句柄合法性</text>
+
+  <!-- SharedFragment pool -->
+  <rect x="560" y="548" width="520" height="90" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="820" y="570" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#166534" text-anchor="middle">FMassEntityManager SharedFragment 池</text>
+  <text x="575" y="590" font-family="Arial,sans-serif" font-size="11" fill="#166534">SharedFragments[]:  FMassMovementParameters { MaxSpeed=200 }</text>
+  <text x="575" y="608" font-family="Arial,sans-serif" font-size="11" fill="#166534">A、B 两个 Archetype 的所有实体共享同一份 FMassMovementParameters</text>
+  <text x="575" y="625" font-family="Arial,sans-serif" font-size="11" fill="#166534">节省内存，修改参数立即对全部实体生效</text>
+
+  <!-- Memory total summary -->
+  <rect x="20" y="660" width="1060" height="110" rx="8" fill="#fdf4ff" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="550" y="682" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#581c87" text-anchor="middle">内存占用估算（10个角色）</text>
+  <text x="35" y="702" font-family="Arial,sans-serif" font-size="11" fill="#581c87">Archetype A Chunk: 6 × (8 + 80 + 12 + 12 + 4) Byte = 6 × 116 = 696 Byte（EntityHandle + 4种 Fragment）</text>
+  <text x="35" y="720" font-family="Arial,sans-serif" font-size="11" fill="#581c87">Archetype B Chunk: 4 × (8 + 80 + 12 + 12 + 4) Byte = 4 × 116 = 464 Byte（Tag 不占 Chunk 空间）</text>
+  <text x="35" y="738" font-family="Arial,sans-serif" font-size="11" fill="#581c87">实际 Chunk 为 ChunkMemorySize（默认 128 KB）分配，这里预分配远大于实际数据，剩余空位可继续填充实体</text>
+  <text x="35" y="756" font-family="Arial,sans-serif" font-size="11" fill="#581c87">FMassEntityManager.Entities[]: 10 × (8+4) Byte ≈ 120 Byte（SharedPtr 指针 + SerialNumber）</text>
+</svg>

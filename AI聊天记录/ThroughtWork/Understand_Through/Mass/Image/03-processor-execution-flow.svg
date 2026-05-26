@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="760" viewBox="0 0 1000 760">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#475569"/>
+    </marker>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="760" fill="#f8fafc"/>
+  <text x="500" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#1e293b" text-anchor="middle">Processor 执行流程（每帧一次）</text>
+
+  <!-- Phase: FMassProcessingPhase.ExecuteTick -->
+  <rect x="350" y="50" width="300" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="72" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#166534" text-anchor="middle">FMassProcessingPhase::ExecuteTick()</text>
+  <text x="500" y="89" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">由 UE Tick 系统调用（TickFunction）</text>
+
+  <line x1="500" y1="98" x2="500" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- UMassCompositeProcessor::Execute -->
+  <rect x="330" y="128" width="340" height="48" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="500" y="150" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#1e40af" text-anchor="middle">UMassCompositeProcessor::Execute()</text>
+  <text x="500" y="167" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">按依赖图顺序，依次触发子 Processor</text>
+
+  <line x1="500" y1="176" x2="500" y2="206" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- UMassProcessor::CallExecute -->
+  <rect x="320" y="206" width="360" height="48" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="500" y="228" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#92400e" text-anchor="middle">UMassProcessor::CallExecute()</text>
+  <text x="500" y="245" font-family="Arial,sans-serif" font-size="11" fill="#92400e" text-anchor="middle">检查 ExecutionFlags，调用 Execute()</text>
+
+  <line x1="500" y1="254" x2="500" y2="284" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- UMassProcessor::Execute (用户实现) -->
+  <rect x="280" y="284" width="440" height="48" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="500" y="306" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#9d174d" text-anchor="middle">UMassProcessor::Execute()  [用户实现]</text>
+  <text x="500" y="323" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">调用 EntityQuery.ForEachEntityChunk(EntityManager, Context, Lambda)</text>
+
+  <line x1="500" y1="332" x2="500" y2="362" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- FMassEntityQuery::ForEachEntityChunk -->
+  <rect x="200" y="362" width="600" height="56" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+  <text x="500" y="384" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#7c2d12" text-anchor="middle">FMassEntityQuery::ForEachEntityChunk()</text>
+  <text x="500" y="400" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">1. CacheArchetypes() — 找出所有匹配 RequiredFragments 的 Archetype</text>
+  <text x="500" y="414" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">2. 遍历 ValidArchetypes[]</text>
+
+  <line x1="500" y1="418" x2="500" y2="448" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- FMassArchetypeData::ExecuteFunction -->
+  <rect x="180" y="448" width="640" height="56" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="500" y="470" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#4c1d95" text-anchor="middle">FMassArchetypeData::ExecuteFunction()</text>
+  <text x="500" y="486" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">遍历该 Archetype 的每个 Chunk，调用 ExecutionFunctionForChunk()</text>
+  <text x="500" y="500" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">应用 ChunkCondition 过滤（如果有）</text>
+
+  <line x1="500" y1="504" x2="500" y2="534" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ExecutionFunctionForChunk -->
+  <rect x="120" y="534" width="760" height="100" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="556" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#166534" text-anchor="middle">ExecutionFunctionForChunk()  — 填充 Context，调用用户 Lambda</text>
+  <text x="135" y="574" font-family="Arial,sans-serif" font-size="11" fill="#166534">1. 将 Chunk 内每种 Fragment 的地址写入 Context.FragmentViews（TArrayView&lt;FMassFragment&gt;）</text>
+  <text x="135" y="590" font-family="Arial,sans-serif" font-size="11" fill="#166534">2. 将当前 Chunk 的 EntityHandle 数组写入 Context.EntityListView</text>
+  <text x="135" y="606" font-family="Arial,sans-serif" font-size="11" fill="#166534">3. 绑定 ChunkFragment / SharedFragment 视图</text>
+  <text x="135" y="622" font-family="Arial,sans-serif" font-size="11" fill="#166534">4. 调用 ExecuteFunction(Context)  →  即用户 Lambda，遍历每个实体索引处理</text>
+
+  <!-- User code box -->
+  <rect x="200" y="648" width="600" height="90" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="500" y="668" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">用户 Lambda 内部（示例）</text>
+  <text x="215" y="686" font-family="Arial,sans-serif" font-size="11" fill="#334155">auto Velocities = Context.GetMutableFragmentView&lt;FMassVelocityFragment&gt;();</text>
+  <text x="215" y="703" font-family="Arial,sans-serif" font-size="11" fill="#334155">for (int32 i = 0; i &lt; Context.GetNumEntities(); ++i) {</text>
+  <text x="215" y="720" font-family="Arial,sans-serif" font-size="11" fill="#334155">    Velocities[i].Value += Force[i].Value * DeltaTime;  // 直接操作连续内存</text>
+  <text x="215" y="736" font-family="Arial,sans-serif" font-size="11" fill="#334155">}</text>
+
+  <line x1="500" y1="634" x2="500" y2="648" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- Side note: ReadOnly vs ReadWrite -->
+  <rect x="800" y="284" width="185" height="120" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="892" y="302" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#92400e" text-anchor="middle">读写权限的作用</text>
+  <text x="808" y="320" font-family="Arial,sans-serif" font-size="10" fill="#92400e">ReadOnly:</text>
+  <text x="808" y="336" font-family="Arial,sans-serif" font-size="10" fill="#92400e"> 不获取写指针</text>
+  <text x="808" y="352" font-family="Arial,sans-serif" font-size="10" fill="#92400e"> 允许并行 Processor</text>
+  <text x="808" y="368" font-family="Arial,sans-serif" font-size="10" fill="#92400e"> 同时读取同一数据</text>
+  <text x="808" y="386" font-family="Arial,sans-serif" font-size="10" fill="#92400e">ReadWrite:</text>
+  <text x="808" y="402" font-family="Arial,sans-serif" font-size="10" fill="#92400e"> 独占修改，互斥并行</text>
+  <line x1="724" y1="308" x2="800" y2="330" stroke="#ca8a04" stroke-width="1" stroke-dasharray="4,3"/>
+</svg>

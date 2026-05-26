@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="560" viewBox="0 0 1060 560">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="1060" height="560" fill="#f8fafc"/>
+  <text x="530" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#1e293b" text-anchor="middle">RVO 避障系统设计：Fragment / Archetype / Processor 关系图</text>
+
+  <!-- Fragment definitions (top row) -->
+  <!-- FTransformFragment -->
+  <rect x="20" y="60" width="180" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="110" y="82" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">FTransformFragment</text>
+  <text x="110" y="100" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">继承 FMassFragment</text>
+  <text x="110" y="116" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">FTransform Transform</text>
+  <text x="110" y="132" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">位置+旋转+缩放</text>
+
+  <!-- FMassVelocityFragment -->
+  <rect x="220" y="60" width="180" height="90" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="310" y="82" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">FMassVelocityFragment</text>
+  <text x="310" y="100" font-family="Arial,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">继承 FMassFragment</text>
+  <text x="310" y="116" font-family="Arial,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">FVector Value</text>
+  <text x="310" y="132" font-family="Arial,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">当前速度向量</text>
+
+  <!-- FMassForceFragment -->
+  <rect x="420" y="60" width="180" height="90" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="510" y="82" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#9d174d" text-anchor="middle">FMassForceFragment</text>
+  <text x="510" y="100" font-family="Arial,sans-serif" font-size="10" fill="#9d174d" text-anchor="middle">继承 FMassFragment</text>
+  <text x="510" y="116" font-family="Arial,sans-serif" font-size="10" fill="#9d174d" text-anchor="middle">FVector Value</text>
+  <text x="510" y="132" font-family="Arial,sans-serif" font-size="10" fill="#9d174d" text-anchor="middle">合力向量（RVO输出）</text>
+
+  <!-- FMassAgentRadiusFragment (custom) -->
+  <rect x="620" y="60" width="200" height="90" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="720" y="82" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#4c1d95" text-anchor="middle">FMassAgentRadius</text>
+  <text x="720" y="96" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#4c1d95" text-anchor="middle">Fragment (自定义)</text>
+  <text x="720" y="114" font-family="Arial,sans-serif" font-size="10" fill="#4c1d95" text-anchor="middle">继承 FMassFragment</text>
+  <text x="720" y="130" font-family="Arial,sans-serif" font-size="10" fill="#4c1d95" text-anchor="middle">float Radius  // 碰撞半径</text>
+
+  <!-- FMassMovementParameters (SharedFragment) -->
+  <rect x="840" y="60" width="200" height="90" rx="6" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+  <text x="940" y="82" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1e293b" text-anchor="middle">FMassMovement</text>
+  <text x="940" y="96" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1e293b" text-anchor="middle">Parameters (共享)</text>
+  <text x="940" y="114" font-family="Arial,sans-serif" font-size="10" fill="#334155" text-anchor="middle">继承 FMassSharedFragment</text>
+  <text x="940" y="130" font-family="Arial,sans-serif" font-size="10" fill="#334155" text-anchor="middle">MaxSpeed / MaxAcceleration</text>
+
+  <!-- Archetype box -->
+  <rect x="20" y="188" width="750" height="80" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+  <text x="395" y="210" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#7c2d12" text-anchor="middle">NPC Archetype：{ FTransformFragment + FMassVelocityFragment + FMassForceFragment + FMassAgentRadiusFragment }</text>
+  <text x="395" y="232" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">Tag: FMassOffLODTag（可选，远距离 NPC 跳过运动计算）</text>
+  <text x="395" y="250" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">SharedFragment: FMassMovementParameters（通过 FMassArchetypeSharedFragmentValues 绑定）</text>
+
+  <!-- Arrows: Fragment → Archetype -->
+  <line x1="110" y1="150" x2="180" y2="188" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="310" y1="150" x2="290" y2="188" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="510" y1="150" x2="400" y2="188" stroke="#db2777" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="720" y1="150" x2="550" y2="188" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="940" y1="150" x2="730" y2="230" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- Processors -->
+  <!-- URVOAvoidanceProcessor -->
+  <rect x="20" y="308" width="460" height="110" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="250" y="330" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#064e3b" text-anchor="middle">URVOAvoidanceProcessor</text>
+  <text x="250" y="350" font-family="Arial,sans-serif" font-size="11" fill="#064e3b" text-anchor="middle">Phase: PrePhysics  Group: Avoidance</text>
+  <text x="35" y="370" font-family="Arial,sans-serif" font-size="11" fill="#064e3b">Query.AddRequirement&lt;FTransformFragment&gt;(ReadOnly);</text>
+  <text x="35" y="388" font-family="Arial,sans-serif" font-size="11" fill="#064e3b">Query.AddRequirement&lt;FMassVelocityFragment&gt;(ReadOnly);</text>
+  <text x="35" y="406" font-family="Arial,sans-serif" font-size="11" fill="#064e3b">Query.AddRequirement&lt;FMassAgentRadiusFragment&gt;(ReadOnly);</text>
+  <text x="35" y="392" font-family="Arial,sans-serif" font-size="11" fill="#064e3b"/>
+  <text x="35" y="414" font-family="Arial,sans-serif" font-size="11" fill="#064e3b">Query.AddRequirement&lt;FMassForceFragment&gt;(ReadWrite);  // 写出避障力</text>
+
+  <!-- UMassApplyMovementProcessor -->
+  <rect x="510" y="308" width="530" height="110" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+  <text x="775" y="330" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#0369a1" text-anchor="middle">UMassApplyMovementProcessor</text>
+  <text x="775" y="350" font-family="Arial,sans-serif" font-size="11" fill="#0369a1" text-anchor="middle">Phase: PrePhysics  Group: Movement  ExecuteAfter: Avoidance</text>
+  <text x="525" y="370" font-family="Arial,sans-serif" font-size="11" fill="#0369a1">Query.AddRequirement&lt;FMassVelocityFragment&gt;(ReadWrite);</text>
+  <text x="525" y="388" font-family="Arial,sans-serif" font-size="11" fill="#0369a1">Query.AddRequirement&lt;FTransformFragment&gt;(ReadWrite);</text>
+  <text x="525" y="406" font-family="Arial,sans-serif" font-size="11" fill="#0369a1">Query.AddRequirement&lt;FMassForceFragment&gt;(ReadWrite);</text>
+  <text x="525" y="424" font-family="Arial,sans-serif" font-size="11" fill="#0369a1">Query.AddConstSharedRequirement&lt;FMassMovementParameters&gt;(All);</text>
+
+  <!-- Arrows: Archetype → Processors -->
+  <line x1="250" y1="268" x2="250" y2="308" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="500" y1="230" x2="775" y2="308" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Execution order arrow -->
+  <line x1="480" y1="363" x2="510" y2="363" stroke="#059669" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr)"/>
+  <text x="490" y="355" font-family="Arial,sans-serif" font-size="10" fill="#059669">先执行</text>
+
+  <!-- Entity spawn call (bottom) -->
+  <rect x="20" y="448" width="1020" height="90" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="530" y="470" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#92400e" text-anchor="middle">实体创建示例代码（伪代码）</text>
+  <text x="35" y="492" font-family="Arial,sans-serif" font-size="11" fill="#92400e">FMassArchetypeHandle NPCArchetype = EntityManager.CreateArchetype({FTransformFragment, FMassVelocityFragment, FMassForceFragment, FMassAgentRadiusFragment});</text>
+  <text x="35" y="510" font-family="Arial,sans-serif" font-size="11" fill="#92400e">FMassArchetypeSharedFragmentValues SharedVals;  SharedVals.Add&lt;FMassMovementParameters&gt;(MovementParams);</text>
+  <text x="35" y="528" font-family="Arial,sans-serif" font-size="11" fill="#92400e">EntityManager.BatchCreateEntities(NPCArchetype, SharedVals, 10, OutEntities);  // 一次创建 10 个实体，写入同一 Chunk</text>
+</svg>

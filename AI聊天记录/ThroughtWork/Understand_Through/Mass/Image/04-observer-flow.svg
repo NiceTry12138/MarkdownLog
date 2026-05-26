@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="680" viewBox="0 0 1060 680">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#475569"/>
+    </marker>
+    <marker id="arr-p" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect width="1060" height="680" fill="#f8fafc"/>
+  <text x="530" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#1e293b" text-anchor="middle">Observer 触发流程（Fragment/Tag 增删时）</text>
+
+  <!-- Trigger entry: AddFragmentToEntity -->
+  <rect x="50" y="55" width="960" height="48" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="530" y="77" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#1e40af" text-anchor="middle">触发点：FMassEntityManager::AddFragmentToEntity() / RemoveFragmentFromEntity()</text>
+  <text x="530" y="94" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">（以及 AddTagToEntity / BatchBuildEntities 等接口，在实体成分改变后调用 ObserverManager 通知方法）</text>
+
+  <line x1="530" y1="103" x2="530" y2="130" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- FMassObserverManager -->
+  <rect x="200" y="130" width="660" height="100" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="530" y="152" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#4c1d95" text-anchor="middle">FMassObserverManager</text>
+  <text x="215" y="172" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95">• HasObserversForComposition() — 检查是否有任何 Observer 监听了变化涉及的 Fragment/Tag 类型</text>
+  <text x="215" y="190" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95">• OnPostCompositionAdded() / OnPreCompositionRemoved() — 按 Add/Remove 路由</text>
+  <text x="215" y="208" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95">• 查询 ObserversMap[FragmentType][Operation] 找到对应 FMassRuntimePipeline</text>
+
+  <line x1="530" y1="230" x2="530" y2="258" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr-p)"/>
+
+  <!-- ObserversMap -->
+  <rect x="100" y="258" width="860" height="70" rx="8" fill="#fdf4ff" stroke="#a855f7" stroke-width="2"/>
+  <text x="530" y="278" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#581c87" text-anchor="middle">ObserversMap (TMap&lt;UScriptStruct*, FMassRuntimePipeline&gt;)</text>
+  <text x="115" y="298" font-family="Arial,sans-serif" font-size="11" fill="#581c87">Add  :  { FMyCrowdFragment → [USpawnDecalObserver, UPlaySoundObserver, ...] }</text>
+  <text x="115" y="314" font-family="Arial,sans-serif" font-size="11" fill="#581c87">Remove :  { FMyCrowdFragment → [UCleanupObserver, ...] }</text>
+
+  <line x1="530" y1="328" x2="530" y2="355" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- HandleFragmentsImpl -->
+  <rect x="180" y="355" width="700" height="70" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+  <text x="530" y="375" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#7c2d12" text-anchor="middle">HandleFragmentsImpl()</text>
+  <text x="195" y="394" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12">• 将受影响的实体封装为 FMassArchetypeEntityCollection</text>
+  <text x="195" y="412" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12">• 调用匹配 Pipeline 中每个 UMassObserverProcessor::Execute()</text>
+
+  <line x1="530" y1="425" x2="530" y2="452" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- UMassObserverProcessor -->
+  <rect x="160" y="452" width="380" height="90" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="350" y="474" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#064e3b" text-anchor="middle">UMassObserverProcessor (用户实现)</text>
+  <text x="175" y="494" font-family="Arial,sans-serif" font-size="11" fill="#064e3b">ConfigureQueries() — 声明对哪些 Fragment 感兴趣</text>
+  <text x="175" y="512" font-family="Arial,sans-serif" font-size="11" fill="#064e3b">Execute() — 处理刚加入/移除了观察 Fragment 的实体</text>
+  <text x="175" y="530" font-family="Arial,sans-serif" font-size="11" fill="#064e3b">ObservedType = &amp;FMyCrowdFragment::StaticStruct()</text>
+
+  <!-- UMassObserverRegistry -->
+  <rect x="580" y="452" width="400" height="90" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+  <text x="780" y="474" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">UMassObserverRegistry (全局 CDO)</text>
+  <text x="595" y="494" font-family="Arial,sans-serif" font-size="11" fill="#334155">在 PostInitProperties() 中自动注册</text>
+  <text x="595" y="512" font-family="Arial,sans-serif" font-size="11" fill="#334155">存储 FragmentObservers / TagObservers 映射</text>
+  <text x="595" y="530" font-family="Arial,sans-serif" font-size="11" fill="#334155">FMassObserverManager::Initialize() 时读取并实例化</text>
+
+  <!-- Timeline example -->
+  <rect x="50" y="570" width="960" height="90" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="530" y="592" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#92400e" text-anchor="middle">具体场景时序举例：批量创建 10 个角色</text>
+  <text x="65" y="612" font-family="Arial,sans-serif" font-size="11" fill="#92400e">① BatchCreateEntities() 将 10 实体写入 Archetype 的 Chunk</text>
+  <text x="65" y="630" font-family="Arial,sans-serif" font-size="11" fill="#92400e">② FEntityCreationContext 析构时调用 ObserverManager.OnPostEntitiesCreated(EntityCollection)</text>
+  <text x="65" y="648" font-family="Arial,sans-serif" font-size="11" fill="#92400e">③ ObserverManager 查 ObserversMap[Add]，找到 USpawnDecalObserver，执行其 Execute()，访问这 10 个实体的 Fragment</text>
+
+  <!-- Arrows between boxes -->
+  <line x1="540" y1="452" x2="540" y2="420" stroke="#475569" stroke-width="1" stroke-dasharray="4,3"/>
+</svg>

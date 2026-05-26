@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="720" viewBox="0 0 980 720">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#475569"/>
+    </marker>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#16a34a"/>
+    </marker>
+    <marker id="arr-r" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect width="980" height="720" fill="#f8fafc"/>
+  <text x="490" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#1e293b" text-anchor="middle">Mass 子系统生命周期（初始化 → 运行 → 销毁）</text>
+
+  <!-- ==== PHASE 1: Init ==== -->
+  <rect x="20" y="55" width="940" height="200" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+  <text x="30" y="76" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#0369a1">① 初始化阶段（World 启动时）</text>
+
+  <!-- Step 1.1 -->
+  <rect x="40" y="86" width="280" height="56" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="180" y="108" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">UMassEntitySubsystem</text>
+  <text x="180" y="125" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">::Initialize()</text>
+  <text x="180" y="140" font-family="Arial,sans-serif" font-size="10" fill="#1e40af" text-anchor="middle">创建 FMassEntityManager 实例</text>
+
+  <line x1="320" y1="114" x2="360" y2="114" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 1.2 -->
+  <rect x="360" y="86" width="280" height="56" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="500" y="108" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">FMassEntityManager</text>
+  <text x="500" y="125" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">::Initialize()</text>
+  <text x="500" y="140" font-family="Arial,sans-serif" font-size="10" fill="#1e40af" text-anchor="middle">扫描所有 Fragment/Tag 类型，建立 BitSet 索引</text>
+
+  <line x1="640" y1="114" x2="680" y2="114" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 1.3 -->
+  <rect x="680" y="86" width="265" height="56" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="812" y="108" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">FMassEntityManager</text>
+  <text x="812" y="125" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">::PostInitialize()</text>
+  <text x="812" y="140" font-family="Arial,sans-serif" font-size="10" fill="#1e40af" text-anchor="middle">ObserverManager.Initialize() 读取注册表</text>
+
+  <!-- Step 1.4 row -->
+  <rect x="40" y="156" width="280" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="180" y="178" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">UMassSimulationSubsystem</text>
+  <text x="180" y="195" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">::Initialize()</text>
+  <text x="180" y="210" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">创建 FMassProcessingPhaseManager</text>
+
+  <line x1="320" y1="184" x2="360" y2="184" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <rect x="360" y="156" width="280" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="178" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">FMassProcessingPhaseManager</text>
+  <text x="500" y="195" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">::Initialize()</text>
+  <text x="500" y="210" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">读取 MassEntitySettings，实例化所有 Processor CDO</text>
+
+  <line x1="640" y1="184" x2="680" y2="184" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <rect x="680" y="156" width="265" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="812" y="178" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">ProcessorDependencySolver</text>
+  <text x="812" y="195" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">::Solve()</text>
+  <text x="812" y="210" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">按 ExecuteInGroup/Before/After 建依赖图</text>
+
+  <!-- ==== PHASE 2: Start / Tick ==== -->
+  <rect x="20" y="275" width="940" height="230" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="30" y="296" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#166534">② 运行阶段（每帧 Tick）</text>
+
+  <!-- OnWorldBeginPlay → Start -->
+  <rect x="40" y="306" width="220" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="150" y="326" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#166534" text-anchor="middle">OnWorldBeginPlay</text>
+  <text x="150" y="345" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">PhaseManager.Start(World)</text>
+
+  <line x1="260" y1="331" x2="300" y2="331" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <rect x="300" y="306" width="220" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="410" y="326" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#166534" text-anchor="middle">FMassProcessingPhase</text>
+  <text x="410" y="345" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">注册为 FTickFunction（各处理阶段）</text>
+
+  <line x1="520" y1="331" x2="560" y2="331" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- ExecuteTick -->
+  <rect x="560" y="306" width="380" height="50" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="750" y="326" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#064e3b" text-anchor="middle">ExecuteTick() → TriggerPhase()</text>
+  <text x="750" y="345" font-family="Arial,sans-serif" font-size="10" fill="#064e3b" text-anchor="middle">触发对应 Phase 的 CompositeProcessor</text>
+
+  <!-- Tick phases timeline -->
+  <rect x="40" y="372" width="880" height="44" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="60" y="392" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#92400e">帧处理顺序：</text>
+  <rect x="180" y="378" width="130" height="28" rx="4" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="245" y="396" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">PrePhysics</text>
+  <line x1="310" y1="392" x2="326" y2="392" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="326" y="378" width="130" height="28" rx="4" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="391" y="396" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">Physics</text>
+  <line x1="456" y1="392" x2="472" y2="392" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="472" y="378" width="130" height="28" rx="4" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="537" y="396" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">PostPhysics</text>
+  <line x1="602" y1="392" x2="618" y2="392" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="618" y="378" width="130" height="28" rx="4" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="683" y="396" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">FrameEnd</text>
+
+  <!-- CommandBuffer flush note -->
+  <rect x="40" y="428" width="880" height="60" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="50" y="448" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" font-weight="bold">CommandBuffer 刷新：</text>
+  <text x="50" y="466" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12">  Execute 期间实体修改写入 DeferredCommandBuffer（线程安全）→ Phase 结束后 Flush → 实际执行 Add/Remove Fragment</text>
+  <text x="50" y="482" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12">  →  Observer 通知也在 Flush 阶段触发（成分变化已完成，Observer 在新 Archetype 中操作实体）</text>
+
+  <!-- ==== PHASE 3: Destroy ==== -->
+  <rect x="20" y="525" width="940" height="170" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+  <text x="30" y="546" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#881337">③ 销毁阶段（World 关闭 / PIE 结束时）</text>
+
+  <rect x="40" y="558" width="260" height="56" rx="6" fill="#fecdd3" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="170" y="580" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#881337" text-anchor="middle">UMassSimulationSubsystem</text>
+  <text x="170" y="598" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">::Deinitialize()</text>
+  <text x="170" y="610" font-family="Arial,sans-serif" font-size="10" fill="#881337" text-anchor="middle">PhaseManager.Deinitialize()</text>
+
+  <line x1="300" y1="586" x2="340" y2="586" stroke="#e11d48" stroke-width="1.5" marker-end="url(#arr-r)"/>
+
+  <rect x="340" y="558" width="260" height="56" rx="6" fill="#fecdd3" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="470" y="580" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#881337" text-anchor="middle">FMassProcessingPhase</text>
+  <text x="470" y="598" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">取消 TickFunction 注册</text>
+  <text x="470" y="610" font-family="Arial,sans-serif" font-size="10" fill="#881337" text-anchor="middle">释放 CompositeProcessor</text>
+
+  <line x1="600" y1="586" x2="640" y2="586" stroke="#e11d48" stroke-width="1.5" marker-end="url(#arr-r)"/>
+
+  <rect x="640" y="558" width="300" height="56" rx="6" fill="#fecdd3" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="790" y="580" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#881337" text-anchor="middle">FMassEntityManager</text>
+  <text x="790" y="598" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">::Deinitialize()</text>
+  <text x="790" y="610" font-family="Arial,sans-serif" font-size="10" fill="#881337" text-anchor="middle">CommandBuffer.CleanUp()，释放所有 Archetype</text>
+
+  <rect x="40" y="626" width="900" height="50" rx="6" fill="#fff1f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="50" y="645" font-family="Arial,sans-serif" font-size="11" fill="#881337">• FMassArchetypeData 由 TSharedPtr 管理，EntityManager 析构时引用计数归零自动释放所有 Chunk 内存</text>
+  <text x="50" y="662" font-family="Arial,sans-serif" font-size="11" fill="#881337">• FMassEntityHandle 析构无副作用（只是数字），不需要手动释放</text>
+</svg>

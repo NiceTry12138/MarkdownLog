@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="620" viewBox="0 0 1060 620">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect width="1060" height="620" fill="#f8fafc"/>
+
+  <text x="530" y="34" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#1e293b" text-anchor="middle">FMassArchetypeData 内存布局图（Chunk 结构）</text>
+
+  <!-- Archetype outer box -->
+  <rect x="20" y="55" width="1020" height="540" rx="10" fill="none" stroke="#db2777" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="40" y="75" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#9d174d">FMassArchetypeData  [Archetype: FTransformFragment + FMassVelocityFragment + FMassForceFragment]</text>
+
+  <!-- CompositionDescriptor label -->
+  <rect x="30" y="82" width="420" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="240" y="103" font-family="Arial,sans-serif" font-size="12" fill="#9d174d" text-anchor="middle" font-weight="bold">CompositionDescriptor</text>
+  <text x="240" y="122" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">FragmentBitSet: {Transform, Velocity, Force}  TagBitSet: {}</text>
+
+  <!-- FragmentConfigs label -->
+  <rect x="470" y="82" width="560" height="50" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1"/>
+  <text x="750" y="103" font-family="Arial,sans-serif" font-size="12" fill="#7c2d12" text-anchor="middle" font-weight="bold">FragmentConfigs</text>
+  <text x="750" y="122" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">[0] Transform @ offset=N*12  [1] Velocity @ offset=M*12  [2] Force @ offset=K*12</text>
+
+  <!-- ====== Chunk 0 ====== -->
+  <!-- chunk container -->
+  <rect x="30" y="150" width="480" height="330" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+  <text x="270" y="172" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#0369a1" text-anchor="middle">Chunk[0]  (连续 RawMemory 块, 默认 128 KB)</text>
+  <text x="270" y="188" font-family="Arial,sans-serif" font-size="11" fill="#0369a1" text-anchor="middle">NumInstances = 3 / NumEntitiesPerChunk = N</text>
+
+  <!-- Segment: EntityHandle array -->
+  <rect x="45" y="200" width="450" height="42" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="55" y="218" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#1e40af">EntityHandle 数组  [offset=0, 每项 8 Byte]</text>
+  <!-- 3 cells -->
+  <rect x="55" y="222" width="90" height="14" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/>
+  <text x="100" y="233" font-family="Arial,sans-serif" font-size="10" fill="#1e40af" text-anchor="middle">E[0] idx=1</text>
+  <rect x="152" y="222" width="90" height="14" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/>
+  <text x="197" y="233" font-family="Arial,sans-serif" font-size="10" fill="#1e40af" text-anchor="middle">E[1] idx=2</text>
+  <rect x="249" y="222" width="90" height="14" rx="2" fill="#93c5fd" stroke="#3b82f6" stroke-width="1"/>
+  <text x="294" y="233" font-family="Arial,sans-serif" font-size="10" fill="#1e40af" text-anchor="middle">E[2] idx=3</text>
+  <rect x="346" y="222" width="90" height="14" rx="2" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="391" y="233" font-family="Arial,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">空位...</text>
+
+  <!-- Segment: FTransformFragment array -->
+  <rect x="45" y="250" width="450" height="42" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="55" y="268" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#166534">FTransformFragment 数组  [对齐后偏移, 每项 ~80 Byte]</text>
+  <rect x="55" y="272" width="90" height="14" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+  <text x="100" y="283" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">Pos(1,0,0)</text>
+  <rect x="152" y="272" width="90" height="14" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+  <text x="197" y="283" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">Pos(2,0,0)</text>
+  <rect x="249" y="272" width="90" height="14" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+  <text x="294" y="283" font-family="Arial,sans-serif" font-size="10" fill="#166534" text-anchor="middle">Pos(3,0,0)</text>
+  <rect x="346" y="272" width="90" height="14" rx="2" fill="#f0fdf4" stroke="#86efac" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="391" y="283" font-family="Arial,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">空位...</text>
+
+  <!-- Segment: FMassVelocityFragment array -->
+  <rect x="45" y="300" width="450" height="42" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="55" y="318" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#92400e">FMassVelocityFragment 数组  [对齐后偏移, 每项 12 Byte]</text>
+  <rect x="55" y="322" width="90" height="14" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="100" y="333" font-family="Arial,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">(0,1,0)</text>
+  <rect x="152" y="322" width="90" height="14" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="197" y="333" font-family="Arial,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">(0,2,0)</text>
+  <rect x="249" y="322" width="90" height="14" rx="2" fill="#fde68a" stroke="#ca8a04" stroke-width="1"/>
+  <text x="294" y="333" font-family="Arial,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">(1,0,0)</text>
+  <rect x="346" y="322" width="90" height="14" rx="2" fill="#fefce8" stroke="#fde68a" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="391" y="333" font-family="Arial,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">空位...</text>
+
+  <!-- Segment: FMassForceFragment array -->
+  <rect x="45" y="350" width="450" height="42" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="55" y="368" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#9d174d">FMassForceFragment 数组  [对齐后偏移, 每项 12 Byte]</text>
+  <rect x="55" y="372" width="90" height="14" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/>
+  <text x="100" y="383" font-family="Arial,sans-serif" font-size="10" fill="#9d174d" text-anchor="middle">(0,0,0)</text>
+  <rect x="152" y="372" width="90" height="14" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/>
+  <text x="197" y="383" font-family="Arial,sans-serif" font-size="10" fill="#9d174d" text-anchor="middle">(0,0,0)</text>
+  <rect x="249" y="372" width="90" height="14" rx="2" fill="#f9a8d4" stroke="#db2777" stroke-width="1"/>
+  <text x="294" y="383" font-family="Arial,sans-serif" font-size="10" fill="#9d174d" text-anchor="middle">(0.5,0,0)</text>
+  <rect x="346" y="372" width="90" height="14" rx="2" fill="#fdf2f8" stroke="#f9a8d4" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="391" y="383" font-family="Arial,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">空位...</text>
+
+  <!-- ChunkFragment (per-chunk) -->
+  <rect x="45" y="400" width="450" height="36" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="55" y="418" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#4c1d95">ChunkFragment  (每 Chunk 一份, 非实体级)</text>
+  <text x="270" y="430" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">例: 导航网格缓存、LOD 等级等</text>
+
+  <!-- SharedFragment note -->
+  <rect x="45" y="445" width="450" height="26" rx="4" fill="#f1f5f9" stroke="#475569" stroke-width="1"/>
+  <text x="270" y="462" font-family="Arial,sans-serif" font-size="11" fill="#475569" text-anchor="middle">SharedFragment (跨 Chunk 共享, 外部 FSharedStruct 池)</text>
+
+  <!-- ====== Chunk 1 (示意) ====== -->
+  <rect x="540" y="150" width="480" height="160" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+  <text x="780" y="172" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#0369a1" text-anchor="middle">Chunk[1]  (满了自动新建)</text>
+  <text x="780" y="188" font-family="Arial,sans-serif" font-size="11" fill="#0369a1" text-anchor="middle">相同 Archetype，同样的内存布局</text>
+  <!-- mini row -->
+  <rect x="555" y="200" width="450" height="24" rx="3" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="780" y="216" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">EntityHandle 数组</text>
+  <rect x="555" y="230" width="450" height="24" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="780" y="246" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">FTransformFragment 数组</text>
+  <rect x="555" y="260" width="450" height="24" rx="3" fill="#fef9c3" stroke="#ca8a04" stroke-width="1"/>
+  <text x="780" y="276" font-family="Arial,sans-serif" font-size="11" fill="#92400e" text-anchor="middle">FMassVelocityFragment 数组</text>
+  <rect x="555" y="290" width="450" height="24" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="780" y="306" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">FMassForceFragment 数组</text>
+
+  <!-- EntityMap -->
+  <rect x="540" y="330" width="480" height="80" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="780" y="352" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">EntityMap  (TMap&lt;int32, int32&gt;)</text>
+  <text x="780" y="372" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">EntityIndex(全局) → AbsoluteIndex(绝对位置)</text>
+  <text x="780" y="390" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">ChunkIndex = AbsoluteIndex / NumEntitiesPerChunk</text>
+  <text x="780" y="408" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">IndexWithinChunk = AbsoluteIndex % NumEntitiesPerChunk</text>
+
+  <!-- Key concepts box -->
+  <rect x="540" y="430" width="480" height="130" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="780" y="452" font-family="Arial,sans-serif" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">核心设计要点</text>
+  <text x="555" y="472" font-family="Arial,sans-serif" font-size="11" fill="#334155">• 同一 Archetype 内所有实体的同类 Fragment 连续存储 → SIMD 友好</text>
+  <text x="555" y="490" font-family="Arial,sans-serif" font-size="11" fill="#334155">• Chunk 默认 128 KB，适配 CPU 缓存行</text>
+  <text x="555" y="508" font-family="Arial,sans-serif" font-size="11" fill="#334155">• 同一组成（Fragment 集合相同）共用同一 Archetype，不重复创建</text>
+  <text x="555" y="526" font-family="Arial,sans-serif" font-size="11" fill="#334155">• 添加/删除 Fragment → 实体迁移到新 Archetype（移动内存数据）</text>
+  <text x="555" y="544" font-family="Arial,sans-serif" font-size="11" fill="#334155">• Tag 只影响 BitSet，不占 Chunk 内存，改变 Tag 也触发 Archetype 迁移</text>
+
+  <!-- Chunk index arrow -->
+  <line x1="270" y1="480" x2="270" y2="510" stroke="#0284c7" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="300" y="500" font-family="Arial,sans-serif" font-size="10" fill="#0284c7">更多 Chunk</text>
+</svg>

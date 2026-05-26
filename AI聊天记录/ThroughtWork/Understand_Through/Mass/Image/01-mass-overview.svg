@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="680" viewBox="0 0 1100 680">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="680" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="550" y="36" font-family="Arial,sans-serif" font-size="20" font-weight="bold" fill="#1e293b" text-anchor="middle">Mass Framework 整体架构概览</text>
+
+  <!-- ===== World Subsystem Layer ===== -->
+  <!-- UMassEntitySubsystem box -->
+  <rect x="30" y="60" width="300" height="80" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="180" y="95" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#1e40af" text-anchor="middle">UMassEntitySubsystem</text>
+  <text x="180" y="115" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">(World Subsystem, 每个 UWorld 一个)</text>
+  <text x="180" y="131" font-family="Arial,sans-serif" font-size="11" fill="#1e40af" text-anchor="middle">持有 FMassEntityManager</text>
+
+  <!-- UMassSimulationSubsystem box -->
+  <rect x="360" y="60" width="300" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="510" y="95" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#166534" text-anchor="middle">UMassSimulationSubsystem</text>
+  <text x="510" y="115" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">(World Subsystem, 驱动 Tick)</text>
+  <text x="510" y="131" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">持有 FMassProcessingPhaseManager</text>
+
+  <!-- FMassEntityManager box -->
+  <rect x="30" y="190" width="480" height="100" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="270" y="220" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#92400e" text-anchor="middle">FMassEntityManager</text>
+  <text x="270" y="240" font-family="Arial,sans-serif" font-size="11" fill="#92400e" text-anchor="middle">管理所有 Entity / Archetype / Observer</text>
+  <text x="270" y="258" font-family="Arial,sans-serif" font-size="11" fill="#92400e" text-anchor="middle">FragmentHashToArchetypeMap | Entities(分块数组) | ObserverManager</text>
+  <text x="270" y="276" font-family="Arial,sans-serif" font-size="11" fill="#92400e" text-anchor="middle">DeferredCommandBuffer | SharedFragments</text>
+
+  <!-- FMassProcessingPhaseManager box -->
+  <rect x="560" y="190" width="480" height="100" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="800" y="220" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#166534" text-anchor="middle">FMassProcessingPhaseManager</text>
+  <text x="800" y="240" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">每个 EMassProcessingPhase 一个 FMassProcessingPhase</text>
+  <text x="800" y="258" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">FMassProcessingPhase = FTickFunction + UMassCompositeProcessor</text>
+  <text x="800" y="276" font-family="Arial,sans-serif" font-size="11" fill="#166534" text-anchor="middle">每帧按 PrePhysics → Physics → PostPhysics → FrameEnd 顺序触发</text>
+
+  <!-- ===== Archetype + Entity Layer ===== -->
+  <!-- FMassArchetypeData -->
+  <rect x="30" y="340" width="310" height="130" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="185" y="368" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#9d174d" text-anchor="middle">FMassArchetypeData</text>
+  <text x="185" y="388" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">CompositionDescriptor (Fragment/Tag 集合)</text>
+  <text x="185" y="406" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">FragmentConfigs (每种 Fragment 的偏移)</text>
+  <text x="185" y="424" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">Chunks[] (块化连续内存)</text>
+  <text x="185" y="442" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">EntityMap (EntityIndex → 绝对位置)</text>
+  <text x="185" y="460" font-family="Arial,sans-serif" font-size="11" fill="#9d174d" text-anchor="middle">NumEntitiesPerChunk | ChunkMemorySize</text>
+
+  <!-- FMassEntityHandle -->
+  <rect x="370" y="340" width="220" height="130" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="480" y="368" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#4c1d95" text-anchor="middle">FMassEntityHandle</text>
+  <text x="480" y="390" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">Index : int32</text>
+  <text x="480" y="410" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">SerialNumber : int32</text>
+  <text x="480" y="430" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">共 8 字节，可转 uint64</text>
+  <text x="480" y="450" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">仅是"句柄"，不含数据</text>
+  <text x="480" y="470" font-family="Arial,sans-serif" font-size="11" fill="#4c1d95" text-anchor="middle">真实数据在 Archetype 中</text>
+
+  <!-- FMassFragment -->
+  <rect x="620" y="340" width="200" height="130" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+  <text x="720" y="368" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#7c2d12" text-anchor="middle">FMassFragment</text>
+  <text x="720" y="390" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">轻量级数据载体</text>
+  <text x="720" y="410" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">继承 FMassFragment</text>
+  <text x="720" y="430" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">例: FMassVelocityFragment</text>
+  <text x="720" y="450" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">     FTransformFragment</text>
+  <text x="720" y="470" font-family="Arial,sans-serif" font-size="11" fill="#7c2d12" text-anchor="middle">按类型分列存储在 Chunk</text>
+
+  <!-- FMassTag -->
+  <rect x="850" y="340" width="200" height="130" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+  <text x="950" y="368" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#1e293b" text-anchor="middle">FMassTag</text>
+  <text x="950" y="390" font-family="Arial,sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">零大小标记类型</text>
+  <text x="950" y="410" font-family="Arial,sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">只做"存在/不存在"判断</text>
+  <text x="950" y="430" font-family="Arial,sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">不占 Chunk 内存</text>
+  <text x="950" y="450" font-family="Arial,sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">例: FMassOffLODTag</text>
+  <text x="950" y="470" font-family="Arial,sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">存于 BitSet</text>
+
+  <!-- ===== Processor + Observer Layer ===== -->
+  <!-- UMassProcessor -->
+  <rect x="30" y="520" width="310" height="130" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="185" y="548" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#064e3b" text-anchor="middle">UMassProcessor</text>
+  <text x="185" y="568" font-family="Arial,sans-serif" font-size="11" fill="#064e3b" text-anchor="middle">ConfigureQueries() — 声明需要哪些 Fragment</text>
+  <text x="185" y="586" font-family="Arial,sans-serif" font-size="11" fill="#064e3b" text-anchor="middle">Execute() — 每帧处理逻辑</text>
+  <text x="185" y="604" font-family="Arial,sans-serif" font-size="11" fill="#064e3b" text-anchor="middle">ProcessingPhase — 执行阶段</text>
+  <text x="185" y="622" font-family="Arial,sans-serif" font-size="11" fill="#064e3b" text-anchor="middle">ExecutionOrder — 同阶段内顺序</text>
+  <text x="185" y="640" font-family="Arial,sans-serif" font-size="11" fill="#064e3b" text-anchor="middle">OwnedQueries[] — 持有 Query</text>
+
+  <!-- FMassEntityQuery -->
+  <rect x="370" y="520" width="220" height="130" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="480" y="548" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#78350f" text-anchor="middle">FMassEntityQuery</text>
+  <text x="480" y="568" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">Fragment 需求描述</text>
+  <text x="480" y="588" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">ValidArchetypes[] 缓存</text>
+  <text x="480" y="608" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">ForEachEntityChunk()</text>
+  <text x="480" y="628" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">ParallelForEachEntityChunk()</text>
+  <text x="480" y="648" font-family="Arial,sans-serif" font-size="11" fill="#78350f" text-anchor="middle">CacheArchetypes() 自动更新</text>
+
+  <!-- UMassObserverProcessor -->
+  <rect x="620" y="520" width="200" height="130" rx="8" fill="#fdf4ff" stroke="#a855f7" stroke-width="2"/>
+  <text x="720" y="548" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#581c87" text-anchor="middle">UMassObserverProcessor</text>
+  <text x="720" y="568" font-family="Arial,sans-serif" font-size="11" fill="#581c87" text-anchor="middle">继承 UMassProcessor</text>
+  <text x="720" y="588" font-family="Arial,sans-serif" font-size="11" fill="#581c87" text-anchor="middle">ObservedType — 监听类型</text>
+  <text x="720" y="608" font-family="Arial,sans-serif" font-size="11" fill="#581c87" text-anchor="middle">Operation — Add / Remove</text>
+  <text x="720" y="628" font-family="Arial,sans-serif" font-size="11" fill="#581c87" text-anchor="middle">响应成分变化事件</text>
+  <text x="720" y="648" font-family="Arial,sans-serif" font-size="11" fill="#581c87" text-anchor="middle">由 FMassObserverManager 触发</text>
+
+  <!-- FMassCommandBuffer -->
+  <rect x="850" y="520" width="200" height="130" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+  <text x="950" y="548" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#881337" text-anchor="middle">FMassCommandBuffer</text>
+  <text x="950" y="568" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">延迟命令缓冲</text>
+  <text x="950" y="588" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">线程安全写入</text>
+  <text x="950" y="608" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">Flush 时批量执行</text>
+  <text x="950" y="628" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">避免 Tick 中直接修改</text>
+  <text x="950" y="648" font-family="Arial,sans-serif" font-size="11" fill="#881337" text-anchor="middle">Archetype 结构的操作</text>
+
+  <!-- ===== Connector Arrows ===== -->
+  <!-- EntitySubsystem → EntityManager -->
+  <line x1="180" y1="140" x2="180" y2="190" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <!-- SimSubsystem → PhaseManager -->
+  <line x1="510" y1="140" x2="660" y2="190" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <!-- EntityManager → ArchetypeData -->
+  <line x1="180" y1="290" x2="180" y2="340" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- EntityManager → Entity -->
+  <line x1="270" y1="290" x2="430" y2="340" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- PhaseManager → Processor -->
+  <line x1="680" y1="290" x2="185" y2="520" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <!-- Processor → Query -->
+  <line x1="340" y1="585" x2="370" y2="585" stroke="#059669" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <!-- Query → ArchetypeData -->
+  <line x1="480" y1="520" x2="340" y2="470" stroke="#d97706" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+</svg>
